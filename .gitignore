@@ -1,0 +1,41 @@
+# --- secrets (never commit) ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# --- node / next ---
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- logs / os / editor ---
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- test / coverage ---
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# --- database local artefacts ---
+*.dump
+*.sql.bak
+database/local/
+pgdata/
+
+# --- keep these tracked ---
+!.env.example
+!.gitignore

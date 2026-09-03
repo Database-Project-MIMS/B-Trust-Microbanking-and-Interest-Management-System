@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens. Authoritative definitions live in ui-registry.md — keep in sync. */
+:root {
+  --surface: #ffffff;
+  --surface-muted: #f6f7f9;
+  --border: #e2e5ea;
+  --text: #14181f;
+  --text-muted: #5b6472;
+  --primary: #12508a;
+  --primary-hover: #0e3f6e;
+  --credit: #1a7f4b;
+  --debit: #b3261e;
+  --warning: #8a5a00;
+  --danger: #b3261e;
+}
+
+body {
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* Monetary values are always right-aligned with tabular figures (ui-registry.md). */
+.amount {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
