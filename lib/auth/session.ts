@@ -11,6 +11,7 @@ export interface SessionData {
     username: string;
     roleId: string;
     roleName: string;
+    branchId: string | null;  // null = bank-wide roles (ADMIN, AUDITOR, etc.)
 }
 
 export function hashToken(token: string): string {
@@ -36,6 +37,7 @@ export async function createSession(
 
 /**
  * Validates a session token received from a request cookie.
+ * Returns the session data including branchId for scope enforcement.
  */
 export async function validateSession(token: string): Promise<SessionData | null> {
     const tokenHash = hashToken(token);
@@ -45,7 +47,8 @@ export async function validateSession(token: string): Promise<SessionData | null
         u.user_id AS "userId",
         u.username AS "username",
         r.role_id AS "roleId",
-        r.role_name AS "roleName"
+        r.role_name AS "roleName",
+        u.branch_id AS "branchId"
      FROM user_session s
      JOIN app_user u ON s.user_id = u.user_id
      JOIN role r ON u.role_id = r.role_id
