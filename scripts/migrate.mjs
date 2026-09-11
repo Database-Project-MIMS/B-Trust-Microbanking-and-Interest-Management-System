@@ -19,6 +19,10 @@ import pg from "pg";
 const MIGRATIONS_DIR = "database/migrations";
 const SEED_DIR = "database/seed";
 
+if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
+  try { process.loadEnvFile(); } catch {}
+}
+
 const url = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
 if (!url) {
   console.error("DATABASE_MIGRATION_URL is not set. Copy .env.example to .env.");

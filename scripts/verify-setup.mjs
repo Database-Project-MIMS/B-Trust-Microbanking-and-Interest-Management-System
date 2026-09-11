@@ -5,7 +5,11 @@
  */
 import pg from "pg";
 
-const url = process.env.DATABASE_URL;
+if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
+  try { process.loadEnvFile(); } catch {}
+}
+
+const url = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
 if (!url) { console.error("DATABASE_URL not set."); process.exit(1); }
 
 const checks = [];
