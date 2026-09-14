@@ -26,8 +26,4 @@ VALUES
     ('1 Year FD',   12, 0.1400, 'Fixed deposit — 12-month tenure at 14% per annum'),
     ('3 Year FD',   36, 0.1500, 'Fixed deposit — 36-month tenure at 15% per annum');
 
--- Register migration
-INSERT INTO schema_migration(version, name)
-VALUES (180, '0180_p01_m05_fd_plan');
-
 COMMIT;
