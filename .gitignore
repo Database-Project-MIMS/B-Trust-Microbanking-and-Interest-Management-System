@@ -39,3 +39,8 @@ pgdata/
 # --- keep these tracked ---
 !.env.example
 !.gitignore
+
+5_Selith/
+
+
+.agents/
