@@ -8,9 +8,9 @@ of a session, read at the start of the next one. Empty until Phase 1 work begins
 
 ## Current task
 
-**P01-M02-T02 — Agent schema (IN_PROGRESS).** The developer accepted Member 1's merged
-identity implementation as satisfying the stale tracker dependency. Migration `0121` is
-applied and its task-specific tests pass.
+**P01-M02-T02 — Agent schema: DONE.** The developer accepted the verified migration,
+tests and documentation and approved completion before merging its PR. Next assigned
+task: **P01-M02-T03 — Branch and Agent APIs**.
 
 ## Recent history
 
@@ -25,6 +25,7 @@ applied and its task-specific tests pass.
   constraints, active-branch integrity triggers, deletion restrictions and lookup index.
 - Added `tests/db/agent-constraints.test.mjs`: 9/9 task tests pass.
 - `npm run test:db`: 26/26 pass; `npm run db:verify` and `npm run typecheck` pass.
+- Developer explicitly approved marking P01-M02-T02 `DONE`; its PR merge remains pending.
 
 ## Notes to self
 
@@ -35,7 +36,6 @@ applied and its task-specific tests pass.
 
 ## Blocked on
 
-- T02 work is currently on the T01 feature branch. The developer must place it on the
-  required `feat/p01-m02-agent-schema` branch before committing or opening its PR.
+- The T02 pull request still needs to be merged into the integration branch.
 - Cross-member test and Windows setup issues remain documented in
   `../handoffs/p01-cross-member-test-blockers.md`; they no longer block the accepted T01.

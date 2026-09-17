@@ -13,8 +13,9 @@
   schema (`0120`), agent schema (`0121`) and FD plan schema (`0180`).
 - P01-M02-T01 is complete: the `branch` table, unique branch-code constraint, status
   enforcement, timestamps, trigger, database tests and documentation are present.
-- P01-M02-T02 is in progress: its agent subtype schema, constraints, integrity triggers,
-  index, database tests and documentation are present and verified.
+- P01-M02-T02 is complete by developer approval: its agent subtype schema, constraints,
+  integrity triggers, index, database tests and documentation are present and verified;
+  its pull-request merge remains pending.
 - The repository is under Git control; Member 2 confirmed a pull request for T01 exists.
 
 ## What does NOT exist yet
@@ -27,7 +28,7 @@ implemented yet. Full detail remains in `../docs/09_task-tracker.md`.
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — P01-M02-T01 and P01-M05-T01 confirmed DONE |
+| P1 | 18 | IN PROGRESS — P01-M02-T01, P01-M02-T02 and P01-M05-T01 confirmed DONE |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
@@ -49,6 +50,5 @@ check pass. Cross-member full-suite and native-Windows setup issues are recorded
 ## Next session should start with
 
 1. Member 1 completes and marks P01-M01-T01 `DONE`.
-2. Member 2 places T02 on `feat/p01-m02-agent-schema`, completes its PR workflow and then
-   begins P01-M02-T03 after integration point I-1 is confirmed.
+2. Merge the T02 pull request, then continue P01-M02-T03 using the published I-1 helpers.
 3. Resolve the cross-member test and Windows setup items recorded in the handoff.
