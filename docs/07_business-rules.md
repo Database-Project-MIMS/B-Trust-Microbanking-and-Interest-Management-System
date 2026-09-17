@@ -13,6 +13,15 @@ database are what make the rule true.
 
 ---
 
+## Organisation
+
+| ID | Rule | Enforced at | Implementation |
+|---|---|---|---|
+| BR-O1 | Every agent is an `app_user` subtype assigned to exactly one branch | CON | `agent.agent_id` is PK/FK to `app_user`; `branch_id NOT NULL` FK to `branch` |
+| BR-O2 | Every active agent belongs to an active branch | CON, TRG | `trg_validate_agent_active_branch` locks and validates the branch; `trg_branch_prevent_deactivation_with_active_agents` rejects branch deactivation while active agents remain |
+| BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
+| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | CON | Agent FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
+
 ## Products and eligibility
 
 | ID | Rule | Enforced at | Implementation |

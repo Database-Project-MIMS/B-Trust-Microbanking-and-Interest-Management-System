@@ -101,23 +101,31 @@ name is retained in diagrams.
   schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
 ### `agent`
-Subtype of `user` — `agent_id` is both PK and FK, so every agent has a login.
+Subtype of `app_user` — `agent_id` is both PK and FK, so every agent has a login.
 
 | Column | Type | Notes |
 |---|---|---|
-| `agent_id` | uuid | **PK, FK → user(user_id)** |
-| `branch_id` | uuid | **FK → branch** |
-| `nic_passport_no` | varchar(50) | **UK** |
-| `full_name` | varchar(150) | |
-| `date_of_birth` | date | |
-| `gender` | varchar(20) | |
-| `phone` | varchar(20) | |
-| `address` | varchar(255) | |
-| `email` | varchar(150) | **UK** |
+| `agent_id` | uuid | **PK, FK → app_user(user_id), ON DELETE RESTRICT** |
+| `branch_id` | uuid | **NOT NULL, FK → branch, ON DELETE RESTRICT** |
+| `employee_no` | varchar(30) | **UK, NOT NULL** |
+| `nic_passport_no` | varchar(50) | **UK, NOT NULL** |
+| `full_name` | varchar(150) | **NOT NULL** |
+| `date_of_birth` | date | **NOT NULL** |
+| `gender` | varchar(20) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `email` | varchar(150) | **UK, NOT NULL** |
+| `hired_date` | date | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_agent_set_updated_at` |
 
-- Delete: `RESTRICT` — referenced by `account.opened_by_agent_id`, `customer_agent`.
-- Index: `(branch_id, agent_id)` for branch-scoped listing.
-- Invariant: FR-ORG-02 — each active agent belongs to exactly one active branch.
+- Implemented by `0121_p01_m02_agent.sql`.
+- Delete: `RESTRICT`; future references from `account.opened_by_agent_id` and
+  `customer_agent` also use `RESTRICT`.
+- Index: `ix_agent_branch_status (branch_id, status)` for branch-scoped active-agent lists.
+- Invariant: an active agent must reference an active branch. The agent trigger locks and
+  validates the branch; the branch trigger rejects deactivation while active agents exist.
 
 ### `customer`
 Subtype of `user` in the current ERD. See **G-20** — this is contested.
