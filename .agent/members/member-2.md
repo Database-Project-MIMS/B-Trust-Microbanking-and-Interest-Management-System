@@ -8,9 +8,9 @@ of a session, read at the start of the next one. Empty until Phase 1 work begins
 
 ## Current task
 
-**P01-M02-T01 — Branch schema (IN_PROGRESS).** Migration `0120_p01_m02_branch.sql`
-has been applied successfully. The task-specific database tests and the complete database
-test suite pass. Do not edit the applied migration; use a new migration for corrections.
+**P01-M02-T01 — Branch schema: DONE.** The developer confirmed the task tests pass and
+the pull request has been created. Next assigned task: **P01-M02-T02 — Agent schema**;
+do not start until P01-M01-T01 is marked `DONE` in the tracker.
 
 ## Recent history
 
@@ -19,6 +19,8 @@ test suite pass. Do not edit the applied migration; use a new migration for corr
 - Added `tests/db/branch-constraints.test.mjs`: 4/4 task tests pass.
 - `npm run test:db`: 17/17 pass; `npm run db:verify`: all checks pass;
   `npm run typecheck`: passes.
+- Developer confirmed the pull request was created and approved marking P01-M02-T01
+  `DONE`.
 
 ## Notes to self
 
@@ -29,8 +31,8 @@ test suite pass. Do not edit the applied migration; use a new migration for corr
 
 ## Blocked on
 
-- The full `npm test` command currently fails in other members' work: M1 auth tests cannot
-  resolve the `@/lib` alias under the Node test runner, and M5 FD-product tests cannot
-  resolve `server-only`. These failures are outside M2 ownership.
-- A clean `npm run db:rebuild` still needs to be demonstrated on Windows. The supplied
-  `db:create` npm script assumes Bash, which is not installed in this environment.
+- P01-M02-T02 depends on P01-M01-T01, which is still `READY` rather than `DONE` in the
+  authoritative task tracker, although migration `0100_p01_m01_identity.sql` is applied
+  locally.
+- Cross-member test and Windows setup issues remain documented in
+  `../handoffs/p01-cross-member-test-blockers.md`; they no longer block the accepted T01.
