@@ -86,16 +86,19 @@ name is retained in diagrams.
 
 | Column | Type | Notes |
 |---|---|---|
-| `branch_id` | uuid | **PK** |
-| `branch_name` | varchar(100) | |
-| `address` | varchar(255) | |
-| `district` | varchar(100) | |
-| `phone` | varchar(20) | |
-| `status` | varchar(20) | `record_status` |
+| `branch_id` | uuid | **PK**, defaults to `gen_random_uuid()` |
+| `branch_code` | varchar(20) | **UK, NOT NULL** |
+| `branch_name` | varchar(100) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `district` | varchar(100) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_branch_set_updated_at` |
 
-- Delete: `RESTRICT`. Deactivate instead (FR-ORG-05).
-- Note: FR-ORG-01 requires ≥ 3 branches; §4.2 requires branch **codes** to be unique — see
-  Part B (`branch_code`).
+- Implemented by `0120_p01_m02_branch.sql`.
+- Delete: references use `ON DELETE RESTRICT`; the first such FK is added by the agent
+  schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
 ### `agent`
 Subtype of `user` — `agent_id` is both PK and FK, so every agent has a login.
