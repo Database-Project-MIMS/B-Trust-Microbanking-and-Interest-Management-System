@@ -39,3 +39,7 @@ pgdata/
 # --- keep these tracked ---
 !.env.example
 !.gitignore
+
+
+
+.agents/
