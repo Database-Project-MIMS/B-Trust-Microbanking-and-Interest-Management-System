@@ -359,7 +359,7 @@ corresponding open question is resolved and an ADR exists.**
 | `fixed_deposit` | `interest_rate_at_opening interest_rate NOT NULL` | Rate fixed at opening; protects historical payouts (BR-19) | G-11 |
 | `interest_payout` | `interest_run_id uuid FK`, `cycle_date date` | Cycle idempotency | G-03 |
 | `savings_plan` | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
-| `savings_plan`, `fd_plan` | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
+| `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |
 | `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` | G-08 |

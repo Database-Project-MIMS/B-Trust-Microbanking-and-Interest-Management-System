@@ -124,6 +124,25 @@ errors are listed below.
 
 ## Fixed deposits and interest — Member 5
 
+### `GET /api/fd-products`
+- **Purpose** List all active FD product plans (BR-13).
+- **Roles** any authenticated
+- **SQL** `SELECT fd_plan_id, plan_name, tenure_months, interest_rate, description, status, effective_from, effective_to FROM fd_plan WHERE effective_to IS NULL ORDER BY tenure_months ASC`
+- **Success** `200 { data: [{ fdPlanId, planName, tenureMonths, interestRate, description, status, effectiveFrom, effectiveTo }] }`
+- **Notes** Rates are returned as string fractions (e.g. `"0.1300"` = 13%). Only currently-effective plans (`effective_to IS NULL`) are returned.
+- **Page** `/fd-products`
+
+### `PATCH /api/fd-products/{id}`
+- **Purpose** Update an FD product's rate, status, or description (SCD2 effective-dating for rate changes).
+- **Roles** ADMIN only · CSRF-protected
+- **Body** `{ interestRate?, status?, description? }`
+- **Validation** `interestRate` must be a fraction `> 0` and `≤ 1`; `status` must be `ACTIVE` or `INACTIVE`
+- **SQL routine** When `interestRate` changes: sets `effective_to = CURRENT_DATE` on the old row, inserts a new row with the updated rate and `effective_from = CURRENT_DATE` (SCD2). Status/description changes update in-place.
+- **Transaction** one; service owns the boundary via `withTransaction()`
+- **Success** `200 { data: { fdPlanId, planName, tenureMonths, interestRate, … } }`
+- **Errors** `400 BAD_REQUEST` (invalid rate or status) · `403 FORBIDDEN` (non-ADMIN or missing CSRF) · `404 NOT_FOUND`
+- **Page** `/fd-products`
+
 ### `POST /api/fixed-deposits`
 - **Roles** AGENT, BRANCH_MANAGER, CENTRAL_OPS
 - **Body** `{ accountId, fdPlanId, principalAmount }`

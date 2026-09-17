@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 18 | 0 | 0 | 0 | 0 |
+| P1 | 18 | 0 | 17 | 0 | 0 | 0 | 1 |
 | P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **18** | 0 | 0 | 0 | **6** |
+| **All** | **96** | **72** | **17** | 0 | 0 | 0 | **7** |
 
 ---
 
@@ -144,8 +144,8 @@ hardcoded in TypeScript.
 
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **P01-M05-T01** | FD product schema | `0180_p01_m05_fd_plan.sql` — `fd_plan`, `tenure_months > 0`, effective-dating columns | — | — | Exactly the three BR-13 products; rate stored as a fraction | `0000`; **G-11** approved | READY |
-| **P01-M05-T02** | FD product API and admin page | — | `GET/PATCH /api/fd-products` | `app/fd-products/page.tsx` — products with rate history | Non-privileged role cannot change a rate | T01, **I-1** | READY |
+| **P01-M05-T01** | FD product schema | `0180_p01_m05_fd_plan.sql` — `fd_plan`, `tenure_months > 0`, effective-dating columns | — | — | Exactly the three BR-13 products; rate stored as a fraction | `0000`; **G-11** approved | DONE |
+| **P01-M05-T02** | FD product API and admin page | — | `GET/PATCH /api/fd-products` | `app/fd-products/page.tsx` — products with rate history | Non-privileged role cannot change a rate | T01, **I-1** | DONE |
 | **P01-M05-T03** | Seed framework — **publishes I-8** | `database/seed/` layout, fixed-UUID scheme, ordered load, `scripts/seed-check.mjs` | — | — | Seeding twice produces identical row counts and identical totals | T01 | READY |
 
 ---
