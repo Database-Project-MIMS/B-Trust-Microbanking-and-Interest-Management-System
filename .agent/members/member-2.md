@@ -8,9 +8,9 @@ of a session, read at the start of the next one. Empty until Phase 1 work begins
 
 ## Current task
 
-**P01-M02-T01 — Branch schema: DONE.** The developer confirmed the task tests pass and
-the pull request has been created. Next assigned task: **P01-M02-T02 — Agent schema**;
-do not start until P01-M01-T01 is marked `DONE` in the tracker.
+**P01-M02-T02 — Agent schema (IN_PROGRESS).** The developer accepted Member 1's merged
+identity implementation as satisfying the stale tracker dependency. Migration `0121` is
+applied and its task-specific tests pass.
 
 ## Recent history
 
@@ -21,18 +21,21 @@ do not start until P01-M01-T01 is marked `DONE` in the tracker.
   `npm run typecheck`: passes.
 - Developer confirmed the pull request was created and approved marking P01-M02-T01
   `DONE`.
+- Created and applied the agent subtype schema with unique employee/identity/email
+  constraints, active-branch integrity triggers, deletion restrictions and lookup index.
+- Added `tests/db/agent-constraints.test.mjs`: 9/9 task tests pass.
+- `npm run test:db`: 26/26 pass; `npm run db:verify` and `npm run typecheck` pass.
 
 ## Notes to self
 
-- The referenced-branch delete test becomes possible when P01-M02-T02 creates the
-  `agent.branch_id` foreign key with `ON DELETE RESTRICT`.
+- The referenced-branch delete rule deferred from T01 is now enforced and tested by the
+  `agent.branch_id` foreign key.
 - Do not create/switch branches, stage, commit, push, or open a PR unless explicitly
   requested by the developer.
 
 ## Blocked on
 
-- P01-M02-T02 depends on P01-M01-T01, which is still `READY` rather than `DONE` in the
-  authoritative task tracker, although migration `0100_p01_m01_identity.sql` is applied
-  locally.
+- T02 work is currently on the T01 feature branch. The developer must place it on the
+  required `feat/p01-m02-agent-schema` branch before committing or opening its PR.
 - Cross-member test and Windows setup issues remain documented in
   `../handoffs/p01-cross-member-test-blockers.md`; they no longer block the accepted T01.

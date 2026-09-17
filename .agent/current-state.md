@@ -10,15 +10,17 @@
 
 - PostgreSQL 18.6 is installed locally and the migration framework is operational.
 - Applied migrations include the shared foundation (`0000`), identity (`0100`), branch
-  schema (`0120`) and FD plan schema (`0180`).
+  schema (`0120`), agent schema (`0121`) and FD plan schema (`0180`).
 - P01-M02-T01 is complete: the `branch` table, unique branch-code constraint, status
   enforcement, timestamps, trigger, database tests and documentation are present.
+- P01-M02-T02 is in progress: its agent subtype schema, constraints, integrity triggers,
+  index, database tests and documentation are present and verified.
 - The repository is under Git control; Member 2 confirmed a pull request for T01 exists.
 
 ## What does NOT exist yet
 
-Member 2's `agent` table, branch/agent APIs and branch/agent administration pages have not
-been implemented yet. Full detail remains in `../docs/09_task-tracker.md`.
+Member 2's branch/agent APIs and branch/agent administration pages have not been
+implemented yet. Full detail remains in `../docs/09_task-tracker.md`.
 
 ## Task status snapshot
 
@@ -47,5 +49,6 @@ check pass. Cross-member full-suite and native-Windows setup issues are recorded
 ## Next session should start with
 
 1. Member 1 completes and marks P01-M01-T01 `DONE`.
-2. Member 2 then begins P01-M02-T02 using migration `0121_p01_m02_agent.sql`.
+2. Member 2 places T02 on `feat/p01-m02-agent-schema`, completes its PR workflow and then
+   begins P01-M02-T03 after integration point I-1 is confirmed.
 3. Resolve the cross-member test and Windows setup items recorded in the handoff.
