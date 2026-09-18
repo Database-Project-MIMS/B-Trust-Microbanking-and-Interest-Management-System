@@ -4,6 +4,11 @@ Which member owns which paths. "Owns" means: merges without needing another memb
 approval on *content* (a review is still required per `docs/14_git-workflow.md`), and is
 the person to ask before anyone else edits it.
 
+A path is owned even when the file does not exist yet. If your task needs a file listed
+below (or clearly inside one of these globs) and it has not been created, do not create
+it — raise a blocker note in `.agent/blockers/` and notify the owner. See `AGENTS.md`
+§13.1.
+
 Paths not listed are shared — anyone may touch them, but changes to genuinely shared
 infrastructure (`lib/db`, `AGENTS.md`, migration `0000`) should go through the member
 listed as its steward below, or through the lead.

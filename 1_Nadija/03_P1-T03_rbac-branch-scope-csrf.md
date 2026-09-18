@@ -41,6 +41,11 @@ interface AuthenticatedUser {
 }
 ```
 
+`app_user` has no `branch_id` column. Resolve `branchId` by joining
+`app_user.user_id = agent.agent_id`. Both `AGENT` and `BRANCH_MANAGER` users must have an
+`agent` branch-staff profile. If either role has no matching profile/branch, deny with
+`403`; do not return `null`, because `null` means bank-wide access.
+
 ### Step 2 — `requireRole(...roles)` (Role Authorization)
 
 ```typescript
@@ -70,6 +75,9 @@ interface BranchScope {
   branchId: string | null;
 }
 ```
+
+Only `ADMIN`, `CENTRAL_OPS`, and `AUDITOR` may receive the bank-wide `null` scope.
+`CUSTOMER` scope is handled through owned accounts, not through `agent.branch_id`.
 
 **How to use in SQL:**
 ```sql
@@ -136,6 +144,8 @@ Create `.agent/handoffs/i1-rbac-helpers.md`:
 | State change without CSRF token → `403` | NFR-SEC-04 |
 | Bank-wide role sees all branches | Scope correctness |
 | Branch-scoped role sees only own branch | Scope correctness |
+| Branch-scoped role without an `agent` profile → `403` | Fail-closed scope |
+| Tests import production RBAC/CSRF helpers | Prevent tests passing against copied logic |
 
 ### Step 7 — Update Docs
 - Update `docs/15_security-and-rbac.md` with implementation details
