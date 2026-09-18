@@ -10,6 +10,7 @@ narrative documentation) and `memory.md` (which is session-to-session continuity
 | `ownership-map.md` | Which member owns which file paths | lead, at Phase 0; rarely changes after |
 | `decisions/` | ADRs — durable architecture decisions and why | whoever makes the decision, with lead review |
 | `handoffs/` | Short-lived notes when one member's work exposes a contract another depends on | the publishing member |
+| `blockers/` | Notes when your task needs a file another member owns that doesn't exist yet — never create it yourself (`AGENTS.md` §13.1) | the blocked member |
 | `members/` | Per-member context: their slice, current task, recent history | that member, via `/remember save` |
 | `checkpoints/` | Snapshot at each phase boundary — what shipped, what didn't, go/no-go | lead, at phase exit |
 

@@ -50,7 +50,7 @@ function applyDir(dir, label) {
     if (files.length > 0) {
       for (const f of files) {
         console.log(`    ${f}`);
-        runCmd(`psql -v ON_ERROR_STOP=1 -d ${DB_NAME} -f "${join(dir, f)}" -q`);
+        runCmd(`psql -v ON_ERROR_STOP=1 -U ${PSQL_ADMIN} -d ${DB_NAME} -f "${join(dir, f)}" -q`);
       }
       return;
     }
