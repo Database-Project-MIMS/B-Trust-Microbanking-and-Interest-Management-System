@@ -229,7 +229,9 @@ describe("P01-M05-T02: FD Products API & Service Tests", () => {
             { "x-csrf-token": csrfToken }
         );
 
-        const response = await PATCH(request, { params: { id: testFdPlan.fd_plan_id } });
+        const response = await PATCH(request, {
+            params: Promise.resolve({ id: testFdPlan.fd_plan_id }),
+        });
         assert.equal(response.status, 200);
 
         const body = await response.json();
@@ -249,7 +251,7 @@ describe("P01-M05-T02: FD Products API & Service Tests", () => {
             { "x-csrf-token": csrfToken }
         );
 
-        const response = await PATCH(request, { params: { id: targetId } });
+        const response = await PATCH(request, { params: Promise.resolve({ id: targetId }) });
         assert.equal(response.status, 403);
     });
 
@@ -264,7 +266,7 @@ describe("P01-M05-T02: FD Products API & Service Tests", () => {
             { "x-csrf-token": csrfToken }
         );
 
-        const response = await PATCH(request, { params: { id: targetId } });
+        const response = await PATCH(request, { params: Promise.resolve({ id: targetId }) });
         assert.equal(response.status, 403);
     });
 
@@ -279,7 +281,7 @@ describe("P01-M05-T02: FD Products API & Service Tests", () => {
             { "x-csrf-token": csrfToken }
         );
 
-        const response = await PATCH(request, { params: { id: targetId } });
+        const response = await PATCH(request, { params: Promise.resolve({ id: targetId }) });
         assert.equal(response.status, 400);
     });
 
@@ -292,7 +294,7 @@ describe("P01-M05-T02: FD Products API & Service Tests", () => {
             { mims_session: adminToken }
         );
 
-        const response = await PATCH(request, { params: { id: targetId } });
+        const response = await PATCH(request, { params: Promise.resolve({ id: targetId }) });
         assert.equal(response.status, 403);
     });
 });
