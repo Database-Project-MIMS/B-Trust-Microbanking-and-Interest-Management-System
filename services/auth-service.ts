@@ -76,7 +76,7 @@ export async function login(
   }
 
   // 4. Verify password
-  const passwordValid = await verifyPassword(password, user.password_hash);
+  const passwordValid = await verifyPassword(user.password_hash, password);
   if (!passwordValid) {
     await query(
       `INSERT INTO login_attempt (username_attempted, success, ip_address)

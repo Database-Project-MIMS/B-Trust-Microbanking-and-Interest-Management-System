@@ -10,6 +10,9 @@ even if the server has a bug.** Hiding a button is not access control (FR-AUTH-0
 ## Roles
 
 Seven roles, matching SRS §2.4. One role per user (`app_user.role_id` — see gap **G-09**).
+`AGENT` and `BRANCH_MANAGER` are different authorization roles but share the `agent`
+branch-staff profile. The profile holds employment data and `branch_id`; `role_name`
+determines which operations the authenticated user may perform.
 
 | Role | Scope | Can do |
 |---|---|---|
@@ -47,7 +50,24 @@ Seven roles, matching SRS §2.4. One role per user (`app_user.role_id` — see g
 
 ## Branch scope
 
-Branch-scoped roles (`BRANCH_MANAGER`, `AGENT`) see only their own branch's rows.
+Branch-scoped roles (`BRANCH_MANAGER`, `AGENT`) see only their own branch's rows. Their
+scope is resolved through `app_user.user_id = agent.agent_id`; `app_user` does not have a
+`branch_id` column.
+
+Session validation selects `agent.branch_id` with a join similar to:
+
+```sql
+SELECT u.user_id, r.role_name, a.branch_id
+FROM app_user u
+JOIN role r ON r.role_id = u.role_id
+LEFT JOIN agent a ON a.agent_id = u.user_id
+WHERE u.user_id = $1;
+```
+
+For `AGENT` and `BRANCH_MANAGER`, a missing `agent` row or missing branch is an
+authorization failure (`403`). It must never become `branchId = null`, because `null` is
+reserved for explicitly bank-wide roles. Customers are scoped through their own accounts,
+not through the `agent` profile.
 
 **The scope predicate goes in the SQL `WHERE` clause.** Fetching rows and then filtering
 them in JavaScript means the rows already left the database — that is a leak waiting for
@@ -65,8 +85,9 @@ return query(
 );
 ```
 
-`branchScope()` returns `{ branchId: uuid | null }` — `null` for bank-wide roles, which the
-`IS NULL` guard turns into "no restriction".
+`branchScope()` returns `{ branchId: uuid | null }` — `null` only for bank-wide roles,
+which the `IS NULL` guard turns into "no restriction". It returns a UUID for `AGENT` and
+`BRANCH_MANAGER` and throws `403` if their required profile is missing.
 
 ## Row Level Security
 
@@ -107,6 +128,9 @@ oracle.
 - A server-side `user_session` row; the cookie carries only an opaque token.
 - Only the token **hash** is stored, so reading the database does not let you impersonate a
   user.
+- Session resolution joins `app_user` to `role` and `agent`; it returns
+  `agent.branch_id` for `AGENT` and `BRANCH_MANAGER`, never a nonexistent
+  `app_user.branch_id`.
 - Cookie: `Secure`, `HttpOnly`, `SameSite=Lax`.
 - Idle timeout 20 minutes, absolute timeout 8 hours, both checked in the database.
 - Sign-out and password reset set `revoked_at`, which makes invalidation immediate and real

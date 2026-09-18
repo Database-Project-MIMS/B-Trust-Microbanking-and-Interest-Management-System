@@ -32,6 +32,8 @@ export async function requireUser(request: NextRequest): Promise<AuthenticatedUs
     );
   }
 
+  assertBranchProfile(session.roleName, session.branchId);
+
   return {
     userId: session.userId,
     username: session.username,
@@ -51,6 +53,26 @@ export function requireRole(user: AuthenticatedUser, ...allowedRoles: string[]):
 }
 
 const BANK_WIDE_ROLES = ["ADMIN", "CENTRAL_OPS", "AUDITOR"];
+export const BRANCH_SCOPED_ROLES = ["AGENT", "BRANCH_MANAGER"];
+
+/**
+ * Fail-closed guard: AGENT and BRANCH_MANAGER MUST have an agent profile
+ * (i.e. a row in the `agent` table).  If the LEFT JOIN returned null, deny
+ * immediately with 403 so a missing profile never silently grants bank-wide scope.
+ *
+ * Exported separately so the test suite can verify this rule directly.
+ */
+export function assertBranchProfile(
+  roleName: string,
+  branchId: string | null
+): void {
+  if (BRANCH_SCOPED_ROLES.includes(roleName) && branchId == null) {
+    throw NextResponse.json(
+      { error: { code: "FORBIDDEN", message: "No branch profile found for this user. Contact your administrator." } },
+      { status: 403 }
+    );
+  }
+}
 
 export function branchScope(user: AuthenticatedUser): BranchScope {
   if (BANK_WIDE_ROLES.includes(user.roleName)) {

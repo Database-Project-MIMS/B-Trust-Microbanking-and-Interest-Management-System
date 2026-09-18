@@ -13,6 +13,15 @@ database are what make the rule true.
 
 ---
 
+## Organisation
+
+| ID | Rule | Enforced at | Implementation |
+|---|---|---|---|
+| BR-O1 | Every `AGENT` and `BRANCH_MANAGER` login has an `agent` branch-staff profile assigned to exactly one branch | CON, SRV | `agent.agent_id` is PK/FK to `app_user`; `agent.branch_id NOT NULL` FK to `branch`; session validation denies a branch-scoped role with no profile |
+| BR-O2 | Every active agent belongs to an active branch | CON, TRG | `trg_validate_agent_active_branch` locks and validates the branch; `trg_branch_prevent_deactivation_with_active_agents` rejects branch deactivation while active agents remain |
+| BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
+| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | CON | Agent FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
+
 ## Products and eligibility
 
 | ID | Rule | Enforced at | Implementation |
@@ -91,7 +100,7 @@ the whole run in one transaction would violate FR-INT-04.
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-S1 | Authorization is checked on the server for every request | SRV | `requireRole()` in every route handler; hiding a nav item is not access control (FR-AUTH-02) |
-| BR-S2 | Branch-scoped users never receive rows from other branches | SRV, CON | Scope applied **in the SQL `WHERE` clause**; Row Level Security on `customer`, `account`, `transaction` as the backstop (NFR-SEC-07, REP-COM-02) |
+| BR-S2 | Branch-scoped users never receive rows from other branches | SRV, CON | `AGENT` and `BRANCH_MANAGER` scope comes from `agent.branch_id`; a missing profile is denied; scope is applied **in the SQL `WHERE` clause**; Row Level Security on `customer`, `account`, `transaction` is the backstop (NFR-SEC-07, REP-COM-02) |
 | BR-S3 | Customers see only accounts they hold | SRV, CON | Join through `account_holder`; enforced by RLS (FR-TXN-05) |
 | BR-S4 | Passwords are stored only as salted adaptive hashes | SRV | argon2id; no endpoint ever returns `password_hash` |
 | BR-S5 | All SQL input values are parameterized | SRV | `$1, $2, …` only; dynamic identifiers via `allowListed()` (NFR-SEC-02) |

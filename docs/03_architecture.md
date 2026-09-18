@@ -131,6 +131,9 @@ Never hold a transaction open across a network call or user interaction.
 - Only the token **hash** is stored, so a database read cannot impersonate a user.
 - Every request resolves the session server-side; expiry and revocation are checked in the
   database, which makes server-side invalidation real (FR-AUTH-04).
+- `AGENT` and `BRANCH_MANAGER` share the `agent` branch-staff profile. Session resolution
+  joins `app_user.user_id = agent.agent_id` and obtains scope from `agent.branch_id`;
+  branch-scoped roles without that profile are denied.
 - `requireRole()` gates the role; `branchScope()` returns a scope object that services
   apply **inside the SQL `WHERE` clause**, never as a post-fetch filter.
 - Row Level Security on `customer`, `account` and `transaction` is the backstop: even a
@@ -185,6 +188,7 @@ migration stops the deploy and follows the documented rollback (SRS §9.1). Deta
 | Balance storage | Controlled column + ledger | Recompute from ledger every read | Locking a single row serialises withdrawals cleanly; reconciled in Phase 5 (D-1) |
 | Idempotency | Partial unique index | In-memory cache | Survives restart; is a real ACID guarantee |
 | Branch scope | In the SQL `WHERE` + RLS | Filter after fetching | Fetching then filtering means the rows already left the database |
+| Branch-staff identity | `AGENT` and `BRANCH_MANAGER` share `agent`; permissions come from `role` | Inventing `app_user.branch_id` | One canonical current branch, with fail-closed session scope |
 | Interest cycle | One transaction per FD | One per run | FR-INT-04 |
 
 Full records in `.agent/decisions/`.
