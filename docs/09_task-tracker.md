@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 17 | 0 | 0 | 0 | 1 |
+| P1 | 18 | 0 | 12 | 0 | 0 | 0 | 6 |
 | P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **17** | 0 | 0 | 0 | **7** |
+| **All** | **96** | **69** | **18** | 0 | 0 | 0 | **9** |
 
 ---
 
@@ -58,7 +58,7 @@ portions wait on I-1 (`requireRole`) where noted.
 | **Depends on** | migration `0000` |
 | **Files** | `database/migrations/0100_*.sql`, `tests/db/identity-constraints.test.mjs` |
 | **Acceptance** | Migration applies to a clean DB; duplicate username raises `23505`; no plaintext password column exists |
-| **Status / Branch** | READY · `feat/p01-m01-identity-schema` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-identity-schema` · PR #— |
 
 | Field | P01-M01-T02 |
 |---|---|
@@ -70,7 +70,7 @@ portions wait on I-1 (`requireRole`) where noted.
 | **Docs** | `15_security-and-rbac.md` |
 | **Depends on** | P01-M01-T01 |
 | **Acceptance** | FR-AUTH-01, FR-AUTH-03 pass; hash is never returned by any endpoint or written to a log |
-| **Status / Branch** | READY · `feat/p01-m01-authentication` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-authentication` · PR #— |
 
 | Field | P01-M01-T03 |
 |---|---|
@@ -82,7 +82,7 @@ portions wait on I-1 (`requireRole`) where noted.
 | **Docs** | `15_security-and-rbac.md`; **handoff publishing the helper signatures** |
 | **Depends on** | P01-M01-T02 |
 | **Acceptance** | Scope is applied in SQL, never by filtering an already-fetched array |
-| **Status / Branch** | READY · `feat/p01-m01-rbac` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-rbac` · PR #— |
 
 | Field | P01-M01-T04 |
 |---|---|
