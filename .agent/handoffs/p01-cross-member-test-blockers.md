@@ -17,14 +17,18 @@ tests passed, but the full project gate exposed shared or cross-member failures:
 - **Resolved during reconciliation:** `tests/api/fd-products.test.mjs` deleted shared
   roles and left FD history rows behind. It now tracks role ownership, creates valid
   branch profiles, restores the product fixture, and removes all test-owned rows.
+- **Resolved during reconciliation:** the Next.js production build rejected the
+  synchronous route context in `app/api/fd-products/[id]/route.ts`. Its `PATCH`
+  handler and API tests now use the Next.js 15 asynchronous `params` contract.
 - `npm run db:create`: the npm script invokes `bash scripts/db-create.sh`; on a native
   Windows installation without WSL or Git Bash, `/bin/bash` is unavailable.
 
 The earlier alias and `server-only` module-resolution failures are resolved by the merged
 test command/package changes. During main/dev reconciliation, the developer explicitly
 authorized Member 2 to correct the reversed password-helper arguments and add the missing
-session permissions in M1-owned files. Ownership did not shift. Member 2 did not modify
-the M5 implementation.
+session permissions in M1-owned files, and to clear the cross-member integration blockers.
+The M5 route change is limited to Next.js 15 route-context compatibility. Ownership did
+not shift.
 
 ## Verification already completed
 
@@ -36,6 +40,7 @@ the M5 implementation.
   test branch, user, or agent rows.
 - `npm run db:verify`: all checks pass on PostgreSQL 18.6.
 - `npm run typecheck`: passes.
+- `npm run build`: passes, including the dynamic FD-product route.
 
 ## What's NOT stable yet
 
