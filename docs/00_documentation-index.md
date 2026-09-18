@@ -59,7 +59,7 @@ If you find a contradiction, do not resolve it silently — record it in
 | 14 | `14_git-workflow.md` | Branches, PRs, migration conflicts | M4 |
 | 15 | `15_security-and-rbac.md` | Roles, permissions, hashing, RLS, audit | M1 |
 | 16 | `16_database-routines-views-indexes.md` | Routine/view/index inventory + lecture-concept map | M4 |
-| 17 | **`17_erd-gap-analysis.md`** | 20 findings across brief, SRS and ERD | lead |
+| 17 | **`17_erd-gap-analysis.md`** | 21 findings across brief, SRS and ERD | lead |
 
 ### Phase documents
 

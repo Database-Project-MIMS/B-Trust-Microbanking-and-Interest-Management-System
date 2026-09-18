@@ -22,3 +22,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | ADR-0003 | Money as NUMERIC, rates as fractions | Accepted |
 | ADR-0004 | current_balance as a maintained denormalisation | Accepted |
 | ADR-0005 | Reserved per-member migration number blocks | Accepted |
+| ADR-0006 | Branch managers share the agent branch-staff profile | Accepted |
