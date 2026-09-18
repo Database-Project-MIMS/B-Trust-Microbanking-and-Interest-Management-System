@@ -1,7 +1,8 @@
 # 16 — Database Routines, Views and Indexes
 
 Implementation inventory. Names are reconciled with our approved schema and the SRS §6.5
-routine table. **Status is `PLANNED` for everything** — Phase 0 builds none of these.
+routine table. The inventory contains both implemented Phase 1 objects and objects planned
+for later phases; the owning migration and task documentation record implementation state.
 
 Each entry states its owner, the requirements it satisfies, and the lecture concept it
 demonstrates. That last column matters: grading is tied to demonstrated coverage of
@@ -32,6 +33,8 @@ L01–L13.
 | `fn_next_transaction_reference()` | M4 | `varchar` | Unique transaction reference (BR-10) | FR-DEP-02 | L03 |
 | `fn_is_business_hour(ts)` | M1 | `boolean` | Reads `business_calendar` / `system_parameter` | BR-08 | L05 |
 | `fn_account_running_balance(account_id)` | M4 | table | Window-function running balance, used to reconcile `balance_after` | FR-TXN-04 | **L13 window functions** |
+| `fn_validate_agent_active_branch()` | M2 | `trigger` | Lock and verify that an active agent references an active branch | FR-ORG-02 | L08 triggers, L11 locking |
+| `fn_prevent_branch_deactivation_with_active_agents()` | M2 | `trigger` | Reject branch deactivation while active agents remain | FR-ORG-02 | L08 triggers |
 
 ## Triggers
 
@@ -43,6 +46,9 @@ L01–L13.
 | `trg_validate_joint_mandate` | M3 | `AFTER INSERT/UPDATE` on `account_holder`, **statement-level with transition tables** | Holder count 2–4 and all adults for joint plans — a rule that spans rows, so it cannot be a row `CHECK` | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
 | `trg_set_updated_at` | shared | `BEFORE UPDATE` | Maintain `updated_at` | DB-CON-06 | L08 (already in migration `0000`) |
 | `trg_prevent_duplicate_active_fd` | M5 | `BEFORE INSERT/UPDATE` on `fixed_deposit` | **Fallback only.** The partial unique index is the real guarantee; this exists so the rule is also demonstrable as a trigger | BR-12, NFR-SAFE-04 | L08, L10 |
+| `trg_validate_agent_active_branch` | M2 | `BEFORE INSERT OR UPDATE OF branch_id, status` on `agent` | Require every active agent's branch to be active | FR-ORG-02 | L08, L11 locking |
+| `trg_branch_prevent_deactivation_with_active_agents` | M2 | `BEFORE UPDATE OF status` on `branch` | Preserve the active-agent/active-branch invariant in the reverse direction | FR-ORG-02 | L08 |
+| `trg_agent_set_updated_at` | M2 | `BEFORE UPDATE` on `agent` | Maintain the agent modification timestamp | DB-CON-06 | L08 |
 
 > **Design note.** Where a constraint or index can enforce a rule, it does — a partial
 > unique index is atomic, race-free and cheaper than a trigger. Triggers are used for
@@ -100,8 +106,9 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | `ix_account_branch_status` `(branch_id, status)` | `account` | Branch-scoped listing |
 | `ix_account_holder_customer` `(customer_id)` | `account_holder` | "My accounts", RPT-05 |
 | `ix_customer_name_trgm` GIN `(full_name gin_trgm_ops)` | `customer` | Fuzzy name search — **L10 non-B-tree index** |
+| `ix_agent_branch_status` `(branch_id, status)` | `agent` | Branch-scoped active-agent listing |
 
-**Approximately 19 indexes.** Index choice, B-tree vs GIN, and selectivity are covered by
+**Approximately 20 indexes.** Index choice, B-tree vs GIN, and selectivity are covered by
 L09/L10; each `indexes/*.sql` file records the `EXPLAIN` plan before and after.
 
 ## Database roles and RLS — M1
@@ -122,7 +129,7 @@ L09/L10; each `indexes/*.sql` file records the `EXPLAIN` plan before and after.
 | L04/L06 Normalisation to 3NF, documented denormalisation | `04_database-schema.md` §B.5, §B.6 |
 | L05 Joins, aggregation, views, constraints | All 10 views; `CHECK`/`UNIQUE`/FK throughout |
 | L07 Application/database boundary, injection defence | `lib/db`, parameterized SQL, `allowListed()` |
-| L08 Procedures, functions, triggers, statement-level triggers with transition tables | 7 procedures, 7 functions, 6 triggers |
+| L08 Procedures, functions, triggers, statement-level triggers with transition tables | 7 procedures, 9 functions, 9 triggers |
 | L09/L10 Storage, indexing, B-tree vs GIN, partial indexes | 19 indexes incl. 5 partial and 1 GIN |
 | L11 Transactions, ACID, isolation, locking, deadlock avoidance | `withTransaction`, `FOR UPDATE`, per-FD interest transactions |
 | L13 Analytics: window functions, `ROLLUP`/`GROUPING SETS` | `vw_account_transaction_summary`, `vw_monthly_interest_distribution`, `fn_account_running_balance` |
