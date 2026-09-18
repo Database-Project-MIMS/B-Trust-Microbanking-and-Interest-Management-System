@@ -9,7 +9,7 @@ Organisation & Customers. You own this end to end — database, backend, fronten
 
 | Layer | You own |
 |---|---|
-| **Database** | `branch`, `agent`, `customer`, `customer_agent`, `customer_document`; one-active-assignment partial index; trigram search index |
+| **Database** | `branch`, `agent`, `customer`, V`customer_agent`, `customer_document`; one-active-assignment partial index; trigram search index |
 | **Routines** | Customer registration transaction; duplicate-identity detection |
 | **Backend** | `/api/branches`, `/api/agents`, `/api/customers` |
 | **Frontend** | Branch and agent admin, customer registration, customer search, customer profile, agent activity |
