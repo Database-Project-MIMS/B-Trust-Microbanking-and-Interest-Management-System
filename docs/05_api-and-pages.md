@@ -20,7 +20,7 @@ errors are listed below.
 - **Roles** public
 - **Body** `{ username, password }`
 - **Validation** both present; username ≤ 100 chars
-- **SQL** `SELECT user_id, password_hash, status, role_id FROM app_user WHERE username = $1`; on success `INSERT INTO user_session`; always `INSERT INTO login_attempt`
+- **SQL** select the user and role from `app_user`/`role`, and `LEFT JOIN agent ON agent.agent_id = app_user.user_id` to obtain `branchId`; on success `INSERT INTO user_session`; always `INSERT INTO login_attempt`
 - **Transaction** single transaction: session insert + attempt log + `last_login` update
 - **Success** `200 { data: { user: { id, username, role, branchId } } }` + `Secure`/`HttpOnly`/`SameSite=Lax` cookie
 - **Errors** `401 INVALID_CREDENTIALS` — **identical message whether or not the username exists** (FR-AUTH-03); `429 TOO_MANY_ATTEMPTS`
@@ -34,14 +34,19 @@ errors are listed below.
 
 ## Organisation — Member 2
 
+`AGENT` and `BRANCH_MANAGER` users both have an `agent` branch-staff profile. The role
+controls permissions; `agent.branch_id` supplies branch scope. Agent-management endpoints
+below manage ordinary `AGENT` users only. A branch-manager login is created through the
+admin identity workflow and must atomically receive its required `agent` profile.
+
 | Method & path | Purpose | Roles | Notes |
 |---|---|---|---|
 | `GET /api/branches` | List branches | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | Branch managers see only their own branch |
 | `POST /api/branches` | Create branch | ADMIN | `409 DUPLICATE_BRANCH_CODE` on `23505` |
 | `PATCH /api/branches/{id}` | Update / deactivate | ADMIN | Never deletes (FR-ORG-05) |
-| `GET /api/agents` | List agents | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | Scoped by branch |
-| `POST /api/agents` | Create agent + linked user | ADMIN, BRANCH_MANAGER | **One transaction**: `app_user` + `agent` + audit |
-| `PATCH /api/agents/{id}` | Update / deactivate / transfer branch | ADMIN, BRANCH_MANAGER | Transfer is effective-dated so history stays attributable (FR-ORG-04) |
+| `GET /api/agents` | List ordinary agents | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | Scoped by branch; joins `role` and returns `role_name = 'AGENT'` only |
+| `POST /api/agents` | Create ordinary agent + linked user | ADMIN, BRANCH_MANAGER | **One transaction**: `app_user` with server-assigned `AGENT` role + `agent` + audit; the request cannot choose its role |
+| `PATCH /api/agents/{id}` | Update / deactivate / transfer an ordinary agent | ADMIN, BRANCH_MANAGER | Restricted to `role_name = 'AGENT'`; transfer is effective-dated so history stays attributable (FR-ORG-04) |
 
 ### `POST /api/customers`
 - **Purpose** Register a customer (FR-CUS-01…05).

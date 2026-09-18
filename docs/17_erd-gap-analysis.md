@@ -1,7 +1,7 @@
 # 17 — ERD Gap Analysis
 
 **Compares:** `Project 4` assignment brief · `Group 32 SRS v1.1` · `group_32_ERD2`
-**Status:** Phase 0 analysis complete. **20 findings.** 4 are blocking.
+**Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 4 are blocking.
 
 ---
 
@@ -50,6 +50,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO |
 | G-19 | Monetary and rate columns lack precision | MEDIUM | NO |
 | G-20 | Every customer is forced to have a login | HIGH | **YES — blocking** |
+| G-21 | Branch managers have no defined branch-assignment source | HIGH | **YES — accepted** |
 
 ---
 
@@ -615,6 +616,35 @@ A customer with self-service gets a linked user; one without does not. `agent` k
 recorded only if an account is open") as a schema-level requirement.
 
 **Approval needed — YES, blocking.** Depends on the answer to TBD-02. Tracked as **OQ-05**.
+
+---
+
+## G-21 · Branch managers have no defined branch-assignment source
+
+**Current ERD design** — `agent.branch_id` assigns an agent to a branch, while
+`app_user` has no `branch_id`. The security contract nevertheless requires both `AGENT`
+and `BRANCH_MANAGER` to be branch-scoped. The initial I-1 implementation incorrectly read
+`app_user.branch_id`.
+
+**Project / SRS requirement** — Branch managers manage agents and view reports for their
+own branch only (FR-AUTH-02, REP-COM-02, AC-11). Their branch must be resolved from trusted
+database state, not from a URL or request body.
+
+**Why they conflict** — An ordinary agent's branch can be obtained from `agent`, but no
+documented relationship originally supplied a branch for a manager. Returning `null` for
+that missing relationship is unsafe because `null` is the bank-wide scope sentinel.
+
+**Approved resolution** — Treat `agent` as the branch-staff subtype for both `AGENT` and
+`BRANCH_MANAGER`. The role controls permissions; `agent.branch_id` supplies current scope.
+Session resolution joins `app_user.user_id = agent.agent_id` and fails with `403` when a
+branch-scoped role has no profile. Agent-specific lists/reports filter the joined role to
+`AGENT` when managers must be excluded.
+
+**Database impact** — No new column or table. Manager provisioning must atomically create
+the `app_user` and `agent` rows. No edit to merged migrations is required.
+
+**Approval needed — YES, resolved.** Accepted on 2026-09-18 and recorded in
+**ADR-0006**.
 
 ---
 

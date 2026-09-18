@@ -49,5 +49,7 @@ Anything still likely to change, so the dependent member doesn't build on sand.
 | I-7 | M1 | M2, M3, M4, M5 | report framework (filters, scope, metadata) |
 | I-8 | M5 | all | seed file layout, fixed-UUID scheme, load order |
 
-None have been published yet — Phase 1 hasn't started. This table is a forward-looking
-checklist, not a status report.
+An initial I-1 handoff exists, but it is not stable for consumption: the implementation
+still reads nonexistent `app_user.branch_id`. The accepted replacement contract is in
+`p01-branch-staff-scope-decision.md`; M1 must correct and republish I-1 before dependent
+API tasks use it. The remaining rows are a forward-looking checklist, not a status report.
