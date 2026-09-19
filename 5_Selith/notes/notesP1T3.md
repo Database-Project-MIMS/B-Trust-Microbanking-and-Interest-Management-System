@@ -71,3 +71,12 @@ The tests explicitly verify four things:
 ### What is FK Integrity / Referential Integrity?
 **Referential Integrity** is a database concept that ensures relationships between tables remain consistent. When one table has a **Foreign Key (FK)** that points to the Primary Key of another table, the database mathematically enforces that you cannot insert a row in the child table if the parent doesn't exist, and you cannot delete a parent row if children still depend on it.
 In our seed framework, if we try to seed an Agent that belongs to Branch `0101-000000000001`, but we haven't seeded that Branch yet, Postgres will immediately throw an FK Integrity error and the transaction will rollback. Our tests passing proves that our load order (`_load-order.txt`) correctly seeds parents before children, satisfying referential integrity.
+
+## Step 7 Execution: Updating Docs & Acceptance Criteria
+### What I Did
+I updated the main seed data specification (`docs/06_seed-data-spec.md`) to officially document our new UUID structural pattern and our explicit file load order. I also updated our project management tracker (`docs/09_task-tracker.md`) to mark task `P01-M05-T03` as `DONE`.
+Finally, I went into the phase task document (`5_Selith/03_P1-T03_seed-framework.md`) and physically checked off all the `[ ]` boxes under the "Acceptance Criteria" section to `[x]`.
+
+### What is Acceptance Criteria?
+**Acceptance Criteria (AC)** are the absolute boundaries and requirements a feature must meet before it can be considered "done". In professional software engineering (and particularly in our strict AGENTS.md workflow), a task is never done just because the code runs. 
+The AC acts as a formal checklist. It prevents developers from missing non-functional requirements (like our requirement that "seeding twice produces identical counts") or skipping crucial administrative steps (like "Handoff published for other members"). By checking off the AC, we formally declare that our pull request satisfies every single rule the product owner or architect requested.
