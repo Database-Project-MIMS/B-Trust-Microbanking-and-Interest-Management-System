@@ -20,7 +20,7 @@
     "db:create": "bash scripts/db-create.sh",
     "db:migrate": "node scripts/migrate.mjs up",
     "db:status": "node scripts/migrate.mjs status",
-    "db:seed": "node scripts/migrate.mjs seed",
+    "db:seed": "node --env-file=.env scripts/seed.mjs",
     "db:rebuild": "node --env-file=.env scripts/db-rebuild.mjs",
     "db:verify": "node scripts/verify-setup.mjs",
     "test": "tsx --env-file=.env --conditions react-server --test --test-concurrency=1 tests/**/*.test.mjs",

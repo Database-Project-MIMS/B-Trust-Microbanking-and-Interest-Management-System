@@ -1,0 +1,13 @@
+00_roles.sql
+01_branches.sql
+02_users.sql
+03_agents.sql
+04_customers.sql
+05_customer_agents.sql
+06_customer_documents.sql
+10_accounts.sql
+11_account_holders.sql
+12_joint_mandates.sql
+13_transactions.sql
+14_fixed_deposits.sql
+15_interest_runs.sql

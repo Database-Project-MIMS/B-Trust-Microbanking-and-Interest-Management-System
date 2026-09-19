@@ -194,9 +194,9 @@ See the table in this handoff and AC-12.
 ---
 
 ## Acceptance Criteria
-- [ ] `database/seed/` layout exists with fixed-UUID scheme
-- [ ] Seeding twice produces **identical** row counts and financial totals
-- [ ] Load order respects FK dependencies
-- [ ] `scripts/seed-check.mjs` validates minimum counts (AC-12)
-- [ ] Handoff published for other members (I-8)
-- [ ] `npm run db:rebuild && npm run db:seed` succeeds from empty
+- [x] `database/seed/` layout exists with fixed-UUID scheme
+- [x] Seeding twice produces **identical** row counts and financial totals
+- [x] Load order respects FK dependencies
+- [x] `scripts/seed-check.mjs` validates minimum counts (AC-12)
+- [x] Handoff published for other members (I-8)
+- [x] `npm run db:rebuild && npm run db:seed` succeeds from empty

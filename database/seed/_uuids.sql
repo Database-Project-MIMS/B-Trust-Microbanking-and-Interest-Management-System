@@ -1,0 +1,42 @@
+-- Fixed UUID scheme for seed data
+-- Pattern: 00000000-0000-0000-XXYY-ZZZZZZZZZZZ0
+-- XX = entity type, YY = sequence, ZZ = padding
+
+-- Entity Types (XX)
+-- 01 = Branches
+-- 02 = Roles
+-- 03 = FD Plans
+-- 04 = Application Users
+-- 05 = Agents
+-- 06 = Customers
+-- 07 = Savings Plans
+-- 08 = Transaction Channels
+-- 09 = Accounts
+-- 10 = Fixed Deposits
+-- 11 = Transactions
+-- 12 = Interest Runs
+
+-- ==========================================
+-- 01. Branches
+-- ==========================================
+-- 00000000-0000-0000-0101-000000000001  Branch: Colombo Main (BR-COL)
+-- 00000000-0000-0000-0101-000000000002  Branch: Kandy City (BR-KAN)
+-- 00000000-0000-0000-0101-000000000003  Branch: Galle Fort (BR-GAL)
+
+-- ==========================================
+-- 02. Roles
+-- ==========================================
+-- 00000000-0000-0000-0201-000000000001  Role: ADMIN
+-- 00000000-0000-0000-0201-000000000002  Role: CENTRAL_OPS
+-- 00000000-0000-0000-0201-000000000003  Role: BRANCH_MANAGER
+-- 00000000-0000-0000-0201-000000000004  Role: AGENT
+-- 00000000-0000-0000-0201-000000000005  Role: CUSTOMER
+-- 00000000-0000-0000-0201-000000000006  Role: AUDITOR
+-- 00000000-0000-0000-0201-000000000007  Role: SYSTEM
+
+-- ==========================================
+-- 03. FD Plans
+-- ==========================================
+-- 00000000-0000-0000-0301-000000000001  FD Plan: 6 Months (13%)
+-- 00000000-0000-0000-0301-000000000002  FD Plan: 1 Year (14%)
+-- 00000000-0000-0000-0301-000000000003  FD Plan: 3 Years (15%)
