@@ -81,6 +81,8 @@ name is retained in diagrams.
 - Delete: `RESTRICT` — referenced by `transaction`, `audit_log`, `agent`, `customer`.
 - Indexes: `username` unique; `(role_id, status)` for admin listing.
 - Invariants: password is never plaintext (NFR-SEC); deactivate, never delete (FR-ORG-05).
+- Branch membership is **not** stored on `app_user`. Users with role `AGENT` or
+  `BRANCH_MANAGER` obtain their current branch from their required `agent` profile.
 
 ### `branch`
 
@@ -101,7 +103,9 @@ name is retained in diagrams.
   schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
 ### `agent`
-Subtype of `app_user` — `agent_id` is both PK and FK, so every agent has a login.
+Branch-staff subtype of `app_user` — `agent_id` is both PK and FK, so every branch staff
+profile has a login. Both ordinary banking agents (`role_name = 'AGENT'`) and branch
+managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls permissions.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -126,6 +130,11 @@ Subtype of `app_user` — `agent_id` is both PK and FK, so every agent has a log
 - Index: `ix_agent_branch_status (branch_id, status)` for branch-scoped active-agent lists.
 - Invariant: an active agent must reference an active branch. The agent trigger locks and
   validates the branch; the branch trigger rejects deactivation while active agents exist.
+- Invariant: every active `AGENT` or `BRANCH_MANAGER` login must have one `agent` profile.
+  Session validation obtains `branchId` by joining `app_user.user_id` to
+  `agent.agent_id`; a missing profile fails closed with `403`, never bank-wide scope.
+- Agent-management lists and agent-specific reports join `role` and restrict
+  `role_name = 'AGENT'` when branch managers must not appear as ordinary agents.
 
 ### `customer`
 Subtype of `user` in the current ERD. See **G-20** — this is contested.

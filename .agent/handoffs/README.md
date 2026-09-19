@@ -49,5 +49,7 @@ Anything still likely to change, so the dependent member doesn't build on sand.
 | I-7 | M1 | M2, M3, M4, M5 | report framework (filters, scope, metadata) |
 | I-8 | M5 | all | seed file layout, fixed-UUID scheme, load order |
 
-None have been published yet — Phase 1 hasn't started. This table is a forward-looking
-checklist, not a status report.
+The core I-1 implementation now resolves branch scope through `agent.branch_id` and fails
+closed when a branch-scoped user lacks that profile. The accepted contract and remaining
+quality follow-ups are recorded in `p01-branch-staff-scope-decision.md`. The remaining
+rows are a forward-looking checklist, not a status report.

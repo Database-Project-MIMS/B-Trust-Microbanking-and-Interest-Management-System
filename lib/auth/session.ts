@@ -42,20 +42,21 @@ export async function createSession(
 export async function validateSession(token: string): Promise<SessionData | null> {
     const tokenHash = hashToken(token);
     const session = await queryOne<SessionData>(
-        `SELECT 
-        s.session_id AS "sessionId",
-        u.user_id AS "userId",
-        u.username AS "username",
-        r.role_id AS "roleId",
-        r.role_name AS "roleName",
-        u.branch_id AS "branchId"
-     FROM user_session s
-     JOIN app_user u ON s.user_id = u.user_id
-     JOIN role r ON u.role_id = r.role_id
-     WHERE s.token_hash = $1
-       AND s.revoked_at IS NULL
-       AND s.expires_at > now()
-       AND u.status = 'ACTIVE'`,
+        `SELECT
+            s.session_id   AS "sessionId",
+            u.user_id      AS "userId",
+            u.username     AS "username",
+            r.role_id      AS "roleId",
+            r.role_name    AS "roleName",
+            a.branch_id    AS "branchId"
+         FROM user_session s
+         JOIN app_user u  ON s.user_id = u.user_id
+         JOIN role r      ON u.role_id = r.role_id
+         LEFT JOIN agent a ON a.agent_id = u.user_id
+         WHERE s.token_hash = $1
+           AND s.revoked_at IS NULL
+           AND s.expires_at > now()
+           AND u.status = 'ACTIVE'`,
         [tokenHash]
     );
     return session;

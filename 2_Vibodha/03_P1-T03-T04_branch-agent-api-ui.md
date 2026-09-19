@@ -13,6 +13,11 @@ delete**) and build the admin pages on top. This is the first task in your slice
 needs M1's **I-1** integration point (`requireRole()`, `branchScope()`). Confirm M1 has
 published the handoff before you start the backend half.
 
+Approved branch-staff model: `AGENT` and `BRANCH_MANAGER` are distinct roles but both have
+an `agent` profile. M1's session/RBAC layer obtains their scope from `agent.branch_id` and
+must deny a branch-scoped login with no profile. These organisation endpoints manage
+ordinary `AGENT` users; they do not create or promote branch managers.
+
 ---
 
 ## T03 — Branch & Agent APIs
@@ -22,9 +27,9 @@ published the handoff before you start the backend half.
 | `GET /api/branches` | List branches | `ADMIN`, `CENTRAL_OPS`, `BRANCH_MANAGER`, `AUDITOR` | `BRANCH_MANAGER` sees only their own branch — apply via `branchScope()` in the `WHERE` clause |
 | `POST /api/branches` | Create branch | `ADMIN` | `409 DUPLICATE_BRANCH_CODE` on `23505` |
 | `PATCH /api/branches/{id}` | Update / deactivate | `ADMIN` | Never deletes (FR-ORG-05) — sets `status = 'INACTIVE'` |
-| `GET /api/agents` | List agents | `ADMIN`, `CENTRAL_OPS`, `BRANCH_MANAGER` | Scoped by branch |
-| `POST /api/agents` | Create agent + linked user | `ADMIN`, `BRANCH_MANAGER` | **One transaction**: `app_user` insert + `agent` insert + audit |
-| `PATCH /api/agents/{id}` | Update / deactivate / transfer branch | `ADMIN`, `BRANCH_MANAGER` | Transfer updates `branch_id`; history stays attributable via `transaction.branch_id` (Phase 3) |
+| `GET /api/agents` | List ordinary agents | `ADMIN`, `CENTRAL_OPS`, `BRANCH_MANAGER` | Scoped by branch; filter joined role to `AGENT` so managers are not listed as ordinary agents |
+| `POST /api/agents` | Create ordinary agent + linked user | `ADMIN`, `BRANCH_MANAGER` | **One transaction**: `app_user` with server-assigned `AGENT` role + `agent` + audit; never accept a role from the body |
+| `PATCH /api/agents/{id}` | Update / deactivate / transfer ordinary agent | `ADMIN`, `BRANCH_MANAGER` | Restrict target to `AGENT`; transfer updates `branch_id`; history stays attributable via `transaction.branch_id` (Phase 3) |
 
 ### Service layer
 
