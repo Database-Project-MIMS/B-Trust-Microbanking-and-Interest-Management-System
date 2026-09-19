@@ -40,3 +40,11 @@ This script reads the exact sequence of files from `_load-order.txt`, connects t
 
 ### Why I Did It
 We cannot rely on the default migration runner or alphabetical execution for seed data because it doesn't enforce the strict dependencies required by our tables. Furthermore, wrapping the entire loop in a single `BEGIN` and `COMMIT` transaction ensures **atomicity**. If any single seed file fails (due to a constraint violation or typo), the entire database rolls back to its clean state (`ROLLBACK`). This prevents us from being stuck with half-seeded, corrupted data.
+
+## Step 4 Execution: The Verification Script
+### What I Did
+I created the `scripts/seed-check.mjs` script to act as the primary test for our seed framework. The script intelligently checks which tables exist so far, and if they do, it asserts that their row counts meet or exceed the absolute minimums required by AC-12 (e.g. 15 Customers, 100 Transactions).
+Most importantly, the script then fires off `npm run db:seed` a **second time**, and compares the new table counts and financial totals (balance sums, transaction sums) against the first run to ensure they are 100% identical.
+
+### Why I Did It
+The prompt requires deterministic, idempotent data. By building this verification into a script, we shift idempotency validation from a manual chore to an automated check. If another member accidentally uses `random()` or creates duplicate financial ledgers, `seed-check.mjs` will immediately flag it because the row counts or the financial sums will increase on the second run, breaking the idempotency rule.
