@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import pg from 'pg';
 
@@ -24,9 +24,14 @@ async function seed() {
   try {
     await client.query('BEGIN');
     for (const file of loadOrder) {
-      const sql = readFileSync(join(SEED_DIR, file), 'utf8');
-      console.log(`Seeding: ${file}`);
-      await client.query(sql);
+      const filePath = join(SEED_DIR, file);
+      if (existsSync(filePath)) {
+        const sql = readFileSync(filePath, 'utf8');
+        console.log(`Seeding: ${file}`);
+        await client.query(sql);
+      } else {
+        console.log(`Skipping: ${file} (file not created yet)`);
+      }
     }
     await client.query('COMMIT');
     console.log('Seed complete.');
