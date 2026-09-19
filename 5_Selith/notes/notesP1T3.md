@@ -58,3 +58,16 @@ I created the integration handoff document at `.agent/handoffs/i8-seed-framework
 
 ### Why I Did It
 Because I (Member 5) own the seed framework, other members are blocked until they know the rules. The handoff clearly outlines the mandatory rules they must follow: using fixed UUIDs, following the correct numbering prefix for load order, and running the `db:seed-check` script to verify their row counts before submitting their PRs.
+
+## Step 6 Execution: Writing the Tests
+### What I Did
+I created the automated test suite file at `tests/db/seed-validation.test.mjs`. This file hooks our `seed-check.mjs` logic directly into the Node test runner (`npm run test:db`).
+The tests explicitly verify four things:
+1. **Minimum data present**: That a single run of the seed files creates at least the minimum number of branches, agents, customers, etc. required by AC-12.
+2. **Determinism**: That seeding twice produces the *exact same* row counts, proving we haven't used anything random like `gen_random_uuid()` that would mistakenly insert duplicate rows instead of cleanly overwriting or skipping.
+3. **No random financial data**: That seeding twice results in the exact same financial balance sums and transaction amount sums.
+4. **Referential Integrity holds**: That the seed completes successfully without database errors, which fundamentally proves that our Foreign Key (FK) constraints hold true.
+
+### What is FK Integrity / Referential Integrity?
+**Referential Integrity** is a database concept that ensures relationships between tables remain consistent. When one table has a **Foreign Key (FK)** that points to the Primary Key of another table, the database mathematically enforces that you cannot insert a row in the child table if the parent doesn't exist, and you cannot delete a parent row if children still depend on it.
+In our seed framework, if we try to seed an Agent that belongs to Branch `0101-000000000001`, but we haven't seeded that Branch yet, Postgres will immediately throw an FK Integrity error and the transaction will rollback. Our tests passing proves that our load order (`_load-order.txt`) correctly seeds parents before children, satisfying referential integrity.
