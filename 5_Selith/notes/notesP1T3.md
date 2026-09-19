@@ -48,3 +48,13 @@ Most importantly, the script then fires off `npm run db:seed` a **second time**,
 
 ### Why I Did It
 The prompt requires deterministic, idempotent data. By building this verification into a script, we shift idempotency validation from a manual chore to an automated check. If another member accidentally uses `random()` or creates duplicate financial ledgers, `seed-check.mjs` will immediately flag it because the row counts or the financial sums will increase on the second run, breaking the idempotency rule.
+
+### A Note on Step 3 Implementation Details
+When creating the `seed.mjs` script, the original instructions suggested importing the database pool via `import { pool } from '../lib/db/pool.mjs'`. However, since our project uses TypeScript for the library files (i.e., `pool.ts`), importing it directly in a raw Node `.mjs` script would cause a "Module Not Found" error without a TS compiler/loader running. To fix this, I imported the standard `pg` module directly (`import pg from 'pg';`) and instantiated a standalone `pg.Client` using our `.env` configuration. This matches the robust pattern already used by our migration runner (`migrate.mjs`).
+
+## Step 5 Execution: The Handoff
+### What I Did
+I created the integration handoff document at `.agent/handoffs/i8-seed-framework.md`. This file serves as a strict instruction manual (Integration Point I-8) for all other team members on how to integrate their seed data files into the framework.
+
+### Why I Did It
+Because I (Member 5) own the seed framework, other members are blocked until they know the rules. The handoff clearly outlines the mandatory rules they must follow: using fixed UUIDs, following the correct numbering prefix for load order, and running the `db:seed-check` script to verify their row counts before submitting their PRs.
