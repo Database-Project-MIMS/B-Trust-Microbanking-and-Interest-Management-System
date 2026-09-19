@@ -88,43 +88,42 @@ name is retained in diagrams.
 
 | Column | Type | Notes |
 |---|---|---|
-| `branch_id` | uuid | **PK** |
-| `branch_name` | varchar(100) | |
-| `address` | varchar(255) | |
-| `district` | varchar(100) | |
-| `phone` | varchar(20) | |
-| `status` | varchar(20) | `record_status` |
+| `branch_id` | uuid | **PK**, defaults to `gen_random_uuid()` |
+| `branch_code` | varchar(20) | **UK, NOT NULL** |
+| `branch_name` | varchar(100) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `district` | varchar(100) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_branch_set_updated_at` |
 
-- Delete: `RESTRICT`. Deactivate instead (FR-ORG-05).
-- Note: FR-ORG-01 requires ≥ 3 branches; §4.2 requires branch **codes** to be unique — see
-  Part B (`branch_code`).
+- Implemented by `0120_p01_m02_branch.sql`.
+- Delete: references use `ON DELETE RESTRICT`; the first such FK is added by the agent
+  schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
 ### `agent`
-<<<<<<< Updated upstream
-Subtype of `user` — `agent_id` is both PK and FK, so every agent has a login.
-=======
 Branch-staff subtype of `app_user` — `agent_id` is both PK and FK, so every branch staff
 profile has a login. Both ordinary banking agents (`role_name = 'AGENT'`) and branch
 managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls permissions.
->>>>>>> Stashed changes
 
 | Column | Type | Notes |
 |---|---|---|
-| `agent_id` | uuid | **PK, FK → user(user_id)** |
-| `branch_id` | uuid | **FK → branch** |
-| `nic_passport_no` | varchar(50) | **UK** |
-| `full_name` | varchar(150) | |
-| `date_of_birth` | date | |
-| `gender` | varchar(20) | |
-| `phone` | varchar(20) | |
-| `address` | varchar(255) | |
-| `email` | varchar(150) | **UK** |
+| `agent_id` | uuid | **PK, FK → app_user(user_id), ON DELETE RESTRICT** |
+| `branch_id` | uuid | **NOT NULL, FK → branch, ON DELETE RESTRICT** |
+| `employee_no` | varchar(30) | **UK, NOT NULL** |
+| `nic_passport_no` | varchar(50) | **UK, NOT NULL** |
+| `full_name` | varchar(150) | **NOT NULL** |
+| `date_of_birth` | date | **NOT NULL** |
+| `gender` | varchar(20) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `email` | varchar(150) | **UK, NOT NULL** |
+| `hired_date` | date | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_agent_set_updated_at` |
 
-<<<<<<< Updated upstream
-- Delete: `RESTRICT` — referenced by `account.opened_by_agent_id`, `customer_agent`.
-- Index: `(branch_id, agent_id)` for branch-scoped listing.
-- Invariant: FR-ORG-02 — each active agent belongs to exactly one active branch.
-=======
 - Implemented by `0121_p01_m02_agent.sql`.
 - Delete: `RESTRICT`; future references from `account.opened_by_agent_id` and
   `customer_agent` also use `RESTRICT`.
@@ -136,7 +135,6 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   `agent.agent_id`; a missing profile fails closed with `403`, never bank-wide scope.
 - Agent-management lists and agent-specific reports join `role` and restrict
   `role_name = 'AGENT'` when branch managers must not appear as ordinary agents.
->>>>>>> Stashed changes
 
 ### `customer`
 Subtype of `user` in the current ERD. See **G-20** — this is contested.

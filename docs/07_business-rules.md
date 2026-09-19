@@ -13,8 +13,6 @@ database are what make the rule true.
 
 ---
 
-<<<<<<< Updated upstream
-=======
 ## Organisation
 
 | ID | Rule | Enforced at | Implementation |
@@ -24,7 +22,6 @@ database are what make the rule true.
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | CON | Agent FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 
->>>>>>> Stashed changes
 ## Products and eligibility
 
 | ID | Rule | Enforced at | Implementation |

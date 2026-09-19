@@ -5,9 +5,10 @@ import { updateFdProduct } from "@/services/fd-product-service";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await requireUser(request);
     requireRole(user, "ADMIN");
     verifyCsrf(request);
@@ -34,7 +35,7 @@ export async function PATCH(
       );
     }
 
-    const updatedProduct = await updateFdProduct(params.id, {
+    const updatedProduct = await updateFdProduct(id, {
       interestRate: interestRate ? String(interestRate) : undefined,
       status: status ?? undefined,
       description: description ?? undefined,

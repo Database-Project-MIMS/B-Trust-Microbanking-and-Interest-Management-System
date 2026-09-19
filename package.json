@@ -23,9 +23,9 @@
     "db:seed": "node scripts/migrate.mjs seed",
     "db:rebuild": "node --env-file=.env scripts/db-rebuild.mjs",
     "db:verify": "node scripts/verify-setup.mjs",
-    "test": "tsx --env-file=.env --conditions react-server --test tests/**/*.test.mjs",
-    "test:db": "tsx --env-file=.env --conditions react-server --test tests/db/*.test.mjs",
-    "test:api": "tsx --env-file=.env --conditions react-server --test tests/api/*.test.mjs"
+    "test": "tsx --env-file=.env --conditions react-server --test --test-concurrency=1 tests/**/*.test.mjs",
+    "test:db": "tsx --env-file=.env --conditions react-server --test --test-concurrency=1 tests/db/*.test.mjs",
+    "test:api": "tsx --env-file=.env --conditions react-server --test --test-concurrency=1 tests/api/*.test.mjs"
   },
   "dependencies": {
     "argon2": "^0.41.0",

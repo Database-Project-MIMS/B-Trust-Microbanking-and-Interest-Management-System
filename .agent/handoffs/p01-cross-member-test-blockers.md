@@ -1,30 +1,49 @@
 # Phase 1 cross-member test blockers
 
-**From:** Member 2 · **To:** Members 1, 4, 5 and integration lead · **Date/session:** 2026-09-17
+**From:** Member 2 · **To:** Members 1, 4, 5 and integration lead · **Date/session:** 2026-09-18
 **Status:** published
 
 ## What this gives you
 
-While verifying P01-M02-T01 on Windows, the Member 2 database tests passed, but the full
-project gate exposed shared or cross-member failures:
+While verifying the `main` into `dev` reconciliation on Windows, the Member 2 database
+tests passed, but the full project gate exposed shared or cross-member failures:
 
-- `npm test`: M1 authentication tests fail because Node cannot resolve the `@/lib` import
-  used by `services/auth-service.ts`.
-- `npm test`: M5 FD-product tests fail because Node cannot resolve the `server-only`
-  package imported by `services/fd-product-service.ts`.
+- **Resolved during reconciliation:** `services/auth-service.ts` called
+  `verifyPassword(password, user.password_hash)` even though the helper signature is
+  `verifyPassword(hash, password)`.
+- **Resolved during reconciliation:** `database/roles/01_app_grants.sql` lacked the
+  `mims_app` `SELECT` grant on `agent` required by `validateSession()` and the `UPDATE`
+  grant on `user_session` required by logout.
+- **Resolved during reconciliation:** `tests/api/fd-products.test.mjs` deleted shared
+  roles and left FD history rows behind. It now tracks role ownership, creates valid
+  branch profiles, restores the product fixture, and removes all test-owned rows.
+- **Resolved during reconciliation:** the Next.js production build rejected the
+  synchronous route context in `app/api/fd-products/[id]/route.ts`. Its `PATCH`
+  handler and API tests now use the Next.js 15 asynchronous `params` contract.
 - `npm run db:create`: the npm script invokes `bash scripts/db-create.sh`; on a native
   Windows installation without WSL or Git Bash, `/bin/bash` is unavailable.
 
-Member 2 did not modify M1, M4, M5, shared setup, or package files.
+The earlier alias and `server-only` module-resolution failures are resolved by the merged
+test command/package changes. During main/dev reconciliation, the developer explicitly
+authorized Member 2 to correct the reversed password-helper arguments and add the missing
+session permissions in M1-owned files, and to clear the cross-member integration blockers.
+The M5 route change is limited to Next.js 15 route-context compatibility. Ownership did
+not shift.
 
 ## Verification already completed
 
-- `node --test tests/db/branch-constraints.test.mjs`: 4/4 pass.
-- `npm run test:db`: 17/17 pass.
+- `npm test`: 56/56 pass with database-backed test files serialized.
+- Authentication tests: 5/5 pass; RBAC tests: 18/18 pass; FD API tests: 7/7 pass.
+- Member 2 database tests: 13/13 pass (4 branch + 9 agent).
+- All database test suites: 26/26 pass within the full run.
+- After the FD API suite, the database retains exactly the original 3 FD plans and no
+  test branch, user, or agent rows.
 - `npm run db:verify`: all checks pass on PostgreSQL 18.6.
 - `npm run typecheck`: passes.
+- `npm run build`: passes, including the dynamic FD-product route.
 
 ## What's NOT stable yet
 
-The task must remain `IN_PROGRESS` until the project-wide failing-test rule and clean
-Windows rebuild requirement are resolved or explicitly accepted by the integration lead.
+The project-wide test blockers found during reconciliation are resolved. The remaining
+setup issue is `npm run db:create` requiring Bash on native Windows; `npm run db:rebuild`
+already provides the working Node-based path used for verification.
