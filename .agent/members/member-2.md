@@ -8,9 +8,9 @@ session and read at the start of the next one.
 
 ## Current task
 
-**P01-M02-T03 — Branch and Agent APIs: READY.** P01-M02-T01 and P01-M02-T02 are complete
-and merged into `dev`. The reconciliation on `vibodha` brings the core I-1 branch-scope
-implementation and verified integration fixes together for a pull request into `dev`.
+**P01-M02-T03 — Branch and Agent APIs: IN_PROGRESS.** P01-M02-T01, P01-M02-T02 and I-1
+are complete and merged into `dev`. The six route handlers, service layer, validation and
+database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
 
 ## Recent history
 
@@ -37,7 +37,9 @@ implementation and verified integration fixes together for a pull request into `
 
 ## Blocked on
 
-- The `vibodha` reconciliation must be committed, pushed and merged into `dev` before the
-  T03 feature branch is updated.
-- Cross-member test blockers are resolved; the remaining native-Windows `db:create`
-  setup issue is documented in `../handoffs/p01-cross-member-test-blockers.md`.
+- Member 1 must publish the `audit_log` table/trigger contract and add runtime
+  `mims_app` grants for `branch` and `agent`. See
+  `../handoffs/p01-m02-t03-audit-and-grants.md`.
+- Cross-member test blockers are otherwise resolved; the remaining native-Windows
+  `db:create` setup issue is documented in
+  `../handoffs/p01-cross-member-test-blockers.md`.
