@@ -1,16 +1,15 @@
 # P01-M02-T03: Organisation API audit and runtime grants
 
 **From:** Member 2 · **To:** Member 1 and integration lead · **Date/session:** 2026-09-19
-**Status:** published
+**Status:** grants resolved; audit integration pending
 
 ## What this gives you
 
-Member 2 has implemented the six branch/agent API handlers and their services. Functional
-tests pass with the migration owner, but the normal application connection uses
-`mims_app`, which currently lacks the required organisation-table privileges.
+Member 2 has implemented the six branch/agent API handlers and their services. Member 1
+authorized the cross-owner grant update, and the normal application connection now has
+the required least-privilege organisation-table permissions.
 
-Member 1 owns `database/roles/**`. Please add least-privilege runtime grants equivalent
-to:
+`database/roles/01_app_grants.sql` now contains:
 
 ```sql
 GRANT SELECT, INSERT, UPDATE ON branch TO mims_app;
@@ -32,12 +31,11 @@ forced duplicate test proves that a failed profile insert leaves no orphan user.
 
 ## Verification
 
-- Organisation API tests: 23/23 pass with the migration-owner connection.
-- Running the same handlers through the configured `mims_app` connection currently
-  returns safe `500` responses because PostgreSQL denies branch/agent access.
-- No migration or M1-owned role file was modified by Member 2.
+- Organisation API tests: 23/23 pass through the configured `mims_app` connection.
+- The grants were applied to the local database without granting `DELETE`.
+- No migration was added or modified.
 
 ## What's NOT stable yet
 
-P01-M02-T03 remains `IN_PROGRESS` until the grants are applied reproducibly and audit
-coverage is integrated and tested.
+P01-M02-T03 remains `IN_PROGRESS` until audit coverage is integrated and tested after
+P01-M01-T05 publishes the shared `audit_log` and master-data audit trigger contract.

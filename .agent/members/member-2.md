@@ -25,6 +25,8 @@ database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
   scope.
 - Reconciled the latest `main` and `dev` content, corrected authentication/session grants,
   and isolated FD API fixtures. The full suite passes 56/56.
+- Added the approved least-privilege `mims_app` grants for `branch` and `agent`. The
+  organisation API suite passes 23/23 using the normal application connection.
 
 ## Notes to self
 
@@ -37,9 +39,8 @@ database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
 
 ## Blocked on
 
-- Member 1 must publish the `audit_log` table/trigger contract and add runtime
-  `mims_app` grants for `branch` and `agent`. See
-  `../handoffs/p01-m02-t03-audit-and-grants.md`.
+- Member 1 must publish the `audit_log` table/trigger contract. The runtime grants are
+  complete; see `../handoffs/p01-m02-t03-audit-and-grants.md`.
 - Cross-member test blockers are otherwise resolved; the remaining native-Windows
   `db:create` setup issue is documented in
   `../handoffs/p01-cross-member-test-blockers.md`.
