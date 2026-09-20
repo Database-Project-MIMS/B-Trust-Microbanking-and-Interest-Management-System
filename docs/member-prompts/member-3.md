@@ -7,6 +7,11 @@
 
 Accounts, Plans & Joint Ownership. You own this end to end — database, backend, frontend, tests and docs.
 
+**Supplementary reading:** `../../3_Nisith/` holds a personal, per-task expansion of this
+slice (points estimates, integration-point rationale, suggested build order). It is not
+part of the authoritative contract — `docs/09_task-tracker.md` and this file win on any
+conflict — but reference it for extra context before starting each task.
+
 | Layer | You own |
 |---|---|
 | **Database** | `savings_plan` (with eligibility columns), `account`, `account_holder`, `joint_mandate`; account indexes |
@@ -34,8 +39,11 @@ Before doing anything, read these in order and do not ask me questions they answ
 4. .agent/members/member-3.md
 5. the current phase document in docs/phases/
 6. docs/04_database-schema.md and docs/07_business-rules.md
-7. memory.md (only if we are continuing previous work)
-8. ui-registry.md (before you build any UI)
+7. the matching task file in 3_Nisith/ for my task's supplementary breakdown
+   (integration points, suggested build order, key rules) — supplementary only;
+   docs/09_task-tracker.md wins on any conflict
+8. memory.md (only if we are continuing previous work)
+9. ui-registry.md (before you build any UI)
 
 Then:
 - Identify the tasks assigned to Member 3 with status READY in the task tracker.
@@ -76,11 +84,11 @@ Start by telling me which task you are picking and why, then run /architect.
 
 ## Your Phase 1 tasks
 
-| Task | Title |
-|---|---|
-| P01-M03-T01 | Savings plan schema with age and holder-count eligibility data |
-| P01-M03-T02 | `fn_check_plan_eligibility` |
-| P01-M03-T03 | Plan API and administration page |
+| Task | Title | 3_Nisith file |
+|---|---|---|
+| P01-M03-T01 | Savings plan schema with age and holder-count eligibility data | `01_P1-T01_savings-plan-schema.md` |
+| P01-M03-T02 | `fn_check_plan_eligibility` | `02_P1-T02_plan-eligibility-function.md` |
+| P01-M03-T03 | Plan API and administration page | `03_P1-T03_plan-api-admin-page.md` |
 
 Eligibility must be a **data-driven join** against `savings_plan`, never
 `IF plan_name = 'Children'` hardcoded. That distinction is worth marks.

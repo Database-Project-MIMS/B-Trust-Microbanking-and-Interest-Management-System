@@ -42,7 +42,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-10 | Nothing prevents two active customer–agent assignments | MEDIUM | NO |
 | G-11 | Product rates not effective-dated; FD does not snapshot its rate | HIGH | YES |
 | G-12 | Savings-account interest cannot be recorded | HIGH | **YES — blocking** |
-| G-13 | Plan eligibility ages not stored as data | MEDIUM | YES |
+| G-13 | Plan eligibility ages not stored as data | MEDIUM | **YES — resolved** |
 | G-14 | No running-balance evidence on the ledger | MEDIUM | YES |
 | G-15 | No parameter store for business hours and withdrawal limits | MEDIUM | YES |
 | G-16 | No session table for server-side invalidation | MEDIUM | YES |
@@ -436,6 +436,12 @@ Eligibility then becomes a data-driven join.
 **Database impact** — Five columns and one check on a small reference table.
 
 **Approval needed — YES.**
+
+**Resolved** — implemented in migration `0140_p01_m03_savings_plan.sql` (`P01-M03-T01`).
+`savings_plan` now carries `min_age_years`, `max_age_years`, `min_holders`,
+`max_holders`, `requires_all_adult`, plus `chk_savings_plan_age_range` and
+`chk_savings_plan_holder_range`. `fn_check_plan_eligibility` (`P01-M03-T02`) reads these
+columns as a data-driven join instead of branching on `plan_name`.
 
 ---
 

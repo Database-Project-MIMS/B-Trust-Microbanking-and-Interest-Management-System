@@ -193,6 +193,8 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 
 ### `savings_plan`
 
+Implemented by `0140_p01_m03_savings_plan.sql`.
+
 | Column | Type | Notes |
 |---|---|---|
 | `plan_id` | uuid | **PK** |
@@ -200,11 +202,20 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `interest_rate` | `interest_rate` | 0.1200 / 0.1100 / 0.1000 / 0.1300 / 0.0700 |
 | `min_balance` | `money_amount` | 0 / 500 / 1000 / 1000 / 5000 |
 | `description` | varchar(255) | |
-| `status` | varchar(20) | `record_status` |
+| `status` | varchar(20) | `CHECK IN ('ACTIVE','INACTIVE')` |
+| `min_age_years` | int | NULL = no lower bound |
+| `max_age_years` | int | NULL = no upper bound |
+| `min_holders` | int | default `1` |
+| `max_holders` | int | default `1` |
+| `requires_all_adult` | boolean | default `false` — every holder of this plan must be 18+ |
 
 - Delete: `RESTRICT` — referenced by `account`.
 - Invariant: rates and minimums exactly match BR-03…BR-07.
-- Gap: no age bounds or holder counts — see **G-13**.
+- Checks: `chk_savings_plan_age_range` (`max_age_years >= min_age_years` where both set),
+  `chk_savings_plan_holder_range` (`max_holders >= min_holders`),
+  `chk_savings_plan_min_balance_nonneg` (`min_balance >= 0`).
+- Age bounds and holder counts (**G-13**) are resolved — data-driven eligibility, no
+  hardcoded `plan_name` branching. See `docs/17_erd-gap-analysis.md` G-13.
 
 ### `fd_plan`
 
@@ -378,7 +389,7 @@ corresponding open question is resolved and an ADR exists.**
 | `fixed_deposit` | `maturity_date date NOT NULL` | FR-FD-04, RPT-03 | G-23 |
 | `fixed_deposit` | `interest_rate_at_opening interest_rate NOT NULL` | Rate fixed at opening; protects historical payouts (BR-19) | G-11 |
 | `interest_payout` | `interest_run_id uuid FK`, `cycle_date date` | Cycle idempotency | G-03 |
-| `savings_plan` | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
+| `savings_plan` (implemented) | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
 | `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |
