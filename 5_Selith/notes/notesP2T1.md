@@ -135,18 +135,35 @@ Specifically, I mapped the UUID block `04` (Application Users) to also serve as 
 ### Why I Did It
 By explicitly predefining these UUIDs in `_uuids.sql`, any other team member or script that needs to reference an agent or branch in tests/seeds can safely hardcode these UUIDs. This guarantees determinism (a core requirement of the seed framework).
 
-*(Next: I will create the actual `00_roles.sql`, `01_branches.sql`, `02_users.sql`, and `03_agents.sql` files to insert this data).*
+I wrote the actual SQL seed files for Seed Set 1 using the UUIDs defined in `_uuids.sql`.
+- **`00_roles.sql`**: Inserted the 7 system roles (`ADMIN`, `CENTRAL_OPS`, `BRANCH_MANAGER`, `AGENT`, `CUSTOMER`, `AUDITOR`, `SYSTEM`).
+- **`01_branches.sql`**: Inserted 3 branches (Colombo Main, Kandy City, Galle Fort).
+- **`02_users.sql`**: Inserted 1 Admin, 3 Branch Managers, and 6 Agents. I used `require('argon2').hash('Password123!', { type: argon2.argon2id })` via a Node.js script to generate a valid `argon2id` hash for the `password_hash` column.
+- **`03_agents.sql`**: Inserted the 6 Agent profiles, linking them directly to their respective `app_user` rows using identical UUIDs, and distributed them across the 3 branches.
+
+I also ran `npm run db:rebuild` and `npm test` to verify that the seeds execute without any foreign key violations or failing tests.
+
+### Why I Did It
+This translates the UUID scheme into actual `INSERT` statements that populate the database when it rebuilds. We need real, verifiable `argon2id` hashes so that the authentication tests and APIs function correctly with the seeded users.
 
 ## Step 3 Execution: Create Seed Set 2 (Customer)
 ### What I Did
-[BLOCKED — waiting on M2 (Vibodha) to complete P02-M02-T01, P02-M02-T02, P02-M02-T03]
+[BLOCKED — waiting on M2 (Vibodha)]
+The following tables are NOT updated because the schemas have not been created by Member 2 yet:
+- `customer` (P02-M02-T01)
+- `customer_agent` (P02-M02-T02)
+- `customer_document` (P02-M02-T03)
 
 ### Why I Did It
-[N/A — cannot proceed until customer, customer_agent, and customer_document tables exist]
+I cannot insert data into tables that do not exist. M2 is blocked by an Open Question (OQ-05) regarding customer identity.
 
 ## Step 4 Execution: Create Seed Set 3 (Account)
 ### What I Did
-[BLOCKED — waiting on M3 (Nisith) to complete P02-M03-T01, P02-M03-T02, P02-M03-T03]
+[BLOCKED — waiting on M3 (Nisith)]
+The following tables are NOT updated because the schemas have not been created by Member 3 yet:
+- `account` (P02-M03-T01)
+- `account_holder` (P02-M03-T02)
+- `joint_mandate` (P02-M03-T03)
 
 ### Why I Did It
-[N/A — cannot proceed until account, account_holder, and joint_mandate tables exist]
+I cannot seed account data until the account schemas exist and the `sp_open_savings_account` routine (P02-M03-T04) is available.
