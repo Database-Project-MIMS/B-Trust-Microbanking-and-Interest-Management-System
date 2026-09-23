@@ -48,6 +48,38 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `POST /api/agents` | Create ordinary agent + linked user | ADMIN, BRANCH_MANAGER | **One transaction**: `app_user` with server-assigned `AGENT` role + `agent` + audit; the request cannot choose its role |
 | `PATCH /api/agents/{id}` | Update / deactivate / transfer an ordinary agent | ADMIN, BRANCH_MANAGER | Restricted to `role_name = 'AGENT'`; transfer is effective-dated so history stays attributable (FR-ORG-04) |
 
+### Branch API contract
+
+- `GET /api/branches?status=ACTIVE|INACTIVE|SUSPENDED` applies the caller's branch scope
+  in the SQL `WHERE` clause. The status filter is optional.
+- `POST /api/branches` body is
+  `{ branchCode, branchName, address, district, phone }`. `branchCode` is the stable
+  business identifier and is not changed through `PATCH`.
+- `PATCH /api/branches/{id}` accepts any non-empty subset of
+  `{ branchName, address, district, phone, status }`. A branch with active staff cannot
+  be deactivated (`409 BRANCH_HAS_ACTIVE_AGENTS`).
+- Duplicate codes return `409 DUPLICATE_BRANCH_CODE`. No branch `DELETE` handler exists.
+
+### Agent API contract
+
+- `GET /api/agents?status=ACTIVE|INACTIVE|SUSPENDED` returns ordinary `AGENT` profiles
+  only. `BRANCH_MANAGER` profiles are excluded by the joined role predicate, and manager
+  branch scope is enforced in SQL.
+- `POST /api/agents` accepts login fields `{ username, password }` and the profile fields
+  `{ branchId?, employeeNo, nicPassportNo, fullName, dateOfBirth, gender, phone,
+  address, email, hiredDate }`. `branchId` is required for `ADMIN`; for
+  `BRANCH_MANAGER` it is forced to the caller's own branch. The service selects the
+  `AGENT` role itself and never accepts a role from the request.
+- `PATCH /api/agents/{id}` accepts profile fields plus `status`. Deactivation updates
+  both `agent.status` and `app_user.status` in the same transaction so the login is also
+  disabled. Only `ADMIN` may transfer an agent to another branch.
+- Duplicate employee number, identity, email and username return specific `409` codes.
+  Cross-branch mutation returns `403`; missing rows return `404`. No agent `DELETE`
+  handler exists.
+- Agent creation currently commits `app_user` + `agent` atomically. Audit insertion and
+  runtime `mims_app` grants are pending the Member 1 handoff recorded in
+  `.agent/handoffs/p01-m02-t03-audit-and-grants.md`.
+
 ### `POST /api/customers`
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER

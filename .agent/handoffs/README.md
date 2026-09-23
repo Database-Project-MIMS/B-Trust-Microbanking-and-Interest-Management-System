@@ -53,3 +53,7 @@ The core I-1 implementation now resolves branch scope through `agent.branch_id` 
 closed when a branch-scoped user lacks that profile. The accepted contract and remaining
 quality follow-ups are recorded in `p01-branch-staff-scope-decision.md`. The remaining
 rows are a forward-looking checklist, not a status report.
+
+P01-M02-T03's cross-owner completion work is recorded in
+`p01-m02-t03-audit-and-grants.md`: Member 1 must add least-privilege organisation-table
+grants and publish the audit integration before T03 can move from `IN_PROGRESS` to `DONE`.

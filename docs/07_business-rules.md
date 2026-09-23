@@ -20,7 +20,8 @@ database are what make the rule true.
 | BR-O1 | Every `AGENT` and `BRANCH_MANAGER` login has an `agent` branch-staff profile assigned to exactly one branch | CON, SRV | `agent.agent_id` is PK/FK to `app_user`; `agent.branch_id NOT NULL` FK to `branch`; session validation denies a branch-scoped role with no profile |
 | BR-O2 | Every active agent belongs to an active branch | CON, TRG | `trg_validate_agent_active_branch` locks and validates the branch; `trg_branch_prevent_deactivation_with_active_agents` rejects branch deactivation while active agents remain |
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
-| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | CON | Agent FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
+| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
+| BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
 
 ## Products and eligibility
 

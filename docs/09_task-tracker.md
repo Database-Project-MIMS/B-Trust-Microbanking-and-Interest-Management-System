@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 11 | 0 | 0 | 0 | 7 |
+| P1 | 18 | 0 | 10 | 1 | 0 | 0 | 7 |
 | P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **11** | 0 | 0 | 0 | **13** |
+| **All** | **96** | **72** | **10** | **1** | 0 | 0 | **13** |
 
 ---
 
@@ -114,7 +114,7 @@ points where noted.
 |---|---|---|---|---|---|---|---|
 | **P01-M02-T01** | Branch schema | `0120_p01_m02_branch.sql` — `branch` + `branch_code UNIQUE`, status check | — | — | Duplicate `branch_code` rejected; delete restricted | `0000` | DONE |
 | **P01-M02-T02** | Agent schema | `0121_p01_m02_agent.sql` — `agent` as a subtype of `app_user`; `employee_no UNIQUE`, `nic_passport_no UNIQUE`, `email UNIQUE`; index `(branch_id, status)` | — | — | FR-ORG-02: agent in exactly one active branch | T01, P01-M01-T01 | DONE |
-| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | Deleting a referenced agent → 409 | T02, **I-1** | READY |
+| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity and negative tests | T02, **I-1** | IN_PROGRESS |
 | **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — list, create, deactivate | e2e create + deactivate | T03 | READY |
 
 Branch: `feat/p01-m02-<slug>`. Acceptance: ≥ 3 branches and ≥ 5 agents can be created and
