@@ -1,0 +1,23 @@
+-- ==========================================
+-- 02_users.sql
+-- Seed the app_users for Admin, Branch Managers, and Agents
+-- Note: Password is 'Password123!'
+-- ==========================================
+
+INSERT INTO app_user (user_id, role_id, username, password_hash, status) VALUES
+-- Admin (Role: 0201-...01)
+('00000000-0000-0000-0401-000000000001', '00000000-0000-0000-0201-000000000001', 'admin', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+
+-- Branch Managers (Role: 0201-...03)
+('00000000-0000-0000-0401-000000000002', '00000000-0000-0000-0201-000000000003', 'bm_colombo', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000003', '00000000-0000-0000-0201-000000000003', 'bm_kandy', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000004', '00000000-0000-0000-0201-000000000003', 'bm_galle', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+
+-- Agents (Role: 0201-...04)
+('00000000-0000-0000-0401-000000000011', '00000000-0000-0000-0201-000000000004', 'agent_c1', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000012', '00000000-0000-0000-0201-000000000004', 'agent_c2', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000013', '00000000-0000-0000-0201-000000000004', 'agent_k1', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000014', '00000000-0000-0000-0201-000000000004', 'agent_k2', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000015', '00000000-0000-0000-0201-000000000004', 'agent_g1', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000016', '00000000-0000-0000-0201-000000000004', 'agent_g2', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE')
+ON CONFLICT (user_id) DO NOTHING;
