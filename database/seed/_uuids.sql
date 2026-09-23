@@ -6,15 +6,14 @@
 -- 01 = Branches
 -- 02 = Roles
 -- 03 = FD Plans
--- 04 = Application Users
--- 05 = Agents
--- 06 = Customers
--- 07 = Savings Plans
--- 08 = Transaction Channels
--- 09 = Accounts
--- 10 = Fixed Deposits
--- 11 = Transactions
--- 12 = Interest Runs
+-- 04 = Application Users (and their dependent Agent profiles)
+-- 05 = Customers
+-- 06 = Savings Plans
+-- 07 = Transaction Channels
+-- 08 = Accounts
+-- 09 = Fixed Deposits
+-- 10 = Transactions
+-- 11 = Interest Runs
 
 -- ==========================================
 -- 01. Branches
@@ -40,3 +39,18 @@
 -- 00000000-0000-0000-0301-000000000001  FD Plan: 6 Months (13%)
 -- 00000000-0000-0000-0301-000000000002  FD Plan: 1 Year (14%)
 -- 00000000-0000-0000-0301-000000000003  FD Plan: 3 Years (15%)
+
+-- ==========================================
+-- 04. Application Users & Agents
+-- Note: agent_id = user_id, so they share the exact same UUID.
+-- ==========================================
+-- 00000000-0000-0000-0401-000000000001  User: admin (ADMIN)
+-- 00000000-0000-0000-0401-000000000002  User: bm_colombo (BRANCH_MANAGER)
+-- 00000000-0000-0000-0401-000000000003  User: bm_kandy (BRANCH_MANAGER)
+-- 00000000-0000-0000-0401-000000000004  User: bm_galle (BRANCH_MANAGER)
+-- 00000000-0000-0000-0401-000000000011  User & Agent: agent_c1 (Colombo Main)
+-- 00000000-0000-0000-0401-000000000012  User & Agent: agent_c2 (Colombo Main)
+-- 00000000-0000-0000-0401-000000000013  User & Agent: agent_k1 (Kandy City)
+-- 00000000-0000-0000-0401-000000000014  User & Agent: agent_k2 (Kandy City)
+-- 00000000-0000-0000-0401-000000000015  User & Agent: agent_g1 (Galle Fort)
+-- 00000000-0000-0000-0401-000000000016  User & Agent: agent_g2 (Galle Fort)

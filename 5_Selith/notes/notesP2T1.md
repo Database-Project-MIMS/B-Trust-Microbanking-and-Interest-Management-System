@@ -126,10 +126,16 @@ Before writing any seed SQL, I must understand the exact column names, types, co
 
 ## Step 2 Execution: Create Seed Set 1 (Organisational)
 ### What I Did
-[Pending...]
+Assigned fixed UUIDs for all organisational entities in `database/seed/_uuids.sql`.
+Specifically, I mapped the UUID block `04` (Application Users) to also serve as the UUID for `agent_id` because `agent_id` is a foreign key to `app_user.user_id` and must be identical.
+- Created 1 ADMIN user
+- Created 3 BRANCH_MANAGER users (one for each branch)
+- Created 6 AGENT users (two for each branch)
 
 ### Why I Did It
-[Pending...]
+By explicitly predefining these UUIDs in `_uuids.sql`, any other team member or script that needs to reference an agent or branch in tests/seeds can safely hardcode these UUIDs. This guarantees determinism (a core requirement of the seed framework).
+
+*(Next: I will create the actual `00_roles.sql`, `01_branches.sql`, `02_users.sql`, and `03_agents.sql` files to insert this data).*
 
 ## Step 3 Execution: Create Seed Set 2 (Customer)
 ### What I Did
