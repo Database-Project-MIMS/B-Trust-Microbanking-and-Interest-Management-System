@@ -157,13 +157,35 @@ The following tables are NOT updated because the schemas have not been created b
 ### Why I Did It
 I cannot insert data into tables that do not exist. M2 is blocked by an Open Question (OQ-05) regarding customer identity.
 
-## Step 4 Execution: Create Seed Set 3 (Account)
+## Step 4 Execution: Verify Seed Data
 ### What I Did
-[BLOCKED — waiting on M3 (Nisith)]
-The following tables are NOT updated because the schemas have not been created by Member 3 yet:
-- `account` (P02-M03-T01)
-- `account_holder` (P02-M03-T02)
-- `joint_mandate` (P02-M03-T03)
+I ran `npm run db:rebuild` and `npm run test:db`. The rebuilt database correctly ingested `00_roles.sql`, `01_branches.sql`, `02_users.sql`, and `03_agents.sql`. 
+The `P01-M05-T03: Seed Validation` test passed, validating:
+1. Minimum data present
+2. Determinism (seeding twice produces identical rows)
+3. No random financial totals
+4. Foreign Key integrity holds after seeding
 
 ### Why I Did It
-I cannot seed account data until the account schemas exist and the `sp_open_savings_account` routine (P02-M03-T04) is available.
+Verification is critical to ensure that my seed files do not break the database build or violate referential integrity. Since the tests passed, the Organizational Data (Set 1) is confirmed to be stable and deterministic.
+
+## Step 5 Execution: Update Docs
+### What I Did
+This `notesP2T1.md` log serves as the documentation update for this task's progress. I have explicitly documented the current partial state of `P02-M05-T01`:
+
+**✅ Seeded (Set 1 - Organisational):**
+- `role`
+- `branch`
+- `app_user`
+- `agent`
+
+**❌ NOT Seeded (Sets 2 & 3 - Blocked):**
+- `customer` (waiting on P02-M02-T01)
+- `customer_agent` (waiting on P02-M02-T02)
+- `customer_document` (waiting on P02-M02-T03)
+- `account` (waiting on P02-M03-T01)
+- `account_holder` (waiting on P02-M03-T02)
+- `joint_mandate` (waiting on P02-M03-T03)
+
+### Why I Did It
+Since this task is only half done (blocked by other members' incomplete Phase 2 work), I must clearly define the boundaries of what is finished vs. what is pending. This allows the team to understand the current state without confusion.
