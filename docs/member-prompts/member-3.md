@@ -76,6 +76,10 @@ Hard rules you must not break:
   to docs/17_erd-gap-analysis.md and .agent/open-questions.md and ask me first.
 - Work only on tasks assigned to Member 3. If you think another task is blocking or
   mis-assigned, tell me — do not silently pick it up.
+- Never run a git command of any kind (status is fine to check as read-only context,
+  but never add, commit, push, branch, checkout, merge, or anything else that changes
+  git state). When git action is the next step, tell me exactly what to run and stop —
+  I run every git command myself.
 
 Start by telling me which task you are picking and why, then run /architect.
 ```

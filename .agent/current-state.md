@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-20 · **Updated by:** Member 2 (Vibodha)
+**Last updated:** 2026-09-24 · **Updated by:** Member 3 (Nisith) after P01-M03-T02
 
 ## Phase
 
@@ -20,13 +20,23 @@
   `main` into the integration work.
 - P01-M05-T01 and P01-M05-T02 are complete; the reconciliation brings the FD product API
   work from `main` into the integration work.
-- **P01-M03-T01 is complete** (not yet merged — on branch
-  `feat/p01-m03-savings-plan-schema`): `savings_plan` table with the five G-13
-  eligibility columns (`min_age_years`, `max_age_years`, `min_holders`, `max_holders`,
-  `requires_all_adult`), three named `CHECK` constraints, and the five BR-03…BR-07
-  seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing. G-13 marked
-  resolved in `docs/17_erd-gap-analysis.md`. `db:rebuild`, `db:verify` and the full
-  `npm test` suite (64/64) all pass.
+- **P01-M03-T01 is complete and merged into `dev`** (PR #12): `savings_plan` table with
+  the five G-13 eligibility columns (`min_age_years`, `max_age_years`, `min_holders`,
+  `max_holders`, `requires_all_adult`), three named `CHECK` constraints, and the five
+  BR-03…BR-07 seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing.
+  G-13 marked resolved in `docs/17_erd-gap-analysis.md`.
+- **P01-M03-T02 is complete** (not yet merged — on branch
+  `feat/p01-m03-plan-eligibility-function`): `fn_check_plan_eligibility(plan_id,
+  date_of_birth, holder_count)` in `database/routines/`, a `STABLE` PL/pgSQL function
+  checking the primary applicant's age and holder count against `savings_plan`'s data
+  columns. Deliberately checks the primary applicant only — the full "every Joint holder
+  is an adult" rule is Phase 2's `trg_validate_joint_mandate` (`P02-M03-T03`), since this
+  function's signature carries one `date_of_birth`, not one per holder (see
+  `docs/specs/0002-plan-eligibility-function.md`). `docs/07_business-rules.md`'s BR-07
+  row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
+  — 10/10 passing, including a boundary test proving age is computed as whole completed
+  years, not naive year subtraction. `db:rebuild`, `db:verify` and the full `npm test`
+  suite (101/101) all pass.
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
@@ -38,15 +48,14 @@
 
 Member 2's branch/agent administration pages have not been implemented. P01-M02-T03 is
 waiting only for the shared audit contract from P01-M01-T05; P01-M02-T04 remains the UI
-follow-up. Member 3's `fn_check_plan_eligibility` (P01-M03-T02) and the plan API/admin
-page (P01-M03-T03) have not been started.
+follow-up. Member 3's plan API/admin page (P01-M03-T03) has not been started.
 
 ## Task status snapshot
 
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 8 DONE, 10 READY |
+| P1 | 18 | IN PROGRESS — 9 DONE, 9 READY |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
@@ -73,6 +82,6 @@ setup issue is recorded in `.agent/handoffs/p01-cross-member-test-blockers.md`.
 
 1. Member 1: complete P01-M01-T05 and publish the shared audit contract.
 2. Integrate and test branch/agent audit coverage, then move P01-M02-T03 to `DONE`.
-3. Member 3: open a PR for `feat/p01-m03-savings-plan-schema` into `dev`, then start
-   P01-M03-T02 (`fn_check_plan_eligibility`) — data-driven join against the new
-   eligibility columns, never a hardcoded `plan_name` branch.
+3. Member 3: open a PR for `feat/p01-m03-plan-eligibility-function` into `dev`, then
+   start P01-M03-T03 (plan API and admin page) — depends on T02 (done) and I-1 (RBAC
+   helpers, already merged).

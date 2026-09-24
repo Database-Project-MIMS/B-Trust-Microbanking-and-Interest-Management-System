@@ -27,7 +27,7 @@ L01–L13.
 | Routine | Owner | Returns | Purpose | Requirements | Concepts |
 |---|---|---|---|---|---|
 | `fn_calculate_fd_interest(principal, rate)` | M5 | `numeric(15,2)` | `round(principal × rate × 30 / 365, 2)` — exact decimal, reads the **snapshot** rate | FR-INT-01, BR-14, BR-19 | L08 functions |
-| `fn_check_plan_eligibility(plan_id, dob, holder_count)` | M3 | `boolean` | Data-driven age and holder-count check against `savings_plan` | FR-ACC-02, BR-E1 | L05, L08 |
+| `fn_check_plan_eligibility(plan_id, dob, holder_count)` | M3 | `boolean` | Data-driven age and holder-count check against `savings_plan` for the primary applicant only — never raises, returns `false` on any missing plan, inactive plan, or invalid input. Implemented in `database/routines/fn_check_plan_eligibility.sql` (`P01-M03-T02`, `docs/specs/0002-plan-eligibility-function.md`) | FR-ACC-02, BR-E1 | L05, L08 |
 | `fn_check_plan_minimum(account_id, proposed_debit)` | M3 | `boolean` | Post-withdrawal balance ≥ plan minimum | FR-ACC-03, BR-09 | L05, L08 |
 | `fn_next_account_number(branch_code)` | M3 | `varchar` | Sequential, unique, branch-prefixed account number | FR-ACC-01 | L03 sequences |
 | `fn_next_transaction_reference()` | M4 | `varchar` | Unique transaction reference (BR-10) | FR-DEP-02 | L03 |

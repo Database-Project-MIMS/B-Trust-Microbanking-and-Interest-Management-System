@@ -33,8 +33,8 @@ database are what make the rule true.
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
 | BR-05 | Adult (18+) — 10%, LKR 1,000 minimum | CON | `savings_plan`: `0.1000`, `1000.00` |
 | BR-06 | Senior (60+) — 13%, LKR 1,000 minimum | CON | `savings_plan`: `0.1300`, `1000.00` |
-| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`; holder count 2–4 enforced by `trg_validate_joint_mandate`; all holders 18+ via `fn_check_plan_eligibility` |
-| BR-E1 | Plan age eligibility is checked from date of birth at account opening | UI, SRV, FN | `fn_check_plan_eligibility(plan_id, dob, holder_count)` reads `min_age_years`/`max_age_years` from `savings_plan` (G-13) — **data, not hardcoded names** |
+| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`; holder count 2–4 and all-holders-18+ enforced by `trg_validate_joint_mandate` (Phase 2, P02-M03-T03) — `fn_check_plan_eligibility` only checks the primary applicant, since its signature carries one `date_of_birth`, not one per holder |
+| BR-E1 | Plan age eligibility is checked from date of birth at account opening | UI, SRV, FN | `fn_check_plan_eligibility(plan_id, dob, holder_count)` reads `min_age_years`/`max_age_years` from `savings_plan` (G-13) — **data, not hardcoded names**. Checks the primary applicant only; see BR-07 for the joint-holder-age rule |
 
 Rates are stored as fractions (`0.1200`), so interest is one exact multiplication with no
 divide-by-100 (see `04_database-schema.md` §B.6).
