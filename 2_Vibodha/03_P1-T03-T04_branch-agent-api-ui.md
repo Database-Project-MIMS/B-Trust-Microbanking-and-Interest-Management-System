@@ -1,17 +1,21 @@
-# 🔵 Phase 1 — Tasks 03–04: Branch & Agent APIs and Admin UI
-**Task IDs:** `P01-M02-T03`, `P01-M02-T04` · **Branch:** `feat/p01-m02-branch-agent-api-ui`
+# 🔵 Phase 1 — Tasks 03–04: Branch & Agent APIs
+**Task IDs:** `P01-M02-T03`, `P01-M02-T04` · **Branch:** `feat/p01-m02-branch-agent-api`
 **Status:** READY
 **Depends on:** T02 (`agent`), **I-1** (`requireRole()`/`branchScope()` from M1)
-**Story Points:** ~4 + ~4 = ~8 · **Layer:** Backend + Frontend
+**Story Points:** ~4 + ~4 = ~8 · **Layer:** Backend only
+
+> ⚡ **UI COMPLETE** — Admin pages for branches and agents have been pre-built and live in
+> `app/dashboard/**`. Your job is to implement the **API routes and service layer only**.
+> Do not rebuild any UI component.
 
 ---
 
 ## What This Task Is
 
 Expose `branch` and `agent` as CRUD-ish APIs (create, list, update/deactivate — **never
-delete**) and build the admin pages on top. This is the first task in your slice that
-needs M1's **I-1** integration point (`requireRole()`, `branchScope()`). Confirm M1 has
-published the handoff before you start the backend half.
+delete**) and wire them to services. This is the first task in your slice that needs M1's
+**I-1** integration point (`requireRole()`, `branchScope()`). Confirm M1 has published
+the handoff before you start the backend half.
 
 Approved branch-staff model: `AGENT` and `BRANCH_MANAGER` are distinct roles but both have
 an `agent` profile. M1's session/RBAC layer obtains their scope from `agent.branch_id` and
@@ -73,21 +77,6 @@ the service layer.
 
 ---
 
-## T04 — Branch & Agent Admin UI
-
-Pages: `app/branches/page.tsx`, `app/agents/page.tsx`.
-
-- List view: table with search/filter by branch, status
-- Create form: modal or dedicated route, calls `POST`
-- Row action: "Deactivate" (not "Delete") — calls `PATCH` with `{ status: 'INACTIVE' }`,
-  confirms before submitting
-- Role-gated: only `ADMIN` sees the branch create button; `ADMIN`/`BRANCH_MANAGER` see
-  the agent create button
-- Match tokens and patterns already captured in `ui-registry.md` (run `/imprint` after
-  M1's app-shell task lands so you have a baseline to match)
-
----
-
 ## How to Implement
 
 ### Step 1 — Confirm I-1 Is Published
@@ -107,13 +96,7 @@ layer (pure logic, testable without the route) and wait before wiring the route 
    service → map errors → respond `{ data }` / `{ error: { code, message } }`
 4. All state-changing routes verify the CSRF token (I-1)
 
-### Step 3 — Frontend
-1. `app/branches/page.tsx` — Server Component list, Client Component for the create
-   form/modal
-2. `app/agents/page.tsx` — same pattern, plus a branch filter for `ADMIN`/`CENTRAL_OPS`
-3. Deactivate action with a confirmation step (this is what e2e tests will exercise)
-
-### Step 4 — Write Tests
+### Step 3 — Write Tests
 - `tests/api/branches.test.mjs`: create → 201; duplicate code → 409; non-`ADMIN` create
   → 403; `BRANCH_MANAGER` list only sees their own branch
 - `tests/api/agents.test.mjs`: create is atomic (kill the transaction mid-way in a test
@@ -122,9 +105,8 @@ layer (pure logic, testable without the route) and wait before wiring the route 
 - `tests/e2e/branches-agents.test.mjs`: create a branch, create an agent, deactivate the
   agent, confirm it no longer appears in the default (active-only) list but still exists
 
-### Step 5 — Update Docs
+### Step 4 — Update Docs
 - `docs/05_api-and-pages.md` — confirm the endpoint table matches what you built
-- Run `/imprint` — add branch/agent list and form patterns to `ui-registry.md`
 - Update task statuses in `docs/09_task-tracker.md` → `DONE`
 
 ---
@@ -136,6 +118,4 @@ layer (pure logic, testable without the route) and wait before wiring the route 
 - [ ] No `DELETE` route exists for branches or agents
 - [ ] Deleting a referenced record at the DB level still returns `409`, not `500`
 - [ ] `BRANCH_MANAGER` cannot see or act on another branch's rows (enforced in SQL)
-- [ ] Admin pages let you create ≥ 3 branches and ≥ 5 agents and list them (FR-ORG-01)
-- [ ] `/imprint` run; `ui-registry.md` updated
 - [ ] `npm run typecheck && npm test` pass

@@ -3,7 +3,10 @@
 **Migration:** `0560_p05_m04_rpt05_view.sql` · **Status:** TODO
 **Depends on:** `P03-M04-T02` (`sp_post_deposit`, for real ledger data), **I-7** (report
 shell from M1)
-**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The RPT-05 report screen is pre-built in `app/dashboard/**`. Your
+> job is to implement the **view, API and CSV export** only. Do not rebuild any UI component.
 
 ---
 

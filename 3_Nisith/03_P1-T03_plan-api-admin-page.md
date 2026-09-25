@@ -1,14 +1,18 @@
-# 🔵 Phase 1 — Task 03: Plan API & Administration Page
-**Task ID:** `P01-M03-T03` · **Branch:** `feat/p01-m03-plan-api-admin`
+# 🔵 Phase 1 — Task 03: Plan API
+**Task ID:** `P01-M03-T03` · **Branch:** `feat/p01-m03-plan-api`
 **Status:** READY
 **Depends on:** T02 (`fn_check_plan_eligibility`), **I-1** (M1 RBAC)
-**Story Points:** ~3 · **Layer:** Backend + Frontend
+**Story Points:** ~3 · **Layer:** Backend only
+
+> ⚡ **UI COMPLETE** — The savings plan admin view has been pre-built in `app/dashboard/**`.
+> Your job is to implement the **API routes and service layer only**. Do not rebuild any
+> UI component.
 
 ---
 
 ## What This Task Is
 
-A read-mostly product page: list the five savings plans with their rates, minimums and
+A read-mostly product API: list the five savings plans with their rates, minimums and
 eligibility rules, and let `ADMIN`/`CENTRAL_OPS` edit them (effective-dated, matching the
 `fd_plan` pattern M5 already built in their Phase 1 task — read it for a reference
 implementation before you start).
@@ -24,7 +28,6 @@ implementation before you start).
 
 `services/plan-service.ts`:
 - `listPlans()` — returns all plans, active and inactive, with every eligibility column
-  so the admin page can display them
 - `updatePlan(id, input, actor)` — updates rate/minimum/eligibility columns; write an
   audit row; **do not physically remove the old row** if you're treating this as
   effective-dated the way `fd_plan` does (check whether `savings_plan` picked up
@@ -32,16 +35,6 @@ implementation before you start).
   entry is acceptable for Phase 1, since G-13 only asked for eligibility columns, not
   effective-dating; raise it in `.agent/open-questions.md` if you think Phase 1 needs
   effective-dating too, rather than silently adding columns beyond docs/04_database-schema.md)
-
----
-
-## Frontend
-
-`app/plans/page.tsx` — Server Component, read-mostly product view:
-- Table: plan name, rate, minimum balance, age range, holder range, status
-- Edit action gated to `ADMIN`/`CENTRAL_OPS` — hidden for other roles **and** the PATCH
-  route itself re-checks the role server-side regardless of what the UI shows
-- No "delete" action — plans are `RESTRICT`-protected and deactivated only
 
 ---
 
@@ -58,25 +51,18 @@ grep -n "P01-M01-T03" docs/09_task-tracker.md
    `requireRole([...])` for PATCH only (GET is any authenticated user) → validate → call
    service → respond
 
-### Step 3 — Frontend
-`app/plans/page.tsx` — table view; edit as a modal or inline form for privileged roles.
-
-### Step 4 — Write Tests
+### Step 3 — Write Tests
 - `tests/api/plans.test.mjs`: `GET` returns all 5 plans to any authenticated role;
   `PATCH` by `AGENT` → `403`; `PATCH` by `ADMIN` succeeds and is reflected in a
   subsequent `GET`; audit row is written on update
-- `tests/e2e/plans.test.mjs`: view plan list, edit a rate as `ADMIN`, confirm the new
-  rate displays
 
-### Step 5 — Run & Verify
+### Step 4 — Run & Verify
 ```bash
 npm run typecheck && npm test
 ```
 
-### Step 6 — Update Docs
+### Step 5 — Update Docs
 - Confirm `docs/05_api-and-pages.md` matches the built endpoints
-- Run `/imprint` — capture the product table/edit-form pattern (useful precedent for M5's
-  parallel `fd-products` page if it hasn't already set the pattern first)
 - Update task status in `docs/09_task-tracker.md` → `DONE`
 
 ---
@@ -87,5 +73,4 @@ npm run typecheck && npm test
 - [ ] `PATCH /api/plans/{id}` is rejected with `403` for non-`ADMIN`/`CENTRAL_OPS` roles
 - [ ] Plan edits are audited
 - [ ] No delete path exists for plans
-- [ ] `/imprint` run; `ui-registry.md` updated
 - [ ] `npm run typecheck && npm test` pass

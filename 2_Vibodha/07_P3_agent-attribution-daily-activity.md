@@ -2,7 +2,10 @@
 **Task IDs:** `P03-M02-T01`, `P03-M02-T02` · **Branch:** `feat/p03-m02-agent-attribution-activity`
 **Migration:** `0320_p03_m02_transaction_attribution.sql` · **Status:** TODO
 **Depends on:** `P02-M04-T01` (`transaction` schema, M4), **G-07** approved
-**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — Agent activity views are pre-built in `app/dashboard/**`. Your job
+> is to implement the **database migration and API** only. Do not rebuild any UI component.
 
 ---
 
@@ -90,14 +93,9 @@ COMMIT;
   agent_id = $1 AND posted_at BETWEEN $2 AND $3 GROUP BY transaction_type` — parameterized,
   branch scope applied via the agent's `branch_id`
 - **Success** `200 { data: { agentId, from, to, byType: [{ type, count, total }] } }`
-- **Page** `app/agents/[id]/activity/page.tsx` — small panel on the agent detail view
 
 ### Step 1 — Backend
 `services/agent-service.ts`: add `getAgentActivity(agentId, range, scope)`.
-
-### Step 2 — Frontend
-Add an activity panel to the agent detail page (or its own route if the admin page from
-Phase 1 doesn't have a detail view yet — check `app/agents/page.tsx`).
 
 ### Step 3 — Write Tests
 - `tests/api/agent-activity.test.mjs`: totals match a manually-seeded set of
