@@ -43,4 +43,21 @@ function createPool(): Pool {
 export const pool: Pool = global.__mimsPool ?? createPool();
 if (process.env.NODE_ENV !== "production") global.__mimsPool = pool;
 
+export interface PoolMetrics {
+  totalCount: number;
+  idleCount: number;
+  waitingCount: number;
+}
+
+/**
+ * Returns connection pool statistics for health checks and operational monitoring.
+ */
+export function getPoolMetrics(): PoolMetrics {
+  return {
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount,
+  };
+}
+
 export type { PoolClient };

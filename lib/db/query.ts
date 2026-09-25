@@ -1,6 +1,8 @@
 import "server-only";
 import type { QueryResultRow } from "pg";
 import { pool, type PoolClient } from "./pool";
+import { mapDatabaseError } from "./errors";
+import { extractQueryTag, logQueryTiming, logQueryError } from "./logger";
 
 /**
  * Parameterized query helpers.
@@ -15,64 +17,37 @@ export type Executor = Pick<PoolClient, "query">;
 export async function query<T extends QueryResultRow>(
   text: string,
   params: readonly unknown[] = [],
+  queryTag?: string,
 ): Promise<T[]> {
-  const result = await pool.query<T>(text, params as unknown[]);
-  return result.rows;
+  const start = performance.now();
+  const tag = queryTag ?? extractQueryTag(text);
+  try {
+    const result = await pool.query<T>(text, params as unknown[]);
+    const durationMs = Math.round(performance.now() - start);
+    logQueryTiming(tag, durationMs);
+    return result.rows;
+  } catch (err) {
+    const durationMs = Math.round(performance.now() - start);
+    logQueryError(tag, durationMs, err);
+    throw mapDatabaseError(err);
+  }
 }
 
 /** Run a parameterized query expecting at most one row. */
 export async function queryOne<T extends QueryResultRow>(
   text: string,
   params: readonly unknown[] = [],
+  queryTag?: string,
 ): Promise<T | null> {
-  const rows = await query<T>(text, params);
+  const rows = await query<T>(text, params, queryTag);
   return rows[0] ?? null;
 }
 
 /**
- * Run `fn` inside a single explicit database transaction.
- *
- * Commits when `fn` resolves, rolls back when it throws. This is the ONLY way
- * services open a transaction — do not issue bare BEGIN/COMMIT (AGENTS.md §11).
- *
- * Every financial operation runs inside one of these. A failure must leave no
- * partial ledger, balance or audit effect (FR-DEP-05, NFR-SAFE-05).
- *
- * @example
- *   await withTransaction(async (tx) => {
- *     // lock BEFORE deciding, then re-read inside the transaction
- *     const acct = await tx.query(
- *       "SELECT current_balance, status FROM account WHERE account_id = $1 FOR UPDATE",
- *       [accountId],
- *     );
- *     ...
- *   });
+ * Re-export withTransaction from with-transaction.ts
+ * Retries on 40001 (serialization failure) and 40P01 (deadlock detected).
  */
-export async function withTransaction<T>(
-  fn: (tx: Executor) => Promise<T>,
-  options: { isolationLevel?: "READ COMMITTED" | "REPEATABLE READ" | "SERIALIZABLE" } = {},
-): Promise<T> {
-  const client = await pool.connect();
-  try {
-    await client.query(
-      options.isolationLevel
-        ? `BEGIN ISOLATION LEVEL ${options.isolationLevel}`
-        : "BEGIN",
-    );
-    const result = await fn(client);
-    await client.query("COMMIT");
-    return result;
-  } catch (error) {
-    try {
-      await client.query("ROLLBACK");
-    } catch (rollbackError) {
-      console.error("[db] rollback failed", rollbackError);
-    }
-    throw error;
-  } finally {
-    client.release();
-  }
-}
+export { withTransaction, type TransactionOptions } from "./with-transaction";
 
 /**
  * Resolve a dynamic SQL identifier from a server-side allow-list.

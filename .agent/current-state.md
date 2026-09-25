@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-24 · **Updated by:** Member 3 (Nisith) after P01-M03-T02
+**Last updated:** 2026-09-25 · **Updated by:** Member 4 (Pramudith) after P01-M04-T01
 
 ## Phase
 
@@ -8,11 +8,17 @@
 
 ## What exists right now
 
-- PostgreSQL 18.6 is installed locally (Member 2) / 16.15 (Member 3, via Homebrew) and
-  the migration framework is operational on both.
+- PostgreSQL 16.15 (Homebrew) is installed and active locally, with `mims_dev` database rebuilt and verified cleanly (`db:rebuild`, `db:verify`).
 - Applied migrations include the shared foundation (`0000`), identity (`0100`), branch
   schema (`0120`), agent schema (`0121`), savings plan schema (`0140`) and FD plan schema
   (`0180`).
+- **P01-M04-T01 is complete** (on branch `feat/p01-m04-lib-db-hardening`):
+  - Hardened `lib/db/with-transaction.ts` with automatic retry on `40001` (serialization failure) and `40P01` (deadlock detected) using exponential backoff + jitter (up to 3 attempts). Complete rollback on any failure.
+  - Hardened `lib/db/errors.ts` translating SQLSTATE codes into typed domain errors (`UniqueViolationError`, `ForeignKeyViolationError`, `CheckViolationError`, `NotNullViolationError`, `SerializationFailureError`, `DeadlockDetectedError`, `DatabaseError`) while completely scrubbing raw SQL text, driver messages, and passwords (NFR-SEC-05).
+  - Redacted query logging in `lib/db/logger.ts` tracking duration and operation tags without parameter leakage.
+  - Pool metrics (`getPoolMetrics()`) exposed in `lib/db/pool.ts` for health endpoints.
+  - Published handoff `.agent/handoffs/i-2-lib-db.md` (unblocking backend work across all members).
+  - 19/19 tests passing in `tests/db/lib-db-hardening.test.mjs`. Full test suite passing (120/120 tests).
 - P01-M02-T01 and P01-M02-T02 are complete and merged into `dev`, including their
   database constraints, integrity triggers, indexes, tests and documentation.
 - P01-M01-T01, P01-M01-T02 and P01-M01-T03 are recorded as complete. The reconciliation
@@ -36,7 +42,7 @@
   row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
   — 10/10 passing, including a boundary test proving age is computed as whole completed
   years, not naive year subtraction. `db:rebuild`, `db:verify` and the full `npm test`
-  suite (101/101) all pass.
+  suite (120/120) all pass.
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
@@ -55,7 +61,7 @@ follow-up. Member 3's plan API/admin page (P01-M03-T03) has not been started.
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 9 DONE, 9 READY |
+| P1 | 18 | IN PROGRESS — 10 DONE, 8 READY |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |

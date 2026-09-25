@@ -135,7 +135,7 @@ hardcoded in TypeScript.
 
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | READY |
+| **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | DONE |
 | **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | READY |
 | **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs` | — | Rebuild from empty succeeds; **editing an applied migration is rejected**; `npm run db:verify` passes | T02 | READY |
 | **P01-M04-T04** | Database health page | — | Extend `/api/health` with pool stats (authenticated) | `app/admin/health/page.tsx` | Unauthenticated request gets no internal detail | T01, **I-1** | READY |

@@ -1,4 +1,11 @@
-import { BusinessRuleError, DomainError, PG_ERROR } from "@/lib/db/errors";
+import {
+  BusinessRuleError,
+  CheckViolationError,
+  DomainError,
+  ForeignKeyViolationError,
+  PG_ERROR,
+  UniqueViolationError,
+} from "@/lib/db/errors";
 
 interface DatabaseErrorLike {
   code?: unknown;
@@ -13,14 +20,28 @@ function databaseError(error: unknown): DatabaseErrorLike | null {
 
 /** Maps known organisation constraints to safe API-facing domain errors. */
 export function throwOrganizationDatabaseError(error: unknown): never {
-  if (error instanceof DomainError) {
+  if (error instanceof BusinessRuleError) {
     throw error;
   }
 
   const dbError = databaseError(error);
-  const code = typeof dbError?.code === "string" ? dbError.code : null;
+  const code =
+    error instanceof UniqueViolationError ||
+    error instanceof CheckViolationError ||
+    error instanceof ForeignKeyViolationError
+      ? error.sqlstate
+      : typeof dbError?.code === "string"
+        ? dbError.code
+        : null;
+
   const constraint =
-    typeof dbError?.constraint === "string" ? dbError.constraint : null;
+    error instanceof UniqueViolationError ||
+    error instanceof CheckViolationError ||
+    error instanceof ForeignKeyViolationError
+      ? error.constraint
+      : typeof dbError?.constraint === "string"
+        ? dbError.constraint
+        : null;
 
   if (code === PG_ERROR.UNIQUE_VIOLATION) {
     switch (constraint) {
@@ -73,6 +94,10 @@ export function throwOrganizationDatabaseError(error: unknown): never {
       "INVALID_BRANCH",
       "The selected branch does not exist.",
     );
+  }
+
+  if (error instanceof DomainError) {
+    throw error;
   }
 
   throw error;
