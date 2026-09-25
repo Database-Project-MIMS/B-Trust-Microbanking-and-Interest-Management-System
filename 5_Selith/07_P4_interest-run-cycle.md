@@ -2,7 +2,11 @@
 **Task IDs:** `P04-M05-T04`, `P04-M05-T05`  
 **Migration Block:** `0480–0499` (continued)  
 **Depends on:** P04-M05-T03 (`fn_calculate_fd_interest`), **I-5** (M4's `INTEREST_CREDIT` posting)  
-**Story Points:** ~8 total · **Layer:** Database + Backend + Frontend  
+**Story Points:** ~8 total · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — FD listing, FD opening and interest run console screens are
+> pre-built in `app/dashboard/**`. Your job is to implement the **database tables,
+> stored procedure, and APIs** only. Do not rebuild any UI component.
 **⚡ The interest cycle is the most complex single procedure in the system**
 
 ---

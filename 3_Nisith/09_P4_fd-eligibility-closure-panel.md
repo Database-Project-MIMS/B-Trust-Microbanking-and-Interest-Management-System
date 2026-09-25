@@ -4,7 +4,11 @@
 **Status:** TODO
 **Depends on:** `P04-M05-T02` (M5's `sp_open_fixed_deposit`, for T01);
 `P04-M05-T03` (M5's `fn_calculate_fd_interest`, context for T03)
-**Story Points:** ~3 + ~2 + ~2 = ~7 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~2 + ~2 = ~7 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The account detail and FD panel screens are pre-built in
+> `app/dashboard/**`. Your job is to implement the **database functions and account
+> closure API**. Do not rebuild any UI component.
 
 ---
 

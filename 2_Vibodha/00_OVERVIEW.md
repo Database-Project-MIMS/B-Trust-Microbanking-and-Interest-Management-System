@@ -13,15 +13,15 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| 01 | [Branch Schema](01_P1-T01_branch-schema.md) | P1 | T01 | `branch` table + `branch_code UNIQUE` | ~3 |
-| 02 | [Agent Schema](02_P1-T02_agent-schema.md) | P1 | T02 | `agent` as a subtype of `app_user`; one-active-branch rule | ~3 |
-| 03 | [Branch & Agent API + Admin UI](03_P1-T03-T04_branch-agent-api-ui.md) | P1 | T03–T04 | `/api/branches`, `/api/agents`, admin pages, deactivate-not-delete | ~8 |
+| ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
+| ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~~3~~ |
+| 03 | [Branch & Agent API](03_P1-T03-T04_branch-agent-api-ui.md) | P1 | T03–T04 | `/api/branches`, `/api/agents`, deactivate-not-delete | ~8 |
 | 04 | [Customer Schema](04_P2-T01_customer-schema.md) | P2 | T01 | `customer` table, identity uniqueness, trigram search index | ~4 |
 | 05 | [Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md) | P2 | T02–T03 | `customer_agent` (one-active-assignment), `customer_document` | ~6 |
-| 06 | [Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, form, search, profile pages | ~10 |
-| 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API & page | ~6 |
+| 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, search, profile | ~10 |
+| 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API | ~6 |
 | 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | T01–T02 | FD linkage view, customer FD listing, branch-scoped FD access | ~5 |
-| 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, page, CSV | ~7 |
+| 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
 | 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
 
 ---

@@ -1,7 +1,10 @@
 # 🟠 Phase 5 — Member 5 Tasks: RPT-03, RPT-04, Index Review
 **Task IDs:** `P05-M05-T01`, `P05-M05-T02`, `P05-M05-T03`, `P05-M05-T04`  
 **Migration Block:** `0580–0599`  
-**Story Points:** ~12 total · **Layer:** Database + Backend + Frontend  
+**Story Points:** ~12 total · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — RPT-03 and RPT-04 report screens are pre-built in `app/dashboard/**`.
+> Your job is to implement the **views, APIs and CSV exports** only. Do not rebuild any UI component.
 **Depends on:** P04-M05-T02, P04-M05-T04, **I-7** (M1's report framework)
 
 ---

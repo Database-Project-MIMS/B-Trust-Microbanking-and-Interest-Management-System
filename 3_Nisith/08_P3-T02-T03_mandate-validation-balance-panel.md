@@ -4,7 +4,11 @@
 **Depends on:** `P02-M03-T03` (`joint_mandate`); T03 depends on `P03-M04-T02` (M4's
 `sp_post_deposit` — the account detail page needs live transaction data to show a
 meaningful balance panel)
-**Story Points:** ~3 + ~2 = ~5 · **Layer:** Database + Frontend
+**Story Points:** ~3 + ~2 = ~5 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The account detail and balance panel screens are pre-built in
+> `app/dashboard/**`. Your job is to implement the **database function** and publish the
+> I-4 integration point. Do not rebuild any UI component.
 
 ---
 
@@ -79,20 +83,12 @@ Returns `false` → `409 MANDATE_NOT_SATISFIED`, no ledger row.
 
 ---
 
-## T03 — Account Balance Panel & Holder Authority Display
-
-Add a panel to `app/accounts/[id]/page.tsx` (built in Phase 2, T06):
-- Current balance, prominently
-- Holder list with `holder_type`, and for joint accounts, the mandate type
-  (`ANY_ONE`/`ALL_HOLDERS`) rendered in plain language ("any one holder may withdraw" /
-  "requires all holders")
-- If `CUSTOMER` role viewing their own account: highlight whether *they* currently have
-  withdrawal authority based on the mandate
-
-This depends on M4's deposit/withdrawal routines existing so the balance reflects real
-activity rather than only the opening balance — check `P03-M04-T02` status before
-polishing this panel, though the static layout can be built against the Phase 2 account
-data alone.
+> **Note:** T03's original scope was to build a balance panel UI. Since the account
+> detail UI is pre-built, T03's deliverable is narrowed to: ensure
+> `GET /api/accounts/{id}` returns `currentBalance`, `holders` (with `holder_type`), and
+> `mandateType` in the JSON response so the pre-built screen can render them correctly.
+> This is a backend-only change — add or adjust the fields in `getAccountDetail()` in
+> `services/account-service.ts` (M3's file) if they are missing.
 
 ---
 
@@ -109,9 +105,13 @@ data alone.
 4. ✅ Whatever the team confirms for `ALL_HOLDERS` — write the test to match the
    confirmed contract, not a guess
 
-### Step 3 — Frontend (T03)
-Extend the existing account detail page with the balance/authority panel described
-above.
+### Step 3 — Verify API Response (T03)
+Confirm `GET /api/accounts/{id}` returns:
+- `currentBalance` — live, from the `account.current_balance` column
+- `holders` — array with `customerId`, `holderType`
+- `mandateType` — `ANY_ONE` | `ALL_HOLDERS` | `null` for individual accounts
+
+If these fields are absent, add them to `getAccountDetail()` in `services/account-service.ts`.
 
 ### Step 4 — Run & Verify
 ```bash
@@ -123,9 +123,7 @@ npm run typecheck && npm test
 ### Step 5 — Update Docs
 - Update `docs/16_database-routines-views-indexes.md` — add `fn_check_joint_mandate`
 - Update `docs/07_business-rules.md` — confirm BR-17's enforcement point
-- Publish/refresh the I-4 handoff to include this function alongside
-  `fn_check_plan_minimum`
-- Run `/imprint` if the balance panel introduces a new pattern
+- Publish/refresh the I-4 handoff to include this function alongside `fn_check_plan_minimum`
 - Update task statuses in `docs/09_task-tracker.md` → `DONE`
 
 ---
@@ -135,6 +133,6 @@ npm run typecheck && npm test
 - [ ] A non-holder is always rejected, regardless of mandate type
 - [ ] Handoff updated so M4's withdrawal routine can call both plan-minimum and
       mandate checks from one documented source
-- [ ] Balance panel renders holder authority in plain language
+- [ ] `GET /api/accounts/{id}` returns `currentBalance`, `holders`, and `mandateType`
 - [ ] `npm run db:rebuild` succeeds from empty
 - [ ] `npm run typecheck && npm test` pass

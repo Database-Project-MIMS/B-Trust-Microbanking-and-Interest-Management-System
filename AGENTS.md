@@ -358,11 +358,12 @@ A task is `DONE` only when **all** of the following are true:
 4. Confirm your task is `READY` and its dependencies are `DONE`.
 5. Run `/architect` for anything non-trivial. Do not write code until the important
    decisions are resolved.
+6. Review all `00_OVERVIEW.md` files and update their `## 🗺️ Work Order Summary` tables, adding strikethroughs (`~~`) to any newly completed tasks.
 
 **End**
 
 1. Run tests. Run `/review`. Run `/imprint` if UI changed.
-2. Update `docs/09_task-tracker.md`, `.agent/current-state.md`, and write a handoff if needed.
+2. Update `docs/09_task-tracker.md`, `.agent/current-state.md`, all `00_OVERVIEW.md` summary tables, and write a handoff if needed.
 3. Run `/remember save`.
 4. Commit, push, open the PR.
 

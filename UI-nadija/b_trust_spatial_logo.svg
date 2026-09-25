@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none">
+  <rect x="4" y="8" width="32" height="32" rx="16" fill="#1C2826"/>
+  <circle cx="20" cy="24" r="7" fill="#E87A5D"/>
+  <path d="M17 19C19 17 23 17 25 20C27 23 25 28 20 29" stroke="#FBFBFA" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="44" y="27" fill="#0E1116" font-family="'Newsreader', 'Plus Jakarta Sans', serif" font-weight="700" font-size="16" letter-spacing="-0.02em">B·Trust</text>
+  <text x="44" y="37" fill="#717875" font-family="sans-serif" font-weight="500" font-size="8" letter-spacing="0.14em">SPATIAL BANKING</text>
+</svg>

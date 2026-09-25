@@ -3,7 +3,10 @@
 **Migration:** `0540_p05_m03_rpt02_view.sql` · **Status:** TODO
 **Depends on:** `P03-M04-T02` (M4's `sp_post_deposit`, for real ledger data), **I-7**
 (report shell from M1)
-**Story Points:** ~3 + ~4 = ~7 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~4 = ~7 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The RPT-02 report screen is pre-built in `app/dashboard/**`. Your
+> job is to implement the **view, API and CSV export** only. Do not rebuild any UI component.
 
 ---
 
