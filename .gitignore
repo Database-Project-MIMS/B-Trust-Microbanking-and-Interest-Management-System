@@ -40,6 +40,6 @@ pgdata/
 !.env.example
 !.gitignore
 
-
+.agents/
 
 .next-dev/
