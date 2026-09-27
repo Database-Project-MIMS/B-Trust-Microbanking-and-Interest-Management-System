@@ -1,14 +1,16 @@
-import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
-import { listParameters } from '@/services/parameter-service';
+import { NextRequest, NextResponse } from "next/server";
+import { requireRole, requireUser } from "@/lib/auth/rbac";
+import { errorResponse } from "@/lib/http/error-response";
+import { listParameters } from "@/services/parameter-service";
 
-export async function GET() {
-  const session = await getSession();
-  if (!session)
-    return NextResponse.json({ error: { code: 'UNAUTHENTICATED', message: 'Not authenticated' } }, { status: 401 });
-  if (session.role !== 'ADMIN')
-    return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'ADMIN role required' } }, { status: 403 });
+export async function GET(request: NextRequest): Promise<Response> {
+  try {
+    const user = await requireUser(request);
+    requireRole(user, "ADMIN");
 
-  const params = await listParameters();
-  return NextResponse.json({ data: params });
+    const parameters = await listParameters();
+    return NextResponse.json({ data: parameters });
+  } catch (error) {
+    return errorResponse(error);
+  }
 }

@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-27 · **Updated by:** Member 3 (Nisith) after P01-M03-T03
+**Last updated:** 2026-09-27 · **Updated by:** Member 2 (Vibodha) after P01-M02-T03 audit integration
 
 ## Phase
 
@@ -10,9 +10,9 @@
 
 - PostgreSQL 18.6 is installed locally (Member 2) / 16.15 (Member 3, via Homebrew) and
   the migration framework is operational on both.
-- Applied migrations include the shared foundation (`0000`), identity (`0100`), branch
-  schema (`0120`), agent schema (`0121`), savings plan schema (`0140`) and FD plan schema
-  (`0180`).
+- Applied migrations include the shared foundation (`0000`), identity (`0100`), system
+  parameters/audit (`0104`), branch schema (`0120`), agent schema (`0121`), organisation
+  audit integration (`0122`), savings plan schema (`0140`) and FD plan schema (`0180`).
 - P01-M02-T01 and P01-M02-T02 are complete and merged into `dev`, including their
   database constraints, integrity triggers, indexes, tests and documentation.
 - P01-M01-T01, P01-M01-T02 and P01-M01-T03 are recorded as complete. The reconciliation
@@ -57,22 +57,22 @@
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
-- P01-M02-T03's six branch/agent route handlers, service layer, validation and 23 API
-  tests are implemented. Least-privilege `mims_app` grants for `branch` and `agent` are
-  present and the API suite passes through the normal application connection.
+- **P01-M02-T03 is complete.** Its six branch/agent route handlers, service layer,
+  validation and API tests are implemented. Least-privilege `mims_app` grants are
+  present, and migration `0122` provides sanitized, same-transaction branch/agent audit
+  coverage with rollback verification.
 
 ## What does NOT exist yet
 
-Member 2's branch/agent administration pages have not been implemented. P01-M02-T03 is
-waiting only for the shared audit contract from P01-M01-T05; P01-M02-T04 remains the UI
-follow-up. Member 3's Phase 1 slice (T01–T03) is now fully done.
+Member 2's branch/agent administration pages have not been implemented. P01-M02-T04 is
+the next Member 2 task. Member 3's Phase 1 slice (T01–T03) is fully done.
 
 ## Task status snapshot
 
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 10 DONE, 8 READY |
+| P1 | 19 | IN PROGRESS — 12 DONE, 7 READY |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
@@ -83,24 +83,23 @@ Full detail: `../docs/09_task-tracker.md`.
 
 ## Blocking items before Phase 1 can finish
 
-No unresolved product question blocks Phase 1. The core I-1 dependency needed by
-P01-M02-T03 is present in this reconciliation. Remaining I-1 quality follow-ups include
+No unresolved product question blocks Phase 1. Remaining I-1 quality follow-ups include
 strict malformed-CSRF rejection, returning `branchId` in the login DTO, refreshing the
-I-1 handoff, and adding a true request/SQL cross-branch test. P01-M02-T03 additionally
-waits for P01-M01-T05's shared audit table and trigger contract.
+I-1 handoff, and adding a true request/SQL cross-branch test.
 
 ## Known process note
 
-The reconciled full suite passes 56/56, database verification and TypeScript checks pass,
-and FD API tests leave no fixture rows behind. The remaining native-Windows `db:create`
-setup issue is recorded in `.agent/handoffs/p01-cross-member-test-blockers.md`.
+The full suite passes 120/120; database verification, TypeScript checks and the production
+build pass. The clean rebuild command reaches the PostgreSQL administrator connection but
+requires an interactive `postgres` password on this Windows host; rerun
+`npm run db:rebuild` in the user's terminal for the final clean-from-empty proof. The
+remaining native-Windows `db:create` setup issue is recorded in
+`.agent/handoffs/p01-cross-member-test-blockers.md`.
 
 ## Next session should start with
 
-1. Member 1: complete P01-M01-T05 and publish the shared audit contract.
-2. Integrate and test branch/agent audit coverage, then move P01-M02-T03 to `DONE`.
-3. Member 3: open a PR for `feat/p01-m03-plan-api-page` into `dev` — this completes
-   Member 3's full Phase 1 slice. Someone should also raise the `issueCsrfToken()` gap
+1. Member 2: merge the T03 audit follow-up, then start P01-M02-T04.
+2. Someone should raise the `issueCsrfToken()` gap
    found during this task's manual verification (see above) with Member 1, since it
    blocks a real end-to-end CSRF-protected edit on every admin page in the app, not
    just this one.

@@ -15,7 +15,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
 | ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~~3~~ |
-| 03 | [Branch & Agent API](03_P1-T03-T04_branch-agent-api-ui.md) | P1 | T03–T04 | `/api/branches`, `/api/agents`, deactivate-not-delete | ~8 |
+| 03 | [Branch & Agent API](03_P1-T03-T04_branch-agent-api-ui.md) | P1 | ~~T03~~–T04 | ~~`/api/branches`, `/api/agents`, deactivate-not-delete~~; admin UI remains | ~8 |
 | 04 | [Customer Schema](04_P2-T01_customer-schema.md) | P2 | T01 | `customer` table, identity uniqueness, trigram search index | ~4 |
 | 05 | [Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md) | P2 | T02–T03 | `customer_agent` (one-active-assignment), `customer_document` | ~6 |
 | 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, search, profile | ~10 |

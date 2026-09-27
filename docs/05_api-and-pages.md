@@ -76,9 +76,9 @@ admin identity workflow and must atomically receive its required `agent` profile
 - Duplicate employee number, identity, email and username return specific `409` codes.
   Cross-branch mutation returns `403`; missing rows return `404`. No agent `DELETE`
   handler exists.
-- Agent creation currently commits `app_user` + `agent` atomically. Audit insertion and
-  runtime `mims_app` grants are pending the Member 1 handoff recorded in
-  `.agent/handoffs/p01-m02-t03-audit-and-grants.md`.
+- Branch and agent inserts/updates are audited by database triggers in the caller
+  transaction. A failed agent profile insert rolls back the linked `app_user` and all
+  audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
 
 ### `POST /api/customers`
 - **Purpose** Register a customer (FR-CUS-01…05).
