@@ -40,5 +40,5 @@ pgdata/
 !.env.example
 !.gitignore
 
-
+.agents/
 

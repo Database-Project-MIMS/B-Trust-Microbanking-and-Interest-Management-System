@@ -101,7 +101,7 @@ admin identity workflow and must atomically receive its required `agent` profile
 | Method & path | Purpose | Roles |
 |---|---|---|
 | `GET /api/plans` | Savings plans with rates, minimums, eligibility | any authenticated |
-| `PATCH /api/plans/{id}` | Update plan (effective-dated) | ADMIN, CENTRAL_OPS |
+| `PATCH /api/plans/{id}` | Update plan rate/minimum/description/status/eligibility (in-place, not effective-dated — unlike `fd_plan`, `savings_plan` has no `effective_from`/`effective_to`) | ADMIN, CENTRAL_OPS |
 | `GET /api/fd-products` | FD products (M5) | any authenticated |
 
 ### `POST /api/accounts`

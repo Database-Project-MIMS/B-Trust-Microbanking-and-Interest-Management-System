@@ -10,3 +10,6 @@ GRANT SELECT ON role TO mims_app;
 -- Grants for Member 2 (Organisation)
 GRANT SELECT, INSERT, UPDATE ON branch TO mims_app;
 GRANT SELECT, INSERT, UPDATE ON agent TO mims_app;
+
+-- Grants for Member 3 (Nisith) - Savings Plans
+GRANT SELECT, UPDATE ON savings_plan TO mims_app;
