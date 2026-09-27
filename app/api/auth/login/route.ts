@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { login } from "@/services/auth-service";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { issueCsrfToken } from "@/lib/auth/csrf";
 
 export async function POST(request: NextRequest) {
     try {
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
             expires: result.sessionExpiresAt,
             path: "/",
         });
+        issueCsrfToken(response);
 
         return response;
     } catch {

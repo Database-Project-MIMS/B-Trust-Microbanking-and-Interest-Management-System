@@ -1,184 +1,99 @@
 "use client";
 
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { FdProduct } from "@/services/fd-product-service";
 
 interface FdProductClientProps {
   initialProducts: FdProduct[];
   isAdmin: boolean;
-  csrfToken: string;
 }
 
-export default function FdProductClient({ initialProducts, isAdmin, csrfToken }: FdProductClientProps) {
-  const [products, setProducts] = useState<FdProduct[]>(initialProducts);
-  const [editingProduct, setEditingProduct] = useState<FdProduct | null>(null);
-  const [newRate, setNewRate] = useState("");
+type PendingChange =
+  | { kind: "rate"; product: FdProduct; interestRate: string }
+  | { kind: "deactivate"; product: FdProduct };
+
+interface ApiError { error?: { message?: string } }
+
+function readCsrfToken(): string {
+  const item = document.cookie.split("; ").find((value) => value.startsWith("mims_csrf="));
+  return item?.split("=")[1] ?? "";
+}
+
+function formatRate(rate: string): string {
+  if (!/^\d+(?:\.\d+)?$/.test(rate)) return "—";
+  const [whole = "0", decimal = ""] = rate.split(".");
+  const basisPoints = BigInt(whole) * 10000n + BigInt(`${decimal}0000`.slice(0, 4));
+  return `${basisPoints / 100n}.${(basisPoints % 100n).toString().padStart(2, "0")}%`;
+}
+
+function formatDate(value: Date | string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return "—";
+  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Colombo" }).format(date);
+}
+
+/** Displays FD product history and posts confirmed administration changes through the API. */
+export default function FdProductClient({ initialProducts, isAdmin }: FdProductClientProps) {
+  const router = useRouter();
+  const [products, setProducts] = useState(initialProducts);
+  const [editing, setEditing] = useState<FdProduct | null>(null);
+  const [interestRate, setInterestRate] = useState("");
+  const [pendingChange, setPendingChange] = useState<PendingChange | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Group products by tenure to show history clearly
-  // E.g., products with tenure=6 are the "6 Month" products.
-  // The active one is the one with effectiveTo === null or status === 'ACTIVE'.
-  // Actually, we can just display them in a table.
-  
-  const activeProducts = products.filter(p => p.status === 'ACTIVE' && p.effectiveTo === null);
-  const historicalProducts = products.filter(p => p.status !== 'ACTIVE' || p.effectiveTo !== null);
+  useEffect(() => {
+    if (!pendingChange) return;
+    dialogRef.current?.focus();
+    function onKeyDown(event: KeyboardEvent): void { if (event.key === "Escape" && !isSaving) setPendingChange(null); }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pendingChange, isSaving]);
 
-  const handleEdit = (product: FdProduct) => {
-    setEditingProduct(product);
-    setNewRate(product.interestRate);
-    setError(null);
-  };
+  const activeProducts = products.filter((product) => product.status === "ACTIVE" && product.effectiveTo === null);
+  const historicalProducts = products.filter((product) => product.status !== "ACTIVE" || product.effectiveTo !== null);
 
-  const submitEdit = async () => {
-    if (!editingProduct) return;
-    setError(null);
+  function startEdit(product: FdProduct): void { setEditing(product); setInterestRate(product.interestRate); setError(null); setNotice(null); }
+  function requestRateChange(): void {
+    if (!editing) return;
+    if (!/^0\.(?=.*[1-9])\d{1,4}$|^1(?:\.0{1,4})?$/.test(interestRate)) { setError("Interest rate must be greater than 0 and no more than 1, with up to four decimal places."); return; }
+    setPendingChange({ kind: "rate", product: editing, interestRate });
+  }
 
+  async function confirmChange(): Promise<void> {
+    if (!pendingChange) return;
+    setIsSaving(true); setError(null);
+    const body = pendingChange.kind === "rate" ? { interestRate: pendingChange.interestRate } : { status: "INACTIVE" };
     try {
-      const res = await fetch(`/api/fd-products/${editingProduct.fdPlanId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
-        },
-        body: JSON.stringify({ interestRate: newRate }),
-      });
+      const response = await fetch(`/api/fd-products/${pendingChange.product.fdPlanId}`, { method: "PATCH", headers: { "content-type": "application/json", "x-csrf-token": readCsrfToken() }, body: JSON.stringify(body) });
+      if (response.status === 401) { router.replace("/sign-in?next=/fd-products"); return; }
+      if (!response.ok) { const payload = (await response.json()) as ApiError; throw new Error(payload.error?.message ?? "The product could not be updated."); }
+      const payload = (await response.json()) as { data: FdProduct };
+      if (pendingChange.kind === "rate") setProducts((current) => [...current.map((product) => product.fdPlanId === pendingChange.product.fdPlanId ? { ...product, status: "INACTIVE", effectiveTo: new Date().toISOString() } : product), payload.data]);
+      else setProducts((current) => current.map((product) => product.fdPlanId === pendingChange.product.fdPlanId ? payload.data : product));
+      setNotice(pendingChange.kind === "rate" ? "The new rate was saved with its effective-date history." : "The product was deactivated.");
+      setEditing(null); setPendingChange(null);
+    } catch (caught: unknown) {
+      setError(caught instanceof Error ? caught.message : "The product could not be updated.");
+      setPendingChange(null);
+    } finally { setIsSaving(false); }
+  }
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error?.message || "Failed to update product");
-      }
+  function renderTable(list: FdProduct[], history: boolean): ReactNode {
+    return <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]"><table className="data-table"><thead><tr><th>Plan name</th><th>Tenure</th><th className="text-right">Interest rate</th><th>Status</th><th>Effective from</th><th>Effective to</th>{!history && isAdmin ? <th className="text-right">Actions</th> : null}</tr></thead><tbody>{list.length ? list.map((product) => <tr key={product.fdPlanId}><td className="font-medium">{product.planName}</td><td>{product.tenureMonths} months</td><td className="amount text-[var(--credit)]">{formatRate(product.interestRate)}</td><td>{product.status}</td><td>{formatDate(product.effectiveFrom)}</td><td>{formatDate(product.effectiveTo)}</td>{!history && isAdmin ? <td className="amount"><button className="mr-3 text-[var(--primary)] underline" onClick={() => startEdit(product)} type="button">Edit rate</button><button className="text-[var(--danger)] underline" onClick={() => { setPendingChange({ kind: "deactivate", product }); setNotice(null); }} type="button">Deactivate</button></td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={isAdmin && !history ? 7 : 6}>No products found.</td></tr>}</tbody></table></div>;
+  }
 
-      const { data: updatedProduct } = await res.json();
-      
-      // We don't exactly know what the server returned for the historical product, so it's easiest to just refresh the page
-      // But we can update state manually if we want. For safety, let's just reload.
-      window.location.reload();
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const handleDeactivate = async (id: string) => {
-    if (!confirm("Are you sure you want to deactivate this product?")) return;
-    
-    try {
-      const res = await fetch(`/api/fd-products/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
-        },
-        body: JSON.stringify({ status: "INACTIVE" }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error?.message || "Failed to deactivate product");
-      }
-
-      window.location.reload();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const renderTable = (list: FdProduct[], isHistory = false) => (
-    <div className="overflow-x-auto rounded-[8px] shadow-[0_1px_2px_rgba(0,0,0,0.06)] border border-[var(--border)] bg-[var(--surface)]">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-[var(--surface-muted)] text-[var(--text-muted)] text-[13px] font-[500] uppercase tracking-wider">
-            <th className="px-4 py-3 border-b border-[var(--border)]">Plan Name</th>
-            <th className="px-4 py-3 border-b border-[var(--border)]">Tenure (Months)</th>
-            <th className="px-4 py-3 border-b border-[var(--border)] text-right">Interest Rate</th>
-            <th className="px-4 py-3 border-b border-[var(--border)]">Status</th>
-            <th className="px-4 py-3 border-b border-[var(--border)]">Effective From</th>
-            <th className="px-4 py-3 border-b border-[var(--border)]">Effective To</th>
-            {!isHistory && isAdmin && <th className="px-4 py-3 border-b border-[var(--border)] text-right">Actions</th>}
-          </tr>
-        </thead>
-        <tbody className="text-[14px]">
-          {list.map(product => (
-            <tr key={product.fdPlanId} className="border-b border-[var(--border)] last:border-0 hover:bg-[#fafafa]">
-              <td className="px-4 py-3 font-[500]">{product.planName}</td>
-              <td className="px-4 py-3 text-center">{product.tenureMonths}</td>
-              <td className="px-4 py-3 amount text-[var(--credit)]">{(parseFloat(product.interestRate) * 100).toFixed(2)}%</td>
-              <td className="px-4 py-3">
-                <span className={`px-2 py-1 rounded-[6px] text-[12px] font-[600] ${product.status === 'ACTIVE' ? 'bg-[var(--credit)] text-white' : 'bg-[var(--text-muted)] text-white'}`}>
-                  {product.status}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-[var(--text-muted)]">{product.effectiveFrom ? new Date(product.effectiveFrom).toISOString().split('T')[0] : 'N/A'}</td>
-              <td className="px-4 py-3 text-[var(--text-muted)]">{product.effectiveTo ? new Date(product.effectiveTo).toISOString().split('T')[0] : '-'}</td>
-              {!isHistory && isAdmin && (
-                <td className="px-4 py-3 text-right">
-                  <button onClick={() => handleEdit(product)} className="text-[var(--primary)] font-[500] hover:text-[var(--primary-hover)] mr-3">Edit</button>
-                  <button onClick={() => handleDeactivate(product.fdPlanId)} className="text-[var(--danger)] font-[500] hover:underline">Deactivate</button>
-                </td>
-              )}
-            </tr>
-          ))}
-          {list.length === 0 && (
-            <tr>
-              <td colSpan={7} className="px-4 py-8 text-center text-[var(--text-muted)]">No products found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  return (
-    <div className="space-y-8">
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[var(--surface)] p-[24px] rounded-[8px] w-full max-w-md shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-            <h3 className="text-[18px] font-[600] mb-4">Edit Rate: {editingProduct.planName}</h3>
-            
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 text-[var(--danger)] text-[13px] rounded-[6px] border border-red-200">
-                {error}
-              </div>
-            )}
-
-            <div className="flex flex-col gap-[16px]">
-              <div>
-                <label className="block text-[13px] font-[500] text-[var(--text-muted)] mb-1">New Interest Rate (Fraction)</label>
-                <input 
-                  type="text" 
-                  value={newRate}
-                  onChange={(e) => setNewRate(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-[6px] text-[14px] focus:outline-none focus:border-[var(--primary)]"
-                  placeholder="e.g. 0.1500"
-                />
-              </div>
-              <div className="flex justify-end gap-3 mt-4">
-                <button 
-                  onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2 border border-[var(--border)] rounded-[6px] text-[var(--text)] hover:bg-[var(--surface-muted)] font-[500]"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={submitEdit}
-                  className="px-4 py-2 bg-[var(--primary)] text-white rounded-[6px] hover:bg-[var(--primary-hover)] font-[500]"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div>
-        <h2 className="text-[18px] font-[600] mb-4 text-[var(--text)]">Active FD Products</h2>
-        {renderTable(activeProducts, false)}
-      </div>
-
-      <div>
-        <h2 className="text-[18px] font-[600] mb-4 text-[var(--text)]">Rate History / Inactive</h2>
-        {renderTable(historicalProducts, true)}
-      </div>
-    </div>
-  );
+  return <div className="mt-8 space-y-8">
+    {notice ? <p aria-live="polite" className="rounded-md border border-[var(--credit)] p-3 text-sm text-[var(--credit)]">{notice}</p> : null}
+    {error ? <p aria-live="polite" className="rounded-md border border-[var(--danger)] p-3 text-sm text-[var(--danger)]">{error}</p> : null}
+    {editing ? <section className="card max-w-lg" aria-labelledby="edit-rate-title"><h2 className="text-lg font-semibold" id="edit-rate-title">Edit rate: {editing.planName}</h2><p className="mt-2 text-sm text-[var(--text-muted)]">Rate changes create a new effective-dated product record.</p><label className="mt-4 block text-[13px] font-medium text-[var(--text-muted)]" htmlFor="interest-rate">New interest rate (fraction)</label><input aria-describedby="rate-help" className="input mt-1" id="interest-rate" onChange={(event) => setInterestRate(event.target.value)} value={interestRate} /><p className="mt-1 text-xs text-[var(--text-muted)]" id="rate-help">For example, enter 0.1250 for 12.50%.</p><div className="mt-4 flex gap-3"><button className="btn btn-secondary" onClick={() => setEditing(null)} type="button">Cancel</button><button className="btn btn-primary" onClick={requestRateChange} type="button">Review change</button></div></section> : null}
+    <section><h2 className="section-heading">Active products</h2>{renderTable(activeProducts, false)}</section>
+    <section><h2 className="section-heading">Rate history and inactive products</h2>{renderTable(historicalProducts, true)}</section>
+    {pendingChange ? <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4" role="presentation"><div aria-describedby="change-description" aria-labelledby="change-title" aria-modal="true" className="card w-full max-w-md" ref={dialogRef} role="dialog" tabIndex={-1}><h2 className="text-lg font-semibold" id="change-title">Confirm product change</h2><p className="mt-3 text-sm text-[var(--text-muted)]" id="change-description">{pendingChange.kind === "rate" ? <>Create a new rate of <strong>{formatRate(pendingChange.interestRate)}</strong> for <strong>{pendingChange.product.planName}</strong>. The current rate will move to history.</> : <>Deactivate <strong>{pendingChange.product.planName}</strong>. It will remain available in the product history.</>}</p><div className="mt-6 flex justify-end gap-3"><button className="btn btn-secondary" disabled={isSaving} onClick={() => setPendingChange(null)} type="button">Cancel</button><button className="btn btn-primary" disabled={isSaving} onClick={confirmChange} type="button">{isSaving ? "Saving…" : "Confirm"}</button></div></div></div> : null}
+  </div>;
 }
