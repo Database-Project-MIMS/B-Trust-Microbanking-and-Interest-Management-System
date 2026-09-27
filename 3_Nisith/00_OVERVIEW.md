@@ -15,7 +15,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Savings Plan Schema](01_P1-T01_savings-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`savings_plan` + eligibility columns (G-13)~~ | ~~~3~~ |
 | ~~02~~ | ~~[Plan Eligibility Function](02_P1-T02_plan-eligibility-function.md)~~ | ~~P1~~ | ~~T02~~ | ~~`fn_check_plan_eligibility` — data-driven, not hardcoded~~ | ~~~3~~ |
-| 03 | [Plan API](03_P1-T03_plan-api-admin-page.md) | P1 | T03 | `GET/PATCH /api/plans` | ~3 |
+| ~~03~~ | ~~[Plan API](03_P1-T03_plan-api-admin-page.md)~~ | ~~P1~~ | ~~T03~~ | ~~`GET/PATCH /api/plans` + `app/plans/page.tsx` (built full-scope; the "UI COMPLETE, backend only" note this file's own PR #16 update added was checked and did not hold — no plan UI existed anywhere in `app/dashboard/**`)~~ | ~~~3~~ |
 | 04 | [Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md) | P2 | T01–T03 | `account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08) | ~10 |
 | 05 | [sp_open_savings_account](05_P2-T04_sp-open-savings-account.md) | P2 | T04 | Atomic account opening: account + holders + mandate + optional deposit | ~6 |
 | 06 | [Accounts API](06_P2-T05-T06_accounts-api-ui.md) | P2 | T05–T06 | `/api/accounts/**` | ~9 |
