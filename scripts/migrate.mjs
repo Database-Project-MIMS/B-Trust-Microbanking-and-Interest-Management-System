@@ -70,7 +70,10 @@ async function main() {
 
       if (previous !== undefined) {
         // 'bootstrap' is the self-recorded value from migration 0000.
-        if (previous !== "bootstrap" && previous !== sum) {
+        // Git may convert LF to CRLF on Windows without changing SQL contents.
+        const lfSum = checksum(text.replace(/\r\n/g, "\n"));
+        const crlfSum = checksum(text.replace(/\r?\n/g, "\r\n"));
+        if (previous !== "bootstrap" && previous !== sum && previous !== lfSum && previous !== crlfSum) {
           console.error(
             `\nERROR: ${file} was already applied but its contents changed.\n` +
               "A merged migration is immutable (AGENTS.md §8).\n" +

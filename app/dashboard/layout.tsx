@@ -1,21 +1,16 @@
-import * as React from "react"
-import { TopBar } from "@/components/app-shell/top-bar"
+import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { AppShell } from "@/components/app-shell/app-shell";
+import { SESSION_COOKIE_NAME, validateSession } from "@/lib/auth/session";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className="relative min-h-screen bg-surface text-on-surface">
-      <TopBar />
-      <main className="w-full pt-20 bg-surface min-h-screen">
-        <div className="flex flex-col w-full">
-          <div className="max-w-[1360px] w-full mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-xl">
-            {children}
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  const session = token ? await validateSession(token) : null;
+
+  if (!session) {
+    redirect("/sign-in?next=/dashboard");
+  }
+
+  return <AppShell session={session}>{children}</AppShell>;
 }
