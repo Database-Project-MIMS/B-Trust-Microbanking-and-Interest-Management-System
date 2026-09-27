@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-24 · **Updated by:** Member 3 (Nisith) after P01-M03-T02
+**Last updated:** 2026-09-27 · **Updated by:** Member 3 (Nisith) after P01-M03-T03
 
 ## Phase
 
@@ -25,8 +25,7 @@
   `max_holders`, `requires_all_adult`), three named `CHECK` constraints, and the five
   BR-03…BR-07 seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing.
   G-13 marked resolved in `docs/17_erd-gap-analysis.md`.
-- **P01-M03-T02 is complete** (not yet merged — on branch
-  `feat/p01-m03-plan-eligibility-function`): `fn_check_plan_eligibility(plan_id,
+- **P01-M03-T02 is complete and merged into `dev`** (PR #15): `fn_check_plan_eligibility(plan_id,
   date_of_birth, holder_count)` in `database/routines/`, a `STABLE` PL/pgSQL function
   checking the primary applicant's age and holder count against `savings_plan`'s data
   columns. Deliberately checks the primary applicant only — the full "every Joint holder
@@ -35,8 +34,26 @@
   `docs/specs/0002-plan-eligibility-function.md`). `docs/07_business-rules.md`'s BR-07
   row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
   — 10/10 passing, including a boundary test proving age is computed as whole completed
-  years, not naive year subtraction. `db:rebuild`, `db:verify` and the full `npm test`
-  suite (101/101) all pass.
+  years, not naive year subtraction.
+- **P01-M03-T03 is complete** (not yet merged — on branch
+  `feat/p01-m03-plan-api-page`): full vertical slice for the plan admin API and page —
+  `lib/validation/savings-plan.ts` (zod), `services/savings-plan-service.ts` +
+  `savings-plan-errors.ts`, `app/api/plans/route.ts` (GET, any authenticated role),
+  `app/api/plans/[id]/route.ts` (PATCH, ADMIN/CENTRAL_OPS, CSRF-checked),
+  `app/plans/page.tsx` + `SavingsPlanClient.tsx` (first real data page styled with the
+  new Material-3 tokens from the recent UI-integration PR, not the older token set
+  `fd-products` uses). `tests/api/plans.test.mjs` — 9/9 passing: role gating enforced
+  both client-side (hidden Edit button) and server-side (403 on direct PATCH), zod
+  cross-field validation for same-request conflicts, DB `CHECK`-constraint re-validation
+  for partial-update conflicts against the current row. Manually verified end-to-end via
+  curl against a running dev server (real login, real role checks) — found and fixed a
+  real gap along the way: `mims_app` had never been granted `SELECT`/`UPDATE` on
+  `savings_plan` (`database/roles/01_app_grants.sql`, one line added following the
+  existing per-member convention M2/M5 already used in that file). Also discovered
+  (not fixed, out of scope, M1's `lib/auth`): `issueCsrfToken()` is never actually called
+  from the login route anywhere in the codebase, so no page — including the
+  already-merged `fd-products` — can currently complete a real CSRF-protected edit
+  through an actual browser session. Worth the team's attention.
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
@@ -48,14 +65,14 @@
 
 Member 2's branch/agent administration pages have not been implemented. P01-M02-T03 is
 waiting only for the shared audit contract from P01-M01-T05; P01-M02-T04 remains the UI
-follow-up. Member 3's plan API/admin page (P01-M03-T03) has not been started.
+follow-up. Member 3's Phase 1 slice (T01–T03) is now fully done.
 
 ## Task status snapshot
 
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 9 DONE, 9 READY |
+| P1 | 18 | IN PROGRESS — 10 DONE, 8 READY |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
@@ -82,6 +99,8 @@ setup issue is recorded in `.agent/handoffs/p01-cross-member-test-blockers.md`.
 
 1. Member 1: complete P01-M01-T05 and publish the shared audit contract.
 2. Integrate and test branch/agent audit coverage, then move P01-M02-T03 to `DONE`.
-3. Member 3: open a PR for `feat/p01-m03-plan-eligibility-function` into `dev`, then
-   start P01-M03-T03 (plan API and admin page) — depends on T02 (done) and I-1 (RBAC
-   helpers, already merged).
+3. Member 3: open a PR for `feat/p01-m03-plan-api-page` into `dev` — this completes
+   Member 3's full Phase 1 slice. Someone should also raise the `issueCsrfToken()` gap
+   found during this task's manual verification (see above) with Member 1, since it
+   blocks a real end-to-end CSRF-protected edit on every admin page in the app, not
+   just this one.
