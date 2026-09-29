@@ -8,5 +8,6 @@ export default async function AgentsPage() {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await validateSession(token) : null;
   if (!session) redirect("/sign-in?next=/agents");
-  return <AppShell session={session}><div className="page-header"><div><p className="eyebrow">Organisation</p><h1 className="page-title">Agents</h1><p className="page-description">Agents are limited to your authorised branch scope.</p></div></div><OrganizationTable resource="agents" /></AppShell>;
+  if (!["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER"].includes(session.roleName)) redirect("/dashboard");
+  return <AppShell session={session}><div className="page-header"><div><p className="eyebrow">Organisation</p><h1 className="page-title">Agents</h1><p className="page-description">Create and deactivate ordinary agents within your authorised branch scope.</p></div></div><OrganizationTable resource="agents" roleName={session.roleName} /></AppShell>;
 }

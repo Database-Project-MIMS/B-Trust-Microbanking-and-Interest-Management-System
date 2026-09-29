@@ -235,7 +235,8 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/admin/parameters` | `/api/admin/parameters` | ADMIN | M1 |
 | `/admin/audit` | `GET /api/audit` | AUDITOR, ADMIN | M1 |
 | `/admin/health` | `GET /api/health` | ADMIN | M4 |
-| `/branches`, `/agents` | `/api/branches`, `/api/agents` | ADMIN, BRANCH_MANAGER | M2 |
+| `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
+| `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
 | `/plans` | `GET /api/plans` | all | M3 |
 | `/accounts`, `/accounts/new`, `/accounts/{id}` | `/api/accounts` | AGENT, BRANCH_MANAGER | M3 |
@@ -244,6 +245,12 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/transactions/{id}` | `GET`, `POST .../reverse` | staff; manager to reverse | M4 |
 | `/accounts/{id}/statement` | `GET /api/accounts/{id}/transactions` | staff; CUSTOMER own | M4 |
 | `/reconciliation` | `GET /api/reports/reconciliation` | CENTRAL_OPS, AUDITOR | M4 |
+
+The branch and agent pages default to active records and offer an all-records filter.
+`ADMIN` can create and deactivate branches. `ADMIN` and `BRANCH_MANAGER` can create and
+deactivate ordinary agents; a manager's active-branch selector contains only their scoped
+branch. Every mutation sends the login-issued CSRF token and asks for confirmation before
+deactivation. Deactivation preserves the record and its history.
 | `/fd-products` | `/api/fd-products` | ADMIN, CENTRAL_OPS | M5 |
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |

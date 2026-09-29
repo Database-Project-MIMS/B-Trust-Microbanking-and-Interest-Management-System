@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-27 · **Updated by:** Member 2 (Vibodha) after P01-M02-T03 audit integration
+**Last updated:** 2026-09-29 · **Updated by:** Member 2 (Vibodha) after P01-M02-T04 organisation admin UI
 
 ## Phase
 
@@ -49,11 +49,8 @@
   curl against a running dev server (real login, real role checks) — found and fixed a
   real gap along the way: `mims_app` had never been granted `SELECT`/`UPDATE` on
   `savings_plan` (`database/roles/01_app_grants.sql`, one line added following the
-  existing per-member convention M2/M5 already used in that file). Also discovered
-  (not fixed, out of scope, M1's `lib/auth`): `issueCsrfToken()` is never actually called
-  from the login route anywhere in the codebase, so no page — including the
-  already-merged `fd-products` — can currently complete a real CSRF-protected edit
-  through an actual browser session. Worth the team's attention.
+  existing per-member convention M2/M5 already used in that file). The login route now
+  calls `issueCsrfToken()`, so browser mutations can send the matching CSRF header.
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
@@ -61,18 +58,20 @@
   validation and API tests are implemented. Least-privilege `mims_app` grants are
   present, and migration `0122` provides sanitized, same-transaction branch/agent audit
   coverage with rollback verification.
+- **P01-M02-T04 is complete.** `/branches` and `/agents` provide role-aware active/all
+  lists, create forms and confirmed, CSRF-protected deactivation. The workflow test
+  creates, lists and deactivates both resources while proving records remain in history.
 
 ## What does NOT exist yet
 
-Member 2's branch/agent administration pages have not been implemented. P01-M02-T04 is
-the next Member 2 task. Member 3's Phase 1 slice (T01–T03) is fully done.
+Member 2's Phase 1 slice is complete. Member 2's Phase 2 work remains gated by OQ-05.
 
 ## Task status snapshot
 
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 19 | IN PROGRESS — 12 DONE, 7 READY |
+| P1 | 19 | IN PROGRESS — 13 DONE, 6 READY |
 | P2 | 16 | TODO (blocked on OQ-05) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
@@ -89,7 +88,7 @@ I-1 handoff, and adding a true request/SQL cross-branch test.
 
 ## Known process note
 
-The full suite passes 120/120; database verification, TypeScript checks and the production
+The full suite passes 121/121; database verification, lint, TypeScript checks and the production
 build pass. The clean rebuild command reaches the PostgreSQL administrator connection but
 requires an interactive `postgres` password on this Windows host; rerun
 `npm run db:rebuild` in the user's terminal for the final clean-from-empty proof. The
@@ -98,8 +97,5 @@ remaining native-Windows `db:create` setup issue is recorded in
 
 ## Next session should start with
 
-1. Member 2: merge the T03 audit follow-up, then start P01-M02-T04.
-2. Someone should raise the `issueCsrfToken()` gap
-   found during this task's manual verification (see above) with Member 1, since it
-   blocks a real end-to-end CSRF-protected edit on every admin page in the app, not
-   just this one.
+1. Member 2: have the T04 changes reviewed and merged into `dev`.
+2. Resolve OQ-05 before Member 2 starts Phase 2 customer work.

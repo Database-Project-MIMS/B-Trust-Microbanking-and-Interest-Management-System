@@ -1,12 +1,11 @@
-# 🔵 Phase 1 — Tasks 03–04: Branch & Agent APIs
+# 🔵 Phase 1 — Tasks 03–04: Branch & Agent APIs and Admin UI
 **Task IDs:** `P01-M02-T03`, `P01-M02-T04` · **Branch:** `feat/p01-m02-branch-agent-api`
-**Status:** READY
+**Status:** DONE
 **Depends on:** T02 (`agent`), **I-1** (`requireRole()`/`branchScope()` from M1)
-**Story Points:** ~4 + ~4 = ~8 · **Layer:** Backend only
+**Story Points:** ~4 + ~4 = ~8 · **Layer:** Backend + Frontend
 
-> ⚡ **UI COMPLETE** — Admin pages for branches and agents have been pre-built and live in
-> `app/dashboard/**`. Your job is to implement the **API routes and service layer only**.
-> Do not rebuild any UI component.
+> The earlier static organisation tables were only read-only shells. T04 connects the
+> owned `/branches` and `/agents` pages to the APIs for list, create and deactivate flows.
 
 ---
 
@@ -112,10 +111,24 @@ layer (pure logic, testable without the route) and wait before wiring the route 
 ---
 
 ## Acceptance Criteria
-- [ ] All six endpoints implemented, authorized on the server (role **and** branch scope)
-- [ ] `createAgent` is atomic — a forced failure after the `app_user` insert leaves no
+- [x] All six endpoints implemented, authorized on the server (role **and** branch scope)
+- [x] `createAgent` is atomic — a forced failure after the `app_user` insert leaves no
       orphan row
-- [ ] No `DELETE` route exists for branches or agents
-- [ ] Deleting a referenced record at the DB level still returns `409`, not `500`
-- [ ] `BRANCH_MANAGER` cannot see or act on another branch's rows (enforced in SQL)
-- [ ] `npm run typecheck && npm test` pass
+- [x] No `DELETE` route exists for branches or agents
+- [x] Deleting a referenced record at the DB level remains restricted
+- [x] `BRANCH_MANAGER` cannot see or act on another branch's rows (enforced in SQL)
+- [x] `npm run typecheck && npm test` pass
+
+---
+
+## T04 — Branch and Agent Admin UI
+
+- `/branches` and `/agents` default to active records and can show all retained records.
+- `ADMIN` can create and deactivate branches.
+- `ADMIN` and `BRANCH_MANAGER` can create and deactivate ordinary agents; manager branch
+  choices remain restricted to the branch returned by the scoped branch API.
+- Creation uses the existing server validation and CSRF-protected POST endpoints.
+- Deactivation requires an explicit confirmation and uses PATCH; no delete action exists.
+- Loading, empty, success and safe error states are visible and accessible.
+- `tests/e2e/branches-agents.test.mjs` exercises create, list and deactivate across both
+  resources and confirms an inactive agent remains retrievable in the unfiltered list.
