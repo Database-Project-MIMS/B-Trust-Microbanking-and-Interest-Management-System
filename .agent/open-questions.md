@@ -27,17 +27,6 @@ blocks so nobody discovers the dependency by surprise.
   Management System" name leans FD-first.
 - **Status:** OPEN — **lecturer question**, flagged in `docs/17_erd-gap-analysis.md`.
 
-### OQ-05 — Does every customer require a login, or are some customers agent-managed only?
-- **Ties to:** ERD gap G-20. `customer.customer_id` is `PK,FK` to `app_user` in the ERD,
-  forcing a login for every customer. SRS TBD-02 asks the same question and leaves it open.
-- **Blocks:** `P02-M02-T01` (customer schema) — this is the customer table's primary key
-  strategy, so it cannot be built provisionally and revised later without a migration that
-  touches every downstream FK.
-- **Recommendation:** decouple — give `customer` its own PK, with an *optional* FK to
-  `app_user` for the subset who get a portal login. Matches how real microfinance
-  operations work (most customers are walk-in, agent-mediated).
-- **Status:** OPEN — decide before Phase 2 starts, doesn't need the lecturer.
-
 ### OQ-08 — Do inter-account transfers exist as a transaction type?
 - **Ties to:** ERD gap G-05. ERD Assumption 4 says a transfer's two legs share one
   `reference_number`; BR-10 says reference numbers are unique. Both cannot be true if
@@ -62,8 +51,15 @@ blocks so nobody discovers the dependency by surprise.
 
 ## Resolved
 
-*(none yet — this section fills in as decisions are made; each resolution should also
-become an ADR in `decisions/` if it affects schema or architecture)*
+### OQ-05 — Customer login is optional
+
+- **Resolved:** 2026-09-29
+- **Decision:** Customers are primarily agent-managed and may exist without a login.
+  `customer` receives an independent surrogate `customer_id`; an optional unique
+  `app_user_id` links only customers who are later granted self-service access.
+- **Effect:** G-20 and TBD-02 are resolved. `P02-M02-T01` is no longer blocked by the
+  customer identity decision, but Phase 2 still requires its normal entry checkpoint.
+- **Record:** `.agent/decisions/ADR-0007-optional-customer-login.md`.
 
 ## How to resolve one
 

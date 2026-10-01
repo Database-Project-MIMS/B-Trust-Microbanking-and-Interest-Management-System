@@ -45,7 +45,8 @@ CSRF-protected API mutations. Member 2's Phase 1 slice is complete.
 
 ## Blocked on
 
-- No Member 2 Phase 1 blocker remains. Phase 2 work remains gated by OQ-05.
+- OQ-05, G-06 and G-08 are resolved by ADR-0007 through ADR-0009. Phase 2 now waits
+  only for the Phase 1 exit checkpoint.
 - Cross-member test blockers are otherwise resolved; the remaining native-Windows
   `db:create` setup issue is documented in
   `../handoffs/p01-cross-member-test-blockers.md`.

@@ -2,22 +2,22 @@
 **Task IDs:** `P02-M03-T01`, `P02-M03-T02`, `P02-M03-T03`
 **Branch:** `feat/p02-m03-account-holder-mandate-schema`
 **Migrations:** `0240_p02_m03_account.sql`, `0241_p02_m03_account_holder.sql`,
-`0242_p02_m03_joint_mandate.sql` · **Status:** TODO (gated)
-**Depends on:** `P01-M03-T01` (`savings_plan`), **G-06** approved; T01 depends on M2's
-`branch`; T02 depends on M2's `customer` (**OQ-05** gate); T03 depends on **G-08**
-approved
+`0242_p02_m03_joint_mandate.sql` · **Status:** TODO (awaiting Phase 2 entry)
+**Depends on:** `P01-M03-T01` (`savings_plan`), ADR-0008; T01 depends on M2's
+`branch`; T02 depends on M2's `customer`; T03 depends on ADR-0009
 **Story Points:** ~4 + ~3 + ~3 = ~10 · **Layer:** Database only
 
 ---
 
-## ⚠️ Gates — Read First
+## ✅ Design Decisions — Approved
 
-- **G-06** (account needs `branch_id`) and **G-08** (joint mandate needs a table) must
-  both be approved before this task starts — check `.agent/open-questions.md` and
-  `docs/phases/phase-02-customers-and-accounts.md` entry criteria.
-- T02 additionally needs M2's `customer` table, which is itself gated on **OQ-05**. If
+- **G-06** is approved by ADR-0008: `account.branch_id` is fixed at opening.
+- **G-08** is approved by ADR-0009: joint accounts require 2–4 adult holders and one
+  stored `ANY_ONE` or `ALL_HOLDERS` mandate.
+- T02 additionally needs M2's `customer` table. If
   `P02-M02-T01` is not `DONE`, you can still write and test T01 (`account`) in
   isolation, but stop before T02.
+- Phase 2 must still pass its Phase 1 exit checkpoint before implementation starts.
 
 ---
 
@@ -95,13 +95,15 @@ DECLARE
     v_plan_id uuid;
     v_min_holders int;
     v_max_holders int;
+    v_requires_all_adult boolean;
+    v_underage_holder_count int;
 BEGIN
     FOR r IN SELECT DISTINCT account_id FROM new_holders LOOP
         SELECT COUNT(*) INTO v_holder_count
         FROM account_holder WHERE account_id = r.account_id;
 
-        SELECT a.plan_id, sp.min_holders, sp.max_holders
-        INTO v_plan_id, v_min_holders, v_max_holders
+        SELECT a.plan_id, sp.min_holders, sp.max_holders, sp.requires_all_adult
+        INTO v_plan_id, v_min_holders, v_max_holders, v_requires_all_adult
         FROM account a
         JOIN savings_plan sp ON sp.plan_id = a.plan_id
         WHERE a.account_id = r.account_id;
@@ -110,6 +112,20 @@ BEGIN
             RAISE EXCEPTION 'INVALID_HOLDER_COUNT: account % has % holders, plan requires %-%',
                 r.account_id, v_holder_count, v_min_holders, v_max_holders
                 USING ERRCODE = 'P0001';
+        END IF;
+
+        IF v_requires_all_adult THEN
+            SELECT COUNT(*) INTO v_underage_holder_count
+            FROM account_holder ah
+            JOIN customer c ON c.customer_id = ah.customer_id
+            WHERE ah.account_id = r.account_id
+              AND c.date_of_birth > (CURRENT_DATE - INTERVAL '18 years')::date;
+
+            IF v_underage_holder_count > 0 THEN
+                RAISE EXCEPTION 'UNDERAGE_JOINT_HOLDER: account % has % underage holder(s)',
+                    r.account_id, v_underage_holder_count
+                    USING ERRCODE = 'P0001';
+            END IF;
         END IF;
     END LOOP;
     RETURN NULL;
@@ -123,21 +139,18 @@ CREATE TRIGGER trg_validate_joint_mandate
     EXECUTE FUNCTION trg_fn_validate_joint_mandate();
 ```
 
-This validates holder **count** against the plan's `min_holders`/`max_holders` — it does
-**not** validate that every holder is an adult (`requires_all_adult`); that per-holder
-age check happens in `sp_open_savings_account` (next task file) by calling
-`fn_check_plan_eligibility` once per holder, since the trigger only sees IDs, not dates
-of birth without an extra join you'd rather keep in the routine.
+This validation must check holder **count** against the plan's
+`min_holders`/`max_holders` and, when `requires_all_adult` is true, join each affected
+holder to `customer.date_of_birth` and reject any holder under 18. The opening routine
+also validates the complete set before commit; the database trigger remains the
+non-bypassable enforcement point required by ADR-0009.
 
 ---
 
 ## How to Implement
 
-### Step 1 — Confirm Gates
-```bash
-grep -n "G-06\|G-08" .agent/open-questions.md
-grep -n "P02-M02-T01" docs/09_task-tracker.md
-```
+### Step 1 — Confirm Approved Contracts
+Read ADR-0008 and ADR-0009, then confirm `P02-M02-T01` is complete before starting T02.
 
 ### Step 2 — Write the Three Migrations
 `database/migrations/0240_p02_m03_account.sql`, `0241_p02_m03_account_holder.sql`,
@@ -164,9 +177,10 @@ re-runnable and reviewable.
 2. ✅ Inserting 2 holders on a Joint-plan account succeeds
 3. ✅ Inserting **1** holder on a Joint-plan account is rejected by the trigger
 4. ✅ Inserting **5** holders on a Joint-plan account is rejected by the trigger
-5. ✅ A second `joint_mandate` row for the same `account_id` is rejected (`23505` on the
+5. ✅ Inserting an under-18 holder on a Joint-plan account is rejected by the trigger
+6. ✅ A second `joint_mandate` row for the same `account_id` is rejected (`23505` on the
    UNIQUE constraint)
-6. ✅ Invalid `mandate_type` is rejected
+7. ✅ Invalid `mandate_type` is rejected
 
 ### Step 4 — Run & Verify
 ```bash
@@ -193,6 +207,7 @@ npm test
 - [ ] `account.branch_id` is fixed at opening and never derived (G-06)
 - [ ] 1-holder and 5-holder joint accounts are both rejected by
       `trg_validate_joint_mandate`
+- [ ] A joint account containing any holder under 18 is rejected
 - [ ] `joint_mandate.account_id` is UNIQUE — one mandate per account
 - [ ] Handoff written for M4 (I-3)
 - [ ] `npm run db:rebuild` succeeds from empty

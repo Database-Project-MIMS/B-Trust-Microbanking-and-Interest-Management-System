@@ -18,4 +18,5 @@ None. T04 uses the schema, audit triggers and grants delivered by T01–T03.
 
 ## Next dependency
 
-Member 2's Phase 1 slice is complete. Phase 2 remains gated by OQ-05.
+Member 2's Phase 1 slice is complete. OQ-05, G-06 and G-08 are resolved by ADR-0007
+through ADR-0009; Phase 2 now waits only for its Phase 1 exit checkpoint.

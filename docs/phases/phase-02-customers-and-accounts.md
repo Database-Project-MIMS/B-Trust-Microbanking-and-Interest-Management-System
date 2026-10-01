@@ -10,10 +10,10 @@ opened with eligibility and mandate rules enforced by the database.
 ## Entry criteria
 
 - [ ] Phase 1 exit criteria met
-- [ ] **OQ-05 resolved** (G-20 — customer identity and whether customer login is required).
-      `P02-M02-T01` cannot start until this is decided, because it determines the primary
-      key of `customer`.
-- [ ] G-06 (account `branch_id`) and G-08 (joint mandate) approved
+- [x] **OQ-05 resolved** (G-20, ADR-0007) — customers use an independent primary key
+      and may optionally link to an application login.
+- [x] G-06 approved by ADR-0008 — `account.branch_id` is stored at opening
+- [x] G-08 approved by ADR-0009 — joint accounts require 2–4 adult holders and a mandate
 
 ## Tasks by member
 
@@ -53,6 +53,6 @@ opened with eligibility and mandate rules enforced by the database.
 
 | Risk | Mitigation |
 |---|---|
-| OQ-05 unresolved delays M2 and M3 | Resolve during Phase 1; M2/M3 can build documents and plans work meanwhile |
+| Optional-login link is accidentally treated as mandatory | Test registration without `app_user_id`; keep the FK nullable and unique (ADR-0007) |
 | M3 and M4 both need `transaction` | M4 owns and delivers the table in this phase; M3 calls it |
 | Age boundary bugs (12 vs 13, 59 vs 60) | Seed includes customers at every boundary; tests assert each |

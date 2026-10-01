@@ -142,7 +142,8 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   removed before audit persistence.
 
 ### `customer`
-Subtype of `user` in the current ERD. See **G-20** — this is contested.
+Subtype of `user` in the current ERD. G-20 is resolved by ADR-0007: Phase 2 will implement
+the approved independent identity described in Part B.4 instead of this ERD key shape.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -265,7 +266,8 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).
-- Gaps: no `branch_id` (**G-06**); no non-negative `CHECK` (**G-18**).
+- Approved changes: add immutable-at-opening `branch_id` (**G-06**, ADR-0008) and the
+  non-negative `CHECK` (**G-18**). See Part B.
 
 ### `account_holder`
 Intersection resolving the many-to-many between customers and accounts. This is what makes
@@ -280,8 +282,8 @@ joint accounts possible (SRS §6.3).
 | — | | **UK (account_id, customer_id)** |
 
 - The composite unique key prevents the same customer being added twice to one account.
-- Invariants: an individual account has exactly one holder; a joint account has 2–4 adult
-  holders (§4.4) — **unenforced in the ERD, see G-08**.
+- Approved changes: add `holder_type`; an individual account has exactly one primary
+  holder and a joint account has 2–4 adult holders with a mandate (**G-08**, ADR-0009).
 
 ### `fixed_deposit`
 
@@ -373,7 +375,7 @@ corresponding open question is resolved and an ADR exists.**
 |---|---|---|---|
 | `transaction_reversal` | Links an original transaction to its compensating entry; `UNIQUE(original_transaction_id)` enforces "reversible once" (DB-CON-04) | G-02 | M4 |
 | `interest_run` | One row per 30-day cycle. `UNIQUE(cycle_date)` prevents duplicate runs; stores counts, totals, exceptions (FR-INT-05) | G-03 | M5 |
-| `joint_mandate` | `ANY_ONE` / `ALL_HOLDERS` operating rule per joint account (FR-ACC-04, BR-17) | G-08 | M3 |
+| `joint_mandate` | `ANY_ONE` / `ALL_HOLDERS` operating rule per joint account (FR-ACC-04, BR-17; approved ADR-0009) | G-08 | M3 |
 | `system_parameter` | Business hours, withdrawal limits as data, not code (BR-08, §7.1) | G-15 | M1 |
 | `business_calendar` | Working days and open/close times | G-15 | M1 |
 | `user_session` | Server-side session records so sessions can be invalidated (FR-AUTH-04) | G-16 | M1 |
@@ -385,7 +387,7 @@ corresponding open question is resolved and an ADR exists.**
 
 | Table | Column | Reason | Gap |
 |---|---|---|---|
-| `account` | `branch_id uuid NOT NULL FK` | Owning branch fixed at opening; RLS anchor (FR-ACC-01) | G-06 |
+| `account` | `branch_id uuid NOT NULL FK` | Owning branch fixed at opening; RLS anchor (FR-ACC-01; approved ADR-0008) | G-06 |
 | `transaction` | `agent_id uuid NULL FK` | RPT-01 is agent-wise (FR-DEP-02) | G-07 |
 | `transaction` | `branch_id uuid NULL FK` | Branch attribution at posting time | G-07 |
 | `transaction` | `idempotency_key varchar(80) NULL` | FR-DEP-04, AC-06 | G-04 |
@@ -398,7 +400,7 @@ corresponding open question is resolved and an ADR exists.**
 | `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |
-| `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` | G-08 |
+| `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` (approved ADR-0009) | G-08 |
 | `audit_log` | `user_id` made NULL-able, `actor_type varchar(20)` | System-posted interest runs have no user | G-22 |
 
 ## B.3 Constraint changes
@@ -412,23 +414,25 @@ corresponding open question is resolved and an ADR exists.**
 | `interest_payout`: `UNIQUE(fd_id, cycle_date)` | FR-INT-03, NFR-SAFE-03 | G-03 | Yes |
 | Apply `money_amount` / `positive_money` / `interest_rate` domains throughout | SRS §6.1 | G-19 | No |
 
-## B.4 Identity change (blocking)
+## B.4 Identity change (approved)
 
 `customer.customer_id` becomes an independent surrogate PK with an optional
-`user_id uuid NULL UNIQUE FK → app_user`, instead of `PK,FK`. Depends on TBD-02 / **OQ-05**
-(is customer self-service login required?). `agent` keeps the subtype pattern.
+`app_user_id uuid NULL UNIQUE FK → app_user`, instead of `PK,FK`. **Approved by ADR-0007**
+on 2026-09-29: customer login is optional and most customers are agent-managed. `agent`
+keeps the subtype pattern.
 
 ## B.5 Denormalisation register
 
-SRS §6.1 requires intentional denormalisation to be documented. Three entries:
+SRS §6.1 requires intentional denormalisation to be documented. Four entries:
 
 | # | Denormalised value | Derivable from | Why it is kept | Control |
 |---|---|---|---|---|
 | D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view asserts equality with the ledger |
 | D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view compares against the window-function result |
 | D-3 | `fixed_deposit.interest_rate_at_opening` | `fd_plan.interest_rate` | Rates are effective-dated (BR-19); reading through the plan would retroactively change historical payouts | `NOT NULL`; set once at opening; never updated |
+| D-4 | `account.branch_id` | Opening agent's branch at account creation | Branch ownership must not drift when an agent transfers; it is the RLS and historical-report anchor | `NOT NULL FK`; assigned from trusted branch scope at opening; never changed |
 
-All three remain **3NF-compliant by design intent**: the ledger stays authoritative and
+All four remain **3NF-compliant by design intent**: the ledger stays authoritative and
 each denormalised value is reconciled against its source in Phase 5.
 
 ## B.6 Normalisation position
