@@ -42,7 +42,8 @@ L01–L13.
 |---|---|---|---|---|---|
 | `trg_financial_transaction_immutable` | M4 | `BEFORE UPDATE OR DELETE` on `transaction` | Raise unconditionally — posted rows are immutable | FR-TXN-02, BR-16 | L08 triggers |
 | `trg_audit_log_immutable` | M1 | `BEFORE UPDATE OR DELETE` on `audit_log` | Append-only audit | FR-AUD-01 | L08 |
-| `trg_audit_master_changes` | M1 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write before/after values as `jsonb` | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_audit_master_changes` | M1/M2 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write sanitized before/after values as `jsonb`; sensitive keys are removed | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_audit_branch` / `trg_audit_agent` | M2 | `AFTER INSERT/UPDATE/DELETE` on `branch` / `agent` | Audit organisation master data in the caller transaction | FR-ORG-04, FR-AUD-01 | L08, ACID |
 | `trg_validate_joint_mandate` | M3 | `AFTER INSERT/UPDATE` on `account_holder`, **statement-level with transition tables** | Holder count 2–4 and all adults for joint plans — a rule that spans rows, so it cannot be a row `CHECK` | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
 | `trg_set_updated_at` | shared | `BEFORE UPDATE` | Maintain `updated_at` | DB-CON-06 | L08 (already in migration `0000`) |
 | `trg_prevent_duplicate_active_fd` | M5 | `BEFORE INSERT/UPDATE` on `fixed_deposit` | **Fallback only.** The partial unique index is the real guarantee; this exists so the rule is also demonstrable as a trigger | BR-12, NFR-SAFE-04 | L08, L10 |

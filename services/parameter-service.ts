@@ -15,8 +15,9 @@ export async function getParameter(key: string): Promise<string> {
     `SELECT param_value FROM system_parameter WHERE param_key = $1`,
     [key]
   );
-  if (result.rows.length === 0) throw new Error(`System parameter not found: ${key}`);
-  return result.rows[0].param_value;
+  const parameter = result[0];
+  if (!parameter) throw new Error(`System parameter not found: ${key}`);
+  return parameter.param_value;
 }
 
 /** Read a system parameter as a number. */
@@ -34,7 +35,7 @@ export async function listParameters(): Promise<SystemParameter[]> {
      FROM system_parameter
      ORDER BY param_key ASC`
   );
-  return result.rows;
+  return result;
 }
 
 /** Update a single parameter value. ADMIN only — enforced at route level. */
@@ -46,6 +47,7 @@ export async function updateParameter(paramKey: string, newValue: string): Promi
      RETURNING param_id, param_key, param_value, description, data_type, updated_at`,
     [newValue, paramKey]
   );
-  if (result.rows.length === 0) throw new Error(`Parameter not found: ${paramKey}`);
-  return result.rows[0];
+  const parameter = result[0];
+  if (!parameter) throw new Error(`Parameter not found: ${paramKey}`);
+  return parameter;
 }

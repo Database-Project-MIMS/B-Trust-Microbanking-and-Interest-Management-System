@@ -8,9 +8,9 @@ session and read at the start of the next one.
 
 ## Current task
 
-**P01-M02-T03 — Branch and Agent APIs: IN_PROGRESS.** P01-M02-T01, P01-M02-T02 and I-1
-are complete and merged into `dev`. The six route handlers, service layer, validation and
-database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
+**P01-M02-T04 — Branch and Agent Admin UI: READY.** P01-M02-T01 through T03 are
+complete. T03's API implementation is merged into `dev`; its follow-up audit migration,
+DB test and documentation are ready on `feat/p01-m02-branch-agent-apis`.
 
 ## Recent history
 
@@ -27,6 +27,10 @@ database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
   and isolated FD API fixtures. The full suite passes 56/56.
 - Added the approved least-privilege `mims_app` grants for `branch` and `agent`. The
   organisation API suite passes 23/23 using the normal application connection.
+- Added `0122_p01_m02_organization_audit.sql`: branch/agent audit triggers share the
+  caller transaction, use the correct entity ID and remove password/token/identity keys.
+- Added a database audit test and extended API assertions to prove audit creation,
+  sensitive-field removal and rollback atomicity.
 
 ## Notes to self
 
@@ -39,8 +43,7 @@ database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
 
 ## Blocked on
 
-- Member 1 must publish the `audit_log` table/trigger contract. The runtime grants are
-  complete; see `../handoffs/p01-m02-t03-audit-and-grants.md`.
+- No Member 2 Phase 1 blocker remains; T04 can start after this T03 follow-up is merged.
 - Cross-member test blockers are otherwise resolved; the remaining native-Windows
   `db:create` setup issue is documented in
   `../handoffs/p01-cross-member-test-blockers.md`.

@@ -98,7 +98,8 @@ name is retained in diagrams.
 | `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
 | `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_branch_set_updated_at` |
 
-- Implemented by `0120_p01_m02_branch.sql`.
+- Implemented by `0120_p01_m02_branch.sql`; `0122_p01_m02_organization_audit.sql`
+  adds same-transaction, sanitized master-data auditing.
 - Delete: references use `ON DELETE RESTRICT`; the first such FK is added by the agent
   schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
@@ -124,7 +125,8 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
 | `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
 | `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_agent_set_updated_at` |
 
-- Implemented by `0121_p01_m02_agent.sql`.
+- Implemented by `0121_p01_m02_agent.sql`; `0122_p01_m02_organization_audit.sql`
+  adds same-transaction, sanitized master-data auditing.
 - Delete: `RESTRICT`; future references from `account.opened_by_agent_id` and
   `customer_agent` also use `RESTRICT`.
 - Index: `ix_agent_branch_status (branch_id, status)` for branch-scoped active-agent lists.
@@ -135,6 +137,9 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   `agent.agent_id`; a missing profile fails closed with `403`, never bank-wide scope.
 - Agent-management lists and agent-specific reports join `role` and restrict
   `role_name = 'AGENT'` when branch managers must not appear as ordinary agents.
+- Branch, agent and linked `app_user` changes write before/after JSON to `audit_log` in
+  the caller transaction. `password_hash`, `nic_passport_no` and `token_hash` are
+  removed before audit persistence.
 
 ### `customer`
 Subtype of `user` in the current ERD. See **G-20** — this is contested.
