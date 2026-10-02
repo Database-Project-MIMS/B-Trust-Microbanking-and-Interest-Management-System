@@ -110,7 +110,7 @@ The SRS itself flags six TBDs. Their status here:
 | SRS TBD | Question | Our position |
 |---|---|---|
 | TBD-01 | PostgreSQL or MySQL | **Settled: PostgreSQL 16** (ADR-0001) |
-| TBD-02 | Customer login mandatory? | **OQ-05 — blocking**, drives ERD gap G-20 |
+| TBD-02 | Customer login mandatory? | **Resolved:** no; customer login is optional (ADR-0007, G-20) |
 | TBD-03 | Exact withdrawal limits and approval threshold | **OQ-07** — defaults adopted, confirmable |
 | TBD-04 | FD maturity: return principal or renew | **OQ-06** — return principal assumed |
 | TBD-05 | Hosting provider and public production URL | **OQ-09** |

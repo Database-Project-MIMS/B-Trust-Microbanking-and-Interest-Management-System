@@ -64,9 +64,8 @@ You are a **producer** for three integration points — M4 and M5 cannot safely 
 their pieces until you publish a handoff in `.agent/handoffs/` for each. Do this
 *before* marking the publishing task `DONE`, not after.
 
-Blocking gates: **G-06** (account `branch_id`) and **G-08** (joint mandate) must be
-approved before Phase 2 starts (see `docs/phases/phase-02-customers-and-accounts.md`
-entry criteria).
+Approved gates: **G-06** (account `branch_id`, ADR-0008) and **G-08** (joint mandate,
+ADR-0009) were accepted on 1 Oct 2026. Phase 2 still awaits the Phase 1 exit checkpoint.
 
 ---
 
@@ -115,8 +114,7 @@ entry criteria).
 **Phase 2 is your heaviest phase (25 pts — 6 tasks), and it gates M4, M5 and both of
 your later reports.** Suggested approach:
 
-1. ✅ Confirm **G-06** and **G-08** are approved before writing anything — check
-   `.agent/open-questions.md`
+1. ✅ **G-06** and **G-08** are approved by ADR-0008 and ADR-0009
 2. ✅ Do T01 (`account` schema) first — needs M2's `branch` (T01 of their slice) and
    your own `savings_plan` from Phase 1
 3. ✅ Do T02 (`account_holder`) — needs M2's `customer` table (Phase 2, gated on OQ-05)

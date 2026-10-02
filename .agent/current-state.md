@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-29 · **Updated by:** Member 2 (Vibodha) after P01-M02-T04 organisation admin UI
+**Last updated:** 2026-10-01 · **Updated by:** Member 2 (Vibodha) after Phase 2 identity, branch and mandate approvals
 
 ## Phase
 
@@ -64,7 +64,9 @@
 
 ## What does NOT exist yet
 
-Member 2's Phase 1 slice is complete. Member 2's Phase 2 work remains gated by OQ-05.
+Member 2's Phase 1 slice is complete. OQ-05 is resolved by ADR-0007: customers use an
+independent identity and may optionally link to `app_user`. G-06 and G-08 are resolved by
+ADR-0008 and ADR-0009. Phase 2 now waits only for the Phase 1 exit checkpoint.
 
 ## Task status snapshot
 
@@ -72,7 +74,7 @@ Member 2's Phase 1 slice is complete. Member 2's Phase 2 work remains gated by O
 |---|---|---|
 | P0 | 6 | DONE |
 | P1 | 19 | IN PROGRESS — 13 DONE, 6 READY |
-| P2 | 16 | TODO (blocked on OQ-05) |
+| P2 | 16 | TODO (identity, branch and mandate decisions approved; awaiting Phase 1 exit) |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
 | P5 | 15 | TODO |
@@ -98,4 +100,4 @@ remaining native-Windows `db:create` setup issue is recorded in
 ## Next session should start with
 
 1. Member 2: have the T04 changes reviewed and merged into `dev`.
-2. Resolve OQ-05 before Member 2 starts Phase 2 customer work.
+2. Complete the Phase 1 exit checkpoint before Member 2 starts Phase 2 customer work.

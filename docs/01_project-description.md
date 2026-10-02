@@ -40,7 +40,7 @@ transfers (see `17_erd-gap-analysis.md` **G-05**).
 | **Central Operations Officer** | Manages FD products, runs interest cycles, produces bank-wide reports |
 | **Auditor / Management** | Read-only access to reports, ledger history and audit events |
 | **System Administrator** | Users, roles, parameters, deployment |
-| **Customer** | Views own accounts, balances and transactions (self-service scope subject to **OQ-05**) |
+| **Customer** | Primarily agent-managed; may view own accounts, balances and transactions when optional self-service access is provisioned (ADR-0007) |
 | **QA Tester** | Validates workflows, SQL rules, error handling and reports with synthetic data |
 | **Scheduled Worker** | Executes the authenticated interest cycle |
 

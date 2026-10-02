@@ -19,7 +19,7 @@ Synthetic, development only. Loaded by `database/seed/01_roles_users.sql`.
 | `AGENT` | `agent.colombo1` | Customers, accounts, deposits, withdrawals |
 | `AGENT` | `agent.kandy1` | Cross-branch denial testing |
 | `AUDITOR` | `auditor` | Read-only reports and audit |
-| `CUSTOMER` | `cust.demo` | Self-service scope (subject to **OQ-05**) |
+| `CUSTOMER` | `cust.demo` | Optional self-service scope for a customer linked to `app_user` (ADR-0007) |
 
 Passwords are in the seed file header. **Never reuse them anywhere real.**
 

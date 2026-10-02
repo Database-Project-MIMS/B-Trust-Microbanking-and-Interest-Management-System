@@ -15,7 +15,8 @@ of a session, read at the start of the next one. Empty until Phase 1 work begins
 
 ## Recent history
 
-*(empty)*
+- G-06 and G-08 were approved on 2026-10-01. ADR-0008 fixes account branch ownership at
+  opening; ADR-0009 requires 2–4 adult joint holders and a stored operating mandate.
 
 ## Notes to self
 
@@ -23,5 +24,5 @@ of a session, read at the start of the next one. Empty until Phase 1 work begins
 
 ## Blocked on
 
-*(nothing yet — check `../open-questions.md` and the integration points in
-`../handoffs/README.md` once Phase 1 starts)*
+- Phase 2 awaits the Phase 1 exit checkpoint. T02 also waits for Member 2's
+  `P02-M02-T01` customer table.

@@ -150,23 +150,24 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, TODO)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, awaiting Phase 1 exit)
 
-**Gate:** OQ-05 (G-20 customer identity) must be resolved before `P02-M02-T01` starts.
+**Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
+Phase 2 now waits only for the Phase 1 exit checkpoint before work begins.
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
 | P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 |
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05 |
 | P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 |
-| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | **OQ-05**, P01-M02-T02 |
+| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T03 |
 | P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 |
-| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, **G-06** |
+| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, **G-08** |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved |
 | P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 |
 | P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 |
@@ -259,10 +260,9 @@ hardcoded in TypeScript.
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
-| P02-M02-T01 | **OQ-05** — customer identity / login (G-20) | Team + lecturer |
 | P03-M04-T01 | **OQ-08** — reference-number uniqueness / transfers (G-05) | Team |
 | P04-M05-T01 | **OQ-01** — one active FD vs one FD ever (G-01) | Team |
 | P04-M05-T04, P05-M05-T02 | **OQ-04** — savings-account interest in scope? (G-12) | **Lecturer** |
 
-These four decisions are the highest-priority item after Phase 0 approval. Everything in
+These remaining decisions are high-priority integration items. Everything in
 Phase 1 can proceed in parallel while they are being settled.

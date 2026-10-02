@@ -21,7 +21,7 @@ determines which operations the authenticated user may perform.
 | `BRANCH_MANAGER` | Own branch | Branch agents, approve exceptions, joint mandates, **reversals**, branch reports |
 | `AGENT` | Own branch, assigned customers | Register customers, open accounts, post deposits and withdrawals |
 | `AUDITOR` | Bank-wide, **read-only** | Reports, ledger history, audit search |
-| `CUSTOMER` | Own accounts only | View own accounts, balances, transactions (scope subject to **OQ-05**) |
+| `CUSTOMER` | Own accounts only, when optional login is provisioned | View own accounts, balances and transactions linked through the customer profile (ADR-0007) |
 | `QA_TESTER` | Configurable | Exercise workflows against synthetic data |
 
 ## Permission matrix

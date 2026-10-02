@@ -23,3 +23,6 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | ADR-0004 | current_balance as a maintained denormalisation | Accepted |
 | ADR-0005 | Reserved per-member migration number blocks | Accepted |
 | ADR-0006 | Branch managers share the agent branch-staff profile | Accepted |
+| ADR-0007 | Customer login is optional | Accepted |
+| ADR-0008 | Savings accounts store their owning branch | Accepted |
+| ADR-0009 | Joint accounts require a stored operating mandate | Accepted |

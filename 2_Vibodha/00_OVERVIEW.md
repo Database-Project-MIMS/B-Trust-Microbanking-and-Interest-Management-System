@@ -56,8 +56,8 @@ consume from M1 and M4)*
 | **I-2** | `withTransaction()` and SQLSTATE → domain error mapping | M4 | P1 |
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
-Blocking gate: **OQ-05** (G-20 — is a customer login required?) must be resolved before
-`P02-M02-T01` can start. Check `.agent/open-questions.md` before beginning Phase 2.
+Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
+`customer` uses an independent primary key. Phase 2 still awaits its entry checkpoint.
 
 ---
 
