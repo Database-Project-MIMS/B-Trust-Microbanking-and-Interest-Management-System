@@ -8,9 +8,9 @@ session and read at the start of the next one.
 
 ## Current task
 
-**P01-M02-T04 — Branch and Agent Admin UI: READY.** P01-M02-T01 through T03 are
-complete. T03's API implementation is merged into `dev`; its follow-up audit migration,
-DB test and documentation are ready on `feat/p01-m02-branch-agent-apis`.
+**P01-M02-T04 — Branch and Agent Admin UI: complete.** The `/branches` and `/agents`
+pages now provide role-aware active/all lists, create forms, confirmed deactivation and
+CSRF-protected API mutations. Member 2's Phase 1 slice is complete.
 
 ## Recent history
 
@@ -31,6 +31,8 @@ DB test and documentation are ready on `feat/p01-m02-branch-agent-apis`.
   caller transaction, use the correct entity ID and remove password/token/identity keys.
 - Added a database audit test and extended API assertions to prove audit creation,
   sensitive-field removal and rollback atomicity.
+- Completed the branch and agent administration pages and added an end-to-end workflow
+  test covering create, list, deactivate and retained inactive records.
 
 ## Notes to self
 
@@ -43,7 +45,7 @@ DB test and documentation are ready on `feat/p01-m02-branch-agent-apis`.
 
 ## Blocked on
 
-- No Member 2 Phase 1 blocker remains; T04 can start after this T03 follow-up is merged.
+- No Member 2 Phase 1 blocker remains. Phase 2 work remains gated by OQ-05.
 - Cross-member test blockers are otherwise resolved; the remaining native-Windows
   `db:create` setup issue is documented in
   `../handoffs/p01-cross-member-test-blockers.md`.

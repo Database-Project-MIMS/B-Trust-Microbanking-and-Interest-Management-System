@@ -171,3 +171,17 @@ Last updated: 27 Sep 2026
 | Responsive behaviour | Tables retain a scrollable minimum width; detail and metric grids collapse to one column; filter bars stack on small screens. |
 
 These screens only describe expected request inputs and outcomes. They contain no database access, financial calculation, client-side authorization, or live posting logic.
+
+### Organisation administration
+
+File: `components/organization/organization-table.tsx`, `app/branches/page.tsx`, `app/agents/page.tsx`
+Last updated: 29 Sep 2026
+
+| Property | Pattern |
+| --- | --- |
+| Purpose | Live branch and ordinary-agent administration through the authorised APIs. |
+| Props / variants | `OrganizationTable` accepts `resource` (`branches` or `agents`) and the server-validated `roleName`; roles control whether create and deactivate actions render. |
+| States | Loading, active/all filter, empty, create form, saving, success, safe error and deactivation confirmation. |
+| Forms | One logical column of sections, using the shared two-column field grid on wider screens; every field has a visible required label. |
+| Destructive action | Deactivation names the exact record, retains history and requires confirmation; there is no delete control. |
+| Responsive behaviour | Toolbars stack and tables scroll horizontally on narrow screens. |
