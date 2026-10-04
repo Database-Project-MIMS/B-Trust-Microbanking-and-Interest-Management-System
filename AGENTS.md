@@ -1,4 +1,4 @@
-<!-- # AGENTS.md — MIMS Development Contract
+# AGENTS.md — MIMS Development Contract
 
 **Project:** Microbanking and Interest Management System (MIMS) — B-Trust Microfinance Bank
 **Course:** CS3043 Database Systems · Semester Project · **Group 32**
@@ -374,4 +374,4 @@ A task is `DONE` only when **all** of the following are true:
   `docs/17_erd-gap-analysis.md` first.
 - Never edit another member's migration.
 - Never bypass a service to query the database from a route handler or component.
-- Never begin the next phase without the phase checkpoint being approved. -->
+- Never begin the next phase without the phase checkpoint being approved.

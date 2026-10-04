@@ -35,7 +35,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-03 | No central interest-run tracking | HIGH | YES |
 | G-04 | No idempotency key on transactions | HIGH | YES |
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
-| G-06 | Accounts have no owning branch | HIGH | **YES — resolved** |
+| G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transactions have no agent or branch attribution | HIGH | YES |
 | G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved** |
 | G-09 | Single role per user vs `user_role` many-to-many | MEDIUM | YES |
@@ -47,7 +47,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-15 | No parameter store for business hours and withdrawal limits | MEDIUM | YES |
 | G-16 | No session table for server-side invalidation | MEDIUM | YES |
 | G-17 | No store for failed sign-in throttling | LOW | NO |
-| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO |
+| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO — implemented in `0240` |
 | G-19 | Monetary and rate columns lack precision | MEDIUM | NO |
 | G-20 | Every customer is forced to have a login | HIGH | **YES — resolved** |
 | G-21 | Branch managers have no defined branch-assignment source | HIGH | **YES — accepted** |
