@@ -255,14 +255,17 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 |---|---|---|
 | `account_id` | uuid | **PK** |
 | `plan_id` | uuid | **FK → savings_plan** |
+| `branch_id` | uuid | **FK → branch**, NOT NULL — owning branch fixed at opening (G-06, ADR-0008) |
 | `opened_by_agent_id` | uuid | **FK → agent** |
 | `account_number` | varchar(50) | **UK** (SRS §6.7) |
 | `opened_date` | date | |
 | `status` | varchar(20) | `ACTIVE` / `FROZEN` / `CLOSED` |
-| `current_balance` | `money_amount` | Controlled balance — see G-18 |
+| `current_balance` | `money_amount` | NOT NULL DEFAULT 0, `CHECK (>= 0)` — controlled balance (G-18) |
+| `created_at` / `updated_at` | timestamptz | `updated_at` maintained by `trg_account_set_updated_at` |
 
 - Delete: `RESTRICT` — referenced by `transaction`, `account_holder`, `fixed_deposit`.
-- Indexes: `account_number` unique; `(plan_id)`; `(status)`.
+- Indexes: `account_number` unique; `(plan_id)`; `(branch_id, status)` (ADR-0008); `(status)`.
+- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`).
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).

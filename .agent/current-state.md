@@ -74,7 +74,7 @@ ADR-0008 and ADR-0009. Phase 2 now waits only for the Phase 1 exit checkpoint.
 |---|---|---|
 | P0 | 6 | DONE |
 | P1 | 19 | IN PROGRESS — 13 DONE, 6 READY |
-| P2 | 16 | TODO (identity, branch and mandate decisions approved; awaiting Phase 1 exit) |
+| P2 | 16 | IN PROGRESS — 1 DONE (P02-M03-T01 `account`), 15 TODO |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
 | P5 | 15 | TODO |
