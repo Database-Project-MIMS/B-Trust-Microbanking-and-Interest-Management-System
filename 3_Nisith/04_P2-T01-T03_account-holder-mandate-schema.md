@@ -1,7 +1,7 @@
 # 🟢 Phase 2 — Tasks 01–03: Account, Holder & Joint Mandate Schema
 **Task IDs:** `P02-M03-T01`, `P02-M03-T02`, `P02-M03-T03`
 **Branch:** `feat/p02-m03-account-holder-mandate-schema`
-**Migrations:** `0240_p02_m03_account.sql`, `0241_p02_m03_account_holder.sql`,
+**Migrations:** `0240_p02_m03_account.sql` (**T01 DONE**), `0241_p02_m03_account_holder.sql`,
 `0242_p02_m03_joint_mandate.sql` · **Status:** TODO (awaiting Phase 2 entry)
 **Depends on:** `P01-M03-T01` (`savings_plan`), ADR-0008; T01 depends on M2's
 `branch`; T02 depends on M2's `customer`; T03 depends on ADR-0009
