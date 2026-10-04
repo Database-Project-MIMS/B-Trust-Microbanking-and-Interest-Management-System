@@ -18,12 +18,12 @@ satisfied.
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 6 | 0 | 0 | 0 | 13 |
-| P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
+| P2 | 16 | 15 | 0 | 0 | 0 | 0 | 1 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **72** | **6** | **0** | 0 | 0 | **19** |
+| **All** | **97** | **71** | **6** | **0** | 0 | 0 | **20** |
 
 ---
 
@@ -154,6 +154,8 @@ hardcoded in TypeScript.
 
 **Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
 Phase 2 now waits only for the Phase 1 exit checkpoint before work begins.
+
+**Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
