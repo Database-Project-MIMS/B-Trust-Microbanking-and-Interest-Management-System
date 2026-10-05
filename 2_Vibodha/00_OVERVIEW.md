@@ -18,7 +18,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 | ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~~8~~ |
 | ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
 | ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
-| 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, search, profile | ~10 |
+| 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | ~~T04~~, T05 | ~~Registration/search/profile services~~; API/screen integration blocked pending M1 | ~10 |
 | 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API | ~6 |
 | 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | T01–T02 | FD linkage view, customer FD listing, branch-scoped FD access | ~5 |
 | 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
@@ -58,8 +58,9 @@ consume from M1 and M4)*
 
 Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
 `customer` uses an independent primary key. Phase 2 entry was authorized in the current
-conversation; T01 schema is verified locally on 2026-10-05. Assignment/document tasks
-are READY. The prior closeout changes are absent from this checkout; see the
+conversation; T01–T04 are technically complete locally on 2026-10-05. T04 verification
+passes 181 selected tests and clean rebuild/typecheck/lint. T05 runtime integration is
+BLOCKED pending M1 scoped grants/RLS/audit work. The prior closeout changes are absent from this checkout; see the
 [approval condition](../.agent/checkpoints/phase-01-checkpoint.md).
 
 ---
@@ -108,9 +109,8 @@ policies both depend on your `customer` table. Suggested approach:
 2. ✅ Do T01 (`customer` schema) first — resolves the identity gap, unblocks M3
 3. ✅ Do T02 (`customer_agent`) and T03 (`customer_document`) — both pure DB, can be
    done back-to-back
-4. ⚡ Do T04 (registration service) — the hardest task: customer + documents +
-   assignment + audit in **one transaction**
-5. ✅ Do T05 (registration form, search, profile pages) last
+4. ✅ T04 service is verified: customer + documents + assignment + audit in **one transaction**
+5. T05 API/screen integration follows M1 runtime security integration
 
 ---
 

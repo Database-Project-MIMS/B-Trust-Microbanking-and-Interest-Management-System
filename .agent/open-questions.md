@@ -12,20 +12,28 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 ### Customer contract discrepancies recorded 2026-10-05
 
 - G-10/task card says "exactly one", but the prescribed partial index only enforces
-  **at most one**. Implemented 0221 correctly; registration/reassignment must enforce
-  existence in their transaction. The phase's full one-current-assignment exit stays open.
+  **at most one**. Implemented T04 now supplies existence at registration commit;
+  future reassignment must preserve it. Direct owner inserts can still omit assignments.
+  The phase's full one-current-assignment exit stays open.
 - Child ERD/card omits some lifecycle timestamps. Apply AGENTS.md §8's required
   created_at/updated_at with shared triggers; docs/04 B.4a and docs/17 G-10 record them.
   Migration recording follows actual filename/checksum runner, not card version/name SQL.
 - docs/15's permission matrix permits ADMIN registration while docs/05 and the specific
-  M2 task card list AGENT/BRANCH_MANAGER. T03 verification follows the narrower mutation
-  contract and denies ADMIN. M1 should reconcile before exposing a verification endpoint.
+  M2 task card list AGENT/BRANCH_MANAGER. T03 verification and T04 registration follow
+  the narrower mutation contract and deny ADMIN (ADR-0013). M1 should reconcile before exposure.
 - Tracker T05 describes frontend work; the specific 06 task card describes API integration
-  with prebuilt dashboard screens. Follow that card when implementing T04/T05 and confirm
-  actual screen wiring then. No claim of customer registration completion is made here.
+  with prebuilt dashboard screens. Inspection found prototypes in
+  components/mims/workflow-screen.tsx, not completed dashboard customer bindings. T04
+  services are complete locally; T05 authenticated API/screen integration remains pending.
 - Customer runtime grants/RLS and generic audit bindings are absent in this checkout.
   M1 integration is required before exposing customer services through runtime routes;
-  owner-based disposable tests certify service logic only, not runtime policies.
+  T04's actual app-role test uses temporary disposable grants, not runtime policies.
+- Pre-existing T03 verifyDocument locks role FOR SHARE, requiring an absent write grant.
+  M2 must narrow that lock before verification endpoint exposure; retain read-only role
+  permissions. T04 locks only writable staff/user/branch rows and its app-role test passes.
+- M3 account_holder is absent. T04 profile accounts is null until it lands; the disposable
+  fixture checks a future join contract, not actual M3 integration. No holder migration
+  or additional database entity was invented by M2.
 
 | ID    | Question                                                                                   | Recommendation                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |

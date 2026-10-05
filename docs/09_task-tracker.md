@@ -18,12 +18,12 @@ satisfied.
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 5 | 0 | 0 | 0 | 14 |
-| P2 | 16 | 11 | 1 | 0 | 0 | 0 | 4 |
+| P2 | 16 | 10 | 0 | 0 | 1 | 0 | 5 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **67** | **6** | **0** | 0 | 0 | **24** |
+| **All** | **97** | **66** | **5** | **0** | **1** | 0 | **25** |
 
 ---
 
@@ -172,11 +172,21 @@ clean 14-migration rebuild/reapply/verify, typecheck/lint. Team review/PR/merge 
 pending under the user's no-publication instruction. No customer endpoint/UI is added.
 See [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
 
-**Next M2 statuses:** T04 registration service is READY for implementation: T02/T03
-and existing I-1/I-2 are available. T05 API/screen integration remains TODO. Runtime
-customer exposure still requires M1 scoped grants/RLS/audit integration; READY for
-service work is not approval to expose unscoped routes. The specific 06 task card
-defines API integration with prebuilt UI, despite the older tracker FE label.
+**P02-M02-T04 status:** DONE (technical service implementation verified locally) on
+`feat/p02-m02-customer-registration`. Registration, scoped search/profile reads,
+strict validation, masking and same-transaction minimal audit are implemented.
+181 selected tests pass (47 new service/DB tests plus 134 regressions); clean
+14-migration rebuild/reapply/verify, typecheck and lint pass. No new migration is
+required by this service-only task. `/review` is recorded in the
+[T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
+Publication/team review remain pending under the user's no-commit/merge/PR instruction.
+
+**P02-M02-T05 status:** BLOCKED for runtime API/screen integration pending M1's scoped
+customer/child grants, RLS and audit coordination. Services are available for controller
+work, but runtime integration cannot pass without these. Actual customer screens are
+prototypes in `components/mims/workflow-screen.tsx`, not completed dashboard bindings.
+M3's `account_holder` is absent: profile `accounts` is null until that contract lands.
+Other members' statuses are retained; current verification does not recertify Phase 1.
 
 **Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
 
@@ -189,7 +199,7 @@ defines API integration with prebuilt UI, despite the older tracker FE label.
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 |
-| P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 |
+| P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |
 | P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved |
@@ -285,6 +295,7 @@ defines API integration with prebuilt UI, despite the older tracker FE label.
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
+| P02-M02-T05 | Scoped customer/child runtime grants, RLS and audit integration; see T04 handoff | M1 security implementation; M2 integration |
 | P03-M04-T01 | **OQ-08** — reference-number uniqueness / transfers (G-05) | Team |
 | P04-M05-T01 | **OQ-01** — one active FD vs one FD ever (G-01) | Team |
 | P04-M05-T04, P05-M05-T02 | **OQ-04** — savings-account interest in scope? (G-12) | **Lecturer** |

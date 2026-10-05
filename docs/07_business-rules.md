@@ -30,12 +30,17 @@ database are what make the rule true.
 nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
 app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
 ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
-ACTIVE/INACTIVE. Assignment, identity masking, audited registration and RLS remain
-their later service/database tasks. See schema Part B.4 for the implemented definition.
+ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
+atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
+Registration accepts metadata-only, initially unverified documents (zero to twenty);
+M3 enforces required verified documentation at account opening. The service uppercases
+identity and lowercases email before the database UNIQUE checks. Audit contains only
+customer reference, branch, assigned agent and document count, in the same transaction.
+See schema Part B.4 and ADR-0013 for the implemented definition.
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; 0221 partial unique index allows at most one active assignment (G-10). T04 registration/future reassignment supplies existence atomically and retains history. |
+| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; 0221 partial unique index allows at most one active assignment (G-10). Implemented T04 registration supplies existence atomically; future reassignment must retain history/existence. Direct owner inserts are not an existence guarantee. |
 | BR-02 | A customer may own one or more savings accounts; ownership may be individual or joint | CON | `account_holder` intersection table with `UNIQUE(account_id, customer_id)` |
 | BR-03 | Children — 12%, no minimum balance | CON | `savings_plan` seeded row: `interest_rate = 0.1200`, `min_balance = 0` |
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |

@@ -348,8 +348,9 @@ models exactly this intent.
 **Approval needed — NO.** Pure integrity hardening of an existing ERD design.
 
 **Implemented 2026-10-05 — P02-M02-T02, migration 0221.** The index enforces
-at most one active assignment, not existence. Atomic registration/reassignment must
-provide one current row; that workflow remains future work. Historical rows are retained.
+at most one active assignment, not existence. Implemented P02-M02-T04 registration
+provides exactly one current row at successful commit. Reassignment remains future
+work; direct owner inserts can still omit assignments. Historical rows are retained.
 The assignment/document task-card timestamps were abbreviated: AGENTS.md §8 requires
 created_at on every table and updated_at on mutable rows. 0221/0222 include those with
 the shared timestamp trigger; uploaded_date remains a distinct document field. No new

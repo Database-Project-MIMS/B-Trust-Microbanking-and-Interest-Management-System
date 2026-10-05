@@ -81,6 +81,8 @@ admin identity workflow and must atomically receive its required `agent` profile
   audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
 
 ### `POST /api/customers`
+**Planned endpoint (T05):** T04 services below are implemented; this route is not yet wired.
+
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER
 - **Body** `{ fullName, nicPassportNo, dateOfBirth, gender, phone, address, email, branchId, agentId, documents[] }`
@@ -108,7 +110,34 @@ and minimal audit commit/rollback together. A same-verifier retry returns the or
 { docId, customerId, verifiedBy, verifiedDate }; another verifier gets
 DOCUMENT_ALREADY_VERIFIED (409). UUID validation, forbidden and not-found use typed
 400/403/404 errors. No path/document content is returned. Runtime scoped grants/RLS
-remain M1 work; the existing customer endpoints above are still planned T04/T05 work.
+remain M1 work; the customer endpoints above are still planned T05 work. Review also
+found that this pre-existing verifier locks `role` with `FOR SHARE`, requiring a write
+privilege absent from the runtime role. Resolve that lock scope before exposing it;
+do not grant broad role-update access to work around the issue.
+
+### Customer registration/read services (P02-M02-T04, implemented)
+
+`services/customer-service.ts` exports `registerCustomer(input, actor)`,
+`searchCustomers(input, actor)` and `getCustomerProfile(customerId, actor)`.
+`actor` is authenticated `{ userId, roleName, branchId }` context, never body-selected.
+Services recheck current active user/role/staff/branch state. Registration permits
+AGENT self-assignment or a BRANCH_MANAGER selecting an active ordinary agent in its
+branch. Customer, zero to twenty unverified document metadata rows, exactly one active
+assignment and minimal audit commit together. Identity is uppercase; email lowercase;
+numbers follow ADR-0013. Typed duplicate errors map to the planned 409 responses.
+
+Search accepts q/name/NIC/branch/agent/status, fixed sortBy/sortDirection, page and
+pageSize (maximum 100). Controllers must parse numeric query strings. SQL predicates
+restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/AUDITOR
+are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
+Staff NIC/email are masked; documents omit paths. Profiles include all assignment
+history. `accounts` is null while M3's account_holder table is absent; once available,
+links apply account branch scope and balances remain strings. Reads use repeatable-read
+transactions; transaction-local actor settings prepare for M1 policy integration.
+
+No customer HTTP endpoint, session/CSRF integration or UI binding is certified here.
+Runtime use requires M1's scoped grants/RLS/audit work. Service contract, review and
+181-test verification: [T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
 
 ## Plans and accounts — Member 3
 

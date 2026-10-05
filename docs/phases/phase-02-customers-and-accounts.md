@@ -1,14 +1,18 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** TODO · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
+**Status:** IN_PROGRESS · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
 
 **2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
 recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
 is technically complete locally. P02-M02-T02/T03 are also technically complete:
 0221/0222, assignment history/partial uniqueness, paired document verification and
 transactional verification service/audit. All 134 selected tests and clean 14-migration
-rebuild/reapply/verify/typecheck/lint pass. T04 registration service is READY;
-runtime grants/RLS/audit integration, registration/API/UI and phase exit remain incomplete.
+rebuild/reapply/verify/typecheck/lint pass. T04 registration/search/profile services
+are now technically complete locally: 181 selected tests and the same rebuild/checks
+pass. T05 runtime API/screen integration is BLOCKED pending M1 scoped grants/RLS/audit
+coordination; M3 account_holder is also absent. The registration transaction, duplicate
+rollback and assignment-at-commit are proven at service level; runtime demonstration
+and full phase exit criteria remain incomplete. No new phase approval is inferred.
 The earlier closeout edits
 are absent from this checkout, so no renewed Phase 1 certification is claimed here.
 

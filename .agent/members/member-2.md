@@ -2,22 +2,23 @@
 
 **Updated:** 2026-10-05 · [slice](../../docs/member-prompts/member-2.md)
 
-P02-M02-T02/T03 technical implementation complete locally on
-feat/p02-m02-customer-agent-document. 0221/0222 are applied locally; all 14 migrations
-verify. Assignment history/partial unique index, document verification-pair check,
-timestamps, lookup indexes and server-only scoped verification/audit service are complete.
-134 selected tests pass, including concurrent assignment/verification and forced audit
-rollback; clean disposable rebuild/reapply/verify, typecheck and lint pass.
-[Handoff](../handoffs/p02-m02-t02-t03-customer-agent-document.md).
+P02-M02-T04 technical service implementation is complete locally on
+feat/p02-m02-customer-registration. Atomic registration, active/scope checks, strict
+validation, numbering, same-transaction minimal audit, scoped search/profile and staff
+identity masking are delivered. No new migration/HTTP endpoint/UI change.
+[Contract and /review](../handoffs/p02-m02-t04-customer-registration.md).
 
-T04 registration service is READY: T02/T03 and I-1/I-2 dependencies are available.
-T05 API integration remains TODO; its specific task card describes prebuilt dashboard
-screens. Runtime customer/child access needs M1 scoped grants/RLS/audit integration
-before any route exposes the services. No broad grants or other owner's code was changed.
-Only registration/reassignment will guarantee existence of a current assignment.
-verifyDocument owns a separate transaction; don't call it on uncommitted registration rows.
+181 selected tests pass: 43 new service + 4 new DB + 134 regressions. All 14 migrations
+rebuild/reapply/verify; typecheck/lint pass in a removed disposable PostgreSQL cluster.
+Normal DB verifies read-only. Temporary app-role grants and a synthetic holder fixture
+are test-only, not production RLS or M3 certification.
 
-User committed T01 before starting this branch. Current changes are uncommitted;
-assistant commits, merges and PR creation remain prohibited. Historical Phase 2 approval
-persists, but absent earlier Phase 1 closeout repairs are not newly certified by this task.
-No UI changed; all five overview tables were reviewed and M2 row 05 struck through.
+T05 runtime integration is BLOCKED pending M1 scoped grants/RLS/audit coordination.
+Screens are prototypes in components/mims/workflow-screen.tsx. Profile accounts is null
+until M3 account_holder lands. T03 verifier still locks read-only role FOR SHARE; narrow
+that lock before exposing it, without granting role UPDATE. T04 already avoids it.
+
+User committed T01–T03 before this branch. Current T04 changes are uncommitted;
+assistant commits/merges/PRs remain prohibited. Historical Phase 2 entry approval persists;
+missing Phase 1 closeout changes and full phase exit are not recertified. All five overview
+tables reviewed; M2 row 06 strikes only T04. /imprint not applicable; no UI change.
