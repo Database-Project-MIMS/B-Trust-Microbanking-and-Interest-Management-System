@@ -1,6 +1,6 @@
 # 🔵 Phase 1 — Task 01: Harden `lib/db` — Publishes I-2
 **Task ID:** `P01-M04-T01` · **Branch:** `feat/p01-m04-lib-db-hardening`
-**Status:** READY
+**Status:** DONE
 **Depends on:** Phase 0 scaffold (`lib/db` already exists in skeleton form)
 **Story Points:** ~5 · **Layer:** Backend only — **you are the producer of I-2**
 
@@ -135,10 +135,10 @@ npm run typecheck && npm test
 ---
 
 ## Acceptance Criteria
-- [ ] `withTransaction` rolls back on any thrown error, with no partial writes
-- [ ] Retries only `40001`/`40P01`, never a business-logic error
-- [ ] No secret or raw SQL text appears in any mapped error
-- [ ] Pool metrics are readable by the health page task
-- [ ] Handoff published in `.agent/handoffs/` before this task is marked `DONE` — this
+- [x] `withTransaction` rolls back on any thrown error, with no partial writes
+- [x] Retries only `40001`/`40P01`, never a business-logic error
+- [x] No secret or raw SQL text appears in any mapped error
+- [x] Pool metrics are readable by the health page task
+- [x] Handoff published in `.agent/handoffs/` before this task is marked `DONE` — this
       unblocks every other member's Phase 1/2 backend work
-- [ ] `npm run typecheck && npm test` pass
+- [x] `npm run typecheck && npm test` pass
