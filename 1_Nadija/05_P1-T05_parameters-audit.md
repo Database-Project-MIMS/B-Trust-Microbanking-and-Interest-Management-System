@@ -1,7 +1,7 @@
 # 🔵 Phase 1 — Task 05: System Parameters, Business Calendar & Audit Log
 **Task ID:** `P01-M01-T05` · **Branch:** `feat/p01-m01-parameters-audit`  
 **Migration:** `0104_p01_m01_parameters_audit.sql`  
-**Status:** READY · **Depends on:** P01-M01-T01; ERD gaps G-15, G-22 approved  
+**Status:** DONE · **Depends on:** P01-M01-T01; ERD gaps G-15, G-22 approved  
 **Story Points:** ~2 · **Layer:** Database + Backend + Frontend
 
 ---
@@ -188,9 +188,9 @@ Create `app/admin/parameters/page.tsx`:
 ---
 
 ## Acceptance Criteria
-- [ ] Business hours and withdrawal limits are readable as **data**, not constants in code
-- [ ] Audit trigger writes before/after values on master-data changes
-- [ ] `audit_log` rejects UPDATE and DELETE
-- [ ] `fn_is_business_hour` works with both calendar and system parameter fallback
-- [ ] Parameter admin page works for ADMIN role
-- [ ] BR-08 enforcement documented in `docs/07_business-rules.md`
+- [x] Business hours and withdrawal limits are readable as **data**, not constants in code
+- [x] Audit trigger writes before/after values on master-data changes
+- [x] `audit_log` rejects UPDATE and DELETE
+- [x] `fn_is_business_hour` works with both calendar and system parameter fallback
+- [x] Parameter admin page works for ADMIN role
+- [x] BR-08 enforcement documented in `docs/07_business-rules.md`

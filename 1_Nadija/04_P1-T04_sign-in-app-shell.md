@@ -1,6 +1,6 @@
 # 🔵 Phase 1 — Task 04: Sign-in API Integration & Application Shell
 **Task ID:** `P01-M01-T04` · **Branch:** `feat/p01-m01-app-shell`  
-**Status:** READY · **Depends on:** P01-M01-T02  
+**Status:** DONE · **Depends on:** P01-M01-T02  
 **Story Points:** ~2 · **Layer:** Backend + Session wiring  
 **📌 Shared file — M1 owns the app shell, everyone uses it**
 

@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 19 | 0 | 6 | 0 | 0 | 0 | 13 |
+| P1 | 19 | 0 | 4 | 0 | 0 | 0 | 15 |
 | P2 | 16 | 15 | 0 | 0 | 0 | 0 | 1 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **71** | **6** | **0** | 0 | 0 | **20** |
+| **All** | **97** | **71** | **4** | **0** | 0 | 0 | **22** |
 
 ---
 
@@ -94,7 +94,7 @@ points where noted.
 | **Docs** | `11_ui-rules.md`; **run `/imprint`** — first entries in `ui-registry.md` (App Shell, Sign-in Card, Button, Form Field) |
 | **Depends on** | P01-M01-T02 |
 | **Acceptance** | Nav shows only permitted sections **and** the server still authorizes every request; matches the tokens in `ui-registry.md` |
-| **Status / Branch** | READY · `feat/p01-m01-app-shell` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-app-shell` · PR #— |
 
 | Field | P01-M01-T05 |
 |---|---|
@@ -106,7 +106,7 @@ points where noted.
 | **Docs** | `07_business-rules.md` — where BR-08 is enforced |
 | **Depends on** | P01-M01-T01; ERD gap **G-15**, **G-22** approved |
 | **Acceptance** | Business hours and withdrawal limits are readable as data, not constants in code |
-| **Status / Branch** | READY · `feat/p01-m01-parameters-audit` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-parameters-audit` · PR #— |
 
 ### Member 2 — Organisation
 
