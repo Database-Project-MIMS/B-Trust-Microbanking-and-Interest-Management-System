@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 19 | 0 | 6 | 0 | 0 | 0 | 13 |
-| P2 | 16 | 15 | 0 | 0 | 0 | 0 | 1 |
+| P1 | 19 | 0 | 5 | 0 | 0 | 0 | 14 |
+| P2 | 16 | 12 | 2 | 0 | 0 | 0 | 2 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **71** | **6** | **0** | 0 | 0 | **20** |
+| **All** | **97** | **68** | **7** | **0** | 0 | 0 | **22** |
 
 ---
 
@@ -150,10 +150,24 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, awaiting Phase 1 exit)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, customer schema authorized)
 
 **Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
-Phase 2 now waits only for the Phase 1 exit checkpoint before work begins.
+Vibodha approved Phase 2 entry earlier in this chat and requested P02-M02-T01.
+See the [historical approval record](../.agent/checkpoints/phase-01-checkpoint.md)
+for the current checkout's missing closeout-change condition.
+
+**P02-M02-T01 status:** DONE (technical implementation verified locally) on
+`feat/p02-m02-customer-schema`. Migration 0220 and 27 customer tests are complete;
+65 selected DB/API/workflow tests, clean rebuild, typecheck and lint pass.
+The schema task is DB-only; API/UI/registration remain later tasks. No commit/merge/PR
+is authorized. Team review/publication remains pending under that explicit instruction.
+Other member statuses are retained from this checkout's baseline; its Phase 1 summary
+was corrected to match its 14 DONE/5 READY rows, without recertifying missing closeout fixes.
+
+**Next M2 statuses:** P02-M02-T02 assignment and P02-M02-T03 document schema are READY;
+P02-M02-T04 registration and P02-M02-T05 UI remain TODO. Registration needs both schemas.
+See [customer handoff](../.agent/handoffs/p02-m02-t01-customer-schema.md).
 
 **Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
 
@@ -165,7 +179,7 @@ Phase 2 now waits only for the Phase 1 exit checkpoint before work begins.
 | P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
-| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T03 |
+| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 |
 | P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |

@@ -2,6 +2,13 @@
 
 **Status:** TODO · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
 
+**2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
+recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
+is technically complete locally: migration 0220, 27 customer tests and 38 organization
+regressions pass, with clean rebuild/typecheck/lint. Assignment/documents are READY;
+registration/API/UI and this phase's exit remain incomplete. The earlier closeout edits
+are absent from this checkout, so no renewed Phase 1 certification is claimed here.
+
 ## Goal
 
 Customers can be registered and assigned to agents; individual and joint accounts can be

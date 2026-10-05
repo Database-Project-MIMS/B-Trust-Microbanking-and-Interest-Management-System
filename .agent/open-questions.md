@@ -31,6 +31,20 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Resolved
 
+### P02-M02-T01 source/documentation reconciliation — 2026-10-05
+
+The user approved Phase 2 entry earlier in this conversation and explicitly requested
+customer-schema implementation. The clean checkout at 3fe8689 still has older TODO/
+Phase 0 headers and no earlier uncommitted closeout files. The restored historical
+checkpoint records approval without claiming those absent repairs are integrated.
+This task proceeds under the user's retained authorization; other task statuses are
+not recertified by the customer-schema change.
+
+Part B.4 is expanded to match the approved task card's customer_number, lifecycle,
+required fields and timestamps. The card's example schema_migration(version,name)
+insert is corrected: the actual runner records filename/checksum. No new identity
+decision is needed; ADR-0007 remains authoritative.
+
 
 ### OQ-05 — Customer login is optional
 

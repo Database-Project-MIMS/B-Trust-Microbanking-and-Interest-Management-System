@@ -1,63 +1,39 @@
 # Memory — MIMS
 
-> Maintained by the `/remember` skill. This is **current state**, not a log.
-> Overwrite stale content. Do not append endlessly.
-> `/remember save` at the end of a session · `/remember restore` at the start of the next.
+> /remember save: current, non-sensitive continuation state.
 
-**Last updated:** Phase 0 initialization
-**Current phase:** Phase 0 — complete, awaiting approval to begin Phase 1
-
----
+**Updated:** 2026-10-05
+**Task/branch:** P02-M02-T01 on feat/p02-m02-customer-schema.
 
 ## What was built
 
-Phase 0 only — planning, documentation and shared foundation. **No business features
-have been implemented.**
+Migration 0220 creates customer with independent UUID and optional unique login
+(ADR-0007), number/NIC/email uniqueness, branch/login RESTRICT FKs, past-date/status
+checks, timestamp trigger, branch B-tree and full_name GIN trigram index.
+Added 27 customer tests and safe disposable PostgreSQL verification command.
+Updated schema/rule/index/task documentation and M1/M3 handoff; APIs/UI remain later tasks.
 
-- Repository scaffolded: Next.js App Router + TypeScript structure, no business code
-- Agent skills installed from `JavaScript-Mastery-Pro/jsm-agent-skill` (MIT) into `.claude/skills/`
-- `AGENTS.md` development contract, thin `CLAUDE.md`, `ui-registry.md`, this file
-- `.agent/` project-state directory with per-member context and ownership map
-- `docs/` — 18 numbered documents, 7 phase documents, 5 member prompts
-- ERD gap analysis completed against the brief and SRS — 20 findings recorded
-- Shared database foundation: migration `0000` (extensions, `schema_migration`,
-  shared domains, `set_updated_at()` trigger function) and `lib/db` pool + `withTransaction`
+## Verification
 
-## Decisions made
+65 selected tests pass (27 customer, 38 organization), 0 failed/skipped.
+Clean rebuild of 12 migrations, repeat application/verification, typecheck and lint pass.
+Migration 0220 is applied to local development DB without reset. Disposable cluster
+was removed. See .agent/handoffs/p02-m02-t01-customer-schema.md for review/evidence.
 
-See `.agent/decisions/` for the full ADRs. The load-bearing ones:
+## Decisions and constraints
 
-- **ADR-0001** PostgreSQL 16, `pg` driver, handwritten parameterized SQL. No ORM.
-- **ADR-0002** Vertical slices, not layer-based division. Every member owns DB + backend + frontend.
-- **ADR-0003** Money is `NUMERIC(15,2)`; rates are `NUMERIC(6,4)` fractions. Never floats.
-- **ADR-0004** `account.current_balance` is a documented denormalisation, protected by a
-  `CHECK (>= 0)`, row locking and the posting routines. The ledger remains authoritative.
-- **ADR-0005** Migration numbers are allocated in reserved per-phase, per-member blocks so
-  no two members can collide.
+User Phase 2 approval persists in this conversation. Current checkout initially lacked
+the earlier uncommitted Phase 1 closeout changes/checkpoint; historical approval note
+records that discrepancy. Do not claim the previous 184-test result for this checkout.
+The old migration-runner test resets mims_dev and edits a real migration; excluded here.
+No existing migration or other owner's implementation file was changed.
+Customer app grants/RLS/audit binding remain M1 work; do not expose unscoped data.
+User prohibits assistant commits, merges and PR creation. All current changes are uncommitted.
 
-## Problems solved
+## Next session
 
-- Migration-number collisions between five parallel members → reserved numeric blocks (ADR-0005).
-- Ambiguity between "one FD ever" (ERD unique key) and "one *active* FD" (SRS) → recorded
-  as gap **G-01**, escalated for human decision. Not silently changed.
-- job_pilot reference contains prohibited technologies → only its workflow pattern
-  (`AGENTS.md` / `CLAUDE.md` / `memory.md` / docs / skills) was adopted.
-
-## Current state
-
-- Nothing is running yet. `npm install` has not been executed; there is no database.
-- `database/migrations/` contains only the shared `0000` foundation migration.
-- No table from the ERD has been created yet — that begins in Phase 1.
-- All Phase 1 tasks are `READY`; all later phases are `TODO`.
-
-## Next session starts with
-
-1. Obtain approval for the Phase 0 checkpoint and the ERD gap decisions (G-01, G-05,
-   G-12, G-20 are blocking — see `.agent/open-questions.md`).
-2. Then Phase 1 tasks `P01-M01-T01` … `P01-M05-T03` can start in parallel.
-
-## Open questions
-
-Tracked in `.agent/open-questions.md`. Four are blocking for Phase 2+:
-OQ-01 (one active FD vs one FD ever), OQ-04 (savings-account interest in scope?),
-OQ-05 (customer login required?), OQ-08 (account-to-account transfers in scope?).
+P02-M02-T02 assignment and P02-M02-T03 document schema are READY; 0221/0222 free.
+Registration requires both plus scoped access/audit. Implement only the requested task.
+M3 holder and M1 RLS/audit work consume the stable customer table handoff.
+Missing earlier closeout repairs still require user-controlled reconciliation before
+claiming full integration readiness. Later phase decisions/entry approvals remain separate.
