@@ -88,43 +88,42 @@ name is retained in diagrams.
 
 | Column | Type | Notes |
 |---|---|---|
-| `branch_id` | uuid | **PK** |
-| `branch_name` | varchar(100) | |
-| `address` | varchar(255) | |
-| `district` | varchar(100) | |
-| `phone` | varchar(20) | |
-| `status` | varchar(20) | `record_status` |
+| `branch_id` | uuid | **PK**, defaults to `gen_random_uuid()` |
+| `branch_code` | varchar(20) | **UK, NOT NULL** |
+| `branch_name` | varchar(100) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `district` | varchar(100) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_branch_set_updated_at` |
 
-- Delete: `RESTRICT`. Deactivate instead (FR-ORG-05).
-- Note: FR-ORG-01 requires ≥ 3 branches; §4.2 requires branch **codes** to be unique — see
-  Part B (`branch_code`).
+- Implemented by `0120_p01_m02_branch.sql`.
+- Delete: references use `ON DELETE RESTRICT`; the first such FK is added by the agent
+  schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
 ### `agent`
-<<<<<<< Updated upstream
-Subtype of `user` — `agent_id` is both PK and FK, so every agent has a login.
-=======
 Branch-staff subtype of `app_user` — `agent_id` is both PK and FK, so every branch staff
 profile has a login. Both ordinary banking agents (`role_name = 'AGENT'`) and branch
 managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls permissions.
->>>>>>> Stashed changes
 
 | Column | Type | Notes |
 |---|---|---|
-| `agent_id` | uuid | **PK, FK → user(user_id)** |
-| `branch_id` | uuid | **FK → branch** |
-| `nic_passport_no` | varchar(50) | **UK** |
-| `full_name` | varchar(150) | |
-| `date_of_birth` | date | |
-| `gender` | varchar(20) | |
-| `phone` | varchar(20) | |
-| `address` | varchar(255) | |
-| `email` | varchar(150) | **UK** |
+| `agent_id` | uuid | **PK, FK → app_user(user_id), ON DELETE RESTRICT** |
+| `branch_id` | uuid | **NOT NULL, FK → branch, ON DELETE RESTRICT** |
+| `employee_no` | varchar(30) | **UK, NOT NULL** |
+| `nic_passport_no` | varchar(50) | **UK, NOT NULL** |
+| `full_name` | varchar(150) | **NOT NULL** |
+| `date_of_birth` | date | **NOT NULL** |
+| `gender` | varchar(20) | **NOT NULL** |
+| `phone` | varchar(20) | **NOT NULL** |
+| `address` | varchar(255) | **NOT NULL** |
+| `email` | varchar(150) | **UK, NOT NULL** |
+| `hired_date` | date | **NOT NULL** |
+| `status` | `record_status` | **NOT NULL**, defaults to `ACTIVE` |
+| `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
+| `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_agent_set_updated_at` |
 
-<<<<<<< Updated upstream
-- Delete: `RESTRICT` — referenced by `account.opened_by_agent_id`, `customer_agent`.
-- Index: `(branch_id, agent_id)` for branch-scoped listing.
-- Invariant: FR-ORG-02 — each active agent belongs to exactly one active branch.
-=======
 - Implemented by `0121_p01_m02_agent.sql`.
 - Delete: `RESTRICT`; future references from `account.opened_by_agent_id` and
   `customer_agent` also use `RESTRICT`.
@@ -136,7 +135,6 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   `agent.agent_id`; a missing profile fails closed with `403`, never bank-wide scope.
 - Agent-management lists and agent-specific reports join `role` and restrict
   `role_name = 'AGENT'` when branch managers must not appear as ordinary agents.
->>>>>>> Stashed changes
 
 ### `customer`
 Subtype of `user` in the current ERD. See **G-20** — this is contested.
@@ -195,6 +193,8 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 
 ### `savings_plan`
 
+Implemented by `0140_p01_m03_savings_plan.sql`.
+
 | Column | Type | Notes |
 |---|---|---|
 | `plan_id` | uuid | **PK** |
@@ -202,11 +202,20 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `interest_rate` | `interest_rate` | 0.1200 / 0.1100 / 0.1000 / 0.1300 / 0.0700 |
 | `min_balance` | `money_amount` | 0 / 500 / 1000 / 1000 / 5000 |
 | `description` | varchar(255) | |
-| `status` | varchar(20) | `record_status` |
+| `status` | varchar(20) | `CHECK IN ('ACTIVE','INACTIVE')` |
+| `min_age_years` | int | NULL = no lower bound |
+| `max_age_years` | int | NULL = no upper bound |
+| `min_holders` | int | default `1` |
+| `max_holders` | int | default `1` |
+| `requires_all_adult` | boolean | default `false` — every holder of this plan must be 18+ |
 
 - Delete: `RESTRICT` — referenced by `account`.
 - Invariant: rates and minimums exactly match BR-03…BR-07.
-- Gap: no age bounds or holder counts — see **G-13**.
+- Checks: `chk_savings_plan_age_range` (`max_age_years >= min_age_years` where both set),
+  `chk_savings_plan_holder_range` (`max_holders >= min_holders`),
+  `chk_savings_plan_min_balance_nonneg` (`min_balance >= 0`).
+- Age bounds and holder counts (**G-13**) are resolved — data-driven eligibility, no
+  hardcoded `plan_name` branching. See `docs/17_erd-gap-analysis.md` G-13.
 
 ### `fd_plan`
 
@@ -380,7 +389,7 @@ corresponding open question is resolved and an ADR exists.**
 | `fixed_deposit` | `maturity_date date NOT NULL` | FR-FD-04, RPT-03 | G-23 |
 | `fixed_deposit` | `interest_rate_at_opening interest_rate NOT NULL` | Rate fixed at opening; protects historical payouts (BR-19) | G-11 |
 | `interest_payout` | `interest_run_id uuid FK`, `cycle_date date` | Cycle idempotency | G-03 |
-| `savings_plan` | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
+| `savings_plan` (implemented) | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
 | `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |

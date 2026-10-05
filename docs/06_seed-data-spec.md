@@ -27,25 +27,27 @@ reports have enough variety to be interesting.
 
 Report totals must be reproducible, so nothing may be random at load time.
 
-1. **Fixed UUIDs.** Every seeded row uses a hardcoded UUID with a readable prefix —
-   `b0000000-0000-0000-0000-00000000000{1..3}` for branches, `c0000000-…` customers,
-   `a0000000-…` accounts, `f0000000-…` FDs, `t0000000-…` transactions. Cross-references are
+1. **Fixed UUIDs.** Every seeded row uses a hardcoded UUID with the structural pattern `00000000-0000-0000-XXYY-ZZZZZZZZZZZ0` defined in `database/seed/_uuids.sql`. Cross-references are
    then stable and human-readable in test failures.
 2. **Fixed dates.** All dates are relative to a single anchor constant
    `SEED_ANCHOR_DATE = 2026-01-01`, so re-seeding next month does not change any total.
 3. **No `random()`, no `now()`** in seed files. Timestamps are literals.
-4. **Ordered load**, matching FK dependencies:
+4. **Ordered load**, matching FK dependencies according to `database/seed/_load-order.txt`:
 
 ```
-01_roles_users.sql        M1
-02_branches_agents.sql    M2
-03_plans_products.sql     M3 + M5
-04_parameters.sql         M1
-05_customers.sql          M2
-06_accounts_holders.sql   M3
-07_fixed_deposits.sql     M5
-08_transactions.sql       M4
-09_interest_runs.sql      M5
+00_roles.sql
+01_branches.sql
+02_users.sql
+03_agents.sql
+04_customers.sql
+05_customer_agents.sql
+06_customer_documents.sql
+10_accounts.sql
+11_account_holders.sql
+12_joint_mandates.sql
+13_transactions.sql
+14_fixed_deposits.sql
+15_interest_runs.sql
 ```
 
 5. **Re-runnable.** Seeding twice produces identical counts and totals (`scripts/seed-check.mjs`).
