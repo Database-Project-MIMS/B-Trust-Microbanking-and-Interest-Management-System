@@ -4,9 +4,12 @@
 
 **2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
 recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
-is technically complete locally: migration 0220, 27 customer tests and 38 organization
-regressions pass, with clean rebuild/typecheck/lint. Assignment/documents are READY;
-registration/API/UI and this phase's exit remain incomplete. The earlier closeout edits
+is technically complete locally. P02-M02-T02/T03 are also technically complete:
+0221/0222, assignment history/partial uniqueness, paired document verification and
+transactional verification service/audit. All 134 selected tests and clean 14-migration
+rebuild/reapply/verify/typecheck/lint pass. T04 registration service is READY;
+runtime grants/RLS/audit integration, registration/API/UI and phase exit remain incomplete.
+The earlier closeout edits
 are absent from this checkout, so no renewed Phase 1 certification is claimed here.
 
 ## Goal

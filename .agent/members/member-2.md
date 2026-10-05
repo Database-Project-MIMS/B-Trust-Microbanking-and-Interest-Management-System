@@ -1,36 +1,23 @@
 # Member 2 — context
 
-**Updated:** 2026-10-05
-Slice: [member prompt](../../docs/member-prompts/member-2.md).
+**Updated:** 2026-10-05 · [slice](../../docs/member-prompts/member-2.md)
 
-## Current task
+P02-M02-T02/T03 technical implementation complete locally on
+feat/p02-m02-customer-agent-document. 0221/0222 are applied locally; all 14 migrations
+verify. Assignment history/partial unique index, document verification-pair check,
+timestamps, lookup indexes and server-only scoped verification/audit service are complete.
+134 selected tests pass, including concurrent assignment/verification and forced audit
+rollback; clean disposable rebuild/reapply/verify, typecheck and lint pass.
+[Handoff](../handoffs/p02-m02-t02-t03-customer-agent-document.md).
 
-P02-M02-T01 customer schema: implementation/tests/docs complete locally.
-Branch: `feat/p02-m02-customer-schema`. Migration 0220 applies and all 12 local
-migrations verify. No commit, merge or PR is authorized/performed.
+T04 registration service is READY: T02/T03 and I-1/I-2 dependencies are available.
+T05 API integration remains TODO; its specific task card describes prebuilt dashboard
+screens. Runtime customer/child access needs M1 scoped grants/RLS/audit integration
+before any route exposes the services. No broad grants or other owner's code was changed.
+Only registration/reassignment will guarantee existence of a current assignment.
+verifyDocument owns a separate transaction; don't call it on uncommitted registration rows.
 
-## Completed contract
-
-Independent customer_id, optional unique app_user_id (ADR-0007), required unique
-customer_number/NIC/email, restrictive branch/login FKs, strict past birth date,
-ACTIVE/INACTIVE status, timestamps and B-tree/GIN search indexes. 27 customer tests
-and 38 organization regressions pass, plus isolated clean rebuild, typecheck and lint.
-M1/M3 handoff: [customer schema](../handoffs/p02-m02-t01-customer-schema.md).
-
-## Next task
-
-P02-M02-T02 customer_agent and P02-M02-T03 customer_document are READY; 0221/0222
-are free. Registration must await both. No registration API/UI was built in T01.
-Do not mark full customer onboarding complete from the table alone.
-
-## Integration notes
-
-Runtime customer access is denied pending M1's scoped grants/RLS. Customer audit
-binding needs customer_id resolved before branch_id in the existing generic function.
-Other owners' implementation files were not changed. Existing Phase 1 organization
-work remains as implemented; this session's regressions pass.
-
-At session start, earlier closeout edits/checkpoint were absent from the clean checkout.
-User approval to proceed persists; [historical approval](../checkpoints/phase-01-checkpoint.md)
-records the condition without recertifying that missing work. Keep publication under
-user control and do not run the destructive legacy migration test on the development DB.
+User committed T01 before starting this branch. Current changes are uncommitted;
+assistant commits, merges and PR creation remain prohibited. Historical Phase 2 approval
+persists, but absent earlier Phase 1 closeout repairs are not newly certified by this task.
+No UI changed; all five overview tables were reviewed and M2 row 05 struck through.

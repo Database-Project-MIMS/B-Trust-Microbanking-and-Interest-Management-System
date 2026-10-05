@@ -18,12 +18,12 @@ satisfied.
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 5 | 0 | 0 | 0 | 14 |
-| P2 | 16 | 12 | 2 | 0 | 0 | 0 | 2 |
+| P2 | 16 | 11 | 1 | 0 | 0 | 0 | 4 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **68** | **7** | **0** | 0 | 0 | **22** |
+| **All** | **97** | **67** | **6** | **0** | 0 | 0 | **24** |
 
 ---
 
@@ -165,9 +165,18 @@ is authorized. Team review/publication remains pending under that explicit instr
 Other member statuses are retained from this checkout's baseline; its Phase 1 summary
 was corrected to match its 14 DONE/5 READY rows, without recertifying missing closeout fixes.
 
-**Next M2 statuses:** P02-M02-T02 assignment and P02-M02-T03 document schema are READY;
-P02-M02-T04 registration and P02-M02-T05 UI remain TODO. Registration needs both schemas.
-See [customer handoff](../.agent/handoffs/p02-m02-t01-customer-schema.md).
+**P02-M02-T02/T03 statuses:** DONE (technical implementation verified locally) on
+`feat/p02-m02-customer-agent-document`: 0221/0222, assignment/document constraints,
+transactional verification service and minimal audit; 134 selected tests pass with
+clean 14-migration rebuild/reapply/verify, typecheck/lint. Team review/PR/merge remain
+pending under the user's no-publication instruction. No customer endpoint/UI is added.
+See [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
+
+**Next M2 statuses:** T04 registration service is READY for implementation: T02/T03
+and existing I-1/I-2 are available. T05 API/screen integration remains TODO. Runtime
+customer exposure still requires M1 scoped grants/RLS/audit integration; READY for
+service work is not approval to expose unscoped routes. The specific 06 task card
+defines API integration with prebuilt UI, despite the older tracker FE label.
 
 **Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
 

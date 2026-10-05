@@ -63,11 +63,15 @@ try {
   const testFiles = ['tests/db/customer-constraints.test.mjs', 'tests/db/branch-constraints.test.mjs',
     'tests/db/agent-constraints.test.mjs', 'tests/db/organization-audit.test.mjs',
     'tests/api/organization.test.mjs', 'tests/e2e/branches-agents.test.mjs'];
+  if (process.argv.includes('--relations')) testFiles.push(
+    'tests/db/customer-agent-constraints.test.mjs', 'tests/db/customer-document-constraints.test.mjs',
+    'tests/api/customer-document-service.test.mjs',
+  );
   run(process.execPath, ['node_modules/tsx/dist/cli.mjs', '--conditions', 'react-server',
     '--test', '--test-concurrency=1', ...testFiles], environment);
   run(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit'], environment);
   run(process.execPath, ['node_modules/eslint/bin/eslint.js', '.'], environment);
-  console.log('CUSTOMER SCHEMA: all selected tests, clean rebuild, typecheck and lint passed.');
+  console.log(`${process.argv.includes('--relations') ? 'CUSTOMER RELATIONS' : 'CUSTOMER SCHEMA'}: all selected tests, clean rebuild, typecheck and lint passed.`);
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

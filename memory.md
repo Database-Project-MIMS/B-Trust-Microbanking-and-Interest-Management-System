@@ -1,39 +1,44 @@
-# Memory — MIMS
+# Memory — MIMS customer relations
 
 > /remember save: current, non-sensitive continuation state.
 
 **Updated:** 2026-10-05
-**Task/branch:** P02-M02-T01 on feat/p02-m02-customer-schema.
+**Task/branch:** P02-M02-T02/T03 on feat/p02-m02-customer-agent-document.
 
-## What was built
+## What was completed
 
-Migration 0220 creates customer with independent UUID and optional unique login
-(ADR-0007), number/NIC/email uniqueness, branch/login RESTRICT FKs, past-date/status
-checks, timestamp trigger, branch B-tree and full_name GIN trigram index.
-Added 27 customer tests and safe disposable PostgreSQL verification command.
-Updated schema/rule/index/task documentation and M1/M3 handoff; APIs/UI remain later tasks.
+0221 customer_agent: restrictive FKs/date check, current-assignment partial unique
+index, preserved inactive history and lifecycle timestamps. 0222 customer_document:
+metadata paths, restrictive customer/verifier FKs, paired verification check/timestamps.
+services/customer-document-service.ts verifies active in-scope AGENT/BRANCH_MANAGER
+documents with row locks and same-transaction minimal audit. Agents need their current
+assignment. Same verifier retry retains timestamp; another verifier gets a conflict.
+Updated schemas/rules/inventory/tracker/task card/overview and published a local handoff.
 
-## Verification
+## Verified state
 
-65 selected tests pass (27 customer, 38 organization), 0 failed/skipped.
-Clean rebuild of 12 migrations, repeat application/verification, typecheck and lint pass.
-Migration 0220 is applied to local development DB without reset. Disposable cluster
-was removed. See .agent/handoffs/p02-m02-t01-customer-schema.md for review/evidence.
+npm run verify:customer-agent-document: 134 tests pass, zero fail/skip; all 14 migrations
+rebuild cleanly/reapply/verify, typecheck/lint pass. Test cluster removed. Development
+DB received only new 0221/0222 additively and verifies; existing data was not reset.
+Service/concurrency fixtures that commit can run only in the disposable named DB.
 
-## Decisions and constraints
+## What comes next
 
-User Phase 2 approval persists in this conversation. Current checkout initially lacked
-the earlier uncommitted Phase 1 closeout changes/checkpoint; historical approval note
-records that discrepancy. Do not claim the previous 184-test result for this checkout.
-The old migration-runner test resets mims_dev and edits a real migration; excluded here.
-No existing migration or other owner's implementation file was changed.
-Customer app grants/RLS/audit binding remain M1 work; do not expose unscoped data.
-User prohibits assistant commits, merges and PR creation. All current changes are uncommitted.
+P02-M02-T04 registration service is READY with T02/T03 and I-1/I-2 dependencies met.
+Next documented branch: feat/p02-m02-customer-registration. T05 API integration remains
+TODO; its specific task card describes prebuilt screens, despite older tracker FE label.
+M1 scoped runtime grants/RLS and generic audit integration are needed before exposing
+customer routes. Do not grant broad access or use owner credentials at runtime.
+The partial index only supplies at most one assignment; registration/reassignment must
+guarantee existence. Do not invoke verifyDocument's separate transaction on uncommitted
+registration rows. Full contract/review: .agent/handoffs/p02-m02-t02-t03-customer-agent-document.md.
 
-## Next session
+## Persistent constraints
 
-P02-M02-T02 assignment and P02-M02-T03 document schema are READY; 0221/0222 free.
-Registration requires both plus scoped access/audit. Implement only the requested task.
-M3 holder and M1 RLS/audit work consume the stable customer table handoff.
-Missing earlier closeout repairs still require user-controlled reconciliation before
-claiming full integration readiness. Later phase decisions/entry approvals remain separate.
+User committed T01 and switched to the current branch before this task. Current changes
+remain uncommitted: user prohibits assistant commits, merges and PR creation.
+No push performed. User Phase 2 approval persists. Earlier uncommitted Phase 1 closeout
+repairs are absent; do not claim those earlier tests certify this checkout. Historical
+checkpoint records that condition. Legacy migration-runner test resets mims_dev and edits
+an existing migration; exclude it from development-DB verification. No other owner's
+implementation or old migration changed. No UI added or imprint required.

@@ -9,6 +9,24 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### Customer contract discrepancies recorded 2026-10-05
+
+- G-10/task card says "exactly one", but the prescribed partial index only enforces
+  **at most one**. Implemented 0221 correctly; registration/reassignment must enforce
+  existence in their transaction. The phase's full one-current-assignment exit stays open.
+- Child ERD/card omits some lifecycle timestamps. Apply AGENTS.md §8's required
+  created_at/updated_at with shared triggers; docs/04 B.4a and docs/17 G-10 record them.
+  Migration recording follows actual filename/checksum runner, not card version/name SQL.
+- docs/15's permission matrix permits ADMIN registration while docs/05 and the specific
+  M2 task card list AGENT/BRANCH_MANAGER. T03 verification follows the narrower mutation
+  contract and denies ADMIN. M1 should reconcile before exposing a verification endpoint.
+- Tracker T05 describes frontend work; the specific 06 task card describes API integration
+  with prebuilt dashboard screens. Follow that card when implementing T04/T05 and confirm
+  actual screen wiring then. No claim of customer registration completion is made here.
+- Customer runtime grants/RLS and generic audit bindings are absent in this checkout.
+  M1 integration is required before exposing customer services through runtime routes;
+  owner-based disposable tests certify service logic only, not runtime policies.
+
 | ID    | Question                                                                                   | Recommendation                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | OQ-06 | Should `audit_log` capture read access, or only writes?                                    | Writes always; report _generation_ also audited (REP-COM-06); ad-hoc reads not logged — volume vs value tradeoff |
