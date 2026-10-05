@@ -3,6 +3,10 @@
 Start here. This tells you what every document is for, which ones are authoritative, and
 what to read first.
 
+**Current gate (2026-10-05):** Phase 1 verified; Phase 2 entry approved by Vibodha
+for the local working tree. [Approval and evidence](../.agent/checkpoints/phase-01-checkpoint.md).
+P02-M02-T01 customer schema is READY; closeout repairs await user-controlled publication.
+
 ## If you are new, read in this order
 
 1. **`../AGENTS.md`** — the development contract. Non-negotiable rules.

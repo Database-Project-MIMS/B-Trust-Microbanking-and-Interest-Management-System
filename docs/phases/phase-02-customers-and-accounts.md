@@ -1,6 +1,11 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** TODO · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
+**Status:** Entry approved 2026-10-05 — 2 DONE, 1 READY, 13 TODO · **Tasks:** 16 · **Effort:** 47 points
+
+Approval: [Phase 1 checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
+Account (`0240`) and immutable transaction (`0260`) schema work is already verified.
+Member 2's `P02-M02-T01` is READY on `feat/p02-m02-customer-schema`; customer,
+holder, mandate, account-opening and full seed work remains pending.
 
 ## Goal
 
@@ -9,7 +14,7 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Entry criteria
 
-- [ ] Phase 1 exit criteria met
+- [x] Phase 1 exit criteria met and entry approved by Vibodha
 - [x] **OQ-05 resolved** (G-20, ADR-0007) — customers use an independent primary key
       and may optionally link to an application login.
 - [x] G-06 approved by ADR-0008 — `account.branch_id` is stored at opening
@@ -46,7 +51,7 @@ opened with eligibility and mandate rules enforced by the database.
 - [ ] 1-holder and 5-holder joint accounts are both rejected by the trigger
 - [ ] An opening amount below the plan minimum is rejected
 - [ ] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
-- [ ] Posted `transaction` rows reject `UPDATE` and `DELETE`
+- [x] Posted `transaction` rows reject `UPDATE` and `DELETE`
 - [ ] Seed loads 18 customers, 22 accounts including 3 joint
 
 ## Risks

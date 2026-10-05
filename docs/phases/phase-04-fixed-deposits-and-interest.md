@@ -5,10 +5,9 @@
 ## Entry criteria
 
 - [ ] Phase 3 exit criteria met
-- [ ] **OQ-01 resolved** (G-01 — one active FD vs one FD ever). Determines whether
-      `fixed_deposit` uses a partial unique index or the ERD's plain `UNIQUE`.
-- [ ] **OQ-04 resolved** (G-12 — do savings accounts accrue interest?). Determines the size
-      of `sp_run_interest_cycle` and the meaning of RPT-04.
+- [x] **OQ-01 resolved** by ADR-0011: one active FD, partial unique index
+- [x] **OQ-04 resolved** by ADR-0012: savings interest uses average daily balance
+- [ ] OQ-13 mid-cycle interest and OQ-14 lecturer scope acceptance resolved
 - [ ] G-11 (rate snapshot) and G-23 (`maturity_date`) approved
 
 ## Tasks by member

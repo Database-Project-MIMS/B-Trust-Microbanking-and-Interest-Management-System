@@ -1,4 +1,4 @@
-import pg from 'pg';
+import { createMigrationClient } from '../lib/db/migration-client.mjs';
 import { execSync } from 'node:child_process';
 
 if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
@@ -72,7 +72,7 @@ async function getFinancialTotals(client) {
 
 async function main() {
   console.log("Checking seed data...");
-  const client = new pg.Client({ connectionString: url });
+  const client = createMigrationClient(url);
   await client.connect();
   
   try {
