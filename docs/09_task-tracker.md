@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 10 | 1 | 0 | 0 | 7 |
+| P1 | 18 | 0 | 12 | 0 | 0 | 0 | 6 |
 | P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **10** | **1** | 0 | 0 | **13** |
+| **All** | **96** | **69** | **18** | 0 | 0 | 0 | **9** |
 
 ---
 
@@ -42,8 +42,8 @@ satisfied.
 
 ## Phase 1 — Foundation, Master Data & Security
 
-Phase 1 work is in progress. API and UI portions depend on the published integration
-points where noted.
+All 18 tasks are `READY`. Database work has no dependency on other members; API and UI
+portions wait on I-1 (`requireRole`) where noted.
 
 ### Member 1 — Identity & Security
 
@@ -112,9 +112,9 @@ points where noted.
 
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **P01-M02-T01** | Branch schema | `0120_p01_m02_branch.sql` — `branch` + `branch_code UNIQUE`, status check | — | — | Duplicate `branch_code` rejected; delete restricted | `0000` | DONE |
-| **P01-M02-T02** | Agent schema | `0121_p01_m02_agent.sql` — `agent` as a subtype of `app_user`; `employee_no UNIQUE`, `nic_passport_no UNIQUE`, `email UNIQUE`; index `(branch_id, status)` | — | — | FR-ORG-02: agent in exactly one active branch | T01, P01-M01-T01 | DONE |
-| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity and negative tests | T02, **I-1** | IN_PROGRESS |
+| **P01-M02-T01** | Branch schema | `0120_p01_m02_branch.sql` — `branch` + `branch_code UNIQUE`, status check | — | — | Duplicate `branch_code` rejected; delete restricted | `0000` | READY |
+| **P01-M02-T02** | Agent schema | `0121_p01_m02_agent.sql` — `agent` as a subtype of `app_user`; `employee_no UNIQUE`, `nic_passport_no UNIQUE`, `email UNIQUE`; index `(branch_id, status)` | — | — | FR-ORG-02: agent in exactly one active branch | T01, P01-M01-T01 | READY |
+| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | Deleting a referenced agent → 409 | T02, **I-1** | READY |
 | **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — list, create, deactivate | e2e create + deactivate | T03 | READY |
 
 Branch: `feat/p01-m02-<slug>`. Acceptance: ≥ 3 branches and ≥ 5 agents can be created and
@@ -124,8 +124,8 @@ listed (FR-ORG-01); no record referenced by history can be deleted (FR-ORG-05).
 
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **P01-M03-T01** | Savings plan schema with eligibility data | `0140_p01_m03_savings_plan.sql` — `savings_plan` + `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult`; age-range check | — | — | `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing, five plans load with exactly the BR-03…BR-07 rates and minimums, all negative cases covered | `0000`; **G-13** approved | DONE (branch `feat/p01-m03-savings-plan-schema`) |
-| **P01-M03-T02** | Eligibility function | `fn_check_plan_eligibility(plan_id, date_of_birth, holder_count)` in `database/routines/fn_check_plan_eligibility.sql` | — | — | `tests/db/plan-eligibility-function.test.mjs` — 10/10 passing: child aged 15 rejected for Children; adult aged 30 accepted for Adult; 1 holder rejected for Joint; both boundary cases and all negative/invalid-input cases covered | T01 | DONE (branch `feat/p01-m03-plan-eligibility-function`) |
+| **P01-M03-T01** | Savings plan schema with eligibility data | `0140_p01_m03_savings_plan.sql` — `savings_plan` + `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult`; age-range check | — | — | Five plans load with exactly the BR-03…BR-07 rates and minimums | `0000`; **G-13** approved | READY |
+| **P01-M03-T02** | Eligibility function | `fn_check_plan_eligibility(plan_id, date_of_birth, holder_count)` in `database/routines/` | — | — | Child aged 15 rejected for Children; adult aged 30 accepted for Adult; 1 holder rejected for Joint | T01 | READY |
 | **P01-M03-T03** | Plan API and administration page | — | `GET /api/plans`, `PATCH /api/plans/{id}` | `app/plans/page.tsx` — read-mostly product view | Non-admin role cannot edit a plan | T02, **I-1** | READY |
 
 Acceptance: eligibility is a **data-driven join**, not `IF plan_name = 'Children'`
@@ -135,7 +135,7 @@ hardcoded in TypeScript.
 
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | DONE |
+| **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | READY |
 | **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | READY |
 | **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs` | — | Rebuild from empty succeeds; **editing an applied migration is rejected**; `npm run db:verify` passes | T02 | READY |
 | **P01-M04-T04** | Database health page | — | Extend `/api/health` with pool stats (authenticated) | `app/admin/health/page.tsx` | Unauthenticated request gets no internal detail | T01, **I-1** | READY |
@@ -146,7 +146,7 @@ hardcoded in TypeScript.
 |---|---|---|---|---|---|---|---|
 | **P01-M05-T01** | FD product schema | `0180_p01_m05_fd_plan.sql` — `fd_plan`, `tenure_months > 0`, effective-dating columns | — | — | Exactly the three BR-13 products; rate stored as a fraction | `0000`; **G-11** approved | DONE |
 | **P01-M05-T02** | FD product API and admin page | — | `GET/PATCH /api/fd-products` | `app/fd-products/page.tsx` — products with rate history | Non-privileged role cannot change a rate | T01, **I-1** | DONE |
-| **P01-M05-T03** | Seed framework — **publishes I-8** | `database/seed/` layout, fixed-UUID scheme, ordered load, `scripts/seed-check.mjs` | — | — | Seeding twice produces identical row counts and identical totals | T01 | DONE |
+| **P01-M05-T03** | Seed framework — **publishes I-8** | `database/seed/` layout, fixed-UUID scheme, ordered load, `scripts/seed-check.mjs` | — | — | Seeding twice produces identical row counts and identical totals | T01 | READY |
 
 ---
 

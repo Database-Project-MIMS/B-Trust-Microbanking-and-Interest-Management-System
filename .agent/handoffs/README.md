@@ -49,11 +49,7 @@ Anything still likely to change, so the dependent member doesn't build on sand.
 | I-7 | M1 | M2, M3, M4, M5 | report framework (filters, scope, metadata) |
 | I-8 | M5 | all | seed file layout, fixed-UUID scheme, load order |
 
-The core I-1 implementation now resolves branch scope through `agent.branch_id` and fails
-closed when a branch-scoped user lacks that profile. The accepted contract and remaining
-quality follow-ups are recorded in `p01-branch-staff-scope-decision.md`. The remaining
-rows are a forward-looking checklist, not a status report.
-
-P01-M02-T03's cross-owner completion work is recorded in
-`p01-m02-t03-audit-and-grants.md`: Member 1 must add least-privilege organisation-table
-grants and publish the audit integration before T03 can move from `IN_PROGRESS` to `DONE`.
+An initial I-1 handoff exists, but it is not stable for consumption: the implementation
+still reads nonexistent `app_user.branch_id`. The accepted replacement contract is in
+`p01-branch-staff-scope-decision.md`; M1 must correct and republish I-1 before dependent
+API tasks use it. The remaining rows are a forward-looking checklist, not a status report.

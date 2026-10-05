@@ -13,6 +13,8 @@ database are what make the rule true.
 
 ---
 
+<<<<<<< Updated upstream
+=======
 ## Organisation
 
 | ID | Rule | Enforced at | Implementation |
@@ -20,9 +22,9 @@ database are what make the rule true.
 | BR-O1 | Every `AGENT` and `BRANCH_MANAGER` login has an `agent` branch-staff profile assigned to exactly one branch | CON, SRV | `agent.agent_id` is PK/FK to `app_user`; `agent.branch_id NOT NULL` FK to `branch`; session validation denies a branch-scoped role with no profile |
 | BR-O2 | Every active agent belongs to an active branch | CON, TRG | `trg_validate_agent_active_branch` locks and validates the branch; `trg_branch_prevent_deactivation_with_active_agents` rejects branch deactivation while active agents remain |
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
-| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
-| BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
+| BR-O4 | Referenced users and branches are deactivated rather than physically deleted | CON | Agent FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 
+>>>>>>> Stashed changes
 ## Products and eligibility
 
 | ID | Rule | Enforced at | Implementation |
@@ -33,8 +35,8 @@ database are what make the rule true.
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
 | BR-05 | Adult (18+) — 10%, LKR 1,000 minimum | CON | `savings_plan`: `0.1000`, `1000.00` |
 | BR-06 | Senior (60+) — 13%, LKR 1,000 minimum | CON | `savings_plan`: `0.1300`, `1000.00` |
-| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`; holder count 2–4 and all-holders-18+ enforced by `trg_validate_joint_mandate` (Phase 2, P02-M03-T03) — `fn_check_plan_eligibility` only checks the primary applicant, since its signature carries one `date_of_birth`, not one per holder |
-| BR-E1 | Plan age eligibility is checked from date of birth at account opening | UI, SRV, FN | `fn_check_plan_eligibility(plan_id, dob, holder_count)` reads `min_age_years`/`max_age_years` from `savings_plan` (G-13) — **data, not hardcoded names**. Checks the primary applicant only; see BR-07 for the joint-holder-age rule |
+| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`; holder count 2–4 enforced by `trg_validate_joint_mandate`; all holders 18+ via `fn_check_plan_eligibility` |
+| BR-E1 | Plan age eligibility is checked from date of birth at account opening | UI, SRV, FN | `fn_check_plan_eligibility(plan_id, dob, holder_count)` reads `min_age_years`/`max_age_years` from `savings_plan` (G-13) — **data, not hardcoded names** |
 
 Rates are stored as fractions (`0.1200`), so interest is one exact multiplication with no
 divide-by-100 (see `04_database-schema.md` §B.6).
