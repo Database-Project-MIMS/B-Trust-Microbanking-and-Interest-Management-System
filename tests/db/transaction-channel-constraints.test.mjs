@@ -12,14 +12,14 @@ test('Transaction Channel Schema Constraints', async (t) => {
     await t.test('2. Duplicate channel_name is rejected (23505)', async () => {
         await assert.rejects(
             query(`INSERT INTO transaction_channel (channel_name) VALUES ('ONLINE')`),
-            (err) => err.code === '23505'
+            (err) => err.sqlstate === '23505'
         );
     });
 
     await t.test('3. Invalid status values are rejected', async () => {
         await assert.rejects(
             query(`INSERT INTO transaction_channel (channel_name, status) VALUES ('KIOSK', 'PENDING')`),
-            (err) => err.code === '23514'
+            (err) => err.sqlstate === '23514'
         );
     });
 });

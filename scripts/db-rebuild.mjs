@@ -1,69 +1,60 @@
-import { execSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { createMigrationClient } from "../lib/db/migration-client.mjs";
 
 if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
-  try { process.loadEnvFile(); } catch {}
+  try { process.loadEnvFile(); } catch { /* Caller can supply the environment. */ }
 }
 
-// Try to find psql, fallback to default Windows install path if missing from PATH
-let PSQL_CMD = 'psql';
-try {
-  execSync('psql --version', { stdio: 'ignore' });
-} catch (e) {
-  const fallbackPaths = [
-    'C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe',
-    'C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe',
-    'C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe'
-  ];
-  for (const path of fallbackPaths) {
-    if (existsSync(path)) {
-      PSQL_CMD = `"${path}"`;
-      break;
-    }
+function runScript(path) {
+  const result = spawnSync(process.execPath, [path, ...(path.endsWith("migrate.mjs") ? ["up"] : [])], { stdio: "inherit", env: process.env });
+  if (result.status !== 0) throw new Error(`Rebuild step failed: ${path}`);
+}
+
+async function main() {
+  const url = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_MIGRATION_URL is not set.");
+  const target = new URL(url);
+  if (process.env.DATABASE_URL && new URL(process.env.DATABASE_URL).pathname !== target.pathname) {
+    throw new Error("Application and migration URLs must target the same database.");
   }
-}
-
-const DB_NAME = process.argv[2] || 'mims_dev';
-const PSQL_ADMIN = process.env.PSQL_ADMIN || 'postgres';
-
-function runCmd(cmd) {
-  const finalCmd = cmd.startsWith('psql ') ? cmd.replace('psql ', `${PSQL_CMD} `) : cmd;
+  const database = decodeURIComponent(target.pathname.slice(1));
+  const client = createMigrationClient(url);
+  await client.connect();
   try {
-    execSync(finalCmd, { stdio: 'inherit' });
-  } catch (err) {
-    console.error(`\n[ERROR] Command failed: ${finalCmd}\nEnsure your PostgreSQL password is correct and psql is in your PATH.`);
-    process.exit(1);
-  }
-}
-
-console.log(`==> Dropping and recreating database '${DB_NAME}'`);
-runCmd(`psql -v ON_ERROR_STOP=1 -U ${PSQL_ADMIN} -d postgres -c "DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE);" -c "CREATE DATABASE ${DB_NAME};"`);
-
-console.log("==> 1/7 migrations");
-runCmd("node --env-file=.env scripts/migrate.mjs up");
-
-function applyDir(dir, label) {
-  console.log(`==> ${label}`);
-  if (existsSync(dir)) {
-    const files = readdirSync(dir).filter(f => f.endsWith('.sql')).sort();
-    if (files.length > 0) {
-      for (const f of files) {
-        console.log(`    ${f}`);
-        runCmd(`psql -v ON_ERROR_STOP=1 -U ${PSQL_ADMIN} -d ${DB_NAME} -f "${join(dir, f)}" -q`);
+    const { rows } = await client.query("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'");
+    if (rows[0].n > 0) {
+      if (!process.argv.includes("--reset")) throw new Error("Database is not empty. Use --reset explicitly for a disposable development database.");
+      if (database !== "mims_dev" && !/^mims_test_[a-z0-9_]+$/.test(database)) {
+        throw new Error("--reset is restricted to mims_dev or mims_test_* databases.");
       }
-      return;
+      // The exact configured development database is checked before destructive DDL.
+      await client.query("DROP SCHEMA public CASCADE");
+      await client.query("CREATE SCHEMA public");
+      await client.query("GRANT USAGE ON SCHEMA public TO mims_app");
     }
+    console.log("==> 1/7 migrations");
+    runScript("scripts/migrate.mjs");
+    for (const [index, dir] of ["routines", "triggers", "views", "indexes", "roles"].entries()) {
+      console.log(`==> ${index + 2}/7 ${dir}`);
+      const path = join("database", dir);
+      if (existsSync(path)) {
+        for (const file of readdirSync(path).filter((name) => name.endsWith(".sql")).sort()) {
+          await client.query(readFileSync(join(path, file), "utf8"));
+        }
+      }
+    }
+    console.log("==> 7/7 ordered seed data");
+    runScript("scripts/seed.mjs");
+    runScript("scripts/verify-setup.mjs");
+    console.log("Rebuild complete.");
+  } finally {
+    await client.end();
   }
-  console.log("    (none yet)");
 }
 
-applyDir("database/routines", "2/7 routines");
-applyDir("database/triggers", "3/7 triggers");
-applyDir("database/views", "4/7 views");
-applyDir("database/indexes", "5/7 indexes");
-applyDir("database/roles", "6/7 roles and RLS");
-applyDir("database/seed", "7/7 seed data");
-
-console.log("==> Rebuild complete. Verifying:");
-runCmd("node --env-file=.env scripts/verify-setup.mjs");
+main().catch((error) => {
+  console.error(error.code ? `Rebuild failed (SQLSTATE ${error.code}).` : error.message);
+  process.exitCode = 1;
+});

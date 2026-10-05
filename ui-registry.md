@@ -96,6 +96,22 @@ way that disagrees with the stored `NUMERIC(15,2)` value.
 
 ## Components
 
+### Database health and parameter controls
+
+Files: `app/admin/health/page.tsx`, `app/admin/parameters/page.tsx`,
+`app/admin/parameters/parameter-admin.tsx`, `components/app-shell/top-bar.tsx`
+Last updated: 05 Oct 2026 · captured with `/imprint` during Phase 1 closeout.
+
+Health uses the existing `.page-header`, `.page-title`, `.section-heading` and `.card`
+patterns. Its metric grid stacks below `sm`; filenames wrap. Connection state includes
+text, and unavailable data renders a safe `role="alert"` message. Only ADMIN/CENTRAL_OPS
+receive server-authorized access and the navigation link.
+
+Parameter controls are ADMIN-only, with token-based surface/border/text colors,
+`.input` and `.btn` patterns, an accessible parameter-value label, loading/saving states,
+and announced error/success messages. Edits send the login-issued CSRF token. These
+pages reuse the existing authenticated shell; role-aware links supplement server checks.
+
 ### App shell
 
 File: `components/app-shell/app-shell.tsx`, `components/app-shell/top-bar.tsx`

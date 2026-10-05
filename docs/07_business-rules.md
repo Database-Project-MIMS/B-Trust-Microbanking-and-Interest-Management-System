@@ -119,7 +119,7 @@ the whole run in one transaction would violate FR-INT-04.
 | Field formatting, input masks, required-field highlighting | UI | Usability only; every one is re-validated server-side |
 | Password complexity policy | SRV | Policy, not data integrity; changes without a migration |
 | Report pagination size | SRV | Presentation concern (REP-COM-05) |
-| Session inactivity timeout | SRV + `user_session.expires_at` | Computed by the app; the database stores the expiry so sessions can be invalidated server-side |
+| Session inactivity and absolute timeout | SRV + SQL + `user_session.expires_at` | Creation uses configured limits in SQL inside the caller transaction; validation refreshes inactivity without exceeding the absolute deadline, rejecting expired/revoked sessions. Browser cookie expires at the absolute limit |
 
 ---
 

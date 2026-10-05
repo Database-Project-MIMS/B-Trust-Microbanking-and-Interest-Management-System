@@ -1,6 +1,6 @@
 # 🟢 Phase 2 — Task 01: Customer Schema
 **Task ID:** `P02-M02-T01` · **Branch:** `feat/p02-m02-customer-schema`
-**Migration:** `0220_p02_m02_customer.sql` · **Status:** TODO (awaiting Phase 2 entry)
+**Migration:** `0220_p02_m02_customer.sql` (planned) · **Status:** READY
 **Depends on:** ADR-0007 (G-20 resolved), `P01-M02-T02` (`agent`)
 **Story Points:** ~4 · **Layer:** Database only
 
@@ -9,8 +9,9 @@
 ## ✅ Identity Decision — Approved
 
 OQ-05 was resolved on 2026-09-29 by ADR-0007. Customers are primarily agent-managed,
-so customer login is optional. Phase 2 must still pass its normal entry checkpoint before
-this migration is written.
+so customer login is optional. Vibodha approved Phase 2 entry on 2026-10-05 after
+verification: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+The existing customer-schema branch has not implemented this migration yet.
 
 The current ERD models `customer` as a subtype of `user` (`customer_id` is `PK,FK` into
 `app_user`), which forces every one of the 15+ seeded customers to have login

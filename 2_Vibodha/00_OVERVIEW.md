@@ -11,6 +11,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-05:** Phase 1 T01–T04 verified DONE. P02-M02-T01 customer schema READY on feat/p02-m02-customer-schema.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout repairs remain uncommitted under the user publication constraint.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
@@ -57,7 +61,7 @@ consume from M1 and M4)*
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
 Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
-`customer` uses an independent primary key. Phase 2 still awaits its entry checkpoint.
+`customer` uses an independent primary key. Phase 2 entry was approved on 2026-10-05; P02-M02-T01 is READY.
 
 ---
 

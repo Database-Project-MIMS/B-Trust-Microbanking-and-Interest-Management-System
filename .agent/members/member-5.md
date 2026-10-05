@@ -1,24 +1,23 @@
 # Member 5 — context
 
-Full slice description and copy-paste session prompt:
-`../../docs/member-prompts/member-5.md`
+**Updated:** 2026-10-05, authorized Phase 1 closeout.
+Slice: [member prompt](../../docs/member-prompts/member-5.md).
 
-This file is the **running log** — updated by Member 5 via `/remember save` at the end
-of a session, read at the start of the next one. Empty until Phase 1 work begins.
+## Current state
 
-## Current task
+P01-M05-T01–T03 are verified DONE: FD products, role/CSRF-protected admin API/page
+and deterministic seed framework I-8. The Windows seed loader trims CRLF load-order
+entries; repeated loading preserves counts/totals.
 
-*(none started — Phase 0)*
+## Next work and dependencies
 
-## Recent history
+Phase 2 entry is approved. P02-M05-T01 full seed sets wait for account-opening
+(P02-M03-T04). Existing 3 branches/6 agents do not complete customer/account/joint
+seed targets. FD/interest work retains its later phase and OQ-13/OQ-14 gates.
+ADR-0011/0012 are accepted for active-FD uniqueness and savings interest.
 
-*(empty)*
+## Publication
 
-## Notes to self
-
-*(empty)*
-
-## Blocked on
-
-*(nothing yet — check `../open-questions.md` and the integration points in
-`../handoffs/README.md` once Phase 1 starts)*
+Original ownership retained. Cross-member closeout edits are uncommitted; the user
+controls commits, merges and PR creation.
+Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).

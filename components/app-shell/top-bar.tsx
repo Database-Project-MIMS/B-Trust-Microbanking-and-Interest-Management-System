@@ -18,7 +18,8 @@ const navigation = [
   { href: "/reports/agent-transactions", label: "Reports", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
   { href: "/branches", label: "Branches", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
   { href: "/agents", label: "Agents", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER"] },
-  { href: "/admin/parameters", label: "Controls", roles: ["ADMIN", "CENTRAL_OPS", "AUDITOR"] },
+  { href: "/admin/parameters", label: "Controls", roles: ["ADMIN"] },
+  { href: "/admin/health", label: "Health", roles: ["ADMIN", "CENTRAL_OPS"] },
 ];
 
 function csrfToken(): string {

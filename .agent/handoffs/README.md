@@ -54,6 +54,10 @@ closed when a branch-scoped user lacks that profile. The accepted contract and r
 quality follow-ups are recorded in `p01-branch-staff-scope-decision.md`. The remaining
 rows are a forward-looking checklist, not a status report.
 
+The 2026-10-05 [Phase 1 closeout handoff](phase-01-closeout-2026-10-05.md) supersedes
+the earlier pending quality-check notes. Updated I-1 signatures/behavior are in
+`i1-rbac-helpers.md`; review and approval evidence is in the Phase 1 checkpoint.
+
 P01-M02-T03's cross-owner completion work is recorded in
 `p01-m02-t03-audit-and-grants.md`: Member 1 must add least-privilege organisation-table
 grants and publish the audit integration before T03 can move from `IN_PROGRESS` to `DONE`.

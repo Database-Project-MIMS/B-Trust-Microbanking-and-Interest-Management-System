@@ -31,6 +31,27 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Resolved
 
+### Documentation/status contradictions — 2026-10-05 closeout
+
+The user authorized resolving checks, reconciling statuses and recording approval.
+The old AGENTS header/memory/member stubs still described Phase 0; the Phase 1
+document counted 18 tasks although the tracker lists 19; five tracker READY rows
+were already implemented (its summary incorrectly counted six). Member 4's channel,
+runner/health and Phase 2 transaction code existed despite stale statuses.
+
+Resolved from 184 passing tests, clean rebuild and verified migration inventory:
+Phase 1's 19 implementations are DONE locally; Phase 2 entry is approved by Vibodha;
+account and transaction schema tasks are DONE; customer schema is READY. The checkpoint
+explicitly preserves user-controlled publication and does not claim lecturer approval.
+The more specific tracker/phase evidence now overrides the obsolete headers.
+
+Implicit dependencies were made explicit: customer/account audit coverage needs those
+tables, and registration needs both assignment and document tables. Full seed work uses
+the phase/seed specification's 3 joint accounts rather than the stale tracker count of 2.
+The old OQ-01/04/08 blocked register and Member 4 overview no-transfer reminder were
+reconciled with ADR-0010/0011/0012; OQ-12/13/14 remain unresolved future-phase gates.
+No new financial schema decision or migration was introduced.
+
 
 ### OQ-05 — Customer login is optional
 

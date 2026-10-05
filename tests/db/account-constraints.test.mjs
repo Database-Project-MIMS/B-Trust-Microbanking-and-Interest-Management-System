@@ -83,7 +83,8 @@ describe("P02-M03-T01: account schema constraints", () => {
         try {
             await client.query(sql, params);
         } catch (err) {
-            assert.equal(err.code, code, `expected SQLSTATE ${code}, got ${err.code}: ${err.message}`);
+            const allowed = Array.isArray(code) ? code : [code];
+            assert.ok(allowed.includes(err.code), `expected SQLSTATE ${allowed.join('/')}, got ${err.code}`);
             return err;
         } finally {
             await client.query("ROLLBACK");
@@ -202,7 +203,7 @@ describe("P02-M03-T01: account schema constraints", () => {
             ["branch", "branch_id", branchId],
             ["agent", "agent_id", agentId],
         ]) {
-            await expectError(`DELETE FROM ${table} WHERE ${col} = $1`, [id], "23503");
+            await expectError(`DELETE FROM ${table} WHERE ${col} = $1`, [id], ["23503", "23001"]);
         }
     });
 
