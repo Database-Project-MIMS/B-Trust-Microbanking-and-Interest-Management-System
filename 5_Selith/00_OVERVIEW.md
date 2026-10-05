@@ -10,14 +10,14 @@
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| 01 | [FD Product Schema](01_P1-T01_fd-plan-schema.md) | P1 | T01 | `fd_plan` table with effective-dating columns | ~3 |
-| 02 | [FD Product API & Admin](02_P1-T02_fd-product-api-admin.md) | P1 | T02 | `GET/PATCH /api/fd-products`, product admin page with rate history | ~3 |
-| 03 | [Seed Framework](03_P1-T03_seed-framework.md) | P1 | T03 | Seed layout, fixed-UUID scheme, ordered load ⚡ **PUBLISHES I-8** | ~2 |
+| ~~01~~ | ~~[FD Product Schema](01_P1-T01_fd-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`fd_plan` table with effective-dating columns~~ | ~~~3~~ |
+| ~~02~~ | ~~[FD Product API](02_P1-T02_fd-product-api-admin.md)~~ | ~~P1~~ | ~~T02~~ | ~~`GET/PATCH /api/fd-products` with rate history~~ | ~~~3~~ |
+| ~~03~~ | ~~[Seed Framework](03_P1-T03_seed-framework.md)~~ | ~~P1~~ | ~~T03~~ | ~~Seed layout, fixed-UUID scheme, ordered load ⚡ **PUBLISHES I-8**~~ | ~~~2~~ |
 | 04 | [Seed Data Sets 1–3](04_P2_seed-sets-1-3.md) | P2 | T01 | Branches, agents, customers, accounts, 2 joint accounts | ~6 |
 | 05 | [Seed Data Set 4](05_P3_seed-set-4-transactions.md) | P3 | T01 | 100+ mixed transactions across dates, branches, agents, plans | ~6 |
 | 06 | [FD Schema & Opening](06_P4_fd-schema-opening.md) | P4 | T01–T03 | `fixed_deposit` table, `sp_open_fixed_deposit`, `fn_calculate_fd_interest` | ~10 |
-| 07 | [Interest Cycle](07_P4_interest-run-cycle.md) | P4 | T04–T05 | `interest_run`, `interest_payout`, `sp_run_interest_cycle`, FD pages & console | ~8 |
-| 08 | [RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md) | P5 | T01–T04 | Active FDs view, interest distribution view, APIs, pages, CSV, `EXPLAIN ANALYZE` | ~12 |
+| 07 | [Interest Cycle](07_P4_interest-run-cycle.md) | P4 | T04–T05 | `interest_run`, `interest_payout`, `sp_run_interest_cycle` | ~8 |
+| 08 | [RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md) | P5 | T01–T04 | Active FDs view, interest distribution view, APIs, CSV, `EXPLAIN ANALYZE` | ~12 |
 | 09 | [Final Testing & Ops](09_P6_testing-ops-deployment.md) | P6 | T01–T02 | Interest re-run idempotency tests, backup/restore evidence, demo script | ~8 |
 
 ---

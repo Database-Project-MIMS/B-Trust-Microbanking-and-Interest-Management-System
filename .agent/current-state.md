@@ -1,6 +1,6 @@
 # Current State
 
-**Last updated:** 2026-09-25 · **Updated by:** Member 4 (Pramudith) after P01-M04-T01
+**Last updated:** 2026-10-01 · **Updated by:** Member 2 (Vibodha) after Phase 2 identity, branch and mandate approvals
 
 ## Phase
 
@@ -8,17 +8,11 @@
 
 ## What exists right now
 
-- PostgreSQL 16.15 (Homebrew) is installed and active locally, with `mims_dev` database rebuilt and verified cleanly (`db:rebuild`, `db:verify`).
-- Applied migrations include the shared foundation (`0000`), identity (`0100`), branch
-  schema (`0120`), agent schema (`0121`), savings plan schema (`0140`) and FD plan schema
-  (`0180`).
-- **P01-M04-T01 is complete** (on branch `feat/p01-m04-lib-db-hardening`):
-  - Hardened `lib/db/with-transaction.ts` with automatic retry on `40001` (serialization failure) and `40P01` (deadlock detected) using exponential backoff + jitter (up to 3 attempts). Complete rollback on any failure.
-  - Hardened `lib/db/errors.ts` translating SQLSTATE codes into typed domain errors (`UniqueViolationError`, `ForeignKeyViolationError`, `CheckViolationError`, `NotNullViolationError`, `SerializationFailureError`, `DeadlockDetectedError`, `DatabaseError`) while completely scrubbing raw SQL text, driver messages, and passwords (NFR-SEC-05).
-  - Redacted query logging in `lib/db/logger.ts` tracking duration and operation tags without parameter leakage.
-  - Pool metrics (`getPoolMetrics()`) exposed in `lib/db/pool.ts` for health endpoints.
-  - Published handoff `.agent/handoffs/i-2-lib-db.md` (unblocking backend work across all members).
-  - 19/19 tests passing in `tests/db/lib-db-hardening.test.mjs`. Full test suite passing (120/120 tests).
+- PostgreSQL 18.6 is installed locally (Member 2) / 16.15 (Member 3, via Homebrew) and
+  the migration framework is operational on both.
+- Applied migrations include the shared foundation (`0000`), identity (`0100`), system
+  parameters/audit (`0104`), branch schema (`0120`), agent schema (`0121`), organisation
+  audit integration (`0122`), savings plan schema (`0140`) and FD plan schema (`0180`).
 - P01-M02-T01 and P01-M02-T02 are complete and merged into `dev`, including their
   database constraints, integrity triggers, indexes, tests and documentation.
 - P01-M01-T01, P01-M01-T02 and P01-M01-T03 are recorded as complete. The reconciliation
@@ -31,8 +25,7 @@
   `max_holders`, `requires_all_adult`), three named `CHECK` constraints, and the five
   BR-03…BR-07 seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing.
   G-13 marked resolved in `docs/17_erd-gap-analysis.md`.
-- **P01-M03-T02 is complete** (not yet merged — on branch
-  `feat/p01-m03-plan-eligibility-function`): `fn_check_plan_eligibility(plan_id,
+- **P01-M03-T02 is complete and merged into `dev`** (PR #15): `fn_check_plan_eligibility(plan_id,
   date_of_birth, holder_count)` in `database/routines/`, a `STABLE` PL/pgSQL function
   checking the primary applicant's age and holder count against `savings_plan`'s data
   columns. Deliberately checks the primary applicant only — the full "every Joint holder
@@ -41,28 +34,47 @@
   `docs/specs/0002-plan-eligibility-function.md`). `docs/07_business-rules.md`'s BR-07
   row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
   — 10/10 passing, including a boundary test proving age is computed as whole completed
-  years, not naive year subtraction. `db:rebuild`, `db:verify` and the full `npm test`
-  suite (120/120) all pass.
+  years, not naive year subtraction.
+- **P01-M03-T03 is complete** (not yet merged — on branch
+  `feat/p01-m03-plan-api-page`): full vertical slice for the plan admin API and page —
+  `lib/validation/savings-plan.ts` (zod), `services/savings-plan-service.ts` +
+  `savings-plan-errors.ts`, `app/api/plans/route.ts` (GET, any authenticated role),
+  `app/api/plans/[id]/route.ts` (PATCH, ADMIN/CENTRAL_OPS, CSRF-checked),
+  `app/plans/page.tsx` + `SavingsPlanClient.tsx` (first real data page styled with the
+  new Material-3 tokens from the recent UI-integration PR, not the older token set
+  `fd-products` uses). `tests/api/plans.test.mjs` — 9/9 passing: role gating enforced
+  both client-side (hidden Edit button) and server-side (403 on direct PATCH), zod
+  cross-field validation for same-request conflicts, DB `CHECK`-constraint re-validation
+  for partial-update conflicts against the current row. Manually verified end-to-end via
+  curl against a running dev server (real login, real role checks) — found and fixed a
+  real gap along the way: `mims_app` had never been granted `SELECT`/`UPDATE` on
+  `savings_plan` (`database/roles/01_app_grants.sql`, one line added following the
+  existing per-member convention M2/M5 already used in that file). The login route now
+  calls `issueCsrfToken()`, so browser mutations can send the matching CSRF header.
 - ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
   `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
   `agent.branch_id`.
-- P01-M02-T03's six branch/agent route handlers, service layer, validation and 23 API
-  tests are implemented. Least-privilege `mims_app` grants for `branch` and `agent` are
-  present and the API suite passes through the normal application connection.
+- **P01-M02-T03 is complete.** Its six branch/agent route handlers, service layer,
+  validation and API tests are implemented. Least-privilege `mims_app` grants are
+  present, and migration `0122` provides sanitized, same-transaction branch/agent audit
+  coverage with rollback verification.
+- **P01-M02-T04 is complete.** `/branches` and `/agents` provide role-aware active/all
+  lists, create forms and confirmed, CSRF-protected deactivation. The workflow test
+  creates, lists and deactivates both resources while proving records remain in history.
 
 ## What does NOT exist yet
 
-Member 2's branch/agent administration pages have not been implemented. P01-M02-T03 is
-waiting only for the shared audit contract from P01-M01-T05; P01-M02-T04 remains the UI
-follow-up. Member 3's plan API/admin page (P01-M03-T03) has not been started.
+Member 2's Phase 1 slice is complete. OQ-05 is resolved by ADR-0007: customers use an
+independent identity and may optionally link to `app_user`. G-06 and G-08 are resolved by
+ADR-0008 and ADR-0009. Phase 2 now waits only for the Phase 1 exit checkpoint.
 
 ## Task status snapshot
 
 | Phase | Tasks | Status |
 |---|---|---|
 | P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 10 DONE, 8 READY |
-| P2 | 16 | TODO (blocked on OQ-05) |
+| P1 | 19 | IN PROGRESS — 13 DONE, 6 READY |
+| P2 | 16 | IN PROGRESS — 1 DONE (P02-M03-T01 `account`), 15 TODO |
 | P3 | 14 | TODO (blocked on OQ-08) |
 | P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
 | P5 | 15 | TODO |
@@ -72,22 +84,20 @@ Full detail: `../docs/09_task-tracker.md`.
 
 ## Blocking items before Phase 1 can finish
 
-No unresolved product question blocks Phase 1. The core I-1 dependency needed by
-P01-M02-T03 is present in this reconciliation. Remaining I-1 quality follow-ups include
+No unresolved product question blocks Phase 1. Remaining I-1 quality follow-ups include
 strict malformed-CSRF rejection, returning `branchId` in the login DTO, refreshing the
-I-1 handoff, and adding a true request/SQL cross-branch test. P01-M02-T03 additionally
-waits for P01-M01-T05's shared audit table and trigger contract.
+I-1 handoff, and adding a true request/SQL cross-branch test.
 
 ## Known process note
 
-The reconciled full suite passes 56/56, database verification and TypeScript checks pass,
-and FD API tests leave no fixture rows behind. The remaining native-Windows `db:create`
-setup issue is recorded in `.agent/handoffs/p01-cross-member-test-blockers.md`.
+The full suite passes 121/121; database verification, lint, TypeScript checks and the production
+build pass. The clean rebuild command reaches the PostgreSQL administrator connection but
+requires an interactive `postgres` password on this Windows host; rerun
+`npm run db:rebuild` in the user's terminal for the final clean-from-empty proof. The
+remaining native-Windows `db:create` setup issue is recorded in
+`.agent/handoffs/p01-cross-member-test-blockers.md`.
 
 ## Next session should start with
 
-1. Member 1: complete P01-M01-T05 and publish the shared audit contract.
-2. Integrate and test branch/agent audit coverage, then move P01-M02-T03 to `DONE`.
-3. Member 3: open a PR for `feat/p01-m03-plan-eligibility-function` into `dev`, then
-   start P01-M03-T03 (plan API and admin page) — depends on T02 (done) and I-1 (RBAC
-   helpers, already merged).
+1. Member 2: have the T04 changes reviewed and merged into `dev`.
+2. Complete the Phase 1 exit checkpoint before Member 2 starts Phase 2 customer work.

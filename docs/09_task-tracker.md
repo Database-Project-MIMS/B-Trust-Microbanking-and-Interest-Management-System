@@ -17,13 +17,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 10 | 1 | 0 | 0 | 7 |
-| P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
+| P1 | 19 | 0 | 6 | 0 | 0 | 0 | 13 |
+| P2 | 16 | 15 | 0 | 0 | 0 | 0 | 1 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **10** | **1** | 0 | 0 | **13** |
+| **All** | **97** | **71** | **6** | **0** | 0 | 0 | **20** |
 
 ---
 
@@ -114,8 +114,8 @@ points where noted.
 |---|---|---|---|---|---|---|---|
 | **P01-M02-T01** | Branch schema | `0120_p01_m02_branch.sql` — `branch` + `branch_code UNIQUE`, status check | — | — | Duplicate `branch_code` rejected; delete restricted | `0000` | DONE |
 | **P01-M02-T02** | Agent schema | `0121_p01_m02_agent.sql` — `agent` as a subtype of `app_user`; `employee_no UNIQUE`, `nic_passport_no UNIQUE`, `email UNIQUE`; index `(branch_id, status)` | — | — | FR-ORG-02: agent in exactly one active branch | T01, P01-M01-T01 | DONE |
-| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity and negative tests | T02, **I-1** | IN_PROGRESS |
-| **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — list, create, deactivate | e2e create + deactivate | T03 | READY |
+| **P01-M02-T03** | Branch & agent APIs | `0122_p01_m02_organization_audit.sql` — sanitized, same-transaction branch/agent auditing | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity, rollback/audit and negative tests | T02, **I-1**, P01-M01-T05 contract | DONE |
+| **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — role-aware active/all lists, create forms and confirmed deactivation | `tests/e2e/branches-agents.test.mjs` — create, list, deactivate and history retention | T03 | DONE |
 
 Branch: `feat/p01-m02-<slug>`. Acceptance: ≥ 3 branches and ≥ 5 agents can be created and
 listed (FR-ORG-01); no record referenced by history can be deleted (FR-ORG-05).
@@ -126,7 +126,7 @@ listed (FR-ORG-01); no record referenced by history can be deleted (FR-ORG-05).
 |---|---|---|---|---|---|---|---|
 | **P01-M03-T01** | Savings plan schema with eligibility data | `0140_p01_m03_savings_plan.sql` — `savings_plan` + `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult`; age-range check | — | — | `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing, five plans load with exactly the BR-03…BR-07 rates and minimums, all negative cases covered | `0000`; **G-13** approved | DONE (branch `feat/p01-m03-savings-plan-schema`) |
 | **P01-M03-T02** | Eligibility function | `fn_check_plan_eligibility(plan_id, date_of_birth, holder_count)` in `database/routines/fn_check_plan_eligibility.sql` | — | — | `tests/db/plan-eligibility-function.test.mjs` — 10/10 passing: child aged 15 rejected for Children; adult aged 30 accepted for Adult; 1 holder rejected for Joint; both boundary cases and all negative/invalid-input cases covered | T01 | DONE (branch `feat/p01-m03-plan-eligibility-function`) |
-| **P01-M03-T03** | Plan API and administration page | — | `GET /api/plans`, `PATCH /api/plans/{id}` | `app/plans/page.tsx` — read-mostly product view | Non-admin role cannot edit a plan | T02, **I-1** | READY |
+| **P01-M03-T03** | Plan API and administration page | — | `GET /api/plans`, `PATCH /api/plans/{id}` | `app/plans/page.tsx` + `SavingsPlanClient.tsx` | `tests/api/plans.test.mjs` — 9/9 passing: any role reads, ADMIN/CENTRAL_OPS edit, AGENT gets 403 (client-hidden and server-enforced), CSRF required, zod + DB CHECK both reject bad age/holder ranges | T02, **I-1** | DONE (branch `feat/p01-m03-plan-api-page`) |
 
 Acceptance: eligibility is a **data-driven join**, not `IF plan_name = 'Children'`
 hardcoded in TypeScript.
@@ -150,23 +150,26 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, TODO)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, awaiting Phase 1 exit)
 
-**Gate:** OQ-05 (G-20 customer identity) must be resolved before `P02-M02-T01` starts.
+**Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
+Phase 2 now waits only for the Phase 1 exit checkpoint before work begins.
+
+**Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
 | P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 |
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05 |
 | P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 |
-| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | **OQ-05**, P01-M02-T02 |
+| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T03 |
 | P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 |
-| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, **G-06** |
+| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, **G-08** |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved |
 | P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 |
 | P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 |
@@ -259,10 +262,9 @@ hardcoded in TypeScript.
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
-| P02-M02-T01 | **OQ-05** — customer identity / login (G-20) | Team + lecturer |
 | P03-M04-T01 | **OQ-08** — reference-number uniqueness / transfers (G-05) | Team |
 | P04-M05-T01 | **OQ-01** — one active FD vs one FD ever (G-01) | Team |
 | P04-M05-T04, P05-M05-T02 | **OQ-04** — savings-account interest in scope? (G-12) | **Lecturer** |
 
-These four decisions are the highest-priority item after Phase 0 approval. Everything in
+These remaining decisions are high-priority integration items. Everything in
 Phase 1 can proceed in parallel while they are being settled.

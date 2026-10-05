@@ -1,17 +1,21 @@
-# 🟢 Phase 2 — Tasks 04–05: Customer Registration Service & Pages
+# 🟢 Phase 2 — Tasks 04–05: Customer Registration Service
 **Task IDs:** `P02-M02-T04`, `P02-M02-T05` · **Branch:** `feat/p02-m02-customer-registration`
 **Status:** TODO
 **Depends on:** T03 (`customer_document`), **I-1** (M1 RBAC), **I-2** (M4 `withTransaction`)
-**Story Points:** ~5 + ~5 = ~10 · **Layer:** Backend + Frontend — your hardest task this phase
+**Story Points:** ~5 + ~5 = ~10 · **Layer:** Backend only
+
+> ⚡ **UI COMPLETE** — Customer registration, search and profile screens have been
+> pre-built in `app/dashboard/**`. Your job is to implement the **service layer and API
+> routes** so those screens have real data to work with. Do not rebuild any UI component.
 
 ---
 
 ## What This Task Is
 
 The full customer onboarding vertical: one atomic service call that inserts the
-customer, their documents, their agent assignment and an audit event — then the pages
-that drive it. This is the task AGENTS.md §5 and §11 are describing when they say a
-financial-adjacent multi-row operation belongs in a single explicit transaction.
+customer, their documents, their agent assignment and an audit event. This is the task
+AGENTS.md §5 and §11 are describing when they say a financial-adjacent multi-row
+operation belongs in a single explicit transaction.
 
 ---
 
@@ -30,7 +34,6 @@ financial-adjacent multi-row operation belongs in a single explicit transaction.
   event are inserted in one database transaction")
 - **Success** `201 { data: { customerId, customerNumber } }`
 - **Errors** `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`
-- **Page** `/customers/new`
 
 ```ts
 // services/customer-service.ts
@@ -75,22 +78,13 @@ layer response shaping — **not** hidden only in the UI.
 
 ---
 
-## T05 — Registration, Search & Profile Pages
+## T05 — API Endpoints for Registration, Search & Profile
 
-Pages: `app/customers/new/page.tsx`, `app/customers/page.tsx` (search/list),
-`app/customers/[id]/page.tsx` (profile).
-
-- **Registration form** (`/customers/new`): multi-step or single form — personal detail,
-  branch/agent selection (pre-filled and locked if the caller is an `AGENT`), document
-  upload (file path only — actual file storage is out of scope unless a handoff says
-  otherwise; store a placeholder path or wire to whatever upload mechanism the team
-  agreed on)
-- **Search page** (`/customers`): search by name (fuzzy, via the trigram index), NIC,
-  branch, agent; results respect masking and branch scope
-- **Profile page** (`/customers/[id]`): customer detail, linked accounts (once M3's
-  `account_holder` exists — this panel can be a placeholder until then), assignment
-  history (all `customer_agent` rows, not just the active one — this is what proves
-  FR-CUS-03)
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/customers` | Register (see T04 above) |
+| `GET /api/customers` | Search with masking and branch scope |
+| `GET /api/customers/{id}` | Profile including account links and assignment history |
 
 ---
 
@@ -111,28 +105,19 @@ start the service layer.
 3. Error mapping: `23505` on `nic_passport_no` → `409 DUPLICATE_IDENTITY`; `23505` on
    `email` → `409 DUPLICATE_EMAIL`
 
-### Step 3 — Frontend
-1. Registration form as a Client Component (interactive multi-field form with
-   validation feedback); submits to `POST /api/customers`
-2. Search page as a Server Component with a Client Component search box (debounced)
-3. Profile page as a Server Component; assignment history rendered as a timeline/table
-
-### Step 4 — Write Tests
+### Step 3 — Write Tests
 - `tests/api/customers.test.mjs`: registration is atomic (a document insert failure
   rolls back the customer insert too — test by forcing an invalid document row mid-list);
   duplicate NIC → 409; duplicate email → 409; `AGENT` cannot register into another
   branch → 403
 - `tests/db/customer-registration-transaction.test.mjs` (if useful at the DB level):
   confirms row counts before/after a forced failure
-- `tests/e2e/customer-registration.test.mjs`: fill the form, submit, land on the new
-  profile page, see the customer in search results
 
-### Step 5 — Update Docs
+### Step 4 — Update Docs
 - Confirm `docs/05_api-and-pages.md` matches what you built
-- Run `/imprint` — registration form, search box, profile layout patterns
 - Update task statuses in `docs/09_task-tracker.md` → `DONE`
 - Write a handoff in `.agent/handoffs/` — M3's account opening flow (Phase 2) will need
-  to look up a customer by ID from this page
+  to look up a customer by ID
 
 ---
 
@@ -142,6 +127,5 @@ start the service layer.
 - [ ] Duplicate NIC and duplicate email both return `409`, not `500`
 - [ ] `AGENT` role is branch-scoped on both create and search — enforced in SQL
 - [ ] Identity fields are masked for roles without a legitimate need (FR-CUS-04)
-- [ ] Assignment history on the profile page shows all rows, not just the active one
-- [ ] `/imprint` run; `ui-registry.md` updated
+- [ ] `GET /api/customers/{id}` returns assignment history (all rows, not just active)
 - [ ] `npm run typecheck && npm test` pass

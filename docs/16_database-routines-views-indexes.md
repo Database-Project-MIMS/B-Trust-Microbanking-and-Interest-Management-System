@@ -34,6 +34,7 @@ L01–L13.
 | `fn_is_business_hour(ts)` | M1 | `boolean` | Reads `business_calendar` / `system_parameter` | BR-08 | L05 |
 | `fn_account_running_balance(account_id)` | M4 | table | Window-function running balance, used to reconcile `balance_after` | FR-TXN-04 | **L13 window functions** |
 | `fn_validate_agent_active_branch()` | M2 | `trigger` | Lock and verify that an active agent references an active branch | FR-ORG-02 | L08 triggers, L11 locking |
+| `fn_prevent_account_branch_change()` | M3 | `trigger` | Reject any change to `account.branch_id` after opening | ADR-0008, D-4 | L08 triggers |
 | `fn_prevent_branch_deactivation_with_active_agents()` | M2 | `trigger` | Reject branch deactivation while active agents remain | FR-ORG-02 | L08 triggers |
 
 ## Triggers
@@ -42,12 +43,15 @@ L01–L13.
 |---|---|---|---|---|---|
 | `trg_financial_transaction_immutable` | M4 | `BEFORE UPDATE OR DELETE` on `transaction` | Raise unconditionally — posted rows are immutable | FR-TXN-02, BR-16 | L08 triggers |
 | `trg_audit_log_immutable` | M1 | `BEFORE UPDATE OR DELETE` on `audit_log` | Append-only audit | FR-AUD-01 | L08 |
-| `trg_audit_master_changes` | M1 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write before/after values as `jsonb` | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_audit_master_changes` | M1/M2 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write sanitized before/after values as `jsonb`; sensitive keys are removed | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_audit_branch` / `trg_audit_agent` | M2 | `AFTER INSERT/UPDATE/DELETE` on `branch` / `agent` | Audit organisation master data in the caller transaction | FR-ORG-04, FR-AUD-01 | L08, ACID |
 | `trg_validate_joint_mandate` | M3 | `AFTER INSERT/UPDATE` on `account_holder`, **statement-level with transition tables** | Holder count 2–4 and all adults for joint plans — a rule that spans rows, so it cannot be a row `CHECK` | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
 | `trg_set_updated_at` | shared | `BEFORE UPDATE` | Maintain `updated_at` | DB-CON-06 | L08 (already in migration `0000`) |
 | `trg_prevent_duplicate_active_fd` | M5 | `BEFORE INSERT/UPDATE` on `fixed_deposit` | **Fallback only.** The partial unique index is the real guarantee; this exists so the rule is also demonstrable as a trigger | BR-12, NFR-SAFE-04 | L08, L10 |
 | `trg_validate_agent_active_branch` | M2 | `BEFORE INSERT OR UPDATE OF branch_id, status` on `agent` | Require every active agent's branch to be active | FR-ORG-02 | L08, L11 locking |
 | `trg_branch_prevent_deactivation_with_active_agents` | M2 | `BEFORE UPDATE OF status` on `branch` | Preserve the active-agent/active-branch invariant in the reverse direction | FR-ORG-02 | L08 |
+| `trg_account_prevent_branch_change` | M3 | `BEFORE UPDATE OF branch_id` on `account` | Owning branch is a snapshot taken at opening; never changes | ADR-0008, D-4 | L08 |
+| `trg_account_set_updated_at` | M3 | `BEFORE UPDATE` on `account` | Maintain the account modification timestamp | DB-CON-06 | L08 |
 | `trg_agent_set_updated_at` | M2 | `BEFORE UPDATE` on `agent` | Maintain the agent modification timestamp | DB-CON-06 | L08 |
 
 > **Design note.** Where a constraint or index can enforce a rule, it does — a partial
@@ -82,7 +86,7 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 
 | Index | Table | Purpose | Requirement |
 |---|---|---|---|
-| `ux_account_number` | `account` | Lookup and duplicate prevention | SRS §6.7, FR-ACC-01 |
+| `ux_account_number` (`uq_account_account_number`) | `account` | Lookup and duplicate prevention | SRS §6.7, FR-ACC-01 |
 | `ux_transaction_reference` | `transaction` | Unique reference (BR-10) | §6.7, G-05 |
 | `ux_transaction_idempotency` (partial, `WHERE key IS NOT NULL`) | `transaction` | Retry safety | FR-DEP-04, G-04 |
 | `ux_fixed_deposit_one_active` (partial, `WHERE status='ACTIVE'`) | `fixed_deposit` | One active FD | BR-12, G-01 |

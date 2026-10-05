@@ -69,6 +69,7 @@ to the browser.
 ```bash
 npm run db:migrate       # apply migrations in order
 npm run db:status        # show applied vs pending
+npm run db:grants        # apply runtime permissions using the owner connection
 ```
 
 `db:rebuild` runs everything in the documented order (`database/README.md`): migrations →

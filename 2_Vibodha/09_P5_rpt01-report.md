@@ -2,7 +2,10 @@
 **Task IDs:** `P05-M02-T01`, `P05-M02-T02` · **Branch:** `feat/p05-m02-rpt01-agent-transactions`
 **Migration:** `0520_p05_m02_rpt01_view.sql` · **Status:** TODO
 **Depends on:** `P03-M02-T01` (transaction attribution, this slice), **I-7** (report shell from M1)
-**Story Points:** ~3 + ~4 = ~7 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~4 = ~7 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The RPT-01 report screen is pre-built in `app/dashboard/**`. Your
+> job is to implement the **view, API and CSV export** only. Do not rebuild any UI component.
 
 ---
 
@@ -63,7 +66,6 @@ Follows the shared report contract from `docs/05_api-and-pages.md` §"Reports":
 - **Audit** every report access is logged (REP-COM-06) — call M1's report-access audit
   helper from I-7, don't reimplement it
 - **Errors** `403` for a branch outside scope
-- **Page** `/reports/agent-transactions`
 
 ### Step 1 — Confirm I-7 Is Published
 ```bash
@@ -76,10 +78,6 @@ you build on it — do not reimplement CSV streaming or access auditing yourself
 `services/report-service.ts` (or a dedicated `agent-transactions-report-service.ts` if
 the report shell expects per-report modules — match whatever pattern I-7's handoff
 describes): `getAgentTransactionsReport(filters, scope)`.
-
-### Step 3 — Frontend
-`app/reports/agent-transactions/page.tsx` built on M1's report shell components —
-filter bar, results table with subtotals/grand total, CSV export button.
 
 ### Step 4 — Write Tests
 - `tests/db/rpt01-view.test.mjs`: view returns zero-count rows for agents with no
@@ -101,7 +99,6 @@ npm run typecheck && npm test
 ### Step 6 — Update Docs
 - Update `docs/16_database-routines-views-indexes.md` — add `vw_rpt01_agent_transactions`
 - Confirm `docs/05_api-and-pages.md` matches the built endpoint
-- Run `/imprint` if the report page introduces new UI patterns
 - Update task statuses in `docs/09_task-tracker.md` → `DONE`
 
 ---

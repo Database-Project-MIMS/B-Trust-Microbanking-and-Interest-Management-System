@@ -19,15 +19,15 @@ transaction), and **idempotency as a database constraint**, not an in-memory cac
 |---|---|---|---|---|---|
 | 01 | [Harden lib/db](01_P1-T01_lib-db-hardening.md) | P1 | T01 | Retry, SQLSTATE mapping, redacted logging — **publishes I-2** | ~5 |
 | 02 | [Transaction Channel Schema](02_P1-T02_transaction-channel-schema.md) | P1 | T02 | `transaction_channel` + seed (`BRANCH_COUNTER`, `ONLINE`, `SYSTEM`) | ~2 |
-| 03 | [Migration Runner Tests & Health Page](03_P1-T03-T04_migration-runner-health-page.md) | P1 | T03–T04 | Rebuild proof, edited-migration rejection, `/admin/health` page | ~5 |
+| 03 | [Migration Runner Tests & Health Endpoint](03_P1-T03-T04_migration-runner-health-page.md) | P1 | T03–T04 | Rebuild proof, edited-migration rejection, `/admin/health` API | ~5 |
 | 04 | [Transaction Schema & Immutability](04_P2-T01_transaction-schema-immutability.md) | P2 | T01 | `transaction` ledger table + `trg_financial_transaction_immutable` | ~5 |
 | 05 | [Reference & Idempotency Indexes](05_P3-T01_reference-idempotency-indexes.md) | P3 | T01 | `reference_number UNIQUE`, `idempotency_key` partial unique index (G-04, G-05) | ~4 |
 | 06 | [sp_post_deposit](06_P3-T02_sp-post-deposit.md) | P3 | T02 | Lock, insert ledger, update balance, `balance_after`, audit | ~6 |
 | 07 | [sp_post_withdrawal](07_P3-T03_sp-post-withdrawal.md) | P3 | T03 | Lock, re-validate status/mandate/limits/minimum, debit — consumes **I-4** | ~7 |
 | 08 | [Transaction Reversal](08_P3-T04_transaction-reversal.md) | P3 | T04 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | ~5 |
-| 09 | [Transaction APIs & Pages](09_P3-T05_transaction-api-pages.md) | P3 | T05 | `Idempotency-Key` header handling; deposit, withdrawal, receipt, statement, reversal pages | ~8 |
+| 09 | [Transaction APIs](09_P3-T05_transaction-api-pages.md) | P3 | T05 | `Idempotency-Key` header handling; deposit, withdrawal, reversal APIs | ~8 |
 | 10 | [Interest Credit Posting](10_P4_interest-credit-posting.md) | P4 | T01–T02 | `INTEREST_CREDIT` through the ledger routine — publishes **I-5**; statement display | ~6 |
-| 11 | [RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md) | P5 | T01–T02 | Customer activity view, API, page, CSV | ~6 |
+| 11 | [RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md) | P5 | T01–T02 | Customer activity view, API, CSV | ~6 |
 | 12 | [Reconciliation](12_P5-T03_reconciliation.md) | P5 | T03 | Ledger vs `current_balance` vs `balance_after` (D-1, D-2) | ~4 |
 | 13 | [Rollback, Idempotency & Performance Tests](13_P6_rollback-idempotency-performance-tests.md) | P6 | T01–T02 | Partial-failure evidence; posting performance under load | ~5 |
 

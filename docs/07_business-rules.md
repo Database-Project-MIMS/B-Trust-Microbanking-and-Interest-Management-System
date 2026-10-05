@@ -22,6 +22,7 @@ database are what make the rule true.
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 | BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
+| BR-O6 | Branch and agent master-data changes are audited atomically without storing passwords or identity numbers | TRG | `trg_audit_branch`, `trg_audit_agent` and the linked `app_user` trigger write through the sanitized `fn_audit_master_changes()` function in the caller transaction |
 
 ## Products and eligibility
 
@@ -105,7 +106,7 @@ the whole run in one transaction would violate FR-INT-04.
 | BR-S3 | Customers see only accounts they hold | SRV, CON | Join through `account_holder`; enforced by RLS (FR-TXN-05) |
 | BR-S4 | Passwords are stored only as salted adaptive hashes | SRV | argon2id; no endpoint ever returns `password_hash` |
 | BR-S5 | All SQL input values are parameterized | SRV | `$1, $2, …` only; dynamic identifiers via `allowListed()` (NFR-SEC-02) |
-| BR-S6 | Security-sensitive and financial actions produce audit events | TRG, SRV | `trg_audit_master_changes` plus explicit audit writes inside financial transactions (FR-AUD-01) |
+| BR-S6 | Security-sensitive and financial actions produce audit events | TRG, SRV | Sanitized `fn_audit_master_changes()` triggers cover master data; explicit audit writes remain inside financial transactions (FR-AUD-01) |
 | BR-S7 | Records referenced by ledger entries are never physically deleted | CON | `ON DELETE RESTRICT` on every FK into financial history (FR-ORG-05, DB-CON-02) |
 | BR-20 | Only synthetic data is used | Process | Seed data only; enforced by review, not by code |
 

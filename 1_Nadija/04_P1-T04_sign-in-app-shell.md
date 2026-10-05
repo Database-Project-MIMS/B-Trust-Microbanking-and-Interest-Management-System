@@ -1,109 +1,83 @@
-# 🔵 Phase 1 — Task 04: Sign-in Page & Application Shell
+# 🔵 Phase 1 — Task 04: Sign-in API Integration & Application Shell
 **Task ID:** `P01-M01-T04` · **Branch:** `feat/p01-m01-app-shell`  
 **Status:** READY · **Depends on:** P01-M01-T02  
-**Story Points:** ~2 · **Layer:** Frontend only  
+**Story Points:** ~2 · **Layer:** Backend + Session wiring  
 **📌 Shared file — M1 owns the app shell, everyone uses it**
+
+> ⚡ **UI COMPLETE** — All sign-in pages and the app shell have been pre-built and live in
+> `app/sign-in/**` and `components/app-shell/**`. Your job is to wire the **backend session**
+> into them: make `/api/auth/login` set the cookie, make the shell read it, and make
+> `/api/auth/logout` invalidate it. Do not rebuild any UI component.
 
 ---
 
 ## What This Task Is
 
-Build the sign-in page and the authenticated application shell (header, navigation, session indicator, sign-out). This is the shared UI that all 4 other members' pages will sit inside.
+Connect the pre-built sign-in UI to the real session backend. The shell already renders
+role-aware navigation items — you must make `requireRole()` / `branchScope()` available
+so route handlers and server components can enforce authorization.
 
 ---
 
-## Files to Create
+## Files to Create / Edit (Backend Only)
 
 | File | Purpose |
 |---|---|
-| `app/(auth)/sign-in/page.tsx` | Sign-in page |
-| `app/layout.tsx` | Replace with authenticated shell |
-| `components/app-shell/header.tsx` | App header with session indicator |
-| `components/app-shell/nav.tsx` | Role-aware navigation sidebar |
-| `components/app-shell/sign-out-button.tsx` | Sign-out button |
+| `app/api/auth/login/route.ts` | Validate credentials, create session, set `HttpOnly` cookie |
+| `app/api/auth/logout/route.ts` | Invalidate session server-side, clear cookie |
+| `lib/auth/session.ts` | Read session from cookie; expose typed `AuthContext` |
+| `lib/auth/rbac.ts` | `requireRole()`, `branchScope()` — **publishes I-1** |
+| `lib/auth/password.ts` | `verifyPassword()` wrapper around `argon2id` |
 | `tests/e2e/sign-in.test.mjs` | End-to-end sign-in test |
 
 ---
 
 ## How to Implement
 
-### Step 1 — Sign-in Page (`app/(auth)/sign-in/page.tsx`)
+### Step 1 — Login Route (`app/api/auth/login/route.ts`)
 
-A simple, clean sign-in form:
-- Username field
-- Password field
-- Submit button
-- Error message area (generic errors only!)
-- **Read `ui-registry.md` FIRST** for design tokens
-
-**Form submission:**
 ```typescript
-// POST to /api/auth/login
-const response = await fetch('/api/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username, password }),
-});
+// POST /api/auth/login
+// Body: { username: string, password: string }
+// → 200 + Set-Cookie on success
+// → 401 INVALID_CREDENTIALS on failure
+// → 429 TOO_MANY_ATTEMPTS if login_attempt threshold exceeded
 ```
 
-- On success → redirect to dashboard
-- On failure → show generic error message
-- On throttle (429) → show "Too many attempts, please wait"
+- Look up `app_user` by username
+- `verifyPassword(body.password, user.password_hash)`
+- On success: insert into `user_session`; set `Secure HttpOnly SameSite=Lax` cookie
+- On failure: increment `login_attempt`; never reveal whether the username exists
 
-### Step 2 — Application Shell (`app/layout.tsx`)
+### Step 2 — Session Helpers (`lib/auth/`)
 
-Replace the existing layout with an authenticated shell:
+```typescript
+// lib/auth/session.ts
+export async function getSession(req: NextRequest): Promise<AuthContext | null>
 
-```
-┌──────────────────────────────────────────────┐
-│  HEADER: Logo │ System Name │ User │ Sign Out │
-├────────┬─────────────────────────────────────┤
-│        │                                     │
-│  NAV   │         PAGE CONTENT                │
-│ (role  │                                     │
-│ aware) │                                     │
-│        │                                     │
-├────────┴─────────────────────────────────────┤
-│  FOOTER (optional)                           │
-└──────────────────────────────────────────────┘
+// lib/auth/rbac.ts
+/** Throws NotAuthorizedError if the caller's role is not in allowedRoles. */
+export function requireRole(ctx: AuthContext, allowedRoles: Role[]): void
+
+/** Returns a SQL snippet + params that scope a query to the caller's branch. */
+export function branchScope(ctx: AuthContext): { sql: string; params: unknown[] }
 ```
 
-**Key rules:**
-- If user is NOT authenticated → redirect to `/sign-in`
-- If user IS authenticated → show the shell with content
+Publish the signatures in `.agent/handoffs/i1-rbac-published.md` as **I-1** once done.
 
-### Step 3 — Role-Aware Navigation (`components/app-shell/nav.tsx`)
+### Step 3 — Logout Route (`app/api/auth/logout/route.ts`)
 
-Navigation items are shown based on the user's role. But remember: **hiding a nav link is NOT access control** (FR-AUTH-02) — the server still checks authorization on every request.
+```typescript
+// POST /api/auth/logout
+// → Marks user_session as revoked; clears cookie
+```
 
-| Nav Item | Visible to Roles |
-|---|---|
-| Dashboard | All |
-| Branches | ADMIN, BRANCH_MANAGER |
-| Agents | ADMIN, BRANCH_MANAGER |
-| Customers | ADMIN, BRANCH_MANAGER, AGENT, AUDITOR |
-| Plans | All authenticated |
-| Accounts | ADMIN, BRANCH_MANAGER, AGENT |
-| Transactions | ADMIN, BRANCH_MANAGER, AGENT |
-| Fixed Deposits | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT |
-| Interest Runs | ADMIN, CENTRAL_OPS |
-| Reports | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR |
-| Audit Log | ADMIN, AUDITOR |
-| Admin (Users, Params) | ADMIN |
-| System Health | ADMIN |
+### Step 4 — Wire the Shell
 
-### Step 4 — Session Indicator & Sign-Out
-
-In the header, show:
-- Username
-- Role badge
-- Branch name (if branch-scoped)
-- Sign-out button
-
-**Sign-out flow:**
-1. `POST /api/auth/logout`
-2. Clear the session cookie
-3. Redirect to `/sign-in`
+The `components/app-shell/top-bar.tsx` already renders navigation. Make
+`app/dashboard/layout.tsx` (or similar) read the session via `getSession()` and redirect
+to `/sign-in` if null. Pass the `AuthContext` as a prop so the shell can display the
+username, role badge, and branch name.
 
 ### Step 5 — Write Tests (`tests/e2e/sign-in.test.mjs`)
 
@@ -112,26 +86,17 @@ In the header, show:
 | Sign-in with valid credentials → redirects to dashboard | Happy path |
 | Sign-in with wrong password → shows generic error | No info leak |
 | After sign-out → cannot access protected pages | Session invalidation |
-| Nav shows only permitted sections per role | UI authorization |
+| 429 after threshold | Brute-force protection |
 
-### Step 6 — Run `/imprint`
-This creates the **first entries** in `ui-registry.md`:
-- App Shell component
-- Sign-in Card component
-- Button component
-- Form Field component
-
-### Step 7 — Update Docs
-- Update `docs/11_ui-rules.md` with implementation details
-- Update `ui-registry.md` via `/imprint`
+### Step 6 — Update Docs
 - Update task status in `docs/09_task-tracker.md` → `DONE`
+- Publish I-1 handoff in `.agent/handoffs/`
 
 ---
 
 ## Acceptance Criteria
-- [ ] Nav shows only permitted sections per role
-- [ ] Server still authorizes every request (hiding nav ≠ access control)
-- [ ] Sign-in works with session cookie
-- [ ] Sign-out invalidates session server-side
-- [ ] Matches the design tokens in `ui-registry.md`
-- [ ] `/imprint` run — first component entries created
+- [ ] `POST /api/auth/login` sets a `Secure HttpOnly SameSite=Lax` session cookie
+- [ ] `POST /api/auth/logout` invalidates the session server-side (cookie alone is not enough)
+- [ ] `requireRole()` and `branchScope()` are exported and documented as **I-1**
+- [ ] Unauthenticated access to `/dashboard` redirects to `/sign-in`
+- [ ] `npm run typecheck && npm test` pass

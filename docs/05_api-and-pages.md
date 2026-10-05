@@ -76,9 +76,9 @@ admin identity workflow and must atomically receive its required `agent` profile
 - Duplicate employee number, identity, email and username return specific `409` codes.
   Cross-branch mutation returns `403`; missing rows return `404`. No agent `DELETE`
   handler exists.
-- Agent creation currently commits `app_user` + `agent` atomically. Audit insertion and
-  runtime `mims_app` grants are pending the Member 1 handoff recorded in
-  `.agent/handoffs/p01-m02-t03-audit-and-grants.md`.
+- Branch and agent inserts/updates are audited by database triggers in the caller
+  transaction. A failed agent profile insert rolls back the linked `app_user` and all
+  audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
 
 ### `POST /api/customers`
 - **Purpose** Register a customer (FR-CUS-01…05).
@@ -101,7 +101,7 @@ admin identity workflow and must atomically receive its required `agent` profile
 | Method & path | Purpose | Roles |
 |---|---|---|
 | `GET /api/plans` | Savings plans with rates, minimums, eligibility | any authenticated |
-| `PATCH /api/plans/{id}` | Update plan (effective-dated) | ADMIN, CENTRAL_OPS |
+| `PATCH /api/plans/{id}` | Update plan rate/minimum/description/status/eligibility (in-place, not effective-dated — unlike `fd_plan`, `savings_plan` has no `effective_from`/`effective_to`) | ADMIN, CENTRAL_OPS |
 | `GET /api/fd-products` | FD products (M5) | any authenticated |
 
 ### `POST /api/accounts`
@@ -235,7 +235,8 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/admin/parameters` | `/api/admin/parameters` | ADMIN | M1 |
 | `/admin/audit` | `GET /api/audit` | AUDITOR, ADMIN | M1 |
 | `/admin/health` | `GET /api/health` | ADMIN | M4 |
-| `/branches`, `/agents` | `/api/branches`, `/api/agents` | ADMIN, BRANCH_MANAGER | M2 |
+| `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
+| `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
 | `/plans` | `GET /api/plans` | all | M3 |
 | `/accounts`, `/accounts/new`, `/accounts/{id}` | `/api/accounts` | AGENT, BRANCH_MANAGER | M3 |
@@ -244,6 +245,12 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/transactions/{id}` | `GET`, `POST .../reverse` | staff; manager to reverse | M4 |
 | `/accounts/{id}/statement` | `GET /api/accounts/{id}/transactions` | staff; CUSTOMER own | M4 |
 | `/reconciliation` | `GET /api/reports/reconciliation` | CENTRAL_OPS, AUDITOR | M4 |
+
+The branch and agent pages default to active records and offer an all-records filter.
+`ADMIN` can create and deactivate branches. `ADMIN` and `BRANCH_MANAGER` can create and
+deactivate ordinary agents; a manager's active-branch selector contains only their scoped
+branch. Every mutation sends the login-issued CSRF token and asks for confirmation before
+deactivation. Deactivation preserves the record and its history.
 | `/fd-products` | `/api/fd-products` | ADMIN, CENTRAL_OPS | M5 |
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |

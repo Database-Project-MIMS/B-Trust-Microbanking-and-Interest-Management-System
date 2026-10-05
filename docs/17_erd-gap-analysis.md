@@ -1,7 +1,7 @@
 # 17 — ERD Gap Analysis
 
 **Compares:** `Project 4` assignment brief · `Group 32 SRS v1.1` · `group_32_ERD2`
-**Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 4 are blocking.
+**Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 3 remain blocking.
 
 ---
 
@@ -35,9 +35,9 @@ structure and contradicts nothing — a member may implement it directly.
 | G-03 | No central interest-run tracking | HIGH | YES |
 | G-04 | No idempotency key on transactions | HIGH | YES |
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
-| G-06 | Accounts have no owning branch | HIGH | YES |
+| G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transactions have no agent or branch attribution | HIGH | YES |
-| G-08 | Joint operating mandate not modelled | HIGH | YES |
+| G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved** |
 | G-09 | Single role per user vs `user_role` many-to-many | MEDIUM | YES |
 | G-10 | Nothing prevents two active customer–agent assignments | MEDIUM | NO |
 | G-11 | Product rates not effective-dated; FD does not snapshot its rate | HIGH | YES |
@@ -47,9 +47,9 @@ structure and contradicts nothing — a member may implement it directly.
 | G-15 | No parameter store for business hours and withdrawal limits | MEDIUM | YES |
 | G-16 | No session table for server-side invalidation | MEDIUM | YES |
 | G-17 | No store for failed sign-in throttling | LOW | NO |
-| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO |
+| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO — implemented in `0240` |
 | G-19 | Monetary and rate columns lack precision | MEDIUM | NO |
-| G-20 | Every customer is forced to have a login | HIGH | **YES — blocking** |
+| G-20 | Every customer is forced to have a login | HIGH | **YES — resolved** |
 | G-21 | Branch managers have no defined branch-assignment source | HIGH | **YES — accepted** |
 
 ---
@@ -241,7 +241,8 @@ fixed at account opening, not a derivable one.
 **Database impact** — One `NOT NULL` FK, one index `(branch_id, status)`, and it becomes
 the RLS anchor column. Record in the denormalisation register in `04_database-schema.md`.
 
-**Approval needed — YES.**
+**Approved — 2026-10-01.** Accounts store their owning branch as a fixed historical
+snapshot and branch-scope anchor. Recorded in ADR-0008.
 
 ---
 
@@ -295,7 +296,8 @@ statement-level trigger.
 cannot be a row-level `CHECK` (they span rows), which makes this a good demonstration of
 statement-level triggers with transition tables (L08).
 
-**Approval needed — YES.**
+**Approved — 2026-10-01.** Add `holder_type`, `joint_mandate`, and database validation
+for the two-to-four-adult-holder rule. Recorded in ADR-0009.
 
 ---
 
@@ -621,7 +623,9 @@ A customer with self-service gets a linked user; one without does not. `agent` k
 **before Phase 2 begins**. Also removes ERD Assumption 2's side effect ("a customer is
 recorded only if an account is open") as a schema-level requirement.
 
-**Approval needed — YES, blocking.** Depends on the answer to TBD-02. Tracked as **OQ-05**.
+**Approved — 2026-09-29.** Customer login is optional. `customer` uses an independent
+surrogate key and an optional unique `app_user_id` relationship. OQ-05 and TBD-02 are
+resolved by ADR-0007.
 
 ---
 
@@ -672,7 +676,7 @@ No ERD table is removed. Every proposal is additive except G-01 (constraint form
 
 ## What happens next
 
-1. The team reviews this document and decides **OQ-01, OQ-04, OQ-05, OQ-08** (see
+1. The team reviews this document and decides **OQ-01, OQ-04 and OQ-08** (see
    `.agent/open-questions.md`). OQ-04 and OQ-08 are good lecturer questions.
 2. Approved changes are folded into `docs/04_database-schema.md` under **PROPOSED**, and
    an ADR is written in `.agent/decisions/`.

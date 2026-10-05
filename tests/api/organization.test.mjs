@@ -235,6 +235,17 @@ describe("P01-M02-T03: Branch and agent APIs", () => {
     const body = await response.json();
     createdBranchId = body.data.branchId;
     assert.equal(body.data.branchCode, `${branchCodePrefix}C`);
+
+    const audit = await client.query(
+      `SELECT action, new_values
+         FROM audit_log
+        WHERE entity_type = 'branch'
+          AND entity_id = $1
+          AND action = 'INSERT'`,
+      [createdBranchId],
+    );
+    assert.equal(audit.rowCount, 1);
+    assert.equal(audit.rows[0].new_values.branch_code, `${branchCodePrefix}C`);
   });
 
   test("duplicate branch code returns 409", async () => {
@@ -301,6 +312,20 @@ describe("P01-M02-T03: Branch and agent APIs", () => {
       [createdBranchId],
     );
     assert.equal(stored.rows[0].status, "INACTIVE");
+
+    const audit = await client.query(
+      `SELECT old_values, new_values
+         FROM audit_log
+        WHERE entity_type = 'branch'
+          AND entity_id = $1
+          AND action = 'UPDATE'
+        ORDER BY logged_at DESC
+        LIMIT 1`,
+      [createdBranchId],
+    );
+    assert.equal(audit.rowCount, 1);
+    assert.equal(audit.rows[0].old_values.status, "ACTIVE");
+    assert.equal(audit.rows[0].new_values.status, "INACTIVE");
   });
 
   test("branch with active staff cannot be deactivated", async () => {
@@ -333,6 +358,22 @@ describe("P01-M02-T03: Branch and agent APIs", () => {
     assert.equal(body.data.branchId, branchAId);
     assert.equal("password" in body.data, false);
     assert.equal("passwordHash" in body.data, false);
+
+    const audit = await client.query(
+      `SELECT entity_type, new_values
+         FROM audit_log
+        WHERE entity_id = $1
+          AND entity_type IN ('app_user', 'agent')
+          AND action = 'INSERT'
+        ORDER BY entity_type`,
+      [ordinaryAgentId],
+    );
+    assert.deepEqual(
+      audit.rows.map((row) => row.entity_type),
+      ["agent", "app_user"],
+    );
+    assert.ok(audit.rows.every((row) => !("password_hash" in row.new_values)));
+    assert.ok(audit.rows.every((row) => !("nic_passport_no" in row.new_values)));
   });
 
   test("agent lists exclude branch managers and enforce manager branch scope", async () => {
@@ -433,6 +474,15 @@ describe("P01-M02-T03: Branch and agent APIs", () => {
       [duplicate.username],
     );
     assert.equal(orphan.rowCount, 0);
+
+    const orphanAudit = await client.query(
+      `SELECT log_id
+         FROM audit_log
+        WHERE entity_type = 'app_user'
+          AND new_values ->> 'username' = $1`,
+      [duplicate.username],
+    );
+    assert.equal(orphanAudit.rowCount, 0);
   });
 
   test("duplicate identity and email return their specific 409 codes", async () => {
