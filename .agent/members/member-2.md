@@ -2,20 +2,25 @@
 
 **Updated:** 2026-10-06 · [slice](../../docs/member-prompts/member-2.md)
 
-PR #34 customer-schema conflicts with origin/dev are resolved on
-feat/p02-m02-customer-schema. Preserve implemented 0220, 27 customer tests and the
-customer handoff alongside dev's Phase 1 closeout/security/tooling repairs.
-Initial T01 focused result: 65 tests pass, clean 12-migration rebuild/typecheck/lint.
-Combined-tree verification passed: 211 tests (26 suites), zero failures/skips, clean
-12-migration rebuild, typecheck, lint and production build in a removed disposable cluster.
-See the [resolution handoff](../handoffs/p02-m02-t01-pr34-conflict-resolution.md).
+PR #36 refresh on feat/p02-m02-customer-registration at 5ef06fd against PR #35's
+latest 888b983 (includes dev 2e338a6), preserving
+0220/0221/0222 and registration/search/profile/validation plus dev closeout fixes.
+Historical focused T04: 181 tests and clean rebuild/checks. Earlier combined verification:
+328 tests, 0 failures/skips, clean 14-migration rebuild, TypeScript/lint/production build.
+[Resolution handoff](../handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+Fresh refresh verification passed 328 tests (31 suites), 0 failures/skips, clean
+14-migration rebuild, TypeScript/lint/production build; recorded in
+[the dependency handoff](../handoffs/p02-m02-t04-pr36-after-pr35.md).
+PR #35 is not yet merged into dev; user merges #35 before #36. This refresh changes
+only documentation; retain the previously resolved ADR index and disposable role setup.
+Customer ADR is now 0014, preserving dev's separate 0013 and the original decisions.
 
-Phase 1's 19 tasks remain DONE; this PR's Phase 2 tree has 3 DONE/2 READY/11 TODO.
-P02-M02-T01 is DONE; T02/T03 are READY here. Their later delivery and T04 registration
-remain on separate branches. No customer route/UI or scoped RLS was added by T01.
-M1 runtime grants/RLS/audit and M3 holders/mandates/opening remain pending.
+This PR: Phase 1 19 DONE; Phase 2 6 DONE/1 BLOCKED/9 TODO. M2 T01–T04 DONE; T05
+requires M1 grants/RLS/audit and actual API/screen integration. Holder relation absent;
+accounts null. Owner tests do not certify production RLS. Existing T03 verifier role
+lock still needs narrowing before exposure; no application grant was widened.
 
-The missing closeout condition was historical: the repairs now exist in origin/dev.
-Phase 2 entry approval persists; Phase 2 exit/Phase 3 approval is not inferred.
-User controls commit/push/merge; no assistant commit or completed merge. Local merge
-is pending with automatic commits disabled. No UI created or imprint required.
+Disposable full harness integration retains fixture safety and supports SET ROLE
+without granting owner privileges to mims_app. Ownership notes precede M4 harness and
+M1 EOF-only cleanup. No migration/service logic change. Phase 2 entry approval persists;
+no later approval. User controls commit/push/merge; local merge pending, no new UI.

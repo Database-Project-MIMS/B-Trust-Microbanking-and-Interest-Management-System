@@ -12,9 +12,11 @@ satisfied.
 
 **2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
 Phase 2 entry after verification. `DONE` below records verified implementation in the
-local working tree. Closeout repairs were subsequently committed in `fad4f13` and
-integrated into `dev` by PR #33 (`76701e7`). Current PR #34 customer-schema integration
-remains user-controlled; no assistant commit, push or completed merge is authorized. See the
+local working tree. Closeout was committed as fad4f13 and integrated into dev by
+PR #33 (76701e7); PR #34 merged into dev at 2e338a6. PR #36's refreshed resolution
+includes PR #35's latest pushed branch (888b983), preparing the user-requested #35-then-#36
+merge order. PR #35 is not yet merged into dev. Preserve user commit/push/merge
+control; no assistant commit, push or completed merge is authorized. See the
 [approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 ---
@@ -25,12 +27,12 @@ remains user-controlled; no assistant commit, push or completed merge is authori
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 11 | 2 | 0 | 0 | 0 | 3 |
+| P2 | 16 | 9 | 0 | 0 | 1 | 0 | 6 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **67** | **2** | **0** | 0 | 0 | **28** |
+| **All** | **97** | **65** | **0** | **0** | **1** | 0 | **31** |
 
 ---
 
@@ -164,15 +166,23 @@ hardcoded in TypeScript.
 The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
 
 **Progress:** P02-M03-T01 and P02-M04-T01 are DONE (`0240` account and `0260`
-immutable transaction migrations). P02-M02-T01 is also technically DONE on
-`feat/p02-m02-customer-schema`: migration 0220, 27 customer tests, schema/rule/index
-documentation and [customer handoff](../.agent/handoffs/p02-m02-t01-customer-schema.md).
-The original focused verification passed 65 tests. PR #34 is open; its local conflict
-resolution combines this work with `dev`'s Phase 1 closeout. Combined verification:
-211 tests pass, clean 12-migration rebuild, typecheck/lint/production build pass.
-User controls commit/push/merge; see the resolution handoff for current evidence.
-P02-M02-T02/T03 are READY in this PR's tree; later assignment/document/registration
-deliveries remain on their own branches. Customer runtime grants/RLS/audit remain M1 work.
+immutable transaction migrations). M2 T01–T04 are technically DONE in this PR's tree:
+0220 customer, 0221 assignment history, 0222 documents/verification and registration,
+search/profile/validation services. Historical focused T04 evidence: 181 tests and
+clean 14-migration rebuild/reapply/verify/typecheck/lint. PR #36 combines this work
+with dev's closeout; its earlier verification passed 328 tests with no failures/skips,
+clean 14-migration rebuild, TypeScript/lint/production build, recorded in the
+[resolution handoff](../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+
+The refresh against PR #35's updated 888b983 includes dev 2e338a6 and keeps T04 DONE;
+fresh verification passed 328 tests and clean 14-migration rebuild/typecheck/lint/build;
+evidence and user publication order are in the
+[dependency handoff](../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
+
+T05 remains BLOCKED pending M1 scoped customer/child grants, RLS and audit coordination.
+Customer screens remain prototypes; M3 account_holder is absent (profile accounts is
+null until available). No customer endpoint/UI was delivered by T04. ADR-0014 now records
+customer numbering/scope, avoiding dev's distinct ADR-0013. User controls publication.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
@@ -180,10 +190,10 @@ deliveries remain on their own branches. Customer runtime grants/RLS/audit remai
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | TODO |
 | P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
 | P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
-| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | READY |
-| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | READY |
-| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | TODO |
-| P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 | TODO |
+| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
+| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
+| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
+| P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | BLOCKED |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
 | P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved | READY |
@@ -281,6 +291,7 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
+| P02-M02-T05 | Scoped customer/child grants, RLS and audit integration; see T04 handoff | M1 security; M2 API/screen integration |
 | Phase 3 transaction work | **OQ-12**, **OQ-14** — transfer typing and lecturer scope acceptance | Team / Lecturer |
 | Phase 4 interest work | **OQ-13**, **OQ-14** — mid-cycle interest and scope acceptance | Team / Lecturer |
 

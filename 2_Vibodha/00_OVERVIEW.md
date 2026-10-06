@@ -11,9 +11,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-06 for PR #34:** Phase 1 T01–T04 and P02-M02-T01 customer schema DONE on feat/p02-m02-customer-schema.
+**Reconciled 2026-10-06 for PR #36:** Phase 1 T01–T04 and M2 Phase 2 T01–T04 DONE; T05 runtime integration BLOCKED.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs are now in `origin/dev`; customer-schema conflict resolution awaits the user's commit/push/merge.
+PR #34 is merged into dev. PR #36's refreshed resolution includes PR #35's updated
+branch; the user will merge #35 before #36. Conflict resolution awaits user commit/push.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
@@ -21,8 +22,8 @@ Closeout repairs are now in `origin/dev`; customer-schema conflict resolution aw
 | ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~~3~~ |
 | ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~~8~~ |
 | ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
-| 05 | [Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md) | P2 | T02–T03 | `customer_agent` (one-active-assignment), `customer_document` | ~6 |
-| 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, search, profile | ~10 |
+| ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
+| 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | ~~T04~~, T05 | ~~Registration/search/profile services~~; API/screen integration blocked pending M1 | ~10 |
 | 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API | ~6 |
 | 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | T01–T02 | FD linkage view, customer FD listing, branch-scoped FD access | ~5 |
 | 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
@@ -61,10 +62,16 @@ consume from M1 and M4)*
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
 Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
-`customer` uses an independent primary key. Phase 2 entry was approved on 2026-10-05;
-T01 schema is implemented and verified. Assignment/document tasks are READY in this
-PR's tree. The 2026-10-06 conflict resolution restores `dev`'s closeout changes;
-see the [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+`customer` uses an independent primary key. Phase 2 entry was authorized in the current
+conversation; T01–T04 are technically complete locally. Original focused T04 verification
+passed 181 selected tests and clean rebuild/typecheck/lint. T05 runtime integration is
+BLOCKED pending M1 scoped grants/RLS/audit work. PR #36's conflict resolution restores
+dev's committed closeout repairs; see the
+[approval condition](../.agent/checkpoints/phase-01-checkpoint.md).
+
+PR #36's earlier resolution was user-committed as 5ef06fd. Its refreshed integration
+with PR #35's 888b983 retains these task rows and the existing ADR/harness fixes;
+fresh verification is in [the dependency handoff](../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
 
 ---
 
@@ -112,9 +119,8 @@ policies both depend on your `customer` table. Suggested approach:
 2. ✅ Do T01 (`customer` schema) first — resolves the identity gap, unblocks M3
 3. ✅ Do T02 (`customer_agent`) and T03 (`customer_document`) — both pure DB, can be
    done back-to-back
-4. ⚡ Do T04 (registration service) — the hardest task: customer + documents +
-   assignment + audit in **one transaction**
-5. ✅ Do T05 (registration form, search, profile pages) last
+4. ✅ T04 service is verified: customer + documents + assignment + audit in **one transaction**
+5. T05 API/screen integration follows M1 runtime security integration
 
 ---
 

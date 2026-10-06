@@ -30,12 +30,17 @@ database are what make the rule true.
 nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
 app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
 ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
-ACTIVE/INACTIVE. Assignment, identity masking, audited registration and RLS remain
-their later service/database tasks. See schema Part B.4 for the implemented definition.
+ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
+atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
+Registration accepts metadata-only, initially unverified documents (zero to twenty);
+M3 enforces required verified documentation at account opening. The service uppercases
+identity and lowercases email before the database UNIQUE checks. Audit contains only
+customer reference, branch, assigned agent and document count, in the same transaction.
+See schema Part B.4 and ADR-0014 for the implemented definition.
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; partial unique index on `customer_agent(customer_id) WHERE is_active` (G-10) |
+| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; 0221 partial unique index allows at most one active assignment (G-10). Implemented T04 registration supplies existence atomically; future reassignment must retain history/existence. Direct owner inserts are not an existence guarantee. |
 | BR-02 | A customer may own one or more savings accounts; ownership may be individual or joint | CON | `account_holder` intersection table with `UNIQUE(account_id, customer_id)` |
 | BR-03 | Children — 12%, no minimum balance | CON | `savings_plan` seeded row: `interest_rate = 0.1200`, `min_balance = 0` |
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
@@ -105,6 +110,17 @@ its own transaction, recording failures in `exception_count` rather than abortin
 the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
+
+P02-M02-T03 implements document verification in services/customer-document-service.ts:
+active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,
+branch scope in SQL, current assignment required for AGENT. The caller supplies the
+authenticated session user ID. One withTransaction locks authorization/customer/document
+rows, sets verified_by/verified_date together and inserts a minimal audit event using
+the same client. Paths/content/identity are excluded from audit JSON. Same-verifier
+retry retains timestamp/audit count; another verifier receives 409
+DOCUMENT_ALREADY_VERIFIED. Invalid UUIDs fail with 400; denied scope/role with 403;
+missing document with 404. M1's grants/RLS and future controller authentication/CSRF
+remain separate work. 0222's CHECK also rejects half-verification from direct SQL.
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|

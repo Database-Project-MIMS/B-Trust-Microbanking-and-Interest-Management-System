@@ -12,6 +12,22 @@ L01–L13.
 
 ## Stored procedures
 
+### Implemented service-owned customer transactions (P02-M02-T04)
+
+These are TypeScript orchestration functions in `services/customer-service.ts`,
+not new stored routines or database objects. Existing migrations 0220–0222 remain unchanged.
+
+| Service | Owner | Boundary and purpose | Requirements | Concepts |
+|---|---|---|---|---|
+| `registerCustomer` | M2 | One withTransaction: scope/active-staff locks, customer, document metadata, one active assignment and minimal audit; all roll back on failure | FR-CUS-01…05, BR-01 | L11 atomicity, isolation; L07 constraints |
+| `searchCustomers` | M2 | One repeatable-read transaction: SQL-scoped filters, count/page, fixed sort allow-list and identity masking | FR-CUS-04/05 | L05 selection/joins, L11 snapshots |
+| `getCustomerProfile` | M2 | One repeatable-read transaction: scoped/self customer, all assignment history, document metadata, available account links | FR-CUS-04/05 | L05 joins, L11 snapshots |
+
+181 selected tests and clean rebuild/typecheck/lint pass. Runtime grants/RLS/audit
+coordination and API/UI integration remain pending; see the T04 handoff.
+
+### Planned stored procedures
+
 | Routine | Owner | Purpose | Transaction boundary | Requirements | Concepts |
 |---|---|---|---|---|---|
 | `sp_open_savings_account` | M3 | Validate plan, ages and holder count; create account, holders, mandate and optional initial deposit | One — all or nothing | FR-ACC-01…04, BR-02, BR-07 | L08 procedures, L11 atomicity |
@@ -54,6 +70,8 @@ L01–L13.
 | `trg_account_set_updated_at` | M3 | `BEFORE UPDATE` on `account` | Maintain the account modification timestamp | DB-CON-06 | L08 |
 | `trg_agent_set_updated_at` | M2 | `BEFORE UPDATE` on `agent` | Maintain the agent modification timestamp | DB-CON-06 | L08 |
 | `trg_customer_set_updated_at` | M2 | `BEFORE UPDATE` on `customer` | Maintain customer modification timestamp; migration 0220 | DB-CON-06, P02-M02-T01 | L08 |
+| `trg_customer_agent_set_updated_at` | M2 | `BEFORE UPDATE` on `customer_agent` | Maintain assignment modification timestamp; 0221 | DB-CON-06, P02-M02-T02 | L08 |
+| `trg_customer_document_set_updated_at` | M2 | `BEFORE UPDATE` on `customer_document` | Maintain document modification timestamp; 0222 | DB-CON-06, P02-M02-T03 | L08 |
 
 > **Design note.** Where a constraint or index can enforce a rule, it does — a partial
 > unique index is atomic, race-free and cheaper than a trigger. Triggers are used for
@@ -92,7 +110,7 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | `ux_transaction_idempotency` (partial, `WHERE key IS NOT NULL`) | `transaction` | Retry safety | FR-DEP-04, G-04 |
 | `ux_fixed_deposit_one_active` (partial, `WHERE status='ACTIVE'`) | `fixed_deposit` | One active FD | BR-12, G-01 |
 | `ux_interest_payout_fd_cycle` | `interest_payout` | `(fd_id, cycle_date)` — the interest idempotency guarantee | FR-INT-03, §6.7 |
-| `ux_customer_agent_one_active` (partial, `WHERE is_active`) | `customer_agent` | One current agent per customer | FR-CUS-02, G-10 |
+| `ux_customer_agent_one_active` (partial, `WHERE is_active`) | `customer_agent` | At most one current agent; implemented in 0221 | FR-CUS-02, G-10 |
 | `ux_customer_nic` | `customer` | Duplicate-identity detection | §6.7, FR-CUS-04 |
 | `ux_username` | `app_user` | Sign-in lookup | FR-AUTH-01 |
 | `ux_transaction_reversal_original` | `transaction_reversal` | Reversible exactly once | DB-CON-04 |
@@ -112,12 +130,21 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | `ix_account_holder_customer` `(customer_id)` | `account_holder` | "My accounts", RPT-05 |
 | `ix_customer_full_name_trgm` GIN `(full_name gin_trgm_ops)` | `customer` | Fuzzy (%) and substring ILIKE name search; implemented in 0220 — **L10 non-B-tree index** |
 | `ix_customer_branch` B-tree `(branch_id)` | `customer` | Branch-scoped customer list/search and branch FK lookup; implemented in 0220 |
+| `ix_customer_agent_customer` `(customer_id)` | `customer_agent` | Full assignment history and FK lookup, including inactive rows; 0221 |
+| `ix_customer_agent_agent` `(agent_id)` | `customer_agent` | Assigned customer lists and agent FK lookup; 0221 |
+| `ix_customer_document_customer` `(customer_id)` | `customer_document` | Customer profile/documents and opening eligibility/FK lookup; 0222 |
 | `ix_agent_branch_status` `(branch_id, status)` | `agent` | Branch-scoped active-agent listing |
 
 **Approximately 20 indexes.** Index choice, B-tree vs GIN, and selectivity are covered by
 L09/L10; each `indexes/*.sql` file records the `EXPLAIN` plan before and after.
 
 ## Database roles and RLS — M1
+
+P02-M02-T03's server service verifyDocument uses one withTransaction for paired
+verification plus explicit minimal audit; row locking serializes verification retries.
+It sets local app.current_user_id/app.current_branch_id for future M1 policies.
+0221/0222 do not grant runtime child-table access. Generic child/customer audit bindings
+remain M1-owned; the explicit verification audit does not cover arbitrary SQL mutations.
 
 | Object | Purpose |
 |---|---|
