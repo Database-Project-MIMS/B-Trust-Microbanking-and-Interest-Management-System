@@ -12,6 +12,22 @@ L01–L13.
 
 ## Stored procedures
 
+### Implemented service-owned customer transactions (P02-M02-T04)
+
+These are TypeScript orchestration functions in `services/customer-service.ts`,
+not new stored routines or database objects. Existing migrations 0220–0222 remain unchanged.
+
+| Service | Owner | Boundary and purpose | Requirements | Concepts |
+|---|---|---|---|---|
+| `registerCustomer` | M2 | One withTransaction: scope/active-staff locks, customer, document metadata, one active assignment and minimal audit; all roll back on failure | FR-CUS-01…05, BR-01 | L11 atomicity, isolation; L07 constraints |
+| `searchCustomers` | M2 | One repeatable-read transaction: SQL-scoped filters, count/page, fixed sort allow-list and identity masking | FR-CUS-04/05 | L05 selection/joins, L11 snapshots |
+| `getCustomerProfile` | M2 | One repeatable-read transaction: scoped/self customer, all assignment history, document metadata, available account links | FR-CUS-04/05 | L05 joins, L11 snapshots |
+
+181 selected tests and clean rebuild/typecheck/lint pass. Runtime grants/RLS/audit
+coordination and API/UI integration remain pending; see the T04 handoff.
+
+### Planned stored procedures
+
 | Routine | Owner | Purpose | Transaction boundary | Requirements | Concepts |
 |---|---|---|---|---|---|
 | `sp_open_savings_account` | M3 | Validate plan, ages and holder count; create account, holders, mandate and optional initial deposit | One — all or nothing | FR-ACC-01…04, BR-02, BR-07 | L08 procedures, L11 atomicity |

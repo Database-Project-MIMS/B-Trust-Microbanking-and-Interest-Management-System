@@ -60,6 +60,9 @@ try {
       await admin.query(rows[0].ddl);
     }
     await admin.query("ALTER ROLE mims_owner CREATEDB");
+    // Disposable-only membership enables least-privilege SET ROLE service regressions.
+    // The application role never inherits owner privileges.
+    await admin.query("GRANT mims_app TO mims_owner");
     await admin.query("CREATE DATABASE mims_test_closeout OWNER mims_owner");
   } finally { await admin.end(); }
 

@@ -1,29 +1,30 @@
-# Memory — PR #35 conflict resolution
+# Memory — PR #36 conflict resolution
 
 > /remember save: non-sensitive continuation state.
 
 **Updated:** 2026-10-06
-**Branch:** feat/p02-m02-customer-agent-document
+**Branch:** feat/p02-m02-customer-registration
 
-User requested resolving PR #35 conflicts and reserves commit/push/merge.
-The user committed the earlier resolution as 07e878d; dev advanced to 2e338a6 through
-PR #34. A new local --no-commit merge is pending. Preserve 0220/0221/0222,
-verification service/tests and dev's Phase 1 closeout fixes. Later T04 branch not imported.
-All nine new documentation conflicts reconciled. Earlier combined-tree verification passed:
-281 tests (29 suites), zero failures/skips, clean 14-migration rebuild, typecheck, lint
-and production build. Disposable PostgreSQL 18.6 cluster removed. Details:
-.agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md.
-Fresh refresh verification passed 281 tests (29 suites), 0 failures/skips, clean
+User requests conflict resolution and PR #35-then-#36 merge order, retaining publication.
+HEAD 5ef06fd; dev 2e338a6; PR #35's latest pushed branch 888b983 contains that dev tip.
+PR #35 is not yet merged into dev. A local --no-commit merge of that dependency is
+pending on PR #36; nine current documentation conflicts reconciled.
+Preserve customer/relation/registration implementations and dev closeout repairs.
+Earlier combined verification passed: 328 tests in 31 suites, 0 failures/skips,
+clean 14-migration rebuild, TypeScript/lint/production build. Historical focused T04:
+181 tests. The holder fixture now removes its own accounts before seed validation.
+.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md.
+Fresh refresh verification passed 328 tests (31 suites), 0 failures/skips, clean
 14-migration rebuild, TypeScript/lint/production build. See
-.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md.
-This refresh changes only documents; implementation and fixture safety are retained.
+.agent/handoffs/p02-m02-t04-pr36-after-pr35.md.
+This refresh changes documents only. ADR index and harness setup are already resolved.
 
-Historical focused result 134 tests. M2 committing-fixture guard accepts full isolated
-mims_test_closeout only with MIMS_ISOLATED_TEST=1, alongside original focused DB.
-Regression rejects development/unapproved databases. No dev reset or migration rewrite.
-M1-owned incoming parameter component had only a documented EOF blank-line cleanup.
+Customer numbering/scope ADR renumbered 0014 to avoid dev closeout ADR-0013; references
+updated, decision unchanged. Fixture guard supports full isolated test DB only with
+its marker. Fresh cluster grants mims_app to owner for SET ROLE regressions, never
+owner to app. No production grants/RLS changes or dev reset; ownership notes recorded.
 
-Tracker: P0 6 DONE; P1 19 DONE; P2 5 DONE/1 READY/10 TODO. T01/T02/T03 DONE, T04 READY
-here. M1 runtime grants/RLS/audit and M3 opening remain pending; owner tests do not certify
-runtime security. Existing document verifier role lock needs narrowing before exposure.
-Historical Phase 2 entry approval persists; no later approval. /imprint not applicable.
+Tracker: P0 6 DONE; P1 19 DONE; P2 6 DONE/1 BLOCKED/9 TODO. M2 T01–T04 DONE; T05
+blocked on scoped runtime security/API/UI. M3 holder absent; profile accounts null.
+Existing T03 role lock issue remains recorded before exposure. Historical Phase 2
+entry approval persists; no later approval. No new UI/imprint or assistant publication.

@@ -54,7 +54,9 @@ try {
     '-o', `-p ${port} -h 127.0.0.1`, '-w', 'start'], environment);
   // Password is locally generated hex, not request data; SQL goes over stdin, never logs.
   run(binary('psql'), ['-X', '-v', 'ON_ERROR_STOP=1', '-d', 'postgres'], environment,
-    `CREATE ROLE mims_owner CREATEDB LOGIN PASSWORD '${password}';\nCREATE ROLE mims_app LOGIN PASSWORD '${password}';`);
+    `CREATE ROLE mims_owner CREATEDB LOGIN PASSWORD '${password}';\nCREATE ROLE mims_app LOGIN PASSWORD '${password}';`
+      // Disposable-only membership permits the service test to SET ROLE to the real app role.
+      + (process.argv.includes('--registration') ? '\nGRANT mims_app TO mims_owner;' : ''));
 
   console.log('Rebuilding in disposable mims_test_customer_schema; development database is preserved.');
   run(process.execPath, ['--env-file=.env', 'scripts/db-rebuild.mjs', database], environment);
@@ -67,11 +69,15 @@ try {
     'tests/db/customer-agent-constraints.test.mjs', 'tests/db/customer-document-constraints.test.mjs',
     'tests/api/customer-document-service.test.mjs',
   );
+  if (process.argv.includes('--registration')) testFiles.push(
+    'tests/db/customer-registration-transaction.test.mjs', 'tests/api/customer-service.test.mjs',
+  );
   run(process.execPath, ['node_modules/tsx/dist/cli.mjs', '--conditions', 'react-server',
     '--test', '--test-concurrency=1', ...testFiles], environment);
   run(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit'], environment);
   run(process.execPath, ['node_modules/eslint/bin/eslint.js', '.'], environment);
-  console.log(`${process.argv.includes('--relations') ? 'CUSTOMER RELATIONS' : 'CUSTOMER SCHEMA'}: all selected tests, clean rebuild, typecheck and lint passed.`);
+  const scope = process.argv.includes('--registration') ? 'CUSTOMER REGISTRATION' : process.argv.includes('--relations') ? 'CUSTOMER RELATIONS' : 'CUSTOMER SCHEMA';
+  console.log(`${scope}: all selected tests, clean rebuild, typecheck and lint passed.`);
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

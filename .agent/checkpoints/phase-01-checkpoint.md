@@ -92,3 +92,22 @@ The new pending PR #35 merge resolves their nine overlapping documentation chang
 preserving the original approval and both task deliveries. Fresh validation is in
 [the refresh handoff](../handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
 No later phase approval is inferred; commit/push/PR merge remain user-controlled.
+
+## Integration update — 2026-10-06, PR #36
+
+Closeout repairs were committed in fad4f13 and integrated into origin/dev by PR #33
+(76701e7). PR #36's local pending merge restores those repairs alongside customer,
+assignment/document and registration/read service work. Old missing-repairs warnings
+are historical. Fresh verification is in ../handoffs/p02-m02-t04-pr36-conflict-resolution.md;
+the old 184-test count is not reused. Phase 2 entry approval persists; no later phase
+approval is inferred. The user controls commit/push/merge.
+
+## PR #36 refresh for PR #35-then-#36 order — 2026-10-06
+
+The integration notes above are historical resolution snapshots. The user committed
+PR #36's earlier resolution as 5ef06fd and PR #35's refresh as 888b983. Dev is 2e338a6
+(PR #34 merged); PR #35 has not yet merged into dev. PR #36's current pending local
+merge includes PR #35's updated branch, preserving both implementations and approval
+histories for the requested merge order. Fresh validation and scope are recorded in
+[the dependency handoff](../handoffs/p02-m02-t04-pr36-after-pr35.md).
+The user merges #35 before #36. No later phase approval or assistant publication.

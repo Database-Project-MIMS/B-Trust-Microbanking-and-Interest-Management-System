@@ -2,24 +2,25 @@
 
 **Updated:** 2026-10-06 · [slice](../../docs/member-prompts/member-2.md)
 
-PR #35 refresh at 07e878d against dev 2e338a6 (PR #34 merged) retains 0220/0221/0222,
-document verification/atomic audit and tests alongside dev's Phase 1 closeout repairs.
-Historical focused result: 134 tests and clean 14-migration rebuild/reapply/verify/checks.
-Earlier combined-tree validation passed: 281 tests (29 suites), zero failures/skips, clean
-14-migration rebuild, typecheck/lint/production build; disposable cluster removed.
-The committing-fixture guard now supports
-the full isolated harness with explicit isolation marker; development remains denied.
-[Resolution handoff](../handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
-Fresh refresh verification passed 281 tests (29 suites), 0 failures/skips, clean
+PR #36 refresh on feat/p02-m02-customer-registration at 5ef06fd against PR #35's
+latest 888b983 (includes dev 2e338a6), preserving
+0220/0221/0222 and registration/search/profile/validation plus dev closeout fixes.
+Historical focused T04: 181 tests and clean rebuild/checks. Earlier combined verification:
+328 tests, 0 failures/skips, clean 14-migration rebuild, TypeScript/lint/production build.
+[Resolution handoff](../handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+Fresh refresh verification passed 328 tests (31 suites), 0 failures/skips, clean
 14-migration rebuild, TypeScript/lint/production build; recorded in
-[the refresh handoff](../handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
-All nine new conflicts are documentation-only; existing service/tests are retained.
+[the dependency handoff](../handoffs/p02-m02-t04-pr36-after-pr35.md).
+PR #35 is not yet merged into dev; user merges #35 before #36. This refresh changes
+only documentation; retain the previously resolved ADR index and disposable role setup.
+Customer ADR is now 0014, preserving dev's separate 0013 and the original decisions.
 
-Phase 1 19 DONE; this PR's Phase 2 5 DONE/1 READY/10 TODO. T01/T02/T03 DONE, T04 READY
-in this tree; later registration delivery stays on its own branch. No customer route/UI
-added. M1 runtime grants/RLS/audit and M3 holders/opening remain pending. Document
-verifier's pre-existing read-only role lock still requires narrowing before exposure.
+This PR: Phase 1 19 DONE; Phase 2 6 DONE/1 BLOCKED/9 TODO. M2 T01–T04 DONE; T05
+requires M1 grants/RLS/audit and actual API/screen integration. Holder relation absent;
+accounts null. Owner tests do not certify production RLS. Existing T03 verifier role
+lock still needs narrowing before exposure; no application grant was widened.
 
-Phase 2 entry approval persists; restored closeout repairs make old missing-file notes
-historical. No later approval. User controls commit/push/merge; local merge is pending
-with commits disabled. No assistant commit or completed merge; no new UI/imprint.
+Disposable full harness integration retains fixture safety and supports SET ROLE
+without granting owner privileges to mims_app. Ownership notes precede M4 harness and
+M1 EOF-only cleanup. No migration/service logic change. Phase 2 entry approval persists;
+no later approval. User controls commit/push/merge; local merge pending, no new UI.

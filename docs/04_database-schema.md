@@ -442,7 +442,7 @@ customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
 | `customer_id` | uuid | PK, defaults to gen_random_uuid(); independent of login |
 | `app_user_id` | uuid | NULL, UNIQUE, FK to app_user(user_id), ON DELETE RESTRICT |
 | `branch_id` | uuid | NOT NULL, FK to branch, ON DELETE RESTRICT |
-| `customer_number` | varchar(30) | NOT NULL, UNIQUE; assigned by later registration workflow |
+| `customer_number` | varchar(30) | NOT NULL, UNIQUE; T04 assigns CUS- plus 24 uppercase random hex digits (ADR-0014) |
 | `nic_passport_no` | varchar(50) | NOT NULL, UNIQUE |
 | `full_name` | varchar(150) | NOT NULL |
 | `date_of_birth` | date | NOT NULL, CHECK before CURRENT_DATE |
@@ -456,10 +456,12 @@ customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
 
 Indexes: `ix_customer_branch` B-tree on branch_id and `ix_customer_full_name_trgm`
 GIN on full_name using gin_trgm_ops. Named constraints provide deterministic error
-mapping. SQL uniqueness is exact/case-sensitive; normalization and identity masking
-belong to the later registration/search service. Assignment/document FKs are now
-implemented in 0221/0222; holder FKs, customer audit, RLS and runtime grants remain
-their separately assigned tasks.
+mapping. SQL uniqueness is exact/case-sensitive; T04 registration normalizes identity
+to uppercase and email to lowercase, and read services mask identity for branch staff.
+Existing mixed-case rows are not rewritten by this task. Assignment/document FKs are
+implemented in 0221/0222; T04 inserts a minimal customer creation audit in its transaction.
+Holder FKs, generic audit triggers, RLS and runtime grants remain separately assigned.
+T04 adds no database objects or migration; see the registration handoff.
 
 Verified 2026-10-05: 27 customer constraints/search/rollback tests and 38 organization
 regressions pass. All 12 migrations rebuild from empty and local 0220 applies without
@@ -482,8 +484,9 @@ reset. Complete contract: `.agent/handoffs/p02-m02-t01-customer-schema.md`.
 
 `ux_customer_agent_one_active` is UNIQUE on customer_id WHERE is_active. It rejects
 competing active INSERT/UPDATEs, including concurrent transactions. It does not require
-an assignment to exist. T04 registration/future reassignment must guarantee that and
-keep closed rows. B-tree indexes ix_customer_agent_customer/ix_customer_agent_agent
+an assignment to exist. Implemented T04 registration guarantees one at successful
+commit; future reassignment must preserve existence and keep closed rows. Direct
+owner SQL can still create an unassigned customer. B-tree indexes ix_customer_agent_customer/ix_customer_agent_agent
 serve full history, assigned-customer lists and FK checks.
 
 `0222_p02_m02_customer_document.sql`:

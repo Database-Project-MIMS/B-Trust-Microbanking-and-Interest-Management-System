@@ -1,12 +1,18 @@
 # 🟢 Phase 2 — Tasks 04–05: Customer Registration Service
 **Task IDs:** `P02-M02-T04`, `P02-M02-T05` · **Branch:** `feat/p02-m02-customer-registration`
-**Status:** TODO
+**Status:** T04 DONE (technical implementation locally); T05 BLOCKED pending M1 runtime security
 **Depends on:** T03 (`customer_document`), **I-1** (M1 RBAC), **I-2** (M4 `withTransaction`)
 **Story Points:** ~5 + ~5 = ~10 · **Layer:** Backend only
 
-> ⚡ **UI COMPLETE** — Customer registration, search and profile screens have been
-> pre-built in `app/dashboard/**`. Your job is to implement the **service layer and API
-> routes** so those screens have real data to work with. Do not rebuild any UI component.
+> **2026-10-05 verification:** Customer screens are prototypes in
+> `components/mims/workflow-screen.tsx`, not completed `app/dashboard/**` bindings.
+> T04 implements services only; T05 must connect real data through authenticated,
+> authorized, CSRF-protected API routes after M1 scoped grants/RLS/audit integration.
+> Existing UI components were not rebuilt in T04.
+
+T04 contract and `/review`: [handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
+`npm run verify:customer-registration`: 181 tests pass, zero failures/skips; clean
+14-migration rebuild/reapply/verify, typecheck and lint pass. No new migration.
 
 ---
 
@@ -41,30 +47,12 @@ operation belongs in a single explicit transaction.
 export async function registerCustomer(input: RegisterCustomerInput, actor: AuthContext) {
   return withTransaction(async (client) => {
     const customerNumber = await nextCustomerNumber(client);
-    const customer = await insertCustomer(client, { ...input, customerNumber });
 
-    for (const doc of input.documents) {
-      await insertCustomerDocument(client, { customerId: customer.customerId, ...doc });
-    }
-
-    await insertCustomerAgent(client, {
-      customerId: customer.customerId,
-      agentId: input.agentId,
-      isActive: true,
-    });
-
-    await writeAudit(client, {
-      actor,
-      entityType: 'customer',
-      entityId: customer.customerId,
-      before: null,
-      after: customer,
-    });
-
-    return customer;
-  });
-}
-```
+Implemented signatures in `services/customer-service.ts` use authenticated actor
+context and strict schemas from `lib/validation/customer.ts`. Audit includes only
+customer number, branch, agent and document count, not the full customer object.
+Customer numbering follows ADR-0014. Registration documents start unverified and
+may be empty; required verified documentation belongs to M3 account opening.
 
 Also implement the search and detail reads:
 
@@ -122,10 +110,15 @@ start the service layer.
 ---
 
 ## Acceptance Criteria
-- [ ] Registration is a single atomic transaction — customer + documents + assignment +
+- [x] Registration is a single atomic transaction — customer + documents + assignment +
       audit all succeed or all roll back
-- [ ] Duplicate NIC and duplicate email both return `409`, not `500`
-- [ ] `AGENT` role is branch-scoped on both create and search — enforced in SQL
-- [ ] Identity fields are masked for roles without a legitimate need (FR-CUS-04)
+- [x] Duplicate NIC/email produce typed errors mapping to `409`; HTTP endpoint coverage is T05
+- [x] `AGENT` role is branch-scoped on both create and search — enforced in SQL
+- [x] Identity fields are masked for roles without a legitimate need (FR-CUS-04)
 - [ ] `GET /api/customers/{id}` returns assignment history (all rows, not just active)
-- [ ] `npm run typecheck && npm test` pass
+- [x] Profile service returns all assignment history; accounts are unavailable (null) pending M3 account_holder
+- [x] Safe `npm run verify:customer-registration` passes 181 selected tests, rebuild, typecheck/lint
+- [ ] T05 session/CSRF/HTTP/UI integration and runtime RLS checks pass
+
+Do not run the legacy full migration-runner tests against development data: they reset
+the configured database and edit an existing migration. Use the disposable harness.
