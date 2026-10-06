@@ -19,6 +19,12 @@ At that initial verification, earlier closeout edits were absent. PR #35's 2026-
 conflict resolution restores those committed repairs from dev. Combined-tree verification
 is recorded in the [resolution handoff](../../.agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
 
+**2026-10-06 refresh:** PR #34 is merged into dev (2e338a6); PR #35's earlier
+resolution is user-committed as 07e878d. Their nine shared documentation conflicts
+are reconciled in this pending merge, retaining T01/T02/T03 and the existing approval.
+Fresh validation: [refresh handoff](../../.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+The later registration branch is not imported; runtime integration and phase exit remain open.
+
 ## Goal
 
 Customers can be registered and assigned to agents; individual and joint accounts can be

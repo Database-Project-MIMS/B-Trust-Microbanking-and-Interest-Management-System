@@ -84,6 +84,17 @@ required fields and timestamps. The card's example schema_migration(version,name
 insert is corrected: the actual runner records filename/checksum. No new identity
 decision is needed; ADR-0007 remains authoritative.
 
+### PR #34 conflict reconciliation — 2026-10-06
+
+The missing closeout files are now committed on `origin/dev` (fad4f13, integrated by
+76701e7/PR #33). Conflict resolution retains that checkpoint/evidence and the implemented
+0220 customer schema. Phase 1 remains 19 DONE; Phase 2 is 3 DONE/2 READY/11 TODO in this
+PR's tree. T02/T03/T04 delivery on later feature branches is not imported here. Earlier
+184-test/65-test evidence is historical; the combined tree is verified separately.
+PR #34 targets the actual integration branch `dev`; generic `develop` examples describe
+the same integration role. No branch rename, new phase approval or financial schema
+decision is introduced. Commit/push/merge remain the user's actions.
+
 ### PR #35 conflict reconciliation — 2026-10-06
 
 This feature branch predates dev's Phase 1 closeout (fad4f13, integrated by PR #33 as
@@ -101,6 +112,16 @@ A regression verifies accepted isolated names and rejected development/unapprove
 Runtime verification still requires M1's scoped grants/RLS. verifyDocument's pre-existing
 FOR SHARE role lock needs narrowing before endpoint exposure; no broad role UPDATE
 grant is added and no business-code change is included in this conflict-resolution task.
+
+### PR #35 refresh after PR #34 merged — 2026-10-06
+
+The PR-specific snapshots above describe the earlier resolutions. PR #34 is merged
+into dev at 2e338a6, while PR #35's earlier resolution is user-committed as 07e878d.
+Their shared status documents diverged during those independent resolutions; nine
+new documentation conflicts are reconciled without a service/migration change.
+T01 is now merged; T02/T03 remain DONE in this PR's tree and T04 READY here.
+Fresh evidence is in the [refresh handoff](handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+Later registration work stays on its branch; no new approval or runtime access claim.
 
 
 ### OQ-05 — Customer login is optional

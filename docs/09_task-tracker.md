@@ -13,7 +13,8 @@ satisfied.
 **2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
 Phase 2 entry after verification. `DONE` below records verified implementation in the
 local working tree. Closeout repairs were subsequently committed in fad4f13 and
-integrated into dev through PR #33 (76701e7). PR #35's local conflict resolution
+integrated into dev through PR #33 (76701e7). PR #34 subsequently merged into dev
+(2e338a6). PR #35's refreshed local conflict resolution
 retains user-controlled publication; no assistant commit, push or completed merge. See the
 [approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
@@ -168,10 +169,14 @@ immutable transaction migrations). P02-M02-T01/T02/T03 are technically DONE here
 0220 customer, 0221 assignment history/partial uniqueness, 0222 document verification
 pairing, scoped server-only verifyDocument and atomic audit. Original focused evidence:
 134 tests and clean 14-migration rebuild/reapply/verify/typecheck/lint.
-PR #35 merges this work with dev's closeout; combined-tree verification is recorded in
+The earlier PR #35 resolution combines this work with dev's closeout; verification is recorded in
 [resolution handoff](../.agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
 281 tests pass with zero failures/skips; clean 14-migration rebuild, typecheck, lint and
 production build pass. This is fresh combined-tree evidence, distinct from the original 134.
+PR #34 is now merged into dev. The refreshed PR #35 integration against 2e338a6
+resolves nine documentation conflicts; fresh verification passed 281 tests and clean
+14-migration rebuild/typecheck/lint/build, recorded in the
+[refresh handoff](../.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
 T04 service work is READY; its later implementation remains on a separate branch.
 T05 and runtime customer grants/RLS/audit integration remain pending. User controls publication.
 

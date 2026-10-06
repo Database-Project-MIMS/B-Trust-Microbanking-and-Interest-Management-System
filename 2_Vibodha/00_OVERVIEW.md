@@ -13,7 +13,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 **Reconciled 2026-10-06 for PR #35:** Phase 1 T01–T04 and P02-M02-T01/T02/T03 DONE; T04 READY in this PR's tree.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs are committed on origin/dev; conflict resolution awaits user commit/push/merge.
+PR #34 is merged into dev (2e338a6); PR #35's refreshed resolution awaits user commit/push/merge.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
@@ -66,6 +66,10 @@ customer, assignment and document tasks are implemented here. Registration servi
 work is READY; runtime routes still need M1 security integration. The 2026-10-06
 conflict resolution restores dev's closeout repairs; see the
 [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+
+PR #35's earlier resolution was user-committed as 07e878d. Its refresh against the
+merged PR #34 preserves these completion rows; see the
+[refresh handoff](../.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
 
 ---
 

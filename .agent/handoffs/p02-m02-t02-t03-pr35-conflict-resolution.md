@@ -55,3 +55,11 @@ Tests/rebuild/typecheck/lint/build pass; final marker/index checks confirm stagi
 User commits the pending local merge, pushes this feature branch and merges PR #35.
 The assistant creates no commit, push or completed merge into dev. Suggested message:
 P02-M02-T02/P02-M02-T03: resolve dev conflicts and reconcile customer relation documentation.
+
+## Follow-up after PR #34 merged — 2026-10-06
+
+This handoff records the earlier resolution, which the user committed as 07e878d.
+Dev subsequently advanced to 2e338a6 through PR #34. Current nine-document conflict
+reconciliation and fresh verification are in
+[the refresh handoff](p02-m02-t02-t03-pr35-dev-refresh.md).
+The earlier implementation and fixture safety repairs are retained unchanged.

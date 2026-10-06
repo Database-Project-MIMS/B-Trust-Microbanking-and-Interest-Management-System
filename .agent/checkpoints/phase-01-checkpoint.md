@@ -9,8 +9,8 @@ the checks below passed; this does not claim approval by the lecturer or other m
 
 ## Evidence
 
-This is the original 2026-10-05 closeout record. Its test counts and next task describe
-the pre-customer-schema tree; current status is recorded in docs/09_task-tracker.md.
+This is the original 2026-10-05 closeout record. Its test counts and "Next work"
+describe the pre-customer-schema tree. For current task status, use docs/09_task-tracker.md.
 
 - `npm run verify:phase1` / its script: disposable PostgreSQL 18.6 cluster; all 11
   numbered migrations apply from empty, ordered seeds load, and verification succeeds.
@@ -65,6 +65,16 @@ at the user's request. The user controls review, commit, push, merge and PR crea
 none was performed by the assistant. Other checkouts need these repairs before relying
 on this checkpoint. A later failing check must reopen the affected task/phase gate.
 
+## Integration update — 2026-10-06, PR #34
+
+The previously uncommitted closeout was committed as fad4f13 and integrated into
+origin/dev by PR #33 (76701e7). The user requested resolving PR #34's conflicts while
+retaining commit/merge control. Its local pending merge restores these repairs and
+retains customer migration 0220/tests. The old missing-repairs condition is historical,
+not the condition of this combined working tree. Combined verification is recorded in
+../handoffs/p02-m02-t01-pr34-conflict-resolution.md; it does not reuse 184 as a new count.
+Phase 2 approval persists; no Phase 2 exit or Phase 3 entry approval is implied.
+
 ## Integration update — 2026-10-06, PR #35
 
 Closeout repairs were committed in fad4f13 and integrated into origin/dev by PR #33
@@ -73,3 +83,12 @@ Closeout repairs were committed in fad4f13 and integrated into origin/dev by PR 
 Combined verification is recorded in ../handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md;
 the old 184-test result is not reused as a fresh count. Phase 2 entry approval persists;
 no Phase 2 exit/Phase 3 entry approval is implied. User controls commit/push/merge.
+
+## PR #35 refresh after PR #34 merged — 2026-10-06
+
+The two integration notes above record their original resolutions. The user committed
+PR #35's earlier resolution as 07e878d. PR #34 is now merged into dev at 2e338a6.
+The new pending PR #35 merge resolves their nine overlapping documentation changes,
+preserving the original approval and both task deliveries. Fresh validation is in
+[the refresh handoff](../handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+No later phase approval is inferred; commit/push/PR merge remain user-controlled.

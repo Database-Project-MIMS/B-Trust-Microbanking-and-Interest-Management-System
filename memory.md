@@ -6,12 +6,17 @@
 **Branch:** feat/p02-m02-customer-agent-document
 
 User requested resolving PR #35 conflicts and reserves commit/push/merge.
-HEAD d93b20b; origin/dev 76701e7; local --no-commit merge pending. Preserve 0220/0221/0222,
+The user committed the earlier resolution as 07e878d; dev advanced to 2e338a6 through
+PR #34. A new local --no-commit merge is pending. Preserve 0220/0221/0222,
 verification service/tests and dev's Phase 1 closeout fixes. Later T04 branch not imported.
-All eight documentation conflicts reconciled; fresh combined-tree verification passed:
+All nine new documentation conflicts reconciled. Earlier combined-tree verification passed:
 281 tests (29 suites), zero failures/skips, clean 14-migration rebuild, typecheck, lint
 and production build. Disposable PostgreSQL 18.6 cluster removed. Details:
 .agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md.
+Fresh refresh verification passed 281 tests (29 suites), 0 failures/skips, clean
+14-migration rebuild, TypeScript/lint/production build. See
+.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md.
+This refresh changes only documents; implementation and fixture safety are retained.
 
 Historical focused result 134 tests. M2 committing-fixture guard accepts full isolated
 mims_test_closeout only with MIMS_ISOLATED_TEST=1, alongside original focused DB.
