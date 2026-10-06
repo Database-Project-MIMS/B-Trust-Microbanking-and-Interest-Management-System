@@ -1,103 +1,43 @@
 # Current State
 
-**Last updated:** 2026-10-01 · **Updated by:** Member 2 (Vibodha) after Phase 2 identity, branch and mandate approvals
+**Updated:** 2026-10-06 · **Owner:** M2, PR #35 conflict resolution
 
-## Phase
+## Current checkout
 
-**Phase 1 — Foundation, Master Data & Security.** Work is in progress.
+feat/p02-m02-customer-agent-document at 07e878d, local pending merge of origin/dev
+2e338a6 (PR #34 merged). All nine new documentation conflicts reconciled; no assistant
+merge commit/push/PR merge. The earlier PR #35 resolution was committed by the user.
+Retain implemented customer 0220, assignment 0221 and document 0222, scoped verification
+service and atomic audit. Customer registration remains on its separate later branch.
+[Relations contract](handoffs/p02-m02-t02-t03-customer-agent-document.md).
 
-## What exists right now
+## Preserved implementation
 
-- PostgreSQL 18.6 is installed locally (Member 2) / 16.15 (Member 3, via Homebrew) and
-  the migration framework is operational on both.
-- Applied migrations include the shared foundation (`0000`), identity (`0100`), system
-  parameters/audit (`0104`), branch schema (`0120`), agent schema (`0121`), organisation
-  audit integration (`0122`), savings plan schema (`0140`) and FD plan schema (`0180`).
-- P01-M02-T01 and P01-M02-T02 are complete and merged into `dev`, including their
-  database constraints, integrity triggers, indexes, tests and documentation.
-- P01-M01-T01, P01-M01-T02 and P01-M01-T03 are recorded as complete. The reconciliation
-  brings I-1's `agent.branch_id` session resolution and fail-closed profile guard from
-  `main` into the integration work.
-- P01-M05-T01 and P01-M05-T02 are complete; the reconciliation brings the FD product API
-  work from `main` into the integration work.
-- **P01-M03-T01 is complete and merged into `dev`** (PR #12): `savings_plan` table with
-  the five G-13 eligibility columns (`min_age_years`, `max_age_years`, `min_holders`,
-  `max_holders`, `requires_all_adult`), three named `CHECK` constraints, and the five
-  BR-03…BR-07 seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing.
-  G-13 marked resolved in `docs/17_erd-gap-analysis.md`.
-- **P01-M03-T02 is complete and merged into `dev`** (PR #15): `fn_check_plan_eligibility(plan_id,
-  date_of_birth, holder_count)` in `database/routines/`, a `STABLE` PL/pgSQL function
-  checking the primary applicant's age and holder count against `savings_plan`'s data
-  columns. Deliberately checks the primary applicant only — the full "every Joint holder
-  is an adult" rule is Phase 2's `trg_validate_joint_mandate` (`P02-M03-T03`), since this
-  function's signature carries one `date_of_birth`, not one per holder (see
-  `docs/specs/0002-plan-eligibility-function.md`). `docs/07_business-rules.md`'s BR-07
-  row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
-  — 10/10 passing, including a boundary test proving age is computed as whole completed
-  years, not naive year subtraction.
-- **P01-M03-T03 is complete** (not yet merged — on branch
-  `feat/p01-m03-plan-api-page`): full vertical slice for the plan admin API and page —
-  `lib/validation/savings-plan.ts` (zod), `services/savings-plan-service.ts` +
-  `savings-plan-errors.ts`, `app/api/plans/route.ts` (GET, any authenticated role),
-  `app/api/plans/[id]/route.ts` (PATCH, ADMIN/CENTRAL_OPS, CSRF-checked),
-  `app/plans/page.tsx` + `SavingsPlanClient.tsx` (first real data page styled with the
-  new Material-3 tokens from the recent UI-integration PR, not the older token set
-  `fd-products` uses). `tests/api/plans.test.mjs` — 9/9 passing: role gating enforced
-  both client-side (hidden Edit button) and server-side (403 on direct PATCH), zod
-  cross-field validation for same-request conflicts, DB `CHECK`-constraint re-validation
-  for partial-update conflicts against the current row. Manually verified end-to-end via
-  curl against a running dev server (real login, real role checks) — found and fixed a
-  real gap along the way: `mims_app` had never been granted `SELECT`/`UPDATE` on
-  `savings_plan` (`database/roles/01_app_grants.sql`, one line added following the
-  existing per-member convention M2/M5 already used in that file). The login route now
-  calls `issueCsrfToken()`, so browser mutations can send the matching CSRF header.
-- ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
-  `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
-  `agent.branch_id`.
-- **P01-M02-T03 is complete.** Its six branch/agent route handlers, service layer,
-  validation and API tests are implemented. Least-privilege `mims_app` grants are
-  present, and migration `0122` provides sanitized, same-transaction branch/agent audit
-  coverage with rollback verification.
-- **P01-M02-T04 is complete.** `/branches` and `/agents` provide role-aware active/all
-  lists, create forms and confirmed, CSRF-protected deactivation. The workflow test
-  creates, lists and deactivates both resources while proving records remain in history.
+Original focused evidence: 134 tests, clean 14-migration rebuild/reapply/verify,
+typecheck/lint. dev's historical closeout: 184 tests with its original migration set.
+Earlier combined-tree verification passed on 2026-10-06: npm run verify:phase1, 281 tests
+(29 suites), zero failures/skips, clean 14-migration rebuild, typecheck, lint and production
+build. Disposable PostgreSQL 18.6 cluster removed; normal development data preserved.
+The M2 fixture guard now supports the full disposable harness with its explicit marker
+while rejecting development/unapproved databases. No normal development rebuild.
+Fresh verification of the PR #34 integration passed: 281 tests in 29 suites,
+0 failures/skips, clean 14-migration rebuild, TypeScript/lint/production build. See the
+[refresh handoff](handoffs/p02-m02-t02-t03-pr35-dev-refresh.md). This refresh changes
+documentation only; migrations, service logic and runtime grants are retained.
 
-## What does NOT exist yet
+## Task snapshot in this PR
 
-Member 2's Phase 1 slice is complete. OQ-05 is resolved by ADR-0007: customers use an
-independent identity and may optionally link to `app_user`. G-06 and G-08 are resolved by
-ADR-0008 and ADR-0009. Phase 2 now waits only for the Phase 1 exit checkpoint.
+P0 6 DONE; P1 19 DONE; P2 5 DONE/1 READY/10 TODO; P3–P6 TODO.
+T01/T02/T03 plus M3 account/M4 transaction schemas are DONE; T04 READY here.
+Its later delivery stays on the registration branch. T05 runtime integration, M1
+customer grants/RLS/audit and M3 holder/opening work remain pending. Owner-based
+tests do not certify runtime access. Existing verifier role lock is recorded for
+narrowing before exposure; no broad role privilege is introduced.
 
-## Task status snapshot
+## Approval/publication
 
-| Phase | Tasks | Status |
-|---|---|---|
-| P0 | 6 | DONE |
-| P1 | 19 | IN PROGRESS — 13 DONE, 6 READY |
-| P2 | 16 | IN PROGRESS — 1 DONE (P02-M03-T01 `account`), 15 TODO |
-| P3 | 14 | TODO (blocked on OQ-08) |
-| P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
-| P5 | 15 | TODO |
-| P6 | 13 | TODO |
-
-Full detail: `../docs/09_task-tracker.md`.
-
-## Blocking items before Phase 1 can finish
-
-No unresolved product question blocks Phase 1. Remaining I-1 quality follow-ups include
-strict malformed-CSRF rejection, returning `branchId` in the login DTO, refreshing the
-I-1 handoff, and adding a true request/SQL cross-branch test.
-
-## Known process note
-
-The full suite passes 121/121; database verification, lint, TypeScript checks and the production
-build pass. The clean rebuild command reaches the PostgreSQL administrator connection but
-requires an interactive `postgres` password on this Windows host; rerun
-`npm run db:rebuild` in the user's terminal for the final clean-from-empty proof. The
-remaining native-Windows `db:create` setup issue is recorded in
-`.agent/handoffs/p01-cross-member-test-blockers.md`.
-
-## Next session should start with
-
-1. Member 2: have the T04 changes reviewed and merged into `dev`.
-2. Complete the Phase 1 exit checkpoint before Member 2 starts Phase 2 customer work.
+Phase 2 entry approval persists. Missing closeout warnings are historical: committed
+repairs are now integrated from dev. No phase exit/later entry approval is inferred.
+User commits/pushes/merges; local merge was prepared with automatic commits disabled.
+[Earlier resolution handoff](handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
+No new UI; original incoming ownership retained. /imprint not applicable.

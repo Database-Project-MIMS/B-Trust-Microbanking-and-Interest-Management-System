@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import pg from 'pg';
+import { createMigrationClient } from '../lib/db/migration-client.mjs';
 
 if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
   try { process.loadEnvFile(); } catch {}
@@ -15,10 +15,11 @@ if (!url) {
 const SEED_DIR = join(import.meta.dirname, '..', 'database', 'seed');
 const loadOrder = readFileSync(join(SEED_DIR, '_load-order.txt'), 'utf8')
   .split('\n')
-  .filter(line => line.trim() && !line.startsWith('#'));
+  .map(line => line.trim())
+  .filter(line => line && !line.startsWith('#'));
 
 async function seed() {
-  const client = new pg.Client({ connectionString: url });
+  const client = createMigrationClient(url);
   await client.connect();
 
   try {

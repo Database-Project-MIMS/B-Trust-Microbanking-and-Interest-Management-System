@@ -8,6 +8,10 @@
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-05:** Phase 1 T01–T05 verified DONE. Phase 2 RLS/audit work waits for the customer table.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout repairs remain uncommitted under the user publication constraint.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~~3~~ |

@@ -122,6 +122,7 @@ export class DatabaseError extends DomainError {
   constructor(
     code = "DATABASE_ERROR",
     message = "A database error occurred.",
+    readonly sqlstate?: string,
   ) {
     super(code, message, 500);
   }
@@ -189,16 +190,16 @@ export function mapDatabaseError(err: unknown): Error {
       case PG_ERROR.DEADLOCK_DETECTED:
         return new DeadlockDetectedError();
       case PG_ERROR.RAISE_EXCEPTION:
-        return new BusinessRuleError(
+        return Object.assign(new BusinessRuleError(
           "BUSINESS_RULE_VIOLATION",
           typeof err.message === "string" &&
             !err.message.includes("SELECT") &&
             !err.message.includes("FROM")
             ? err.message
             : "The operation was rejected by business logic rules.",
-        );
+        ), { sqlstate: PG_ERROR.RAISE_EXCEPTION });
       default:
-        return new DatabaseError("UNEXPECTED_DB_ERROR", "A database error occurred.");
+        return new DatabaseError("UNEXPECTED_DB_ERROR", "A database error occurred.", /^[0-9A-Z]{5}$/.test(err.code) ? err.code : undefined);
     }
   }
 

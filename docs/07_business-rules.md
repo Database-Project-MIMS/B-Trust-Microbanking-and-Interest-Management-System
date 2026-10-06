@@ -26,9 +26,16 @@ database are what make the rule true.
 
 ## Products and eligibility
 
+**Customer schema enforcement (P02-M02-T01, 0220):** customer_number,
+nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
+app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
+ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
+ACTIVE/INACTIVE. Assignment, identity masking, audited registration and RLS remain
+their later service/database tasks. See schema Part B.4 for the implemented definition.
+
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; partial unique index on `customer_agent(customer_id) WHERE is_active` (G-10) |
+| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; 0221 partial unique index allows at most one active assignment (G-10). T04 registration/future reassignment supplies existence atomically and retains history. |
 | BR-02 | A customer may own one or more savings accounts; ownership may be individual or joint | CON | `account_holder` intersection table with `UNIQUE(account_id, customer_id)` |
 | BR-03 | Children — 12%, no minimum balance | CON | `savings_plan` seeded row: `interest_rate = 0.1200`, `min_balance = 0` |
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
@@ -99,6 +106,17 @@ the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
 
+P02-M02-T03 implements document verification in services/customer-document-service.ts:
+active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,
+branch scope in SQL, current assignment required for AGENT. The caller supplies the
+authenticated session user ID. One withTransaction locks authorization/customer/document
+rows, sets verified_by/verified_date together and inserts a minimal audit event using
+the same client. Paths/content/identity are excluded from audit JSON. Same-verifier
+retry retains timestamp/audit count; another verifier receives 409
+DOCUMENT_ALREADY_VERIFIED. Invalid UUIDs fail with 400; denied scope/role with 403;
+missing document with 404. M1's grants/RLS and future controller authentication/CSRF
+remain separate work. 0222's CHECK also rejects half-verification from direct SQL.
+
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-S1 | Authorization is checked on the server for every request | SRV | `requireRole()` in every route handler; hiding a nav item is not access control (FR-AUTH-02) |
@@ -119,7 +137,7 @@ the whole run in one transaction would violate FR-INT-04.
 | Field formatting, input masks, required-field highlighting | UI | Usability only; every one is re-validated server-side |
 | Password complexity policy | SRV | Policy, not data integrity; changes without a migration |
 | Report pagination size | SRV | Presentation concern (REP-COM-05) |
-| Session inactivity timeout | SRV + `user_session.expires_at` | Computed by the app; the database stores the expiry so sessions can be invalidated server-side |
+| Session inactivity and absolute timeout | SRV + SQL + `user_session.expires_at` | Creation uses configured limits in SQL inside the caller transaction; validation refreshes inactivity without exceeding the absolute deadline, rejecting expired/revoked sessions. Browser cookie expires at the absolute limit |
 
 ---
 

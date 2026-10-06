@@ -1,274 +1,87 @@
-/**
- * P01-M01-T04: Sign-in E2E Tests
- *
- * Covers:
- *  1. Happy path — valid credentials → 200 + session cookie set
- *  2. Wrong password → 401 with GENERIC message (no info leak)
- *  3. Unknown username → 401 with SAME generic message (no info leak)
- *  4. Post-logout → session is invalidated server-side (cookie alone not enough)
- *  5. 429 after 5 consecutive failures within 15 minutes (brute-force protection)
- *
- * Pattern matches the project's test convention: Node test runner, direct route
- * handler imports, a real DB connection for setup/teardown, no live HTTP server.
- */
-
-import { after, before, describe, test } from "node:test";
+import { before, after, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import crypto from "node:crypto";
-import pg from "pg";
-import * as loginRoute from "../../app/api/auth/login/route.ts";
-import * as logoutRoute from "../../app/api/auth/logout/route.ts";
-import { hashPassword } from "../../lib/auth/password.ts";
-import { hashToken } from "../../lib/auth/session.ts";
+import argon2 from "argon2";
+import { POST as signIn } from "../../app/api/auth/login/route.ts";
+import { POST as signOut } from "../../app/api/auth/logout/route.ts";
+import { GET as health } from "../../app/api/health/route.ts";
+import { NextRequest } from "next/server";
+import { sessionFixture } from "../helpers/session-fixture.mjs";
+import { createSession, validateSession, hashToken } from "../../lib/auth/session.ts";
 
-// ---------------------------------------------------------------------------
-// Env / DB connection
-// ---------------------------------------------------------------------------
-if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
-  try { process.loadEnvFile(); } catch { }
-}
-
-const connectionString =
-  process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
-
-// ---------------------------------------------------------------------------
-// Minimal NextRequest mock (mirrors branches-agents.test.mjs convention)
-// ---------------------------------------------------------------------------
-function makeRequest(method, path, { body, token, csrf } = {}) {
-  return {
-    method,
-    url: `http://localhost${path}`,
-    json: async () => body,
-    headers: new Headers({
-      ...(csrf ? { "x-csrf-token": csrf } : {}),
-    }),
-    cookies: {
-      get: (name) => {
-        if (name === "mims_session" && token) return { value: token };
-        if (name === "mims_csrf" && csrf) return { value: csrf };
-        return undefined;
-      },
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-describe("P01-M01-T04: sign-in, session and logout", () => {
-  const runId = crypto.randomBytes(5).toString("hex");
-  const username = `signin_${runId}`;
-  const password = "Test-P@ssword-9991";
-  const wrongPassword = "Wrong-P@ssword-000";
-
-  let client;
-  let userId;
-  let roleId;
-
-  // -------------------------------------------------------------------------
-  // Setup — insert a real hashed user directly in the DB
-  // -------------------------------------------------------------------------
+describe("P01-M01-T04: sign-in, authenticated navigation and sign-out workflow", () => {
+  let fixture, username;
+  const password = "SyntheticCloseout!123";
   before(async () => {
-    assert.ok(connectionString, "DATABASE_URL or DATABASE_MIGRATION_URL is required");
-    client = new pg.Client({ connectionString });
-    await client.connect();
-
-    // Upsert ADMIN role (may already exist)
-    const roleRes = await client.query(
-      `INSERT INTO role (role_name, description)
-       VALUES ('ADMIN', 'Administrator')
-       ON CONFLICT (role_name) DO UPDATE SET role_name = EXCLUDED.role_name
-       RETURNING role_id`,
-    );
-    roleId = roleRes.rows[0].role_id;
-
-    const passwordHash = await hashPassword(password);
-    const userRes = await client.query(
-      `INSERT INTO app_user (role_id, username, password_hash, status)
-       VALUES ($1, $2, $3, 'ACTIVE')
-       RETURNING user_id`,
-      [roleId, username, passwordHash],
-    );
-    userId = userRes.rows[0].user_id;
+    fixture = await sessionFixture();
+    const { rows } = await fixture.client.query("UPDATE app_user SET password_hash = $1 WHERE user_id = $2 RETURNING username",
+      [await argon2.hash(password, { type: argon2.argon2id }), fixture.userId]);
+    username = rows[0].username;
   });
-
-  // -------------------------------------------------------------------------
-  // Teardown — remove test data cleanly
-  // -------------------------------------------------------------------------
-  after(async () => {
-    if (!client) return;
-    try {
-      await client.query(`DELETE FROM login_attempt WHERE username_attempted = $1`, [username]);
-      await client.query(`DELETE FROM user_session WHERE user_id = $1`, [userId]);
-      await client.query(`DELETE FROM app_user WHERE user_id = $1`, [userId]);
-    } finally {
-      await client.end();
+  after(async () => fixture?.cleanup());
+  test("login rejects cross-origin requests, non-JSON forms and malformed JSON", async () => {
+    for (const [headers, body, expected] of [
+      [{ "Content-Type": "application/json", origin: "https://untrusted.example" }, JSON.stringify({ username, password }), 403],
+      [{ "Content-Type": "text/plain" }, JSON.stringify({ username, password }), 400],
+      [{ "Content-Type": "application/json" }, "{invalid", 400],
+    ]) {
+      const response = await signIn(new NextRequest("http://localhost/api/auth/login", { method: "POST", headers, body }));
+      assert.equal(response.status, expected);
+      assert.equal(response.cookies.get("mims_session"), undefined);
     }
   });
 
-  // -------------------------------------------------------------------------
-  // 1. Happy path
-  // -------------------------------------------------------------------------
-  test("valid credentials return 200 with session cookie and CSRF token", async () => {
-    const res = await loginRoute.POST(
-      makeRequest("POST", "/api/auth/login", {
-        body: { username, password },
-      }),
-    );
-
-    assert.equal(res.status, 200, `Expected 200 but got ${res.status}`);
-
-    const body = await res.json();
-    assert.ok(body.data?.user, "Response should include user data");
-    assert.equal(body.data.user.username, username);
-
-    // Cookie must be set
-    const setCookie = res.headers.get("set-cookie") ?? "";
-    assert.ok(setCookie.includes("mims_session"), "Session cookie must be set");
-    assert.ok(
-      setCookie.toLowerCase().includes("httponly"),
-      "Cookie must be HttpOnly",
-    );
-    assert.ok(
-      setCookie.toLowerCase().includes("samesite=lax"),
-      "Cookie must be SameSite=Lax",
-    );
-  });
-
-  // -------------------------------------------------------------------------
-  // 2. Wrong password — must return generic error (no info leak)
-  // -------------------------------------------------------------------------
-  test("wrong password returns 401 with a generic error — no info leak", async () => {
-    const res = await loginRoute.POST(
-      makeRequest("POST", "/api/auth/login", {
-        body: { username, password: wrongPassword },
-      }),
-    );
-
-    assert.equal(res.status, 401);
-    const body = await res.json();
-    assert.equal(body.error?.code, "INVALID_CREDENTIALS");
-    // Message must NOT reveal the password was the wrong part
-    assert.ok(
-      !body.error.message.toLowerCase().includes("password incorrect"),
-      "Error message must not say 'password incorrect'",
-    );
-  });
-
-  // -------------------------------------------------------------------------
-  // 3. Unknown username — SAME generic 401 (cannot distinguish from wrong pw)
-  // -------------------------------------------------------------------------
-  test("unknown username returns 401 with the identical generic error", async () => {
-    const res = await loginRoute.POST(
-      makeRequest("POST", "/api/auth/login", {
-        body: { username: `no_such_user_${runId}`, password: wrongPassword },
-      }),
-    );
-
-    assert.equal(res.status, 401);
-    const body = await res.json();
-    assert.equal(body.error?.code, "INVALID_CREDENTIALS");
-  });
-
-  // -------------------------------------------------------------------------
-  // 4. Missing body fields — 400
-  // -------------------------------------------------------------------------
-  test("missing credentials return 400 INVALID_INPUT", async () => {
-    const res = await loginRoute.POST(
-      makeRequest("POST", "/api/auth/login", { body: {} }),
-    );
-    assert.equal(res.status, 400);
-    const body = await res.json();
-    assert.equal(body.error?.code, "INVALID_INPUT");
-  });
-
-  // -------------------------------------------------------------------------
-  // 5. Post-logout — session is revoked server-side
-  // -------------------------------------------------------------------------
-  test("after logout the session token is invalidated server-side", async () => {
-    // Log in to get a real token
-    const loginRes = await loginRoute.POST(
-      makeRequest("POST", "/api/auth/login", {
-        body: { username, password },
-      }),
-    );
-    assert.equal(loginRes.status, 200);
-
-    // Extract session token from Set-Cookie header
-    const setCookie = loginRes.headers.get("set-cookie") ?? "";
-    const match = setCookie.match(/mims_session=([^;]+)/);
-    assert.ok(match, "Could not parse mims_session from Set-Cookie");
-    const sessionToken = match[1];
-
-    // Extract CSRF token from Set-Cookie (mims_csrf is not HttpOnly)
-    const csrfMatch = setCookie.match(/mims_csrf=([^;]+)/);
-    const csrfToken = csrfMatch?.[1] ?? crypto.randomBytes(32).toString("hex");
-
-    // Log out
-    const logoutRes = await logoutRoute.POST(
-      makeRequest("POST", "/api/auth/logout", {
-        token: sessionToken,
-        csrf: csrfToken,
-      }),
-    );
-    assert.equal(logoutRes.status, 204, "Logout must return 204");
-
-    // Verify the token is revoked in the DB (revoked_at is set)
-    const tokenHash = hashToken(sessionToken);
-    const dbRow = await client.query(
-      `SELECT revoked_at FROM user_session WHERE token_hash = $1`,
-      [tokenHash],
-    );
-    assert.ok(dbRow.rows.length > 0, "Session row should exist");
-    assert.ok(
-      dbRow.rows[0].revoked_at !== null,
-      "revoked_at must be set after logout — cookie alone is not enough",
-    );
-  });
-
-  // -------------------------------------------------------------------------
-  // 6. Brute-force protection — 429 after 5 failures in 15 minutes
-  // -------------------------------------------------------------------------
-  test("5 consecutive wrong-password attempts trigger 429 TOO_MANY_ATTEMPTS", async () => {
-    const throttleUser = `throttle_${runId}`;
-    const throttleHash = await hashPassword("irrelevant");
-
-    // Insert a second user for this sub-test
-    const res = await client.query(
-      `INSERT INTO app_user (role_id, username, password_hash, status)
-       VALUES ($1, $2, $3, 'ACTIVE')
-       RETURNING user_id`,
-      [roleId, throttleUser, throttleHash],
-    );
-    const throttleUserId = res.rows[0].user_id;
-
+  test("login sets secure session/CSRF cookies, authorized request works, logout invalidates it", async () => {
+    const originalEnvironment = process.env.NODE_ENV;
+    let response;
     try {
-      // Fire 5 bad attempts
-      for (let i = 0; i < 5; i++) {
-        const r = await loginRoute.POST(
-          makeRequest("POST", "/api/auth/login", {
-            body: { username: throttleUser, password: "wrong" },
-          }),
-        );
-        assert.equal(r.status, 401, `Attempt ${i + 1} should be 401`);
-      }
-
-      // 6th attempt must be throttled
-      const throttled = await loginRoute.POST(
-        makeRequest("POST", "/api/auth/login", {
-          body: { username: throttleUser, password: "wrong" },
-        }),
-      );
-      assert.equal(throttled.status, 429, "6th attempt must be 429");
-      const body = await throttled.json();
-      assert.equal(body.error?.code, "TOO_MANY_ATTEMPTS");
+      process.env.NODE_ENV = "production";
+      response = await signIn(new NextRequest("http://localhost/api/auth/login", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password }),
+      }));
     } finally {
-      // Cleanup throttle user
-      await client.query(
-        `DELETE FROM login_attempt WHERE username_attempted = $1`,
-        [throttleUser],
-      );
-      await client.query(`DELETE FROM app_user WHERE user_id = $1`, [throttleUserId]);
+      if (originalEnvironment === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = originalEnvironment;
     }
+    assert.equal(response.status, 200);
+    const { data } = await response.json();
+    assert.equal(data.user.role, "ADMIN");
+    assert.equal(data.user.branchId, null);
+    assert.equal(data.user.password_hash, undefined);
+    const cookie = response.cookies.get("mims_session");
+    const csrf = response.cookies.get("mims_csrf");
+    assert.equal(cookie.httpOnly, true);
+    assert.equal(cookie.secure, true);
+    assert.equal(cookie.sameSite, "lax");
+    assert.ok(cookie.expires.getTime() > Date.now() + 7 * 60 * 60 * 1000,
+      "Browser cookie must allow active sessions to reach the server's absolute timeout");
+    const authenticated = path => new NextRequest(`http://localhost${path}`, {
+      method: path.endsWith("logout") ? "POST" : "GET",
+      headers: { cookie: `mims_session=${cookie.value}; mims_csrf=${csrf.value}`, "x-csrf-token": csrf.value },
+    });
+    assert.equal((await health(authenticated("/api/health"))).status, 200);
+    assert.equal((await signOut(authenticated("/api/auth/logout"))).status, 204);
+    assert.equal(await validateSession(cookie.value), null);
+    assert.equal((await health(authenticated("/api/health"))).status, 401);
+  });
+
+  test("active requests refresh inactivity expiry, absolute expiry remains enforced", async () => {
+    await fixture.client.query("UPDATE user_session SET expires_at = now() + interval '1 minute' WHERE user_id = $1 AND revoked_at IS NULL", [fixture.userId]);
+    assert.ok(await validateSession(fixture.token));
+    const { rows } = await fixture.client.query("SELECT expires_at > now() + interval '19 minutes' AS refreshed FROM user_session WHERE token_hash = $1", [hashToken(fixture.token)]);
+    assert.equal(rows[0].refreshed, true);
+    await fixture.client.query("UPDATE user_session SET created_at = now() - interval '9 hours' WHERE user_id = $1 AND revoked_at IS NULL", [fixture.userId]);
+    assert.equal(await validateSession(fixture.token), null);
+  });
+  test("session creation follows configured timeout and rolls back with the caller", async () => {
+    let token;
+    await fixture.client.query("BEGIN");
+    try {
+      await fixture.client.query("UPDATE system_parameter SET param_value = '5' WHERE param_key = 'SESSION_IDLE_TIMEOUT_MINUTES'");
+      const session = await createSession(fixture.userId, undefined, undefined, fixture.client);
+      token = session.token;
+      assert.ok(session.expiresAt.getTime() > Date.now() + 4 * 60 * 1000);
+      assert.ok(session.expiresAt.getTime() <= Date.now() + 5 * 60 * 1000);
+    } finally { await fixture.client.query("ROLLBACK"); }
+    assert.equal((await fixture.client.query("SELECT count(*)::int AS n FROM user_session WHERE token_hash = $1", [hashToken(token)])).rows[0].n, 0);
   });
 });

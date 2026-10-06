@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
-import pg from "pg";
+import { createMigrationClient } from "../lib/db/migration-client.mjs";
 
 if (!process.env.DATABASE_MIGRATION_URL) throw new Error("DATABASE_MIGRATION_URL is required.");
-const client = new pg.Client({ connectionString: process.env.DATABASE_MIGRATION_URL });
+const client = createMigrationClient(process.env.DATABASE_MIGRATION_URL);
 try {
   await client.connect();
   await client.query("BEGIN");

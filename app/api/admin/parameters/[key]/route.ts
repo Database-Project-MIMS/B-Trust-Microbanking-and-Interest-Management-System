@@ -3,7 +3,6 @@ import { requireRole, requireUser } from '@/lib/auth/rbac';
 import { verifyCsrf } from '@/lib/auth/csrf';
 import { errorResponse } from '@/lib/http/error-response';
 import { updateParameter } from '@/services/parameter-service';
-import { query } from '@/lib/db';
 
 export async function PUT(
   req: NextRequest,
@@ -22,17 +21,6 @@ export async function PUT(
       return NextResponse.json(
         { error: { code: 'VALIDATION', message: '`value` must be a non-empty string' } },
         { status: 400 },
-      );
-    }
-
-    const old = await query<{ param_id: string; param_value: string }>(
-      `SELECT param_id, param_value FROM system_parameter WHERE param_key = $1`,
-      [key],
-    );
-    if (old.length === 0) {
-      return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Parameter not found' } },
-        { status: 404 },
       );
     }
 

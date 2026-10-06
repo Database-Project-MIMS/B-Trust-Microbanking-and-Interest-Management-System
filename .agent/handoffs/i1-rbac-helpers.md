@@ -1,7 +1,7 @@
 # Integration Point I-1: RBAC Helpers
 
-**Published by:** Member 1 — Nadija  
-**Status:** READY — import and use these in all your route handlers.
+**Published by:** Member 1 â€” Nadija
+**Status:** READY â€” import and use these in all your route handlers.
 
 ---
 
@@ -13,6 +13,14 @@ import { verifyCsrf } from "@/lib/auth/csrf";
 ```
 
 ## Functions
+
+Closeout update â€” 05 Oct 2026: `requireUser` validates the `mims_session` record and
+returns `branchId`; login's user DTO also includes `branchId`. CSRF cookie/header values
+must each be exactly 64 hex characters, and must match. `requirePageRole(...roles)` from
+`lib/auth/page-access` resolves the live page session, rejects missing branch profiles,
+and redirects unauthorized roles before restricted data is queried. Session inactivity
+expiry refreshes in SQL, capped by the configured absolute lifetime. Cross-branch list,
+URL and body edits are exercised by the real organization API suite.
 
 ### `requireUser(request)` ? `AuthenticatedUser`
 Call this **first** in every route handler. Returns the logged-in user or throws 401.

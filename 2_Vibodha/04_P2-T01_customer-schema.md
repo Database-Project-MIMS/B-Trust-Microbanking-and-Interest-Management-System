@@ -1,6 +1,6 @@
 # 🟢 Phase 2 — Task 01: Customer Schema
 **Task ID:** `P02-M02-T01` · **Branch:** `feat/p02-m02-customer-schema`
-**Migration:** `0220_p02_m02_customer.sql` · **Status:** TODO (awaiting Phase 2 entry)
+**Migration:** `0220_p02_m02_customer.sql` · **Status:** DONE — PR #34 merged into dev; retained in PR #35
 **Depends on:** ADR-0007 (G-20 resolved), `P01-M02-T02` (`agent`)
 **Story Points:** ~4 · **Layer:** Database only
 
@@ -9,8 +9,10 @@
 ## ✅ Identity Decision — Approved
 
 OQ-05 was resolved on 2026-09-29 by ADR-0007. Customers are primarily agent-managed,
-so customer login is optional. Phase 2 must still pass its normal entry checkpoint before
-this migration is written.
+so customer login is optional. Vibodha approved Phase 2 entry and explicitly requested
+this task. PR #34 is merged into dev at 2e338a6. PR #35 retains that schema and
+committed closeout repairs during its refreshed conflict resolution. See the
+[checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 The current ERD models `customer` as a subtype of `user` (`customer_id` is `PK,FK` into
 `app_user`), which forces every one of the 15+ seeded customers to have login
@@ -39,7 +41,7 @@ self-service login is possible later without being mandatory now.
 | `email` | `varchar(150)` | **UNIQUE, NOT NULL** |
 | `status` | `varchar(20)` | NOT NULL DEFAULT `'ACTIVE'`, `CHECK (status IN ('ACTIVE','INACTIVE'))` |
 | `created_at` | `timestamptz` | NOT NULL DEFAULT `now()` |
-| `updated_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | NOT NULL DEFAULT now(), maintained by shared trigger |
 
 **Keep these invariants:**
 - **DELETE rule:** `RESTRICT` — referenced by `customer_agent`, `customer_document`,
@@ -91,9 +93,7 @@ CREATE INDEX idx_customer_branch ON customer(branch_id);
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE INDEX idx_customer_full_name_trgm ON customer USING gin (full_name gin_trgm_ops);
 
--- Register migration
-INSERT INTO schema_migration(version, name)
-VALUES (220, '0220_p02_m02_customer');
+-- The runner records filename/checksum; do not insert version/name into the ledger.
 
 COMMIT;
 ```
@@ -113,10 +113,13 @@ Create file: `tests/db/customer-constraints.test.mjs`
 
 ### Step 4 — Run & Verify
 ```bash
-npm run db:rebuild
-npm run db:verify
-npm test
+npm run verify:customer-schema  # disposable rebuild, customer + organization tests, typecheck/lint
 ```
+
+This invokes db:rebuild only inside its own temporary cluster. The present checkout's
+legacy migration-runner test resets mims_dev and edits a real migration, so it is
+excluded. Normal development DB verification can use `npm run db:verify` after the
+additive migration. Do not run the legacy rebuild as an ordinary test against your data.
 
 ### Step 5 — Update Docs
 - Update `docs/04_database-schema.md` §B.4 — mark the identity decision as resolved,
@@ -130,10 +133,18 @@ npm test
 
 ## Acceptance Criteria
 - [x] OQ-05 resolved and recorded as ADR-0007 before the migration is written
-- [ ] Migration applies to a clean DB without errors
-- [ ] `nic_passport_no`, `email`, `customer_number` are each `UNIQUE NOT NULL`
-- [ ] Duplicate NIC raises `23505` (FR-CUS-04)
-- [ ] Trigram index exists on `full_name`
-- [ ] `date_of_birth` CHECK rejects future dates
-- [ ] Handoff written for M1 and M3
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] Migration applies to a clean DB without errors
+- [x] `nic_passport_no`, `email`, `customer_number` are each `UNIQUE NOT NULL`
+- [x] Duplicate NIC raises `23505` (FR-CUS-04)
+- [x] Trigram index exists on `full_name`
+- [x] `date_of_birth` CHECK rejects future dates and today
+- [x] Handoff written for M1 and M3
+- [x] `npm run db:rebuild` succeeds from empty inside the disposable verification cluster
+
+Implemented source: [0220 migration](../database/migrations/0220_p02_m02_customer.sql).
+The example above is illustrative; the actual migration uses named constraints,
+`ix_customer_branch`/`ix_customer_full_name_trgm` and the shared timestamp trigger.
+Verification: `npm run verify:customer-schema` — 65 tests pass (27 customer), clean
+rebuild, typecheck and lint pass. Local 0220 application/verification also passes.
+Handoff: [customer schema](../.agent/handoffs/p02-m02-t01-customer-schema.md).
+No customer API/UI is part of T01. No commit, merge or PR was created.
