@@ -1,28 +1,24 @@
 # Member 3 — context
 
-Full slice description and copy-paste session prompt:
-`../../docs/member-prompts/member-3.md`
+**Updated:** 2026-10-05, authorized Phase 1 closeout.
+Slice: [member prompt](../../docs/member-prompts/member-3.md).
 
-Supplementary per-task breakdown (not authoritative, task tracker wins on conflict):
-`../../3_Nisith/`
+## Current state
 
-This file is the **running log** — updated by Member 3 via `/remember save` at the end
-of a session, read at the start of the next one. Empty until Phase 1 work begins.
+P01-M03-T01–T03 are verified DONE: savings plan schema, data-driven eligibility,
+plan APIs and administration page. P02-M03-T01 account schema (0240) is verified DONE.
+The RESTRICT deletion test accepts PostgreSQL's specific 23001/23503 variants;
+other constraint assertions remain specific.
 
-## Current task
+## Next work and dependencies
 
-*(none started — Phase 0)*
+Phase 2 entry is approved. P02-M03-T02 holder schema waits for M2's customer table
+(P02-M02-T01). Mandate, account-opening, APIs and UI follow. Transaction schema
+0260 already exists. Joint adult-holder enforcement remains Phase 2 work.
+ADR-0008/0009 are accepted.
 
-## Recent history
+## Publication
 
-- G-06 and G-08 were approved on 2026-10-01. ADR-0008 fixes account branch ownership at
-  opening; ADR-0009 requires 2–4 adult joint holders and a stored operating mandate.
-
-## Notes to self
-
-*(empty)*
-
-## Blocked on
-
-- Phase 2 awaits the Phase 1 exit checkpoint. T02 also waits for Member 2's
-  `P02-M02-T01` customer table.
+Original ownership retained. Cross-member closeout edits are uncommitted; the user
+controls commits, merges and PR creation.
+Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).

@@ -1,49 +1,41 @@
 # Current State
 
-**Updated:** 2026-10-05 · **Owner:** M2 (Vibodha), P02-M02-T01 session
+**Updated:** 2026-10-06 · **Owner:** M2, PR #34 conflict resolution
 
-## Current task result
+## Current checkout
 
-P02-M02-T01 customer schema is technically complete locally on
-`feat/p02-m02-customer-schema`. Migration 0220 adds independent customer UUID,
-optional unique login, required unique number/NIC/email, restrictive branch/login
-FKs, birth-date/status checks, timestamps and branch/name search indexes.
-No customer registration API/UI, assignment/documents, RLS or permanent customer
-seed rows are included.
+feat/p02-m02-customer-schema at 8fa18ba, with a local pending merge of origin/dev
+76701e7. All eight documentation conflicts are reconciled. No merge commit,
+push, PR creation or merge into dev was performed by the assistant.
 
-## Evidence
+## Preserved implementation
 
-`npm run verify:customer-schema`: 65 tests pass (27 customer + 38 organization),
-0 fail, 0 skipped; all 12 migrations rebuild from empty, repeat application/verification,
-typecheck and lint pass. Disposable PostgreSQL 18.6 cluster removed after use.
-Normal development DB received 0220 additively and verifies; existing data was not reset.
-Handoff: [customer schema](handoffs/p02-m02-t01-customer-schema.md).
+Customer migration 0220 and 27 tests implement independent UUID/optional unique login,
+required unique number/NIC/email, restrictive FKs, past birth date/status checks,
+timestamps and branch/trigram indexes. Original focused verification: 65 tests,
+12-migration rebuild/reapply/verify, typecheck/lint. Customer API/UI remains later work.
+[Customer contract](handoffs/p02-m02-t01-customer-schema.md).
 
-## Approval and checkout condition
+dev now contains the Phase 1 closeout repairs (fad4f13, integrated through PR #33).
+Preserve its security/session/health/parameter/tooling fixes and historical 184-test
+checkpoint. The earlier missing-repairs warning applies to the old checkout only.
+Combined-tree verification passed on 2026-10-06: npm run verify:phase1, 211 tests
+(26 suites), zero failures/skips, clean 12-migration rebuild, typecheck, lint and
+production build. Disposable PostgreSQL 18.6 cluster removed. Development data retained.
+The current result replaces neither historical count; it verifies the combined tree.
 
-Vibodha approved Phase 2 entry in this conversation and requested this task. At session
-start the clean checkout at 3fe8689 lacked the earlier uncommitted Phase 1 closeout
-repairs/checkpoint. [Restored historical approval](checkpoints/phase-01-checkpoint.md)
-records this condition and does not recertify the missing changes. The earlier 184-test
-result is not claimed for the present tree. The legacy migration-runner test resets
-mims_dev and edits an actual migration; it was excluded from this focused verification.
+## Task snapshot in this PR
 
-## Task snapshot
-
-Tracker baseline plus this task: P0 6 DONE; P1 14 DONE/5 READY (existing rows,
-not newly recertified); P2 2 DONE/2 READY/12 TODO. P3–P6 remain TODO.
-P02-M03-T01 account was already recorded DONE. Other member task status changes
-remain their owners' responsibility. Full status: [tracker](../docs/09_task-tracker.md).
-
-## Next tasks
-
-P02-M02-T02 customer_agent and P02-M02-T03 customer_document are READY.
-Migration numbers 0221/0222 are available in M2's block. Registration must await both,
-auditing and scoped runtime access. M1/M3 can consume the customer handoff for their
-RLS/audit/holder work. The runtime app has no customer grants until M1 adds scope/RLS.
+P0 6 DONE; P1 19 DONE; P2 3 DONE/2 READY/11 TODO; P3–P6 TODO.
+T01 customer schema, M3 account and M4 transaction schemas are DONE.
+M2 T02 assignment and T03 documents are READY. Their later implementations and T04
+registration remain on separate feature branches, not imported into PR #34.
+M1 customer grants/RLS/audit and remaining account-opening work are still pending.
+Historical Phase 2 entry approval persists; no later phase approval is inferred.
 
 ## Publication
 
-No commit, merge or PR was created. Changes remain uncommitted under the user's
-instruction. Team review/publication and reconciliation of the missing earlier Phase 1
-closeout repairs remain user-controlled.
+User requested conflict resolution and will commit/push/merge. The local merge uses
+--no-commit; resolving/staging it does not create a commit or update dev.
+[Resolution handoff](handoffs/p02-m02-t01-pr34-conflict-resolution.md).
+No UI was newly built. Incoming dev changes retain their original ownership.

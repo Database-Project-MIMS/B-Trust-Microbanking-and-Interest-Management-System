@@ -11,6 +11,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-05:** Phase 1 T01–T03 and P02-M03-T01 account schema verified DONE. Row 04 is partly complete: T02/T03 wait for customer/holder delivery.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout repairs remain uncommitted under the user publication constraint.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Savings Plan Schema](01_P1-T01_savings-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`savings_plan` + eligibility columns (G-13)~~ | ~~~3~~ |
@@ -65,7 +69,7 @@ their pieces until you publish a handoff in `.agent/handoffs/` for each. Do this
 *before* marking the publishing task `DONE`, not after.
 
 Approved gates: **G-06** (account `branch_id`, ADR-0008) and **G-08** (joint mandate,
-ADR-0009) were accepted on 1 Oct 2026. Phase 2 still awaits the Phase 1 exit checkpoint.
+ADR-0009) were accepted on 1 Oct 2026. Phase 2 entry was approved on 2026-10-05. Holder work still waits for the customer table.
 
 ---
 

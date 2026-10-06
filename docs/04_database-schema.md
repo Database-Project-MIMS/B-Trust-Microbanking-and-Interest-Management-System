@@ -1,6 +1,8 @@
 # 04 — Database Schema
 
-**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 0 — documented, not yet built.
+**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 1 implemented and verified;
+Phase 2 entry approved 2026-10-05. Account and transaction schemas also exist (`0240`,
+`0260`); customer/holder/mandate and later financial features remain planned.
 
 This document has two clearly separated parts:
 
@@ -238,6 +240,10 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 - Invariant: exactly the three products in BR-13.
 
 ### `transaction_channel`
+
+Implemented by immutable migration `0160_p01_m04_transaction_channel.sql`, verified
+at Phase 1 closeout. `channel_name` is NOT NULL/UNIQUE; status defaults to `ACTIVE`
+and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
 
 | Column | Type | Notes |
 |---|---|---|

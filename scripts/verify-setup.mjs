@@ -3,7 +3,8 @@
  * Verify the local setup. Run after `npm run db:rebuild`.
  * Checks the things that silently break a Database Systems project.
  */
-import pg from "pg";
+import { createMigrationClient } from "../lib/db/migration-client.mjs";
+import { verifyMigrationLedger } from "./migration-ledger.mjs";
 
 if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
   try { process.loadEnvFile(); } catch {}
@@ -15,7 +16,7 @@ if (!url) { console.error("DATABASE_URL not set."); process.exit(1); }
 const checks = [];
 const check = (name, ok, detail = "") => checks.push({ name, ok, detail });
 
-const client = new pg.Client({ connectionString: url });
+const client = createMigrationClient(url);
 await client.connect();
 
 const one = async (sql, params = []) => (await client.query(sql, params)).rows[0];
@@ -29,8 +30,12 @@ const mig = await one(
 check("schema_migration exists", mig.present);
 
 if (mig.present) {
-  const n = await one("SELECT count(*)::int AS n FROM schema_migration");
-  check("migrations applied", n.n > 0, `${n.n} applied`);
+  try {
+    const count = await verifyMigrationLedger(client, process.env.MIMS_MIGRATIONS_DIR ?? "database/migrations");
+    check("migration ledger matches files and checksums", count > 0, `${count} applied`);
+  } catch (error) {
+    check("migration ledger matches files and checksums", false, error.message);
+  }
 }
 
 const dom = await one(

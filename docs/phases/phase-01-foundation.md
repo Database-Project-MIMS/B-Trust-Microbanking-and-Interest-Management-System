@@ -1,6 +1,9 @@
 # Phase 01 — Foundation, Master Data & Security
 
-**Status:** READY · **Tasks:** 18 · **Effort:** 43 points · **Est.** ~1 week
+**Status:** DONE — exit approved 2026-10-05 · **Tasks:** 19 · **Effort:** 43 points
+
+Vibodha approved Phase 2 entry after the local verification passed. Evidence and the
+user-controlled publication condition: [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
 
 ## Goal
 
@@ -45,17 +48,17 @@ Suggested order within each member's week: migration → SQL tests → service �
 
 ## Exit criteria
 
-- [ ] A user can sign in, get a session, and be signed out server-side
-- [ ] Role and branch scope are enforced **on the server** for every implemented route
-- [ ] Failed sign-ins are throttled and reveal nothing about username existence
-- [ ] 3 branches and 6 agents can be created, listed and deactivated
-- [ ] Five savings plans and three FD products exist with **exactly** the specified rates and minimums
-- [ ] Business hours and withdrawal limits are readable as data, not constants
-- [ ] `npm run db:rebuild` succeeds from empty; `npm run db:verify` passes
-- [ ] Editing an already-applied migration is rejected by the runner
-- [ ] The app shell renders with role-aware navigation
-- [ ] `/imprint` run — `ui-registry.md` has its first component entries
-- [ ] All Phase 1 tests pass; every task `DONE`
+- [x] A user can sign in, get a session, and be signed out server-side
+- [x] Role and branch scope are enforced **on the server** for every implemented route
+- [x] Failed sign-ins are throttled and reveal nothing about username existence
+- [x] 3 branches and 6 agents can be created, listed and deactivated
+- [x] Five savings plans and three FD products exist with **exactly** the specified rates and minimums
+- [x] Business hours and withdrawal limits are readable as data, not constants
+- [x] `npm run db:rebuild` succeeds from empty; `npm run db:verify` passes
+- [x] Editing an already-applied migration is rejected by the runner
+- [x] The app shell builds with role-aware navigation; workflow and server authorization checks pass
+- [x] `/imprint` run — `ui-registry.md` includes health and parameter administration
+- [x] All Phase 1 tests pass; every task `DONE` in the verified local tree
 
 ## Risks
 

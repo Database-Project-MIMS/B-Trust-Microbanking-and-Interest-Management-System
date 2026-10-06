@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, withTransaction, NotFoundError, ValidationError } from '@/lib/db';
 
 export interface SystemParameter {
   param_id: string;
@@ -9,7 +9,7 @@ export interface SystemParameter {
   updated_at: string | null;
 }
 
-/** Read a system parameter as a string. Throws if key does not exist. */
+/** Reads one parameter outside a write transaction. */
 export async function getParameter(key: string): Promise<string> {
   const result = await query<{ param_value: string }>(
     `SELECT param_value FROM system_parameter WHERE param_key = $1`,
@@ -20,15 +20,7 @@ export async function getParameter(key: string): Promise<string> {
   return parameter.param_value;
 }
 
-/** Read a system parameter as a number. */
-export async function getParameterAsNumber(key: string): Promise<number> {
-  const raw = await getParameter(key);
-  const n = Number(raw);
-  if (Number.isNaN(n)) throw new Error(`System parameter ${key} is not a valid number: ${raw}`);
-  return n;
-}
-
-/** List all parameters (for the admin page). */
+/** Lists parameters outside a write transaction. */
 export async function listParameters(): Promise<SystemParameter[]> {
   const result = await query<SystemParameter>(
     `SELECT param_id, param_key, param_value, description, data_type, updated_at
@@ -38,16 +30,36 @@ export async function listParameters(): Promise<SystemParameter[]> {
   return result;
 }
 
-/** Update a single parameter value. ADMIN only — enforced at route level. */
+/** Updates one parameter and its trigger audit inside one locked transaction. */
 export async function updateParameter(paramKey: string, newValue: string): Promise<SystemParameter> {
-  const result = await query<SystemParameter>(
+  return withTransaction(async (tx) => {
+    const current = await tx.query<SystemParameter>(
+      `SELECT param_id, param_key, param_value, description, data_type, updated_at
+       FROM system_parameter WHERE param_key = $1 FOR UPDATE`, [paramKey],
+    );
+    const parameter = current.rows[0];
+    if (!parameter) throw new NotFoundError('Parameter');
+    const value = newValue.trim();
+    if (!value || value.length > 500) throw new ValidationError('A parameter value is required.');
+    if (paramKey.startsWith('BUSINESS_HOUR_') && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) {
+      throw new ValidationError('Business hours must use HH:mm.');
+    }
+    if (paramKey.startsWith('WITHDRAWAL_') &&
+        (!/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(value) || !/[1-9]/.test(value))) {
+      throw new ValidationError('Withdrawal limits must be positive decimal amounts.');
+    }
+    if ((paramKey.startsWith('SESSION_') || paramKey === 'INTEREST_CYCLE_DAYS') && !/^[1-9]\d{0,3}$/.test(value)) {
+      throw new ValidationError('The value must be a positive whole number.');
+    }
+    const result = await tx.query<SystemParameter>(
     `UPDATE system_parameter
      SET param_value = $1, updated_at = now()
      WHERE param_key = $2
      RETURNING param_id, param_key, param_value, description, data_type, updated_at`,
-    [newValue, paramKey]
+    [value, paramKey]
   );
-  const parameter = result[0];
-  if (!parameter) throw new Error(`Parameter not found: ${paramKey}`);
-  return parameter;
+    const updated = result.rows[0];
+    if (!updated) throw new NotFoundError('Parameter');
+    return updated;
+  });
 }

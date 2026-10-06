@@ -1,39 +1,23 @@
-# Memory — MIMS
+# Memory — PR #34 conflict resolution
 
-> /remember save: current, non-sensitive continuation state.
+> /remember save: non-sensitive continuation state.
 
-**Updated:** 2026-10-05
-**Task/branch:** P02-M02-T01 on feat/p02-m02-customer-schema.
+**Updated:** 2026-10-06
+**Branch:** feat/p02-m02-customer-schema
 
-## What was built
+User asked to resolve PR #34 conflicts and will commit/merge. origin/dev is 76701e7;
+feature HEAD is 8fa18ba. A local --no-commit merge is pending. No assistant commit,
+push or completed merge into dev. Do not import later T02/T03/T04 feature branches.
 
-Migration 0220 creates customer with independent UUID and optional unique login
-(ADR-0007), number/NIC/email uniqueness, branch/login RESTRICT FKs, past-date/status
-checks, timestamp trigger, branch B-tree and full_name GIN trigram index.
-Added 27 customer tests and safe disposable PostgreSQL verification command.
-Updated schema/rule/index/task documentation and M1/M3 handoff; APIs/UI remain later tasks.
+Preserve customer migration 0220, 27 tests and docs/handoff plus dev's Phase 1 closeout
+repairs (fad4f13/PR #33). Historical 184-test closeout and 65-test customer results are
+distinct. Combined-tree verification passed: 211 tests (26 suites), zero failures/skips,
+clean 12-migration rebuild, typecheck/lint/production build. Disposable PostgreSQL 18.6
+cluster removed; development data preserved. Details:
+.agent/handoffs/p02-m02-t01-pr34-conflict-resolution.md.
 
-## Verification
-
-65 selected tests pass (27 customer, 38 organization), 0 failed/skipped.
-Clean rebuild of 12 migrations, repeat application/verification, typecheck and lint pass.
-Migration 0220 is applied to local development DB without reset. Disposable cluster
-was removed. See .agent/handoffs/p02-m02-t01-customer-schema.md for review/evidence.
-
-## Decisions and constraints
-
-User Phase 2 approval persists in this conversation. Current checkout initially lacked
-the earlier uncommitted Phase 1 closeout changes/checkpoint; historical approval note
-records that discrepancy. Do not claim the previous 184-test result for this checkout.
-The old migration-runner test resets mims_dev and edits a real migration; excluded here.
-No existing migration or other owner's implementation file was changed.
-Customer app grants/RLS/audit binding remain M1 work; do not expose unscoped data.
-User prohibits assistant commits, merges and PR creation. All current changes are uncommitted.
-
-## Next session
-
-P02-M02-T02 assignment and P02-M02-T03 document schema are READY; 0221/0222 free.
-Registration requires both plus scoped access/audit. Implement only the requested task.
-M3 holder and M1 RLS/audit work consume the stable customer table handoff.
-Missing earlier closeout repairs still require user-controlled reconciliation before
-claiming full integration readiness. Later phase decisions/entry approvals remain separate.
+Tracker reconciled: P0 6 DONE, P1 19 DONE, P2 3 DONE/2 READY/11 TODO. T01 is DONE;
+T02/T03 READY in this tree, later implementations remain on their own branches.
+M1 customer grants/RLS/audit and M3 holder/opening work are pending. Phase 2 entry
+approval persists; no later phase approval. Old missing-closeout warnings now historical.
+Use verify:phase1 for disposable full validation; normal development data is preserved.

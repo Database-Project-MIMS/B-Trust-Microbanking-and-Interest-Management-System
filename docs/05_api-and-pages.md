@@ -2,6 +2,20 @@
 
 Endpoint contracts and the page-to-API map.
 
+## Database health — Member 4
+
+`GET /api/health` validates the real `mims_session` before querying health. Missing,
+forged, expired or revoked sessions receive `401` without database details. Any valid
+role receives `{ data: { status: 'ok' } }`; ADMIN/CENTRAL_OPS additionally receive
+`db: { connected, poolTotal, poolIdle, poolWaiting }`, numeric `migrationsApplied`,
+`lastMigration` and `uptimeSeconds`. Database failures return a safe `503` error envelope.
+The route calls `services/health-service.ts`; it contains no SQL.
+
+`/admin/health` checks ADMIN/CENTRAL_OPS on the server before loading data. `/admin/parameters`
+and its GET/PUT APIs are ADMIN-only; edits require a valid 64-character hex CSRF token.
+Invalid values return `400`, unknown parameter keys `404`, and the update plus trigger
+audit execute in one locked transaction.
+
 **Conventions** (AGENTS.md §9): success `{ data }`, failure `{ error: { code, message } }`.
 Every route authenticates and authorizes **on the server**. Money-moving `POST` endpoints
 require an `Idempotency-Key` header. All state-changing routes are CSRF-protected. Roles:
@@ -18,10 +32,13 @@ errors are listed below.
 ### `POST /api/auth/login`
 - **Purpose** Authenticate and create a server-side session (FR-AUTH-01).
 - **Roles** public
+- **CSRF protection** JSON requests only; a supplied Origin must match the request origin.
 - **Body** `{ username, password }`
 - **Validation** both present; username ≤ 100 chars
 - **SQL** select the user and role from `app_user`/`role`, and `LEFT JOIN agent ON agent.agent_id = app_user.user_id` to obtain `branchId`; on success `INSERT INTO user_session`; always `INSERT INTO login_attempt`
 - **Transaction** single transaction: session insert + attempt log + `last_login` update
+- **Session lifetime** The cookie expires at the configured absolute limit. The server
+  enforces and refreshes the configured inactivity deadline, capped by that absolute limit.
 - **Success** `200 { data: { user: { id, username, role, branchId } } }` + `Secure`/`HttpOnly`/`SameSite=Lax` cookie
 - **Errors** `401 INVALID_CREDENTIALS` — **identical message whether or not the username exists** (FR-AUTH-03); `429 TOO_MANY_ATTEMPTS`
 - **Page** `/sign-in`
@@ -234,7 +251,7 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/admin/users`, `/admin/roles` | `/api/admin/users` | ADMIN | M1 |
 | `/admin/parameters` | `/api/admin/parameters` | ADMIN | M1 |
 | `/admin/audit` | `GET /api/audit` | AUDITOR, ADMIN | M1 |
-| `/admin/health` | `GET /api/health` | ADMIN | M4 |
+| `/admin/health` | `GET /api/health` | ADMIN, CENTRAL_OPS | M4 |
 | `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
 | `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |

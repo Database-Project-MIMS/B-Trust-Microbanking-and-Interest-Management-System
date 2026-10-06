@@ -1,13 +1,21 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** TODO · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
+**Status:** IN_PROGRESS — entry approved 2026-10-05; 3 DONE, 2 READY, 11 TODO · **Tasks:** 16 · **Effort:** 47 points
+
+Approval: [Phase 1 checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
+Account (`0240`) and immutable transaction (`0260`) schema work is already verified.
+Member 2's `P02-M02-T01` customer schema is DONE on `feat/p02-m02-customer-schema`;
+assignment/document tasks are READY. Holder, mandate, account-opening, registration
+and full seed work remain pending in this PR's tree.
 
 **2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
 recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
 is technically complete locally: migration 0220, 27 customer tests and 38 organization
 regressions pass, with clean rebuild/typecheck/lint. Assignment/documents are READY;
-registration/API/UI and this phase's exit remain incomplete. The earlier closeout edits
-are absent from this checkout, so no renewed Phase 1 certification is claimed here.
+registration/API/UI and this phase's exit remain incomplete. At that initial verification,
+earlier closeout edits were absent. The 2026-10-06 PR #34 conflict resolution now restores
+those committed repairs from `dev`; combined-tree verification is recorded separately
+in the [resolution handoff](../../.agent/handoffs/p02-m02-t01-pr34-conflict-resolution.md).
 
 ## Goal
 
@@ -16,7 +24,7 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Entry criteria
 
-- [ ] Phase 1 exit criteria met
+- [x] Phase 1 exit criteria met and entry approved by Vibodha
 - [x] **OQ-05 resolved** (G-20, ADR-0007) — customers use an independent primary key
       and may optionally link to an application login.
 - [x] G-06 approved by ADR-0008 — `account.branch_id` is stored at opening
@@ -53,7 +61,7 @@ opened with eligibility and mandate rules enforced by the database.
 - [ ] 1-holder and 5-holder joint accounts are both rejected by the trigger
 - [ ] An opening amount below the plan minimum is rejected
 - [ ] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
-- [ ] Posted `transaction` rows reject `UPDATE` and `DELETE`
+- [x] Posted `transaction` rows reject `UPDATE` and `DELETE`
 - [ ] Seed loads 18 customers, 22 accounts including 3 joint
 
 ## Risks

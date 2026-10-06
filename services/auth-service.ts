@@ -6,7 +6,7 @@ export interface LoginResult {
   success: boolean;
   statusCode: number;
   error?: { code: string; message: string };
-  user?: { id: string; username: string; role: string };
+  user?: { id: string; username: string; role: string; branchId: string | null };
   sessionToken?: string;
   sessionExpiresAt?: Date;
 }
@@ -17,8 +17,10 @@ interface UserRow {
   password_hash: string;
   status: string;
   role_name: string;
+  branch_id: string | null;
 }
 
+/** Records successful login and session creation in one transaction; failures record one attempt. */
 export async function login(
   username: string,
   password: string,
@@ -48,9 +50,10 @@ export async function login(
 
   // 2. Fetch user by username
   const user = await queryOne<UserRow>(
-    `SELECT u.user_id, u.username, u.password_hash, u.status, r.role_name
+    `SELECT u.user_id, u.username, u.password_hash, u.status, r.role_name, a.branch_id
      FROM app_user u
      JOIN role r ON u.role_id = r.role_id
+     LEFT JOIN agent a ON a.agent_id = u.user_id
      WHERE u.username = $1`,
     [username]
   );
@@ -107,7 +110,7 @@ export async function login(
       user.user_id,
     ]);
 
-    const { token, expiresAt } = await createSession(user.user_id, ipAddress, userAgent);
+    const { token, cookieExpiresAt } = await createSession(user.user_id, ipAddress, userAgent, tx);
 
     return {
       success: true,
@@ -116,13 +119,15 @@ export async function login(
         id: user.user_id,
         username: user.username,
         role: user.role_name,
+        branchId: user.branch_id,
       },
       sessionToken: token,
-      sessionExpiresAt: expiresAt,
+      sessionExpiresAt: cookieExpiresAt,
     };
   });
 }
 
+/** Revokes a session in one autocommitted update. */
 export async function logout(token: string): Promise<void> {
   await revokeSessionByToken(token);
 }

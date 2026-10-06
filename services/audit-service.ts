@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { type Executor } from '@/lib/db';
 
 const SENSITIVE_KEYS = new Set(['password_hash', 'nic_passport_no', 'token_hash']);
 
@@ -22,10 +22,10 @@ export interface AuditEventParams {
   ipAddress?: string;
 }
 
-/** Write an audit event. Call this from inside a service transaction. */
-export async function writeAuditEvent(params: AuditEventParams): Promise<void> {
+/** Writes an audit event using the caller's required transaction executor. */
+export async function writeAuditEvent(params: AuditEventParams, executor: Executor): Promise<void> {
   const { userId, actorType, entityType, entityId, action, oldValues, newValues, ipAddress } = params;
-  await query(
+  await executor.query(
     `INSERT INTO audit_log
        (user_id, actor_type, entity_type, entity_id, action, old_values, new_values, ip_address)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
