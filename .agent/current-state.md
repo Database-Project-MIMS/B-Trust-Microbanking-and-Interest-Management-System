@@ -1,16 +1,10 @@
 # Current State
 
-**Updated:** 2026-10-06 · **Owner:** M2, PR #36 conflict resolution
+**Updated:** 2026-10-06 · **Owner:** M1, PR #— (feat/p02-m01-rls-audit-scope)
 
 ## Current checkout
 
-feat/p02-m02-customer-registration at 5ef06fd, local pending merge of PR #35's updated
-branch 888b983, which includes dev 2e338a6. PR #35 is not yet merged into dev; the user
-requests PR #35 then PR #36. Nine current documentation conflicts reconciled,
-retaining customer/relation migrations and
-registration/search/profile/validation services plus dev's Phase 1 closeout repairs.
-No assistant commit, push or completed merge. Customer numbering/scope ADR renumbered
-to 0014 to avoid dev's distinct ADR-0013; decision content is unchanged.
+feat/p02-m01-rls-audit-scope at latest. Phase 2 M1 RLS and audit trigger work (T01, T02) is successfully merged with dev. Syntax issues in `0261` have been fixed. 205 tests are passing. T01 and T02 are DONE. T03 remains BLOCKED pending M2/M3 API routes.
 
 Phase 1 is verified; Phase 2 has started. M3's P02-M03-T01 (`account`, migration
 `0240`, `tests/db/account-constraints.test.mjs` 10/10) is DONE alongside M2's customer
