@@ -287,12 +287,21 @@ joint accounts possible (SRS §6.3).
 | `account_holder_id` | uuid | **PK** |
 | `account_id` | uuid | **FK → account** |
 | `customer_id` | uuid | **FK → customer** |
-| `joined_date` | date | |
+| `holder_type` | varchar(20) | `PRIMARY` / `JOINT`, default `PRIMARY` (**G-08**, ADR-0009) |
+| `joined_date` | date | default `CURRENT_DATE` |
+| `created_at` | timestamptz | |
 | — | | **UK (account_id, customer_id)** |
 
 - The composite unique key prevents the same customer being added twice to one account.
-- Approved changes: add `holder_type`; an individual account has exactly one primary
-  holder and a joint account has 2–4 adult holders with a mandate (**G-08**, ADR-0009).
+- Delete: `RESTRICT` on both foreign keys.
+- Indexes: PK; `uq_account_holder_account_customer`; partial unique
+  `uq_account_holder_one_primary (account_id) WHERE holder_type = 'PRIMARY'`;
+  `ix_account_holder_customer (customer_id)`.
+- Implemented in `0241_p02_m03_account_holder.sql` (P02-M03-T02). An account has at most
+  one `PRIMARY` holder; additional holders are `JOINT`.
+- The cross-row rule — a joint account has 2–4 adult holders and a mandate — cannot be a
+  row `CHECK`. It is enforced by `trg_validate_joint_mandate` (P02-M03-T03) and
+  `sp_open_savings_account` (P02-M03-T04), not by this table alone (**G-08**, ADR-0009).
 
 ### `fixed_deposit`
 
