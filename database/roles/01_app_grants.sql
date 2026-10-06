@@ -17,6 +17,9 @@ GRANT SELECT, UPDATE ON savings_plan TO mims_app;
 -- Grants for Member 3 (Nisith) - Accounts (P02-M03-T01)
 GRANT SELECT, INSERT, UPDATE ON account TO mims_app;
 
+-- Grants for Member 1 (Nadija) - Customer (P02-M01-T01). No DELETE; rows limited by RLS (0201).
+GRANT SELECT, INSERT, UPDATE ON customer TO mims_app;
+
 -- Grants for Member 1 (Nadija) - Parameters & Audit
 GRANT SELECT, INSERT, UPDATE ON system_parameter TO mims_app;
 GRANT SELECT, INSERT         ON business_calendar TO mims_app;

@@ -1,32 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { query } from '../../lib/db/index.ts';
+import { query, withTransaction } from '../../lib/db/index.ts';
+import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
   // Fetch existing seeded dependencies to satisfy FKs
   const userRes = await query('SELECT user_id FROM app_user LIMIT 1');
   const channelRes = await query(`SELECT channel_id FROM transaction_channel WHERE channel_name = 'SYSTEM' LIMIT 1`);
-  const accountRes = await query('SELECT account_id FROM account LIMIT 1');
 
   const userId = userRes[0].user_id;
   const channelId = channelRes[0].channel_id;
 
   const ts = Date.now();
-  let accountId;
-
-  if (!accountRes || accountRes.length === 0) {
-    const planRes = await query('SELECT plan_id FROM savings_plan LIMIT 1');
-    const branchRes = await query('SELECT branch_id FROM branch LIMIT 1');
-    const agentRes = await query('SELECT agent_id FROM agent LIMIT 1');
-    const newAcct = await query(`
+  // account is protected by fail-closed RLS (P02-M01): read/insert under an ADMIN context.
+  const accountId = await withTransaction(async (tx) => {
+    await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
+    const existing = await tx.query('SELECT account_id FROM account LIMIT 1');
+    if (existing.rows.length > 0) return existing.rows[0].account_id;
+    const plan = await tx.query('SELECT plan_id FROM savings_plan LIMIT 1');
+    const branch = await tx.query('SELECT branch_id FROM branch LIMIT 1');
+    const agent = await tx.query('SELECT agent_id FROM agent LIMIT 1');
+    const created = await tx.query(`
       INSERT INTO account (account_number, plan_id, branch_id, opened_by_agent_id, current_balance)
       VALUES ($1, $2, $3, $4, 1000.00)
       RETURNING account_id;
-    `, [`ACC-TEST-${ts}`, planRes[0].plan_id, branchRes[0].branch_id, agentRes[0].agent_id]);
-    accountId = newAcct[0].account_id;
-  } else {
-    accountId = accountRes[0].account_id;
-  }
+    `, [`ACC-TEST-${ts}`, plan.rows[0].plan_id, branch.rows[0].branch_id, agent.rows[0].agent_id]);
+    return created.rows[0].account_id;
+  });
 
   let validTxnId;
 

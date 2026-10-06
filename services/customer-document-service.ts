@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { withTransaction } from "@/lib/db";
+import { setRlsContext } from "@/lib/db/rls-context";
 import {
   BusinessRuleError,
   NotAuthorizedError,
@@ -64,10 +65,11 @@ export async function verifyDocument(docId: string, verifierUserId: string): Pro
     if (!verifier) throw new NotAuthorizedError();
 
     // Supply transaction-local identity for M1's upcoming RLS/audit integration.
-    await tx.query(
-      "SELECT set_config('app.current_user_id', $1, true), set_config('app.current_branch_id', $2, true)",
-      [verifierUserId, verifier.branch_id],
-    );
+    await setRlsContext(tx, {
+      userId: verifierUserId,
+      branchId: verifier.branch_id,
+      roleName: verifier.role_name,
+    });
     const documentResult = await tx.query<DocumentRow>(
       `SELECT d.doc_id, d.customer_id, d.verified_by, d.verified_date
          FROM customer_document d JOIN customer c ON c.customer_id = d.customer_id
