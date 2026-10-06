@@ -92,6 +92,45 @@ required fields and timestamps. The card's example schema_migration(version,name
 insert is corrected: the actual runner records filename/checksum. No new identity
 decision is needed; ADR-0007 remains authoritative.
 
+### PR #34 conflict reconciliation — 2026-10-06
+
+The missing closeout files are now committed on `origin/dev` (fad4f13, integrated by
+76701e7/PR #33). Conflict resolution retains that checkpoint/evidence and the implemented
+0220 customer schema. Phase 1 remains 19 DONE; Phase 2 is 3 DONE/2 READY/11 TODO in this
+PR's tree. T02/T03/T04 delivery on later feature branches is not imported here. Earlier
+184-test/65-test evidence is historical; the combined tree is verified separately.
+PR #34 targets the actual integration branch `dev`; generic `develop` examples describe
+the same integration role. No branch rename, new phase approval or financial schema
+decision is introduced. Commit/push/merge remain the user's actions.
+
+### PR #35 conflict reconciliation — 2026-10-06
+
+This feature branch predates dev's Phase 1 closeout (fad4f13, integrated by PR #33 as
+76701e7), causing repeated conflicting status snapshots. Targeted resolution retains
+dev's checkpoint/security/tooling and this branch's implemented 0220/0221/0222 and
+document service. Phase 1 stays 19 DONE; Phase 2 is 5 DONE/1 READY/10 TODO here.
+T04's later implementation remains on its own branch. Old missing-closeout warnings
+are historical. No new phase approval, schema decision or migration edit is introduced.
+PR #35's actual target is dev; generic develop examples describe the same integration role.
+
+The relation-test committing guard recognized only the focused harness database. It
+now also accepts mims_test_closeout exclusively with MIMS_ISOLATED_TEST=1, allowing
+the restored full isolated harness without permitting mims_dev or arbitrary databases.
+A regression verifies accepted isolated names and rejected development/unapproved names.
+Runtime verification still requires M1's scoped grants/RLS. verifyDocument's pre-existing
+FOR SHARE role lock needs narrowing before endpoint exposure; no broad role UPDATE
+grant is added and no business-code change is included in this conflict-resolution task.
+
+### PR #35 refresh after PR #34 merged — 2026-10-06
+
+The PR-specific snapshots above describe the earlier resolutions. PR #34 is merged
+into dev at 2e338a6, while PR #35's earlier resolution is user-committed as 07e878d.
+Their shared status documents diverged during those independent resolutions; nine
+new documentation conflicts are reconciled without a service/migration change.
+T01 is now merged; T02/T03 remain DONE in this PR's tree and T04 READY here.
+Fresh evidence is in the [refresh handoff](handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+Later registration work stays on its branch; no new approval or runtime access claim.
+
 ### PR #36 conflict reconciliation — 2026-10-06
 
 This branch predates dev's Phase 1 closeout (fad4f13/PR #33). Resolve overlapping
@@ -111,6 +150,16 @@ The combined run exposed committed holder-fixture accounts contaminating the lat
 seed minimum check. M2's test now deletes only its tracked fixture account IDs after
 removing the temporary holder table. The rerun passed all 328 tests and the clean
 14-migration rebuild/typecheck/lint/build; seed rules and service logic are unchanged.
+
+### PR #36 refresh for PR #35-then-#36 order — 2026-10-06
+
+The snapshots above describe each earlier resolution. PR #34 is merged into dev
+2e338a6; PR #35's latest resolution 888b983 includes that tip and remains pending
+PR merge. The user orders #35 before #36. PR #36 at 5ef06fd prepares an uncommitted
+merge of 888b983 and reconciles nine overlapping documentation conflicts. Preserve
+T01–T04 DONE/T05 BLOCKED in this tree, both ADR-0013/0014 and the disposable SET ROLE
+harness membership. No new service, migration, runtime grant or phase approval.
+Fresh evidence is in [the dependency handoff](handoffs/p02-m02-t04-pr36-after-pr35.md).
 
 
 ### OQ-05 — Customer login is optional

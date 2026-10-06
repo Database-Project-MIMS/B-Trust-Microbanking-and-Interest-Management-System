@@ -13,7 +13,8 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 **Reconciled 2026-10-06 for PR #36:** Phase 1 T01–T04 and M2 Phase 2 T01–T04 DONE; T05 runtime integration BLOCKED.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs are committed on dev; conflict resolution awaits user commit/push/merge.
+PR #34 is merged into dev. PR #36's refreshed resolution includes PR #35's updated
+branch; the user will merge #35 before #36. Conflict resolution awaits user commit/push.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
@@ -67,6 +68,10 @@ passed 181 selected tests and clean rebuild/typecheck/lint. T05 runtime integrat
 BLOCKED pending M1 scoped grants/RLS/audit work. PR #36's conflict resolution restores
 dev's committed closeout repairs; see the
 [approval condition](../.agent/checkpoints/phase-01-checkpoint.md).
+
+PR #36's earlier resolution was user-committed as 5ef06fd. Its refreshed integration
+with PR #35's 888b983 retains these task rows and the existing ADR/harness fixes;
+fresh verification is in [the dependency handoff](../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
 
 ---
 

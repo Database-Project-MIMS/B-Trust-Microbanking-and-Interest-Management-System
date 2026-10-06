@@ -13,7 +13,9 @@ satisfied.
 **2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
 Phase 2 entry after verification. `DONE` below records verified implementation in the
 local working tree. Closeout was committed as fad4f13 and integrated into dev by
-PR #33 (76701e7). PR #36's conflict resolution preserves user commit/push/merge
+PR #33 (76701e7); PR #34 merged into dev at 2e338a6. PR #36's refreshed resolution
+includes PR #35's latest pushed branch (888b983), preparing the user-requested #35-then-#36
+merge order. PR #35 is not yet merged into dev. Preserve user commit/push/merge
 control; no assistant commit, push or completed merge is authorized. See the
 [approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
@@ -168,9 +170,14 @@ immutable transaction migrations). M2 T01–T04 are technically DONE in this PR'
 0220 customer, 0221 assignment history, 0222 documents/verification and registration,
 search/profile/validation services. Historical focused T04 evidence: 181 tests and
 clean 14-migration rebuild/reapply/verify/typecheck/lint. PR #36 combines this work
-with dev's closeout; fresh verification passed 328 tests with no failures/skips,
+with dev's closeout; its earlier verification passed 328 tests with no failures/skips,
 clean 14-migration rebuild, TypeScript/lint/production build, recorded in the
 [resolution handoff](../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+
+The refresh against PR #35's updated 888b983 includes dev 2e338a6 and keeps T04 DONE;
+fresh verification passed 328 tests and clean 14-migration rebuild/typecheck/lint/build;
+evidence and user publication order are in the
+[dependency handoff](../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
 
 T05 remains BLOCKED pending M1 scoped customer/child grants, RLS and audit coordination.
 Customer screens remain prototypes; M3 account_holder is absent (profile accounts is

@@ -17,6 +17,13 @@ The missing-closeout condition describes the original checkout. PR #36's 2026-10
 conflict resolution restores committed dev closeout repairs. Fresh combined-tree
 evidence is recorded in the [resolution handoff](../../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
 
+**PR #36 refresh:** PR #34 is merged into dev 2e338a6. PR #35's updated branch 888b983
+includes that tip but is not yet merged into dev. The user requests #35 then #36;
+the prepared PR #36 merge includes 888b983 and reconciles the documentation histories,
+retaining T01–T04 DONE/T05 BLOCKED. Scope/fresh verification are in
+[the dependency handoff](../../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
+This changes no application service, numbered migration, runtime grant or phase approval.
+
 ## Goal
 
 Customers can be registered and assigned to agents; individual and joint accounts can be

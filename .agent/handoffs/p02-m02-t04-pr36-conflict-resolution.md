@@ -64,3 +64,12 @@ current state. Final review includes tests/rebuild/typecheck/lint/build and inde
 User commits the pending local merge, pushes the feature and merges PR #36 into dev.
 The assistant creates no commit, push or completed merge. Suggested message:
 P02-M02-T04: resolve dev conflicts and reconcile registration integration.
+
+## Follow-up for PR #35-then-#36 order — 2026-10-06
+
+The user committed this earlier resolution as 5ef06fd. PR #35 now has pushed resolution
+888b983, including dev 2e338a6, and remains pending merge. Current reconciliation for
+the user's #35-then-#36 order is in
+[the dependency handoff](p02-m02-t04-pr36-after-pr35.md).
+The ADR index, disposable harness membership, fixture cleanup and application work
+described above are retained unchanged; this follow-up changes documentation only.
