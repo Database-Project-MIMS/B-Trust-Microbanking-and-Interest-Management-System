@@ -264,8 +264,8 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
       customer_id uuid NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT,
       joined_date date NOT NULL DEFAULT CURRENT_DATE,
       created_at timestamptz NOT NULL DEFAULT now(), UNIQUE (account_id, customer_id))`);
+    const accounts = [];
     try {
-      const accounts = [];
       for (const branchId of [fixture.branchId, fixture.otherBranchId]) {
         const result = await client.query(
           `INSERT INTO account (plan_id, branch_id, opened_by_agent_id, account_number, current_balance)
@@ -283,7 +283,10 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
       const wide = await getCustomerProfile(created.customerId, await bankWide());
       assert.equal(wide.accounts.length, 2);
       assert.ok(wide.accounts.every(account => typeof account.currentBalance === 'string'));
-    } finally { await client.query('DROP TABLE account_holder'); }
+    } finally {
+      await client.query('DROP TABLE account_holder');
+      await client.query('DELETE FROM account WHERE account_id = ANY($1::uuid[])', [accounts]);
+    }
   });
   test('application role executes services with narrow synthetic customer grants and read-only roles', async () => {
     // Test-only grants in the disposable cluster. Production grants/RLS remain M1 work.

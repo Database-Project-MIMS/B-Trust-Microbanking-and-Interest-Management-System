@@ -1,24 +1,29 @@
 # Member 4 — context
 
-Full slice description and copy-paste session prompt:
-`../../docs/member-prompts/member-4.md`
+**Updated:** 2026-10-05, authorized Phase 1 closeout.
+Slice: [member prompt](../../docs/member-prompts/member-4.md).
 
-This file is the **running log** — updated by Member 4 via `/remember save` at the end
-of a session, read at the start of the next one. Empty until Phase 1 work begins.
+## Current state
 
-## Current task
+P01-M04-T01–T04 are verified DONE: hardened data access (I-2), transaction channels
+0160, migration/rebuild proof and authenticated health. P02-M04-T01 immutable
+transaction schema 0260 is also verified DONE. Earlier documentation was stale.
 
-*(none started — Phase 0)*
+## Closeout repairs
 
-## Recent history
+Exact migration filenames/checksums are verified, with atomic DDL/ledger writes.
+Tests use disposable databases and copied migration fixtures. Health uses real
+sessions and a service; infrastructure details/page require ADMIN/CENTRAL_OPS.
+Mapped SQLSTATE uses lowercase sqlstate. See ADR-0013 and the closeout handoff.
 
-*(empty)*
+## Next work and dependencies
 
-## Notes to self
+Phase 3 is not approved. Posting/reference/transfer work waits for Phase 2 exit,
+OQ-12 transfer typing and OQ-14 lecturer scope acceptance. ADR-0010 accepts linked
+transfer legs; do not use the stale no-transfer assumption.
 
-*(empty)*
+## Publication
 
-## Blocked on
-
-*(nothing yet — check `../open-questions.md` and the integration points in
-`../handoffs/README.md` once Phase 1 starts)*
+Original ownership retained. Closeout edits are uncommitted; the user controls
+commits, merges and PR creation.
+Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).

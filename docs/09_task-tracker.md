@@ -10,6 +10,13 @@
 work. A task is `DONE` only when every item in the AGENTS.md §16 Definition of Done is
 satisfied.
 
+**2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
+Phase 2 entry after verification. `DONE` below records verified implementation in the
+local working tree. Closeout was committed as fad4f13 and integrated into dev by
+PR #33 (76701e7). PR #36's conflict resolution preserves user commit/push/merge
+control; no assistant commit, push or completed merge is authorized. See the
+[approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+
 ---
 
 ## Status summary
@@ -17,13 +24,13 @@ satisfied.
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 19 | 0 | 5 | 0 | 0 | 0 | 14 |
-| P2 | 16 | 10 | 0 | 0 | 1 | 0 | 5 |
+| P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
+| P2 | 16 | 9 | 0 | 0 | 1 | 0 | 6 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **66** | **5** | **0** | **1** | 0 | **25** |
+| **All** | **97** | **65** | **0** | **0** | **1** | 0 | **31** |
 
 ---
 
@@ -42,8 +49,9 @@ satisfied.
 
 ## Phase 1 — Foundation, Master Data & Security
 
-Phase 1 work is in progress. API and UI portions depend on the published integration
-points where noted.
+Phase 1 is complete and its exit checkpoint approved on 2026-10-05. All 19 task
+implementations are verified by 184 passing tests, clean rebuild, typecheck, lint and
+production build. I-1, I-2 and I-8 are available.
 
 ### Member 1 — Identity & Security
 
@@ -94,7 +102,7 @@ points where noted.
 | **Docs** | `11_ui-rules.md`; **run `/imprint`** — first entries in `ui-registry.md` (App Shell, Sign-in Card, Button, Form Field) |
 | **Depends on** | P01-M01-T02 |
 | **Acceptance** | Nav shows only permitted sections **and** the server still authorizes every request; matches the tokens in `ui-registry.md` |
-| **Status / Branch** | READY · `feat/p01-m01-app-shell` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-app-shell` · verified at Phase 1 closeout |
 
 | Field | P01-M01-T05 |
 |---|---|
@@ -106,7 +114,7 @@ points where noted.
 | **Docs** | `07_business-rules.md` — where BR-08 is enforced |
 | **Depends on** | P01-M01-T01; ERD gap **G-15**, **G-22** approved |
 | **Acceptance** | Business hours and withdrawal limits are readable as data, not constants in code |
-| **Status / Branch** | READY · `feat/p01-m01-parameters-audit` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-parameters-audit` · verified at Phase 1 closeout |
 
 ### Member 2 — Organisation
 
@@ -136,9 +144,9 @@ hardcoded in TypeScript.
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
 | **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | DONE |
-| **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | READY |
-| **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs` | — | Rebuild from empty succeeds; **editing an applied migration is rejected**; `npm run db:verify` passes | T02 | READY |
-| **P01-M04-T04** | Database health page | — | Extend `/api/health` with pool stats (authenticated) | `app/admin/health/page.tsx` | Unauthenticated request gets no internal detail | T01, **I-1** | READY |
+| **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | DONE |
+| **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs`; isolated verification harness | — | Clean rebuild, checksum/pending/missing-file rejection, failed-DDL rollback and verification pass | T02 | DONE |
+| **P01-M04-T04** | Database health page | — | Validated session; ADMIN/CENTRAL_OPS infrastructure details through service | `app/admin/health/page.tsx` | Forged, missing, expired and revoked sessions denied; safe DB failure | T01, **I-1** | DONE |
 
 ### Member 5 — FD products & seed framework
 
@@ -150,68 +158,48 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, customer schema authorized)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, entry approved)
 
 **Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
-Vibodha approved Phase 2 entry earlier in this chat and requested P02-M02-T01.
-See the [historical approval record](../.agent/checkpoints/phase-01-checkpoint.md)
-for the current checkout's missing closeout-change condition.
+The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
 
-**P02-M02-T01 status:** DONE (technical implementation verified locally) on
-`feat/p02-m02-customer-schema`. Migration 0220 and 27 customer tests are complete;
-65 selected DB/API/workflow tests, clean rebuild, typecheck and lint pass.
-The schema task is DB-only; API/UI/registration remain later tasks. No commit/merge/PR
-is authorized. Team review/publication remains pending under that explicit instruction.
-Other member statuses are retained from this checkout's baseline; its Phase 1 summary
-was corrected to match its 14 DONE/5 READY rows, without recertifying missing closeout fixes.
+**Progress:** P02-M03-T01 and P02-M04-T01 are DONE (`0240` account and `0260`
+immutable transaction migrations). M2 T01–T04 are technically DONE in this PR's tree:
+0220 customer, 0221 assignment history, 0222 documents/verification and registration,
+search/profile/validation services. Historical focused T04 evidence: 181 tests and
+clean 14-migration rebuild/reapply/verify/typecheck/lint. PR #36 combines this work
+with dev's closeout; fresh verification passed 328 tests with no failures/skips,
+clean 14-migration rebuild, TypeScript/lint/production build, recorded in the
+[resolution handoff](../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
 
-**P02-M02-T02/T03 statuses:** DONE (technical implementation verified locally) on
-`feat/p02-m02-customer-agent-document`: 0221/0222, assignment/document constraints,
-transactional verification service and minimal audit; 134 selected tests pass with
-clean 14-migration rebuild/reapply/verify, typecheck/lint. Team review/PR/merge remain
-pending under the user's no-publication instruction. No customer endpoint/UI is added.
-See [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
+T05 remains BLOCKED pending M1 scoped customer/child grants, RLS and audit coordination.
+Customer screens remain prototypes; M3 account_holder is absent (profile accounts is
+null until available). No customer endpoint/UI was delivered by T04. ADR-0014 now records
+customer numbering/scope, avoiding dev's distinct ADR-0013. User controls publication.
 
-**P02-M02-T04 status:** DONE (technical service implementation verified locally) on
-`feat/p02-m02-customer-registration`. Registration, scoped search/profile reads,
-strict validation, masking and same-transaction minimal audit are implemented.
-181 selected tests pass (47 new service/DB tests plus 134 regressions); clean
-14-migration rebuild/reapply/verify, typecheck and lint pass. No new migration is
-required by this service-only task. `/review` is recorded in the
-[T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
-Publication/team review remain pending under the user's no-commit/merge/PR instruction.
-
-**P02-M02-T05 status:** BLOCKED for runtime API/screen integration pending M1's scoped
-customer/child grants, RLS and audit coordination. Services are available for controller
-work, but runtime integration cannot pass without these. Actual customer screens are
-prototypes in `components/mims/workflow-screen.tsx`, not completed dashboard bindings.
-M3's `account_holder` is absent: profile `accounts` is null until that contract lands.
-Other members' statuses are retained; current verification does not recertify Phase 1.
-
-**Progress:** P02-M03-T01 DONE (`0240_p02_m03_account.sql`, branch `feat/p02-m03-account-schema`).
-
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 |
-| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05 |
-| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 |
-| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 |
-| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
-| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
-| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 |
-| P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration |
-| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved |
-| P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved |
-| P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 |
-| P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** |
-| P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 |
-| P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 |
-| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 |
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | TODO |
+| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | TODO |
+| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
+| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
+| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
+| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
+| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
+| P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | BLOCKED |
+| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
+| P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 | TODO |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved | TODO |
+| P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 | TODO |
+| P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** | TODO |
+| P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 | TODO |
+| P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
+| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 3 joint accounts | DB | P02-M03-T04, P01-M05-T03 | TODO |
 
 ## Phase 3 — Financial Transactions (14 tasks, TODO)
 
-**Gate:** OQ-08 (G-05 reference-number uniqueness) resolved before `P03-M04-T01`.
+**Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
+OQ-08 was resolved by ADR-0010; it is not an open blocker.
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
@@ -232,7 +220,8 @@ Other members' statuses are retained; current verification does not recertify Ph
 
 ## Phase 4 — Fixed Deposits & Interest (14 tasks, TODO)
 
-**Gates:** OQ-01 (G-01 one active FD) and OQ-04 (G-12 savings interest) resolved first.
+**Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
+OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
@@ -295,10 +284,9 @@ Other members' statuses are retained; current verification does not recertify Ph
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
-| P02-M02-T05 | Scoped customer/child runtime grants, RLS and audit integration; see T04 handoff | M1 security implementation; M2 integration |
-| P03-M04-T01 | **OQ-08** — reference-number uniqueness / transfers (G-05) | Team |
-| P04-M05-T01 | **OQ-01** — one active FD vs one FD ever (G-01) | Team |
-| P04-M05-T04, P05-M05-T02 | **OQ-04** — savings-account interest in scope? (G-12) | **Lecturer** |
+| P02-M02-T05 | Scoped customer/child grants, RLS and audit integration; see T04 handoff | M1 security; M2 API/screen integration |
+| Phase 3 transaction work | **OQ-12**, **OQ-14** — transfer typing and lecturer scope acceptance | Team / Lecturer |
+| Phase 4 interest work | **OQ-13**, **OQ-14** — mid-cycle interest and scope acceptance | Team / Lecturer |
 
-These remaining decisions are high-priority integration items. Everything in
-Phase 1 can proceed in parallel while they are being settled.
+These future-phase decisions do not block P02-M02-T01. OQ-11 is needed before optional
+customer login provisioning/UI, rather than before the independent customer schema.

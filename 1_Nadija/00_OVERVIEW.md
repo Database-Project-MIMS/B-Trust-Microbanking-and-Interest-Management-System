@@ -8,13 +8,17 @@
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-05:** Phase 1 T01–T05 verified DONE. Phase 2 RLS/audit work waits for the customer table.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout repairs remain uncommitted under the user publication constraint.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~~3~~ |
 | ~~02~~ | ~~[Authentication](02_P1-T02_authentication.md)~~ | ~~P1~~ | ~~T02~~ | ~~Password hashing, login/logout APIs, session management~~ | ~~~3~~ |
 | ~~03~~ | ~~[RBAC & Scope](03_P1-T03_rbac-branch-scope-csrf.md)~~ | ~~P1~~ | ~~T03~~ | ~~`requireRole()`, `branchScope()`, CSRF ⚡ **CRITICAL PATH**~~ | ~~~3~~ |
 | ~~04~~ | ~~[Sign-in & Shell](04_P1-T04_sign-in-app-shell.md)~~ | ~~P1~~ | ~~T04~~ | ~~Sign-in page, app shell, role-aware nav~~ | ~~~2~~ |
-| 05 | [Params & Audit](05_P1-T05_parameters-audit.md) | P1 | T05 | `system_parameter`, `business_calendar`, `audit_log`, triggers | ~2 |
+| ~~05~~ | ~~[Params & Audit](05_P1-T05_parameters-audit.md)~~ | ~~P1~~ | ~~T05~~ | ~~`system_parameter`, `business_calendar`, `audit_log`, triggers~~ | ~~~2~~ |
 | 06 | [RLS & Scope](06_P2_rls-audit-branchscope.md) | P2 | T01–T03 | Row Level Security, audit coverage, branch scope on routes | ~6 |
 | 07 | [Hours & Reversals](07_P3_business-hours-reversal-audit.md) | P3 | T01–T03 | Business hours enforcement, reversal auth, financial audit | ~8 |
 | 08 | [Worker Auth](08_P4_worker-auth-cycle-config.md) | P4 | T01–T02 | Interest run auth, cycle configuration | ~6 |

@@ -51,7 +51,7 @@ export async function registerCustomer(input: RegisterCustomerInput, actor: Auth
 Implemented signatures in `services/customer-service.ts` use authenticated actor
 context and strict schemas from `lib/validation/customer.ts`. Audit includes only
 customer number, branch, agent and document count, not the full customer object.
-Customer numbering follows ADR-0013. Registration documents start unverified and
+Customer numbering follows ADR-0014. Registration documents start unverified and
 may be empty; required verified documentation belongs to M3 account opening.
 
 Also implement the search and detail reads:

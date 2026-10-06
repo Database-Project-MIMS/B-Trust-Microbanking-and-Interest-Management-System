@@ -29,3 +29,5 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | ADR-0010 | Transfers are in scope, linked by `transfer_group_id`        | Accepted |
 | ADR-0011 | One active fixed deposit per savings account                 | Accepted |
 | ADR-0012 | Savings accounts earn interest, on average daily balance     | Accepted |
+| [ADR-0013](ADR-0013-phase-one-closeout-verification.md) | Isolated verification, restricted health details and transaction-safe sessions | Accepted |
+| [ADR-0014](ADR-0014-customer-service-numbering-and-scope.md) | Customer numbering, scoped registration and masked reads; renumbered from conflicting 0013 | M2 implementation decision within authorized T04; team review pending |

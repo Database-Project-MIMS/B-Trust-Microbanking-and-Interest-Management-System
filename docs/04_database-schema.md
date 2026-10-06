@@ -1,6 +1,8 @@
 # 04 — Database Schema
 
-**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 0 — documented, not yet built.
+**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 1 implemented and verified;
+Phase 2 entry approved 2026-10-05. Account and transaction schemas also exist (`0240`,
+`0260`); customer/holder/mandate and later financial features remain planned.
 
 This document has two clearly separated parts:
 
@@ -241,6 +243,10 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 
 ### `transaction_channel`
 
+Implemented by immutable migration `0160_p01_m04_transaction_channel.sql`, verified
+at Phase 1 closeout. `channel_name` is NOT NULL/UNIQUE; status defaults to `ACTIVE`
+and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
+
 | Column | Type | Notes |
 |---|---|---|
 | `channel_id` | uuid | **PK** |
@@ -436,7 +442,7 @@ customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
 | `customer_id` | uuid | PK, defaults to gen_random_uuid(); independent of login |
 | `app_user_id` | uuid | NULL, UNIQUE, FK to app_user(user_id), ON DELETE RESTRICT |
 | `branch_id` | uuid | NOT NULL, FK to branch, ON DELETE RESTRICT |
-| `customer_number` | varchar(30) | NOT NULL, UNIQUE; T04 assigns CUS- plus 24 uppercase random hex digits (ADR-0013) |
+| `customer_number` | varchar(30) | NOT NULL, UNIQUE; T04 assigns CUS- plus 24 uppercase random hex digits (ADR-0014) |
 | `nic_passport_no` | varchar(50) | NOT NULL, UNIQUE |
 | `full_name` | varchar(150) | NOT NULL |
 | `date_of_birth` | date | NOT NULL, CHECK before CURRENT_DATE |

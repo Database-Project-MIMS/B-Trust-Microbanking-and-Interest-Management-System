@@ -1,6 +1,9 @@
-# ADR-0013 — Customer service numbering and scope
+# ADR-0014 — Customer service numbering and scope
 
 2026-10-05 · M2 implementation decision within authorized P02-M02-T04
+
+Renumbered on 2026-10-06 during PR #36 conflict resolution: dev already uses
+ADR-0013 for Phase 1 closeout. This decision's content/authority remain unchanged.
 
 Customer schema already requires a unique varchar(30) customer_number but specifies no
 sequential format. Use CUS- plus 24 uppercase random hexadecimal characters (28 total),

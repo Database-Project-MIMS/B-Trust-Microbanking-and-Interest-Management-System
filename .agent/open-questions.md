@@ -20,7 +20,7 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
   Migration recording follows actual filename/checksum runner, not card version/name SQL.
 - docs/15's permission matrix permits ADMIN registration while docs/05 and the specific
   M2 task card list AGENT/BRANCH_MANAGER. T03 verification and T04 registration follow
-  the narrower mutation contract and deny ADMIN (ADR-0013). M1 should reconcile before exposure.
+  the narrower mutation contract and deny ADMIN (ADR-0014). M1 should reconcile before exposure.
 - Tracker T05 describes frontend work; the specific 06 task card describes API integration
   with prebuilt dashboard screens. Inspection found prototypes in
   components/mims/workflow-screen.tsx, not completed dashboard customer bindings. T04
@@ -57,10 +57,31 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Resolved
 
+### Documentation/status contradictions — 2026-10-05 closeout
+
+The user authorized resolving checks, reconciling statuses and recording approval.
+The old AGENTS header/memory/member stubs still described Phase 0; the Phase 1
+document counted 18 tasks although the tracker lists 19; five tracker READY rows
+were already implemented (its summary incorrectly counted six). Member 4's channel,
+runner/health and Phase 2 transaction code existed despite stale statuses.
+
+Resolved from 184 passing tests, clean rebuild and verified migration inventory:
+Phase 1's 19 implementations are DONE locally; Phase 2 entry is approved by Vibodha;
+account and transaction schema tasks are DONE; customer schema was READY at closeout. The checkpoint
+explicitly preserves user-controlled publication and does not claim lecturer approval.
+The more specific tracker/phase evidence now overrides the obsolete headers.
+
+Implicit dependencies were made explicit: customer/account audit coverage needs those
+tables, and registration needs both assignment and document tables. Full seed work uses
+the phase/seed specification's 3 joint accounts rather than the stale tracker count of 2.
+The old OQ-01/04/08 blocked register and Member 4 overview no-transfer reminder were
+reconciled with ADR-0010/0011/0012; OQ-12/13/14 remain unresolved future-phase gates.
+No new financial schema decision or migration was introduced.
+
 ### P02-M02-T01 source/documentation reconciliation — 2026-10-05
 
 The user approved Phase 2 entry earlier in this conversation and explicitly requested
-customer-schema implementation. The clean checkout at 3fe8689 still has older TODO/
+customer-schema implementation. The clean checkout at 3fe8689 had older TODO/
 Phase 0 headers and no earlier uncommitted closeout files. The restored historical
 checkpoint records approval without claiming those absent repairs are integrated.
 This task proceeds under the user's retained authorization; other task statuses are
@@ -70,6 +91,26 @@ Part B.4 is expanded to match the approved task card's customer_number, lifecycl
 required fields and timestamps. The card's example schema_migration(version,name)
 insert is corrected: the actual runner records filename/checksum. No new identity
 decision is needed; ADR-0007 remains authoritative.
+
+### PR #36 conflict reconciliation — 2026-10-06
+
+This branch predates dev's Phase 1 closeout (fad4f13/PR #33). Resolve overlapping
+status histories while retaining both implementations: Phase 1 19 DONE, Phase 2
+6 DONE/1 BLOCKED/9 TODO in this PR's tree. T01–T04 are delivered; T05 still needs M1
+scoped grants/RLS/audit and real screen binding. Old missing-closeout conditions are
+historical; no new phase approval or migration/schema decision is introduced.
+
+Two different records used ADR-0013. Preserve dev's closeout record; renumber the M2
+customer numbering/scope record to ADR-0014 and update its references without altering
+the decision. Test integration retains disposable-only fixture restrictions and supplies
+mims_app membership to the disposable owner only in the fresh cluster bootstrap, never
+owner membership to the application role. Runtime grants/RLS are unchanged. Target is
+actual dev; generic develop examples refer to the same integration role.
+
+The combined run exposed committed holder-fixture accounts contaminating the later
+seed minimum check. M2's test now deletes only its tracked fixture account IDs after
+removing the temporary holder table. The rerun passed all 328 tests and the clean
+14-migration rebuild/typecheck/lint/build; seed rules and service logic are unchanged.
 
 
 ### OQ-05 — Customer login is optional

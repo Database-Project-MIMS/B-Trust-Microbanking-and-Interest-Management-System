@@ -136,6 +136,22 @@ oracle.
 - Sign-out and password reset set `revoked_at`, which makes invalidation immediate and real
   (FR-AUTH-04).
 
+## Phase 1 verified boundaries — 2026-10-05
+
+`validateSession()` refreshes the inactivity deadline in SQL, capped by the configured
+absolute timeout. Expired/revoked sessions and inactive users/roles/profiles are denied.
+Session creation runs on the authentication service's transaction executor; the browser
+cookie uses the absolute deadline so it can outlive a refreshed inactivity window.
+
+Login requires JSON and rejects a supplied cross-origin `Origin`; authenticated mutations
+require matching 64-character hexadecimal CSRF cookie/header tokens. Login returns
+`branchId`; real request/SQL tests prove cross-branch denials. Health validates
+`mims_session`, returns basic status to authenticated roles and restricts infrastructure
+details/page to ADMIN/CENTRAL_OPS. Parameter APIs and page are ADMIN-only, with
+validated, CSRF-protected, locked and audited edits. Pages authorize before loading data.
+
+RLS remains Phase 2 work; Phase 1 SQL branch-scope tests do not claim RLS is delivered.
+
 ## SQL injection defence
 
 Two rules, and they are absolute:

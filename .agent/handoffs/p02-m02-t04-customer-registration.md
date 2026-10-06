@@ -20,7 +20,7 @@ One withTransaction writes customer, every document, one active assignment and m
 audit. AGENT registers for self; BRANCH_MANAGER chooses an active ordinary AGENT in
 its branch. Active staff/user/branch rows are locked and scope checked before writing.
 Numbers are CUS- plus 24 uppercase random hex digits; UNIQUE remains authoritative
-(ADR-0013). Duplicate identity/email use safe typed 409 errors. Audit includes customer
+(ADR-0014). Duplicate identity/email use safe typed 409 errors. Audit includes customer
 number, branch, assigned agent and document count; no identity/contact/path content.
 The existing pooled audit helper is not used, preserving rollback atomicity.
 
@@ -101,3 +101,14 @@ Technical task status is DONE locally under the existing publication exception.
 User review, commit, PR and merge remain pending and user-controlled. No assistant
 commit, push, merge or PR was performed. Historical Phase 2 entry approval is retained;
 these focused checks do not recertify missing Phase 1 closeout repairs or approve exit.
+
+## PR #36 integration follow-up — 2026-10-06
+
+The missing-closeout warning above describes the original focused run. Dev's committed
+Phase 1 repairs are restored by the pending local merge of 76701e7. Combined verification
+now passes 328 tests with no failures/skips, a clean 14-migration rebuild, TypeScript,
+lint and production build. Customer decision is renumbered ADR-0014 to preserve dev's
+distinct ADR-0013. Fixture isolation and disposable role membership repairs are detailed
+in [the conflict-resolution handoff](p02-m02-t04-pr36-conflict-resolution.md).
+Application services/migrations are unchanged; T05 and other runtime limitations remain.
+The user still controls commit, push and merge; no later phase approval is inferred.

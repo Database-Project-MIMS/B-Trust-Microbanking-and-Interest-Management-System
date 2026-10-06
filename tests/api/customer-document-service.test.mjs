@@ -23,6 +23,24 @@ describe('P02-M02-T03: verification service and concurrent relation writes', () 
   });
   after(async () => { client?.release(); await pool.end(); });
 
+  test('committing fixture guard accepts the isolated full harness and still rejects development databases', async () => {
+    const original = process.env.MIMS_ISOLATED_TEST;
+    const connection = name => ({ query: async () => ({ rows: [{ name }] }) });
+    try {
+      delete process.env.MIMS_ISOLATED_TEST;
+      await requireDisposableDatabase(connection('mims_test_customer_schema'));
+      await assert.rejects(() => requireDisposableDatabase(connection('mims_test_closeout')));
+      process.env.MIMS_ISOLATED_TEST = '1';
+      await requireDisposableDatabase(connection('mims_test_closeout'));
+      for (const name of ['mims_dev', 'postgres', 'mims_test_unapproved']) {
+        await assert.rejects(() => requireDisposableDatabase(connection(name)));
+      }
+    } finally {
+      if (original === undefined) delete process.env.MIMS_ISOLATED_TEST;
+      else process.env.MIMS_ISOLATED_TEST = original;
+    }
+  });
+
   async function auditRows() {
     return (await client.query(
       'SELECT user_id, actor_type, entity_type, entity_id, action, old_values, new_values FROM audit_log WHERE entity_id = $1',

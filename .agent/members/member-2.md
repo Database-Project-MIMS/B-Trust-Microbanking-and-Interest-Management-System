@@ -1,24 +1,20 @@
 # Member 2 — context
 
-**Updated:** 2026-10-05 · [slice](../../docs/member-prompts/member-2.md)
+**Updated:** 2026-10-06 · [slice](../../docs/member-prompts/member-2.md)
 
-P02-M02-T04 technical service implementation is complete locally on
-feat/p02-m02-customer-registration. Atomic registration, active/scope checks, strict
-validation, numbering, same-transaction minimal audit, scoped search/profile and staff
-identity masking are delivered. No new migration/HTTP endpoint/UI change.
-[Contract and /review](../handoffs/p02-m02-t04-customer-registration.md).
+PR #36 conflicts reconciled on feat/p02-m02-customer-registration, preserving
+0220/0221/0222 and registration/search/profile/validation plus dev closeout fixes.
+Historical focused T04: 181 tests and clean rebuild/checks. Fresh combined verification:
+328 tests, 0 failures/skips, clean 14-migration rebuild, TypeScript/lint/production build.
+[Resolution handoff](../handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+Customer ADR is now 0014, preserving dev's separate 0013 and the original decisions.
 
-181 selected tests pass: 43 new service + 4 new DB + 134 regressions. All 14 migrations
-rebuild/reapply/verify; typecheck/lint pass in a removed disposable PostgreSQL cluster.
-Normal DB verifies read-only. Temporary app-role grants and a synthetic holder fixture
-are test-only, not production RLS or M3 certification.
+This PR: Phase 1 19 DONE; Phase 2 6 DONE/1 BLOCKED/9 TODO. M2 T01–T04 DONE; T05
+requires M1 grants/RLS/audit and actual API/screen integration. Holder relation absent;
+accounts null. Owner tests do not certify production RLS. Existing T03 verifier role
+lock still needs narrowing before exposure; no application grant was widened.
 
-T05 runtime integration is BLOCKED pending M1 scoped grants/RLS/audit coordination.
-Screens are prototypes in components/mims/workflow-screen.tsx. Profile accounts is null
-until M3 account_holder lands. T03 verifier still locks read-only role FOR SHARE; narrow
-that lock before exposing it, without granting role UPDATE. T04 already avoids it.
-
-User committed T01–T03 before this branch. Current T04 changes are uncommitted;
-assistant commits/merges/PRs remain prohibited. Historical Phase 2 entry approval persists;
-missing Phase 1 closeout changes and full phase exit are not recertified. All five overview
-tables reviewed; M2 row 06 strikes only T04. /imprint not applicable; no UI change.
+Disposable full harness integration retains fixture safety and supports SET ROLE
+without granting owner privileges to mims_app. Ownership notes precede M4 harness and
+M1 EOF-only cleanup. No migration/service logic change. Phase 2 entry approval persists;
+no later approval. User controls commit/push/merge; local merge pending, no new UI.

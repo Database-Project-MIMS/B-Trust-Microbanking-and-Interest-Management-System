@@ -1,6 +1,6 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** IN_PROGRESS · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
+**Status:** IN_PROGRESS — 6 DONE, 1 BLOCKED, 9 TODO · **Tasks:** 16 · **Effort:** 47 points
 
 **2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
 recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
@@ -13,8 +13,9 @@ pass. T05 runtime API/screen integration is BLOCKED pending M1 scoped grants/RLS
 coordination; M3 account_holder is also absent. The registration transaction, duplicate
 rollback and assignment-at-commit are proven at service level; runtime demonstration
 and full phase exit criteria remain incomplete. No new phase approval is inferred.
-The earlier closeout edits
-are absent from this checkout, so no renewed Phase 1 certification is claimed here.
+The missing-closeout condition describes the original checkout. PR #36's 2026-10-06
+conflict resolution restores committed dev closeout repairs. Fresh combined-tree
+evidence is recorded in the [resolution handoff](../../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
 
 ## Goal
 
@@ -23,7 +24,7 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Entry criteria
 
-- [ ] Phase 1 exit criteria met
+- [x] Phase 1 exit criteria met and entry approved by Vibodha
 - [x] **OQ-05 resolved** (G-20, ADR-0007) — customers use an independent primary key
       and may optionally link to an application login.
 - [x] G-06 approved by ADR-0008 — `account.branch_id` is stored at opening
@@ -60,7 +61,7 @@ opened with eligibility and mandate rules enforced by the database.
 - [ ] 1-holder and 5-holder joint accounts are both rejected by the trigger
 - [ ] An opening amount below the plan minimum is rejected
 - [ ] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
-- [ ] Posted `transaction` rows reject `UPDATE` and `DELETE`
+- [x] Posted `transaction` rows reject `UPDATE` and `DELETE`
 - [ ] Seed loads 18 customers, 22 accounts including 3 joint
 
 ## Risks

@@ -106,6 +106,13 @@ describe("T03: RBAC, Branch Scope & CSRF Tests", () => {
   });
 
   // 6. Bank-wide role sees all branches (null scope)
+  test("5d. malformed matching hex tokens cannot bypass CSRF", () => {
+    for (const token of ["not-hex", "aa", "00".repeat(32) + "invalid"]) {
+      assert.throws(() => verifyCsrf(mockCsrfRequest({ cookieToken: token, headerToken: token })),
+        (error) => error.status === 403);
+    }
+    assert.doesNotThrow(() => verifyCsrf(mockCsrfRequest({ cookieToken: "aa".repeat(32), headerToken: "aa".repeat(32) })));
+  });
   test("6a. branchScope returns null for ADMIN (bank-wide access)", () => {
     assert.equal(branchScope(makeUser("ADMIN")).branchId, null);
   });
