@@ -2,20 +2,24 @@
 
 **Updated:** 2026-10-06 · [slice](../../docs/member-prompts/member-2.md)
 
-PR #34 customer-schema conflicts with origin/dev are resolved on
-feat/p02-m02-customer-schema. Preserve implemented 0220, 27 customer tests and the
-customer handoff alongside dev's Phase 1 closeout/security/tooling repairs.
-Initial T01 focused result: 65 tests pass, clean 12-migration rebuild/typecheck/lint.
-Combined-tree verification passed: 211 tests (26 suites), zero failures/skips, clean
-12-migration rebuild, typecheck, lint and production build in a removed disposable cluster.
-See the [resolution handoff](../handoffs/p02-m02-t01-pr34-conflict-resolution.md).
+PR #35 refresh at 07e878d against dev 2e338a6 (PR #34 merged) retains 0220/0221/0222,
+document verification/atomic audit and tests alongside dev's Phase 1 closeout repairs.
+Historical focused result: 134 tests and clean 14-migration rebuild/reapply/verify/checks.
+Earlier combined-tree validation passed: 281 tests (29 suites), zero failures/skips, clean
+14-migration rebuild, typecheck/lint/production build; disposable cluster removed.
+The committing-fixture guard now supports
+the full isolated harness with explicit isolation marker; development remains denied.
+[Resolution handoff](../handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
+Fresh refresh verification passed 281 tests (29 suites), 0 failures/skips, clean
+14-migration rebuild, TypeScript/lint/production build; recorded in
+[the refresh handoff](../handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+All nine new conflicts are documentation-only; existing service/tests are retained.
 
-Phase 1's 19 tasks remain DONE; this PR's Phase 2 tree has 3 DONE/2 READY/11 TODO.
-P02-M02-T01 is DONE; T02/T03 are READY here. Their later delivery and T04 registration
-remain on separate branches. No customer route/UI or scoped RLS was added by T01.
-M1 runtime grants/RLS/audit and M3 holders/mandates/opening remain pending.
+Phase 1 19 DONE; this PR's Phase 2 5 DONE/1 READY/10 TODO. T01/T02/T03 DONE, T04 READY
+in this tree; later registration delivery stays on its own branch. No customer route/UI
+added. M1 runtime grants/RLS/audit and M3 holders/opening remain pending. Document
+verifier's pre-existing read-only role lock still requires narrowing before exposure.
 
-The missing closeout condition was historical: the repairs now exist in origin/dev.
-Phase 2 entry approval persists; Phase 2 exit/Phase 3 approval is not inferred.
-User controls commit/push/merge; no assistant commit or completed merge. Local merge
-is pending with automatic commits disabled. No UI created or imprint required.
+Phase 2 entry approval persists; restored closeout repairs make old missing-file notes
+historical. No later approval. User controls commit/push/merge; local merge is pending
+with commits disabled. No assistant commit or completed merge; no new UI/imprint.

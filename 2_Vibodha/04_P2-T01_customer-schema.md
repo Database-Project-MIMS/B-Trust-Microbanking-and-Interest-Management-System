@@ -1,6 +1,6 @@
 # 🟢 Phase 2 — Task 01: Customer Schema
 **Task ID:** `P02-M02-T01` · **Branch:** `feat/p02-m02-customer-schema`
-**Migration:** `0220_p02_m02_customer.sql` · **Status:** DONE — verified; PR #34 open, user-controlled merge pending
+**Migration:** `0220_p02_m02_customer.sql` · **Status:** DONE — PR #34 merged into dev; retained in PR #35
 **Depends on:** ADR-0007 (G-20 resolved), `P01-M02-T02` (`agent`)
 **Story Points:** ~4 · **Layer:** Database only
 
@@ -10,8 +10,9 @@
 
 OQ-05 was resolved on 2026-09-29 by ADR-0007. Customers are primarily agent-managed,
 so customer login is optional. Vibodha approved Phase 2 entry and explicitly requested
-this task. The 2026-10-06 PR #34 conflict resolution preserves the implemented schema
-and restores the closeout repairs from `dev`. See the [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+this task. PR #34 is merged into dev at 2e338a6. PR #35 retains that schema and
+committed closeout repairs during its refreshed conflict resolution. See the
+[checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 The current ERD models `customer` as a subtype of `user` (`customer_id` is `PK,FK` into
 `app_user`), which forces every one of the 15+ seeded customers to have login

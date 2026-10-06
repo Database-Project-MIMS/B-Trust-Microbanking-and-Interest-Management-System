@@ -9,6 +9,24 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### Customer contract discrepancies recorded 2026-10-05
+
+- G-10/task card says "exactly one", but the prescribed partial index only enforces
+  **at most one**. Implemented 0221 correctly; registration/reassignment must enforce
+  existence in their transaction. The phase's full one-current-assignment exit stays open.
+- Child ERD/card omits some lifecycle timestamps. Apply AGENTS.md §8's required
+  created_at/updated_at with shared triggers; docs/04 B.4a and docs/17 G-10 record them.
+  Migration recording follows actual filename/checksum runner, not card version/name SQL.
+- docs/15's permission matrix permits ADMIN registration while docs/05 and the specific
+  M2 task card list AGENT/BRANCH_MANAGER. T03 verification follows the narrower mutation
+  contract and denies ADMIN. M1 should reconcile before exposing a verification endpoint.
+- Tracker T05 describes frontend work; the specific 06 task card describes API integration
+  with prebuilt dashboard screens. Follow that card when implementing T04/T05 and confirm
+  actual screen wiring then. No claim of customer registration completion is made here.
+- Customer runtime grants/RLS and generic audit bindings are absent in this checkout.
+  M1 integration is required before exposing customer services through runtime routes;
+  owner-based disposable tests certify service logic only, not runtime policies.
+
 | ID    | Question                                                                                   | Recommendation                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | OQ-06 | Should `audit_log` capture read access, or only writes?                                    | Writes always; report _generation_ also audited (REP-COM-06); ad-hoc reads not logged — volume vs value tradeoff |
@@ -76,6 +94,34 @@ PR's tree. T02/T03/T04 delivery on later feature branches is not imported here. 
 PR #34 targets the actual integration branch `dev`; generic `develop` examples describe
 the same integration role. No branch rename, new phase approval or financial schema
 decision is introduced. Commit/push/merge remain the user's actions.
+
+### PR #35 conflict reconciliation — 2026-10-06
+
+This feature branch predates dev's Phase 1 closeout (fad4f13, integrated by PR #33 as
+76701e7), causing repeated conflicting status snapshots. Targeted resolution retains
+dev's checkpoint/security/tooling and this branch's implemented 0220/0221/0222 and
+document service. Phase 1 stays 19 DONE; Phase 2 is 5 DONE/1 READY/10 TODO here.
+T04's later implementation remains on its own branch. Old missing-closeout warnings
+are historical. No new phase approval, schema decision or migration edit is introduced.
+PR #35's actual target is dev; generic develop examples describe the same integration role.
+
+The relation-test committing guard recognized only the focused harness database. It
+now also accepts mims_test_closeout exclusively with MIMS_ISOLATED_TEST=1, allowing
+the restored full isolated harness without permitting mims_dev or arbitrary databases.
+A regression verifies accepted isolated names and rejected development/unapproved names.
+Runtime verification still requires M1's scoped grants/RLS. verifyDocument's pre-existing
+FOR SHARE role lock needs narrowing before endpoint exposure; no broad role UPDATE
+grant is added and no business-code change is included in this conflict-resolution task.
+
+### PR #35 refresh after PR #34 merged — 2026-10-06
+
+The PR-specific snapshots above describe the earlier resolutions. PR #34 is merged
+into dev at 2e338a6, while PR #35's earlier resolution is user-committed as 07e878d.
+Their shared status documents diverged during those independent resolutions; nine
+new documentation conflicts are reconciled without a service/migration change.
+T01 is now merged; T02/T03 remain DONE in this PR's tree and T04 READY here.
+Fresh evidence is in the [refresh handoff](handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+Later registration work stays on its branch; no new approval or runtime access claim.
 
 
 ### OQ-05 — Customer login is optional

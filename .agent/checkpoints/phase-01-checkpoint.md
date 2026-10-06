@@ -74,3 +74,21 @@ retains customer migration 0220/tests. The old missing-repairs condition is hist
 not the condition of this combined working tree. Combined verification is recorded in
 ../handoffs/p02-m02-t01-pr34-conflict-resolution.md; it does not reuse 184 as a new count.
 Phase 2 approval persists; no Phase 2 exit or Phase 3 entry approval is implied.
+
+## Integration update — 2026-10-06, PR #35
+
+Closeout repairs were committed in fad4f13 and integrated into origin/dev by PR #33
+(76701e7). PR #35's local pending merge restores these repairs while retaining customer
+0220 and assignment/document 0221/0222. The initial missing-repairs condition is historical.
+Combined verification is recorded in ../handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md;
+the old 184-test result is not reused as a fresh count. Phase 2 entry approval persists;
+no Phase 2 exit/Phase 3 entry approval is implied. User controls commit/push/merge.
+
+## PR #35 refresh after PR #34 merged — 2026-10-06
+
+The two integration notes above record their original resolutions. The user committed
+PR #35's earlier resolution as 07e878d. PR #34 is now merged into dev at 2e338a6.
+The new pending PR #35 merge resolves their nine overlapping documentation changes,
+preserving the original approval and both task deliveries. Fresh validation is in
+[the refresh handoff](../handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+No later phase approval is inferred; commit/push/PR merge remain user-controlled.

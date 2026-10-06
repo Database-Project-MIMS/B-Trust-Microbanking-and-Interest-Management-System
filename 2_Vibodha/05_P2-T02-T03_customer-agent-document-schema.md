@@ -1,9 +1,21 @@
 # 🟢 Phase 2 — Tasks 02–03: Customer-Agent Assignment & Document Schema
 **Task IDs:** `P02-M02-T02`, `P02-M02-T03` · **Branch:** `feat/p02-m02-customer-agent-document`
 **Migrations:** `0221_p02_m02_customer_agent.sql`, `0222_p02_m02_customer_document.sql`
-**Status:** TODO
+**Status:** DONE — technical implementation verified locally; team review/publication pending
 **Depends on:** T01 (`customer`)
 **Story Points:** ~3 + ~3 = ~6 · **Layer:** Database (+ light Backend for T03 verification)
+
+**Implemented 2026-10-05:** 0221/0222, 46 SQL constraint/history tests and 23 service/
+concurrency tests. With 65 existing customer/organization regressions, 134 pass (no
+failures/skips), clean 14-migration rebuild/reapply/verify, typecheck and lint pass.
+See [handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
+
+Implementation corrections to the illustrative SQL below: lifecycle timestamps/shared
+triggers per AGENTS.md §8; named RESTRICT FKs including verifier; runner-owned
+filename/checksum migration recording. The partial index guarantees **at most one**
+active assignment; T04/future reassignment must guarantee existence. Verification is
+server-only with scoped active staff, row locks, first-verifier preservation and atomic
+minimal audit. No runtime grants/RLS or verification endpoint are introduced here.
 
 ---
 
@@ -30,7 +42,8 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `created_at` | `timestamptz` | NOT NULL DEFAULT `now()` |
 
 - **Check:** `end_date IS NULL OR end_date >= assigned_date`
-- **Invariant (FR-CUS-02, G-10):** exactly one active row per customer. The ERD leaves
+- **Invariant (FR-CUS-02, G-10):** at most one active row enforced here; registration
+  supplies existence. The ERD leaves
   this unenforced — you must add a **partial unique index**:
 
 ```sql
@@ -68,64 +81,19 @@ produces two active agents for one customer and breaks RPT-01/RPT-05 attribution
 
 ## How to Implement
 
-### Step 1 — Write the Migrations
+### Step 1 — Implemented Migrations
 
-`database/migrations/0221_p02_m02_customer_agent.sql`:
+The executable SQL is maintained in:
 
-```sql
--- Migration 0221: Customer-agent assignment (M2)
--- Table: customer_agent — effective-dated, exactly one active row per customer (G-10)
+- `database/migrations/0221_p02_m02_customer_agent.sql`
+- `database/migrations/0222_p02_m02_customer_document.sql`
 
-BEGIN;
-
-CREATE TABLE customer_agent (
-    cust_agent_id  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    customer_id    uuid NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT,
-    agent_id       uuid NOT NULL REFERENCES agent(agent_id) ON DELETE RESTRICT,
-    assigned_date  date NOT NULL DEFAULT CURRENT_DATE,
-    end_date       date,
-    is_active      boolean NOT NULL DEFAULT true,
-    created_at     timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT chk_customer_agent_dates CHECK (end_date IS NULL OR end_date >= assigned_date)
-);
-
-CREATE UNIQUE INDEX ux_customer_agent_one_active
-    ON customer_agent(customer_id)
-    WHERE is_active;
-
-INSERT INTO schema_migration(version, name)
-VALUES (221, '0221_p02_m02_customer_agent');
-
-COMMIT;
-```
-
-`database/migrations/0222_p02_m02_customer_document.sql`:
-
-```sql
--- Migration 0222: Customer document schema (M2)
--- Table: customer_document — KYC uploads and verification state
-
-BEGIN;
-
-CREATE TABLE customer_document (
-    doc_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    customer_id     uuid NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT,
-    doc_type        varchar(50) NOT NULL,
-    file_path       varchar(500) NOT NULL,
-    uploaded_date   timestamptz NOT NULL DEFAULT now(),
-    verified_by     uuid REFERENCES app_user(user_id),
-    verified_date   timestamptz,
-    CONSTRAINT chk_customer_document_verification
-        CHECK ((verified_by IS NULL) = (verified_date IS NULL))
-);
-
-CREATE INDEX idx_customer_document_customer ON customer_document(customer_id);
-
-INSERT INTO schema_migration(version, name)
-VALUES (222, '0222_p02_m02_customer_document');
-
-COMMIT;
-```
+Use those files and docs/04 B.4a as the exact contract. The historical illustrative
+SQL was removed because its version/name ledger insert did not match the runner.
+Both migrations use named RESTRICT FKs and shared timestamp triggers. The runner
+records filename/checksum. Additional indexes serve full assignment history, agent
+FK/assignment lookup and customer document lookup. Neither migration grants broad
+runtime access.
 
 ### Step 2 — Write SQL Tests
 
@@ -146,9 +114,7 @@ COMMIT;
 
 ### Step 3 — Run & Verify
 ```bash
-npm run db:rebuild
-npm run db:verify
-npm test
+npm run verify:customer-agent-document
 ```
 
 ### Step 4 — Update Docs
@@ -161,8 +127,8 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] Both migrations apply to a clean DB without errors
-- [ ] `ux_customer_agent_one_active` exists and rejects a second active row (`23505`)
-- [ ] `customer_document` verification CHECK rejects a half-set verification
-- [ ] `file_path` stores a path only — no test inserts binary content
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] Both migrations apply to a clean DB without errors
+- [x] `ux_customer_agent_one_active` exists and rejects a second active row (`23505`)
+- [x] `customer_document` verification CHECK rejects a half-set verification
+- [x] `file_path` stores a path only — no test inserts binary content
+- [x] Existing db:rebuild succeeds from empty in the disposable verification cluster

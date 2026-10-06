@@ -177,8 +177,9 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `end_date` | date | NULL while current |
 | `is_active` | boolean | ERD says `tinyint`; PostgreSQL uses `boolean` |
 
-- Invariant: exactly one active row per customer (FR-CUS-02) — **unenforced in the ERD, see
-  G-10**.
+- Invariant: one current assignment (FR-CUS-02). Migration 0221's partial unique
+  index enforces **at most one** active row (G-10); registration/reassignment must
+  supply existence atomically. Exact implemented shape is below in B.4a.
 - Check: `end_date IS NULL OR end_date >= assigned_date`.
 
 ### `customer_document`
@@ -194,6 +195,7 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `verified_date` | timestamptz | |
 
 - Check: `(verified_by IS NULL) = (verified_date IS NULL)` — both set, or neither.
+- Implemented in 0222 with RESTRICT FKs and lifecycle timestamps; see B.4a.
 - ERD Assumption 3: documentation is required to open an account — enforced in
   `sp_open_savings_account`, not by a constraint.
 
@@ -419,7 +421,7 @@ corresponding open question is resolved and an ADR exists.**
 | `fixed_deposit`: replace `UNIQUE(account_id)` with partial unique index `WHERE status='ACTIVE'` | One *active* FD, not one ever | G-01 | **Blocking** |
 | `transaction.reference_number` → `UNIQUE NOT NULL` | BR-10, FR-DEP-02 | G-05 | **Blocking** |
 | `account.current_balance` → `NOT NULL DEFAULT 0 CHECK (>= 0)` | NFR-SAFE-01 | G-18 | No |
-| Partial unique index on `customer_agent(customer_id) WHERE is_active` | FR-CUS-02 | G-10 | No |
+| Partial unique index on `customer_agent(customer_id) WHERE is_active` — implemented 0221; at most one active | FR-CUS-02 | G-10 | No |
 | `interest_payout`: `UNIQUE(fd_id, cycle_date)` | FR-INT-03, NFR-SAFE-03 | G-03 | Yes |
 | Apply `money_amount` / `positive_money` / `interest_rate` domains throughout | SRS §6.1 | G-19 | No |
 
@@ -455,12 +457,60 @@ customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
 Indexes: `ix_customer_branch` B-tree on branch_id and `ix_customer_full_name_trgm`
 GIN on full_name using gin_trgm_ops. Named constraints provide deterministic error
 mapping. SQL uniqueness is exact/case-sensitive; normalization and identity masking
-belong to the later registration/search service. Assignment/document/holder FKs,
-customer audit, RLS and runtime grants remain their separately assigned tasks.
+belong to the later registration/search service. Assignment/document FKs are now
+implemented in 0221/0222; holder FKs, customer audit, RLS and runtime grants remain
+their separately assigned tasks.
 
 Verified 2026-10-05: 27 customer constraints/search/rollback tests and 38 organization
 regressions pass. All 12 migrations rebuild from empty and local 0220 applies without
 reset. Complete contract: `.agent/handoffs/p02-m02-t01-customer-schema.md`.
+
+### B.4a Implemented customer relations — P02-M02-T02/T03
+
+`0221_p02_m02_customer_agent.sql`:
+
+| Column | Type | Constraints |
+|---|---|---|
+| `cust_agent_id` | uuid | PK, default gen_random_uuid() |
+| `customer_id` | uuid | NOT NULL, FK customer(customer_id), ON DELETE RESTRICT |
+| `agent_id` | uuid | NOT NULL, FK agent(agent_id), ON DELETE RESTRICT |
+| `assigned_date` | date | NOT NULL, default CURRENT_DATE |
+| `end_date` | date | NULL; CHECK NULL or >= assigned_date |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); set_updated_at trigger |
+
+`ux_customer_agent_one_active` is UNIQUE on customer_id WHERE is_active. It rejects
+competing active INSERT/UPDATEs, including concurrent transactions. It does not require
+an assignment to exist. T04 registration/future reassignment must guarantee that and
+keep closed rows. B-tree indexes ix_customer_agent_customer/ix_customer_agent_agent
+serve full history, assigned-customer lists and FK checks.
+
+`0222_p02_m02_customer_document.sql`:
+
+| Column | Type | Constraints |
+|---|---|---|
+| `doc_id` | uuid | PK, default gen_random_uuid() |
+| `customer_id` | uuid | NOT NULL, FK customer(customer_id), ON DELETE RESTRICT |
+| `doc_type` | varchar(50) | NOT NULL |
+| `file_path` | varchar(500) | NOT NULL; metadata path only |
+| `uploaded_date` | timestamptz | NOT NULL, default now() |
+| `verified_by` | uuid | NULL, FK app_user(user_id), ON DELETE RESTRICT |
+| `verified_date` | timestamptz | NULL; paired with verified_by by CHECK |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); set_updated_at trigger |
+
+`ck_customer_document_verification` requires both verification fields set or both
+NULL. ix_customer_document_customer supports profile/document-eligibility lookup.
+The database stores no binary content. M3 must enforce documentation eligibility at
+account opening. These tables add AGENTS.md-required timestamps beyond the abbreviated
+ERD; see docs/17 and the reconciliation note in .agent/open-questions.md.
+
+Server-only verifyDocument uses authenticated staff identity, branch/assignment predicates,
+row locks and a same-transaction minimal audit event. No customer grants are added;
+M1's scoped runtime grants/RLS and generic master-data audit binding remain pending.
+Verified 2026-10-05: 134 selected tests pass, all 14 migrations rebuild/reapply/verify,
+typecheck/lint pass. See the [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
 
 ## B.5 Denormalisation register
 
@@ -481,6 +531,6 @@ each denormalised value is reconciled against its source in Phase 5.
 | Form | How the design satisfies it |
 |---|---|
 | **1NF** | All attributes atomic. Repeating holders, documents, transactions and payouts live in child tables — no arrays, no comma-separated fields. |
-| **2NF** | `account_holder` and `customer_agent` are intersection tables with surrogate PKs plus a composite `UNIQUE`; their non-key attributes (`joined_date`, `assigned_date`) depend on the whole key. |
+| **2NF** | Intersection rows have surrogate PKs. `account_holder` has composite uniqueness; `customer_agent` uses partial customer uniqueness for current assignments and permits repeated historical assignments. Each row's attributes depend on its key. |
 | **3NF** | Plan rates, minimum balances, branch details and FD product terms are stored once and referenced by FK. No transitive dependency — e.g. `account` stores `plan_id`, never a copy of `interest_rate`. |
 | **Documented exceptions** | D-1, D-2, D-3 above. Each is a controlled, reconciled denormalisation, not an oversight. |

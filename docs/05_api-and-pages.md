@@ -113,6 +113,20 @@ admin identity workflow and must atomically receive its required `agent` profile
 
 ---
 
+### Customer-document internal service (P02-M02-T03, implemented)
+
+`verifyDocument(docId, verifierUserId)` in services/customer-document-service.ts is
+server-only; no document verification endpoint is introduced in this schema task.
+Future controllers must authenticate/authorize, verify CSRF and pass the session's
+user ID as verifierUserId. Active AGENT/BRANCH_MANAGER staff can verify active
+customers in their own branch; an AGENT also needs the current customer assignment.
+The service rechecks these conditions in SQL and locks the relevant rows. Verification
+and minimal audit commit/rollback together. A same-verifier retry returns the original
+{ docId, customerId, verifiedBy, verifiedDate }; another verifier gets
+DOCUMENT_ALREADY_VERIFIED (409). UUID validation, forbidden and not-found use typed
+400/403/404 errors. No path/document content is returned. Runtime scoped grants/RLS
+remain M1 work; the existing customer endpoints above are still planned T04/T05 work.
+
 ## Plans and accounts — Member 3
 
 | Method & path | Purpose | Roles |

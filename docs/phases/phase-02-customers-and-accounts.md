@@ -1,21 +1,29 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** IN_PROGRESS — entry approved 2026-10-05; 3 DONE, 2 READY, 11 TODO · **Tasks:** 16 · **Effort:** 47 points
+**Status:** IN_PROGRESS — entry approved 2026-10-05; 5 DONE, 1 READY, 10 TODO · **Tasks:** 16 · **Effort:** 47 points
 
 Approval: [Phase 1 checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
 Account (`0240`) and immutable transaction (`0260`) schema work is already verified.
-Member 2's `P02-M02-T01` customer schema is DONE on `feat/p02-m02-customer-schema`;
-assignment/document tasks are READY. Holder, mandate, account-opening, registration
-and full seed work remain pending in this PR's tree.
+Member 2's P02-M02-T01/T02/T03 customer/assignment/document work is technically DONE
+in this PR's tree. T04 registration service work is READY; runtime registration/API/UI,
+holder, mandate, account-opening and full seed work remain pending.
 
 **2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
 recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
-is technically complete locally: migration 0220, 27 customer tests and 38 organization
-regressions pass, with clean rebuild/typecheck/lint. Assignment/documents are READY;
-registration/API/UI and this phase's exit remain incomplete. At that initial verification,
-earlier closeout edits were absent. The 2026-10-06 PR #34 conflict resolution now restores
-those committed repairs from `dev`; combined-tree verification is recorded separately
-in the [resolution handoff](../../.agent/handoffs/p02-m02-t01-pr34-conflict-resolution.md).
+is technically complete locally. P02-M02-T02/T03 are also technically complete:
+0221/0222, assignment history/partial uniqueness, paired document verification and
+transactional verification service/audit. All 134 selected tests and clean 14-migration
+rebuild/reapply/verify/typecheck/lint pass. T04 registration service is READY;
+runtime grants/RLS/audit integration, registration/API/UI and phase exit remain incomplete.
+At that initial verification, earlier closeout edits were absent. PR #35's 2026-10-06
+conflict resolution restores those committed repairs from dev. Combined-tree verification
+is recorded in the [resolution handoff](../../.agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
+
+**2026-10-06 refresh:** PR #34 is merged into dev (2e338a6); PR #35's earlier
+resolution is user-committed as 07e878d. Their nine shared documentation conflicts
+are reconciled in this pending merge, retaining T01/T02/T03 and the existing approval.
+Fresh validation: [refresh handoff](../../.agent/handoffs/p02-m02-t02-t03-pr35-dev-refresh.md).
+The later registration branch is not imported; runtime integration and phase exit remain open.
 
 ## Goal
 
