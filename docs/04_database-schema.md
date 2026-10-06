@@ -164,6 +164,8 @@ the approved independent identity described in Part B.4 instead of this ERD key 
   trigram index on `full_name` for search.
 - Invariants: `date_of_birth` in the past; identity masked from unauthorised roles
   (FR-CUS-04); ≥ 15 customers seeded (FR-CUS-05).
+- **Security:** RLS is enabled. Users with the `CUSTOMER` role can only see their own row. Staff users are restricted to their branch unless they have bank-wide roles (`ADMIN`, `CENTRAL_OPS`, `AUDITOR`).
+- **Audit:** Monitored by `trg_audit_customer` which records all `INSERT` and `UPDATE` operations, masking PII in the `audit_log`.
 
 ### `customer_agent`
 Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
@@ -277,6 +279,8 @@ and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).
+- **Security:** RLS is enabled. Users with the `CUSTOMER` role can only see accounts they hold. Staff users are restricted to accounts within their branch, unless they hold bank-wide roles (`ADMIN`, `CENTRAL_OPS`, `AUDITOR`).
+- **Audit:** Monitored by `trg_audit_account` which records all `INSERT` and `UPDATE` operations, masking any potential PII in the `audit_log`.
 - Approved changes: add immutable-at-opening `branch_id` (**G-06**, ADR-0008) and the
   non-negative `CHECK` (**G-18**). See Part B.
 

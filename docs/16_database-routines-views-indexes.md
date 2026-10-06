@@ -52,6 +52,9 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `fn_validate_agent_active_branch()` | M2 | `trigger` | Lock and verify that an active agent references an active branch | FR-ORG-02 | L08 triggers, L11 locking |
 | `fn_prevent_account_branch_change()` | M3 | `trigger` | Reject any change to `account.branch_id` after opening | ADR-0008, D-4 | L08 triggers |
 | `fn_prevent_branch_deactivation_with_active_agents()` | M2 | `trigger` | Reject branch deactivation while active agents remain | FR-ORG-02 | L08 triggers |
+| `fn_rls_is_bank_wide()`, `fn_rls_in_branch()`, `fn_rls_can_write()`, etc. | M1 | `boolean`/`uuid` | Read context variables (`app.current_user_id`, etc.) set by `rls-context.ts` for fail-closed RLS policies | NFR-SEC-07 | L08 functions, security |
+| `fn_audit_master_changes()` | M1 | `trigger` | Reusable trigger function for audit logging; calls `fn_mask_audit_values()` | FR-ORG-04 | L08 triggers, `jsonb` |
+| `fn_mask_audit_values(payload)` | M1 | `jsonb` | Strips `nic_passport_no`, `email`, `password_hash`, etc. from audit rows | NFR-SEC-05 | L08, `jsonb` |
 
 ## Triggers
 
@@ -60,6 +63,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `trg_financial_transaction_immutable` | M4 | `BEFORE UPDATE OR DELETE` on `transaction` | Raise unconditionally — posted rows are immutable | FR-TXN-02, BR-16 | L08 triggers |
 | `trg_audit_log_immutable` | M1 | `BEFORE UPDATE OR DELETE` on `audit_log` | Append-only audit | FR-AUD-01 | L08 |
 | `trg_audit_master_changes` | M1/M2 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write sanitized before/after values as `jsonb`; sensitive keys are removed | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_audit_customer`, `trg_audit_account`, `trg_audit_account_holder` | M1 | `AFTER INSERT/UPDATE` on `customer`, `account`, `account_holder` | Audit master data in the caller transaction, capturing session context via RLS helpers | FR-ORG-04, NFR-SEC-05 | L08, ACID |
 | `trg_audit_branch` / `trg_audit_agent` | M2 | `AFTER INSERT/UPDATE/DELETE` on `branch` / `agent` | Audit organisation master data in the caller transaction | FR-ORG-04, FR-AUD-01 | L08, ACID |
 | `trg_validate_joint_mandate` | M3 | `AFTER INSERT/UPDATE` on `account_holder`, **statement-level with transition tables** | Holder count 2–4 and all adults for joint plans — a rule that spans rows, so it cannot be a row `CHECK` | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
 | `trg_set_updated_at` | shared | `BEFORE UPDATE` | Maintain `updated_at` | DB-CON-06 | L08 (already in migration `0000`) |
