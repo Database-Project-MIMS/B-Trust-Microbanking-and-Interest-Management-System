@@ -2,7 +2,11 @@
 
 **Project:** Microbanking and Interest Management System (MIMS) — B-Trust Microfinance Bank
 **Course:** CS3043 Database Systems · Semester Project · **Group 32**
-**Team:** 5 members · **Current phase:** Phase 0 complete, awaiting approval for Phase 1
+**Team:** 5 members · **Current phase:** Phase 1 verified; Phase 2 entry approved 2026-10-05
+
+Approval applies to the local verified working tree; see
+`.agent/checkpoints/phase-01-checkpoint.md`. The user's prohibition on assistant commits,
+merges and PR creation overrides the routine Git publication steps below.
 
 This file is the single development contract for every team member and every Claude
 session. If something here conflicts with your own assumption, **this file wins**.

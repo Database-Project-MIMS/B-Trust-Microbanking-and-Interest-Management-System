@@ -21,3 +21,5 @@ GRANT SELECT, INSERT, UPDATE ON account TO mims_app;
 GRANT SELECT, INSERT, UPDATE ON system_parameter TO mims_app;
 GRANT SELECT, INSERT         ON business_calendar TO mims_app;
 GRANT SELECT, INSERT         ON audit_log TO mims_app;
+-- Health reads only the migration inventory after server session/role checks.
+GRANT SELECT ON schema_migration TO mims_app;

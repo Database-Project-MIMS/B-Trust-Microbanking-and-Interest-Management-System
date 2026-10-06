@@ -1,44 +1,38 @@
 # Current State
 
-**Updated:** 2026-10-05 · **Owner:** M2 (Vibodha), P02-M02-T02/T03
+**Updated:** 2026-10-06 · **Owner:** M2, PR #35 conflict resolution
 
-## Current result
+## Current checkout
 
-Customer-agent assignment and customer-document tasks are technically complete locally
-on feat/p02-m02-customer-agent-document. Migration 0221 adds effective-dated history,
-RESTRICT FKs/date check and partial uniqueness for current assignments. Migration 0222
-adds document metadata, RESTRICT FKs and paired verification. Both mutable tables have
-lifecycle timestamps/shared update triggers. verifyDocument is server-only with active
-staff/branch/assignment checks, row locks and atomic paired verification/minimal audit.
+feat/p02-m02-customer-agent-document at d93b20b, local pending merge of origin/dev
+76701e7. All eight documentation conflicts reconciled; no merge commit/push/PR merge.
+Retain implemented customer 0220, assignment 0221 and document 0222, scoped verification
+service and atomic audit. Customer registration remains on its separate later branch.
+[Relations contract](handoffs/p02-m02-t02-t03-customer-agent-document.md).
 
 ## Evidence
 
-verify:customer-agent-document passes 134 selected tests: 23 assignment, 23 document,
-23 service/concurrency, 27 customer and 38 organization regressions. Zero failures/skips;
-all 14 migrations rebuild from empty/reapply/verify, typecheck and lint pass. Disposable
-PostgreSQL 18.6 cluster removed. Committing tests enforce the disposable DB name.
-Normal development DB received 0221/0222 additively and verifies; no data reset.
-Handoff: [relations/verification](handoffs/p02-m02-t02-t03-customer-agent-document.md).
+Original focused evidence: 134 tests, clean 14-migration rebuild/reapply/verify,
+typecheck/lint. dev's historical closeout: 184 tests with its original migration set.
+Combined-tree verification passed on 2026-10-06: npm run verify:phase1, 281 tests
+(29 suites), zero failures/skips, clean 14-migration rebuild, typecheck, lint and production
+build. Disposable PostgreSQL 18.6 cluster removed; normal development data preserved.
+The M2 fixture guard now supports the full disposable harness with its explicit marker
+while rejecting development/unapproved databases. No normal development rebuild.
 
-## Task snapshot and next work
+## Task snapshot in this PR
 
-P0 6 DONE; P1 baseline 14 DONE/5 READY; P2 4 DONE/1 READY/11 TODO.
-T01 customer schema was committed by the user before this branch. T02/T03 are technically
-DONE locally; T04 registration service is READY with its table and I-1/I-2 dependencies.
-T05 API/screen integration remains TODO. Other member statuses are unchanged.
+P0 6 DONE; P1 19 DONE; P2 5 DONE/1 READY/10 TODO; P3–P6 TODO.
+T01/T02/T03 plus M3 account/M4 transaction schemas are DONE; T04 READY here.
+Its later delivery stays on the registration branch. T05 runtime integration, M1
+customer grants/RLS/audit and M3 holder/opening work remain pending. Owner-based
+tests do not certify runtime access. Existing verifier role lock is recorded for
+narrowing before exposure; no broad role privilege is introduced.
 
-Partial uniqueness guarantees at most one assignment; registration/reassignment must
-supply existence. Customer services have no runtime grants until M1's scoped grants/RLS
-land. Generic customer/child audit bindings are also M1 work. Service tests run as owner
-in the disposable DB; they do not certify runtime RLS. Runtime API exposure must wait
-for that integration. No customer registration endpoint or new UI was built here.
+## Approval/publication
 
-## Approval and publication
-
-User Phase 2 approval remains recorded in the [historical checkpoint](checkpoints/phase-01-checkpoint.md).
-Earlier uncommitted Phase 1 closeout repairs remain absent from this checkout. Today's
-task-specific evidence does not recertify those missing repairs or the whole phase.
-The destructive legacy migration-runner test was excluded from focused verification.
-
-All current task changes remain uncommitted. No commit, push, merge or PR was performed,
-per user instruction. Team review/publication remains user-controlled.
+Phase 2 entry approval persists. Missing closeout warnings are historical: committed
+repairs are now integrated from dev. No phase exit/later entry approval is inferred.
+User commits/pushes/merges; local merge was prepared with automatic commits disabled.
+[Resolution handoff](handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md).
+No new UI; original incoming ownership retained. /imprint not applicable.

@@ -87,3 +87,13 @@ Earlier uncommitted Phase 1 closeout repairs are absent from this checkout; the 
 approval record still applies. This task evidence does not recertify those missing repairs.
 All five overview tables were reviewed; only M2's newly completed row was struck through.
 No commit, push, merge or PR was performed, per user instruction.
+
+## Integration follow-up — 2026-10-06, PR #35
+
+The missing closeout condition above describes the original 2026-10-05 tree. PR #35's
+conflict resolution now restores committed dev closeout repairs and retains these
+implementations unchanged. Fresh combined validation passes 281 tests, clean 14-migration
+rebuild, typecheck/lint/build. The fixture guard also supports dev's full isolated
+mims_test_closeout harness only with its isolation marker; development remains denied.
+Runtime grants/RLS and the pre-existing role FOR SHARE lock still need integration
+before endpoint exposure. See the PR #35 resolution handoff; user controls publication.

@@ -76,7 +76,7 @@ npm run db:grants        # apply runtime permissions using the owner connection
 routines → triggers → views → indexes → roles → seed.
 
 ```bash
-npm run db:rebuild       # DESTRUCTIVE: drops and recreates mims_dev
+npm run db:rebuild       # rebuild an empty configured database
 ```
 
 ## 5. Seed sample data
@@ -85,9 +85,10 @@ npm run db:rebuild       # DESTRUCTIVE: drops and recreates mims_dev
 npm run db:seed
 ```
 
-Loads 3 branches, 6 agents, 18 customers, 22 accounts (3 joint), 12 FDs and 140+
-transactions — deterministic, so report totals are reproducible
-(`06_seed-data-spec.md`).
+Currently loads the Phase 1 foundation: 3 branches, 6 ordinary agents, 5 savings plans
+and 3 FD products. The full planned target of 18 customers, 22 accounts (3 joint),
+12 FDs and 140+ transactions depends on future schema/routine tasks
+(`06_seed-data-spec.md`); it is not yet delivered.
 
 ## 6. Verify
 
@@ -95,7 +96,7 @@ transactions — deterministic, so report totals are reproducible
 npm run db:verify
 ```
 
-Checks PostgreSQL ≥ 15, migrations applied, shared domains present, **no floating-point
+Checks PostgreSQL ≥ 15, every migration filename/checksum matches, shared domains present, **no floating-point
 money column**, and a primary key on every table. All checks must pass.
 
 ## 7. Run
@@ -114,12 +115,19 @@ npm run test:db          # SQL constraints, routines, concurrency
 npm run test:api         # route handlers, authorization, injection
 npm run typecheck
 npm run lint
+npm run verify:phase1    # isolated rebuild + all tests + typecheck/lint/build
 ```
+
+Test commands create and remove a disposable PostgreSQL cluster using synthetic data;
+they do not reset the configured development database. Local PostgreSQL binaries must
+be available. On Windows versions 18/17/16/15 are discovered under Program Files;
+otherwise set `PG_BIN` to the installation's bin directory or put binaries on PATH.
+An owner role with CREATEDB is created only inside the disposable cluster.
 
 ## Resetting
 
 ```bash
-npm run db:rebuild       # full clean rebuild + seed
+npm run db:rebuild -- --reset  # explicit nonempty mims_dev/mims_test_* reset + seed
 ```
 
 The database must always be reconstructible from empty with no manual table editing

@@ -157,10 +157,18 @@ totals match the screen exactly (REP-COM-04).
 ## Reset for a clean demonstration
 
 ```bash
-npm run db:rebuild     # drop, migrate, routines, triggers, views, indexes, roles, seed
+npm run db:rebuild -- --reset  # explicit reset of configured mims_dev; synthetic data only
 npm run db:verify      # all checks must pass
 npm run dev
 ```
+
+`npm run verify:phase1` provisions a disposable local PostgreSQL cluster, rebuilds it,
+runs DB/API/workflow tests, typecheck, lint and the production build, then removes it.
+`npm test`, `npm run test:db` and `npm run test:api` use the same isolation for tests.
+No development data is erased. `npm run db:rebuild` expects an empty configured database;
+resetting an existing `mims_dev` or `mims_test_*` database requires an explicit `--reset`.
+Verification compares every migration filename and checksum, and fails on missing,
+pending or changed migrations.
 
 Deterministic, so report totals are identical every time you demonstrate. If `db:rebuild`
 fails, that is a defect — fix the migration, never patch the database by hand (SRS §6.8).

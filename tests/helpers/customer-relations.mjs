@@ -98,6 +98,9 @@ export async function rejectsSql(client, operation, codes, identifier, field = '
 
 export async function requireDisposableDatabase(client) {
   const result = await client.query('SELECT current_database() AS name');
-  assert.equal(result.rows[0].name, 'mims_test_customer_schema',
+  const name = result.rows[0].name;
+  const permitted = name === 'mims_test_customer_schema'
+    || (name === 'mims_test_closeout' && process.env.MIMS_ISOLATED_TEST === '1');
+  assert.ok(permitted,
     'Committing service/concurrency fixtures is allowed only in the disposable verification database.');
 }

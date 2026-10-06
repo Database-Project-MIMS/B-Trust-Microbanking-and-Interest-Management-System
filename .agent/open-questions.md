@@ -49,10 +49,31 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Resolved
 
+### Documentation/status contradictions — 2026-10-05 closeout
+
+The user authorized resolving checks, reconciling statuses and recording approval.
+The old AGENTS header/memory/member stubs still described Phase 0; the Phase 1
+document counted 18 tasks although the tracker lists 19; five tracker READY rows
+were already implemented (its summary incorrectly counted six). Member 4's channel,
+runner/health and Phase 2 transaction code existed despite stale statuses.
+
+Resolved from 184 passing tests, clean rebuild and verified migration inventory:
+Phase 1's 19 implementations are DONE locally; Phase 2 entry is approved by Vibodha;
+account and transaction schema tasks are DONE; customer schema was READY at closeout. The checkpoint
+explicitly preserves user-controlled publication and does not claim lecturer approval.
+The more specific tracker/phase evidence now overrides the obsolete headers.
+
+Implicit dependencies were made explicit: customer/account audit coverage needs those
+tables, and registration needs both assignment and document tables. Full seed work uses
+the phase/seed specification's 3 joint accounts rather than the stale tracker count of 2.
+The old OQ-01/04/08 blocked register and Member 4 overview no-transfer reminder were
+reconciled with ADR-0010/0011/0012; OQ-12/13/14 remain unresolved future-phase gates.
+No new financial schema decision or migration was introduced.
+
 ### P02-M02-T01 source/documentation reconciliation — 2026-10-05
 
 The user approved Phase 2 entry earlier in this conversation and explicitly requested
-customer-schema implementation. The clean checkout at 3fe8689 still has older TODO/
+customer-schema implementation. The clean checkout at 3fe8689 had older TODO/
 Phase 0 headers and no earlier uncommitted closeout files. The restored historical
 checkpoint records approval without claiming those absent repairs are integrated.
 This task proceeds under the user's retained authorization; other task statuses are
@@ -62,6 +83,24 @@ Part B.4 is expanded to match the approved task card's customer_number, lifecycl
 required fields and timestamps. The card's example schema_migration(version,name)
 insert is corrected: the actual runner records filename/checksum. No new identity
 decision is needed; ADR-0007 remains authoritative.
+
+### PR #35 conflict reconciliation — 2026-10-06
+
+This feature branch predates dev's Phase 1 closeout (fad4f13, integrated by PR #33 as
+76701e7), causing repeated conflicting status snapshots. Targeted resolution retains
+dev's checkpoint/security/tooling and this branch's implemented 0220/0221/0222 and
+document service. Phase 1 stays 19 DONE; Phase 2 is 5 DONE/1 READY/10 TODO here.
+T04's later implementation remains on its own branch. Old missing-closeout warnings
+are historical. No new phase approval, schema decision or migration edit is introduced.
+PR #35's actual target is dev; generic develop examples describe the same integration role.
+
+The relation-test committing guard recognized only the focused harness database. It
+now also accepts mims_test_closeout exclusively with MIMS_ISOLATED_TEST=1, allowing
+the restored full isolated harness without permitting mims_dev or arbitrary databases.
+A regression verifies accepted isolated names and rejected development/unapproved names.
+Runtime verification still requires M1's scoped grants/RLS. verifyDocument's pre-existing
+FOR SHARE role lock needs narrowing before endpoint exposure; no broad role UPDATE
+grant is added and no business-code change is included in this conflict-resolution task.
 
 
 ### OQ-05 — Customer login is optional

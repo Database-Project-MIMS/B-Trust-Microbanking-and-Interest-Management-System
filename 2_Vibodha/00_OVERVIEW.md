@@ -11,6 +11,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-06 for PR #35:** Phase 1 T01–T04 and P02-M02-T01/T02/T03 DONE; T04 READY in this PR's tree.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout repairs are committed on origin/dev; conflict resolution awaits user commit/push/merge.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
@@ -57,10 +61,11 @@ consume from M1 and M4)*
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
 Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
-`customer` uses an independent primary key. Phase 2 entry was authorized in the current
-conversation; T01 schema is verified locally on 2026-10-05. Assignment/document tasks
-are READY. The prior closeout changes are absent from this checkout; see the
-[approval condition](../.agent/checkpoints/phase-01-checkpoint.md).
+`customer` uses an independent primary key. Phase 2 entry was approved on 2026-10-05;
+customer, assignment and document tasks are implemented here. Registration service
+work is READY; runtime routes still need M1 security integration. The 2026-10-06
+conflict resolution restores dev's closeout repairs; see the
+[checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 ---
 

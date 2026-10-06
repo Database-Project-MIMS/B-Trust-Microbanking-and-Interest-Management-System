@@ -1,44 +1,24 @@
-# Memory — MIMS customer relations
+# Memory — PR #35 conflict resolution
 
-> /remember save: current, non-sensitive continuation state.
+> /remember save: non-sensitive continuation state.
 
-**Updated:** 2026-10-05
-**Task/branch:** P02-M02-T02/T03 on feat/p02-m02-customer-agent-document.
+**Updated:** 2026-10-06
+**Branch:** feat/p02-m02-customer-agent-document
 
-## What was completed
+User requested resolving PR #35 conflicts and reserves commit/push/merge.
+HEAD d93b20b; origin/dev 76701e7; local --no-commit merge pending. Preserve 0220/0221/0222,
+verification service/tests and dev's Phase 1 closeout fixes. Later T04 branch not imported.
+All eight documentation conflicts reconciled; fresh combined-tree verification passed:
+281 tests (29 suites), zero failures/skips, clean 14-migration rebuild, typecheck, lint
+and production build. Disposable PostgreSQL 18.6 cluster removed. Details:
+.agent/handoffs/p02-m02-t02-t03-pr35-conflict-resolution.md.
 
-0221 customer_agent: restrictive FKs/date check, current-assignment partial unique
-index, preserved inactive history and lifecycle timestamps. 0222 customer_document:
-metadata paths, restrictive customer/verifier FKs, paired verification check/timestamps.
-services/customer-document-service.ts verifies active in-scope AGENT/BRANCH_MANAGER
-documents with row locks and same-transaction minimal audit. Agents need their current
-assignment. Same verifier retry retains timestamp; another verifier gets a conflict.
-Updated schemas/rules/inventory/tracker/task card/overview and published a local handoff.
+Historical focused result 134 tests. M2 committing-fixture guard accepts full isolated
+mims_test_closeout only with MIMS_ISOLATED_TEST=1, alongside original focused DB.
+Regression rejects development/unapproved databases. No dev reset or migration rewrite.
+M1-owned incoming parameter component had only a documented EOF blank-line cleanup.
 
-## Verified state
-
-npm run verify:customer-agent-document: 134 tests pass, zero fail/skip; all 14 migrations
-rebuild cleanly/reapply/verify, typecheck/lint pass. Test cluster removed. Development
-DB received only new 0221/0222 additively and verifies; existing data was not reset.
-Service/concurrency fixtures that commit can run only in the disposable named DB.
-
-## What comes next
-
-P02-M02-T04 registration service is READY with T02/T03 and I-1/I-2 dependencies met.
-Next documented branch: feat/p02-m02-customer-registration. T05 API integration remains
-TODO; its specific task card describes prebuilt screens, despite older tracker FE label.
-M1 scoped runtime grants/RLS and generic audit integration are needed before exposing
-customer routes. Do not grant broad access or use owner credentials at runtime.
-The partial index only supplies at most one assignment; registration/reassignment must
-guarantee existence. Do not invoke verifyDocument's separate transaction on uncommitted
-registration rows. Full contract/review: .agent/handoffs/p02-m02-t02-t03-customer-agent-document.md.
-
-## Persistent constraints
-
-User committed T01 and switched to the current branch before this task. Current changes
-remain uncommitted: user prohibits assistant commits, merges and PR creation.
-No push performed. User Phase 2 approval persists. Earlier uncommitted Phase 1 closeout
-repairs are absent; do not claim those earlier tests certify this checkout. Historical
-checkpoint records that condition. Legacy migration-runner test resets mims_dev and edits
-an existing migration; exclude it from development-DB verification. No other owner's
-implementation or old migration changed. No UI added or imprint required.
+Tracker: P0 6 DONE; P1 19 DONE; P2 5 DONE/1 READY/10 TODO. T01/T02/T03 DONE, T04 READY
+here. M1 runtime grants/RLS/audit and M3 opening remain pending; owner tests do not certify
+runtime security. Existing document verifier role lock needs narrowing before exposure.
+Historical Phase 2 entry approval persists; no later approval. /imprint not applicable.

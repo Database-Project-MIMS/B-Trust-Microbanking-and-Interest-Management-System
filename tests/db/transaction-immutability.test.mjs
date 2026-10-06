@@ -46,7 +46,7 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
         INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount)
         VALUES ($1, $2, $3, $4, 'DEPOSIT', 0)
       `, [accountId, userId, channelId, `TXN-${ts}-2`]),
-      (err) => err.code === '23514' || err.sqlState === '23514'
+      (err) => err.code === '23514' || err.sqlstate === '23514'
     );
   });
 
@@ -56,7 +56,7 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
         INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount)
         VALUES ($1, $2, $3, $4, 'REFUND', 100.00)
       `, [accountId, userId, channelId, `TXN-${ts}-3`]),
-      (err) => err.code === '23514' || err.sqlState === '23514'
+      (err) => err.code === '23514' || err.sqlstate === '23514'
     );
   });
 
@@ -65,8 +65,8 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
       query(`UPDATE transaction SET amount = 200.00 WHERE transaction_id = $1`, [validTxnId]),
       (err) =>
         err.code === '42501' ||
-        err.sqlState === '42501' ||
-        ((err.code === 'P0001' || err.sqlState === 'P0001') && err.message?.includes('TRANSACTION_IMMUTABLE'))
+        err.sqlstate === '42501' ||
+        ((err.code === 'P0001' || err.sqlstate === 'P0001') && err.message?.includes('TRANSACTION_IMMUTABLE'))
     );
   });
 
@@ -75,8 +75,8 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
       query(`DELETE FROM transaction WHERE transaction_id = $1`, [validTxnId]),
       (err) =>
         err.code === '42501' ||
-        err.sqlState === '42501' ||
-        ((err.code === 'P0001' || err.sqlState === 'P0001') && err.message?.includes('TRANSACTION_IMMUTABLE'))
+        err.sqlstate === '42501' ||
+        ((err.code === 'P0001' || err.sqlstate === 'P0001') && err.message?.includes('TRANSACTION_IMMUTABLE'))
     );
   });
 
@@ -87,14 +87,14 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
         INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount)
         VALUES ($1, $2, $3, $4, 'DEPOSIT', 100.00)
       `, [fakeId, userId, channelId, `TXN-${ts}-4`]),
-      (err) => err.code === '23503' || err.sqlState === '23503'
+      (err) => err.code === '23503' || err.sqlstate === '23503'
     );
   });
 
   await t.test('7. Deleting referenced transaction_channel is rejected', async () => {
     await assert.rejects(
       query(`DELETE FROM transaction_channel WHERE channel_id = $1`, [channelId]),
-      (err) => err.code === '42501' || err.sqlState === '42501' || err.code === '23503' || err.sqlState === '23503'
+      (err) => err.code === '42501' || err.sqlstate === '42501' || err.code === '23503' || err.sqlstate === '23503'
     );
   });
 });
