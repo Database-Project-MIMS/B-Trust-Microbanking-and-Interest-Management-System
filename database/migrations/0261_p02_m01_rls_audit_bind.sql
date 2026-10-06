@@ -1,9 +1,3 @@
--- Migration: 0261_p02_m01_rls_audit_bind.sql
--- Tasks: P02-M01-T01 (RLS policies), P02-M01-T02 (audit triggers) · Owner: Member 1 (Nadija)
--- Placed after 0240 (account) / 0260 because it binds to customer and account. 0200/0201 hold
--- the functions it uses. Number is outside M1's 0200-0219 block by user decision; see
--- .agent/open-questions.md.
--- RLS applies to the non-owner role mims_app (owner is deliberately not FORCEd so migrations work).
 
 BEGIN;
 
@@ -15,9 +9,6 @@ CREATE TRIGGER trg_audit_customer
 CREATE TRIGGER trg_audit_account
     AFTER INSERT OR UPDATE ON account
     FOR EACH ROW EXECUTE FUNCTION fn_audit_master_changes();
-
--- account_holder is delivered by M3 (P02-M03-T02). Bind if it already exists; otherwise M3's
--- migration must attach it (see .agent/handoffs/p02-m01-rls-audit-scope.md).
 DO $$
 BEGIN
     IF to_regclass('public.account_holder') IS NOT NULL THEN
@@ -59,8 +50,6 @@ CREATE POLICY account_update_scope ON account FOR UPDATE
     USING (fn_rls_can_write(branch_id))
     WITH CHECK (fn_rls_can_write(branch_id));
 
--- CUSTOMER sees only accounts it holds. Until M3's account_holder exists a CUSTOMER login sees
--- no accounts (fail-closed); M3's migration must then add the equivalent policy.
 DO $$
 BEGIN
     IF to_regclass('public.account_holder') IS NOT NULL THEN
