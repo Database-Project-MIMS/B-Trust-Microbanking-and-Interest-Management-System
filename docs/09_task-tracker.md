@@ -195,8 +195,8 @@ customer numbering/scope, avoiding dev's distinct ADR-0013. User controls public
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
 | P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | BLOCKED |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
-| P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 | TODO |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved | TODO |
+| P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved | READY |
 | P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 | TODO |
 | P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** | TODO |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 | TODO |

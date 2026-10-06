@@ -12,6 +12,10 @@ registration/search/profile/validation services plus dev's Phase 1 closeout repa
 No assistant commit, push or completed merge. Customer numbering/scope ADR renumbered
 to 0014 to avoid dev's distinct ADR-0013; decision content is unchanged.
 
+Phase 1 is verified; Phase 2 has started. M3's P02-M03-T01 (`account`, migration
+`0240`, `tests/db/account-constraints.test.mjs` 10/10) is DONE alongside M2's customer
+schema.
+
 ## Preserved implementation
 
 Original focused T04 evidence: 181 tests, clean 14-migration rebuild/reapply/verify,
@@ -29,12 +33,15 @@ ADR index and disposable SET ROLE harness remain as already reconciled in 5ef06f
 
 ## Task snapshot in this PR
 
-P0 6 DONE; P1 19 DONE; P2 6 DONE/1 BLOCKED/9 TODO; P3–P6 TODO.
-M2 T01–T04 and M3 account/M4 transaction schemas are technically DONE.
-T05 remains blocked on M1 scoped customer/child grants, RLS/audit coordination and
-real API/screen binding. Customer screens remain prototypes; M3 account_holder absent,
-so profile accounts is null. Owner-based tests do not certify runtime RLS.
+P0 6 DONE; P1 19 DONE; P2 7 DONE/1 READY/1 BLOCKED/7 TODO; P3–P6 TODO.
+T01 customer schema, T02 assignment, T03 documents and T04 registration (M2),
+M3 account and M3-T02 `account_holder` (0241), and M4 transaction schemas are DONE.
+M3-T03 is READY.
+M2-T05 remains blocked on M1 scoped customer/child grants, RLS/audit coordination
+and real API/screen binding. Customer screens remain prototypes. Owner-based tests
+do not certify runtime RLS.
 Existing T03 role FOR SHARE issue remains recorded for narrowing before exposure.
+Historical Phase 2 entry approval persists; no later phase approval is inferred.
 
 ## Approval and publication
 
