@@ -8,6 +8,10 @@ feat/p02-m02-customer-schema at 8fa18ba, with a local pending merge of origin/de
 76701e7. All eight documentation conflicts are reconciled. No merge commit,
 push, PR creation or merge into dev was performed by the assistant.
 
+Phase 1 is verified; Phase 2 has started. M3's P02-M03-T01 (`account`, migration
+`0240`, `tests/db/account-constraints.test.mjs` 10/10) is DONE alongside M2's customer
+schema.
+
 ## Preserved implementation
 
 Customer migration 0220 and 27 tests implement independent UUID/optional unique login,
@@ -26,7 +30,7 @@ The current result replaces neither historical count; it verifies the combined t
 
 ## Task snapshot in this PR
 
-P0 6 DONE; P1 19 DONE; P2 3 DONE/2 READY/11 TODO; P3–P6 TODO.
+P0 6 DONE; P1 19 DONE; P2 4 DONE/3 READY/9 TODO (M3-T02 `account_holder` 0241 DONE, M3-T03 READY); P3–P6 TODO.
 T01 customer schema, M3 account and M4 transaction schemas are DONE.
 M2 T02 assignment and T03 documents are READY. Their later implementations and T04
 registration remain on separate feature branches, not imported into PR #34.
