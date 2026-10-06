@@ -41,7 +41,7 @@ runner/health and Phase 2 transaction code existed despite stale statuses.
 
 Resolved from 184 passing tests, clean rebuild and verified migration inventory:
 Phase 1's 19 implementations are DONE locally; Phase 2 entry is approved by Vibodha;
-account and transaction schema tasks are DONE; customer schema is READY. The checkpoint
+account and transaction schema tasks are DONE; customer schema was READY at closeout. The checkpoint
 explicitly preserves user-controlled publication and does not claim lecturer approval.
 The more specific tracker/phase evidence now overrides the obsolete headers.
 
@@ -51,6 +51,31 @@ the phase/seed specification's 3 joint accounts rather than the stale tracker co
 The old OQ-01/04/08 blocked register and Member 4 overview no-transfer reminder were
 reconciled with ADR-0010/0011/0012; OQ-12/13/14 remain unresolved future-phase gates.
 No new financial schema decision or migration was introduced.
+
+### P02-M02-T01 source/documentation reconciliation — 2026-10-05
+
+The user approved Phase 2 entry earlier in this conversation and explicitly requested
+customer-schema implementation. The clean checkout at 3fe8689 had older TODO/
+Phase 0 headers and no earlier uncommitted closeout files. The restored historical
+checkpoint records approval without claiming those absent repairs are integrated.
+This task proceeds under the user's retained authorization; other task statuses are
+not recertified by the customer-schema change.
+
+Part B.4 is expanded to match the approved task card's customer_number, lifecycle,
+required fields and timestamps. The card's example schema_migration(version,name)
+insert is corrected: the actual runner records filename/checksum. No new identity
+decision is needed; ADR-0007 remains authoritative.
+
+### PR #34 conflict reconciliation — 2026-10-06
+
+The missing closeout files are now committed on `origin/dev` (fad4f13, integrated by
+76701e7/PR #33). Conflict resolution retains that checkpoint/evidence and the implemented
+0220 customer schema. Phase 1 remains 19 DONE; Phase 2 is 3 DONE/2 READY/11 TODO in this
+PR's tree. T02/T03/T04 delivery on later feature branches is not imported here. Earlier
+184-test/65-test evidence is historical; the combined tree is verified separately.
+PR #34 targets the actual integration branch `dev`; generic `develop` examples describe
+the same integration role. No branch rename, new phase approval or financial schema
+decision is introduced. Commit/push/merge remain the user's actions.
 
 
 ### OQ-05 — Customer login is optional

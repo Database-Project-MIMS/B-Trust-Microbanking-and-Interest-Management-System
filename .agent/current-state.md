@@ -1,62 +1,41 @@
 # Current State
 
-**Last updated:** 2026-10-05 · **Updated by:** user-authorized Phase 1 closeout
+**Updated:** 2026-10-06 · **Owner:** M2, PR #34 conflict resolution
 
-## Phase and approval
+## Current checkout
 
-Phase 1's 19 task implementations are verified. Vibodha explicitly requested resolving
-the remaining checks, reconciling statuses and recording approval. Phase 2 entry is
-approved for this verified local tree; see [checkpoint](checkpoints/phase-01-checkpoint.md).
-This records Vibodha's approval, not lecturer/team approval or Git integration.
+feat/p02-m02-customer-schema at 8fa18ba, with a local pending merge of origin/dev
+76701e7. All eight documentation conflicts are reconciled. No merge commit,
+push, PR creation or merge into dev was performed by the assistant.
 
-## Verified state
+## Preserved implementation
 
-- All 11 numbered migrations rebuild from empty in a disposable PostgreSQL 18.6 cluster.
-- 184 tests pass, 0 fail, 0 skipped; typecheck, lint and production build pass.
-- Existing local development data was retained: pending 0160/0240/0260 migrations and
-  grants were applied additively. Exact migration filename/checksum verification passes.
-- I-1 authentication/RBAC/SQL scope/CSRF, I-2 data access and I-8 seed framework exist.
-- Health validates sessions; only ADMIN/CENTRAL_OPS see infrastructure details.
-- ADMIN parameter edits are validated, CSRF-protected, locked and atomically audited.
-- Session creation/audit writes use the caller transaction. SQL enforces configured
-  inactivity/absolute deadlines; active sessions refresh within the absolute cap.
-- Migration/rebuild tests use disposable databases and fixture copies. Windows seed
-  ordering handles CRLF. Applied migration files were not edited.
+Customer migration 0220 and 27 tests implement independent UUID/optional unique login,
+required unique number/NIC/email, restrictive FKs, past birth date/status checks,
+timestamps and branch/trigram indexes. Original focused verification: 65 tests,
+12-migration rebuild/reapply/verify, typecheck/lint. Customer API/UI remains later work.
+[Customer contract](handoffs/p02-m02-t01-customer-schema.md).
 
-## Task snapshot
+dev now contains the Phase 1 closeout repairs (fad4f13, integrated through PR #33).
+Preserve its security/session/health/parameter/tooling fixes and historical 184-test
+checkpoint. The earlier missing-repairs warning applies to the old checkout only.
+Combined-tree verification passed on 2026-10-06: npm run verify:phase1, 211 tests
+(26 suites), zero failures/skips, clean 12-migration rebuild, typecheck, lint and
+production build. Disposable PostgreSQL 18.6 cluster removed. Development data retained.
+The current result replaces neither historical count; it verifies the combined tree.
 
-| Phase | Tasks | Status |
-|---|---|---|
-| P0 | 6 | DONE |
-| P1 | 19 | DONE in verified local tree |
-| P2 | 16 | 2 DONE, 1 READY, 13 TODO |
-| P3 | 14 | TODO; Phase 2 exit and OQ-12/OQ-14 gates |
-| P4 | 14 | TODO; Phase 3 exit and OQ-13/OQ-14 gates |
-| P5 | 15 | TODO |
-| P6 | 13 | TODO |
+## Task snapshot in this PR
 
-P02-M03-T01 account and P02-M04-T01 immutable transaction schemas are DONE.
-Customer, holder, mandate, RLS and financial posting work remains pending.
-Full tracker: [09_task-tracker.md](../docs/09_task-tracker.md).
+P0 6 DONE; P1 19 DONE; P2 3 DONE/2 READY/11 TODO; P3–P6 TODO.
+T01 customer schema, M3 account and M4 transaction schemas are DONE.
+M2 T02 assignment and T03 documents are READY. Their later implementations and T04
+registration remain on separate feature branches, not imported into PR #34.
+M1 customer grants/RLS/audit and remaining account-opening work are still pending.
+Historical Phase 2 entry approval persists; no later phase approval is inferred.
 
-## Next task
+## Publication
 
-**P02-M02-T01 — customer schema is READY**, on existing
-`feat/p02-m02-customer-schema`. Use migration 0220 in M2's reserved block and
-ADR-0007: independent customer_id, optional unique app_user_id. No customer schema
-implementation was added in this session. Customer assignment/document work follows;
-M1 RLS/audit and M3 holder work depend on the customer table.
-
-## Publication and ownership
-
-All closeout edits remain uncommitted. Do not commit, merge or create a PR without
-the user's instruction. Cross-member repairs are documented in
-[handoff](handoffs/phase-01-closeout-2026-10-05.md); ownership is unchanged.
-Other checkouts must receive these repairs before relying on the checkpoint.
-
-## Repeat verification
-
-`npm run verify:phase1` provisions/removes an isolated local PostgreSQL cluster.
-`npm test`, `npm run test:db` and `npm run test:api` use the same isolation.
-Set PG_BIN if local PostgreSQL binaries are outside the Windows discovery locations/PATH.
-The complete local result is in ignored `test-results/phase1.log`.
+User requested conflict resolution and will commit/push/merge. The local merge uses
+--no-commit; resolving/staging it does not create a commit or update dev.
+[Resolution handoff](handoffs/p02-m02-t01-pr34-conflict-resolution.md).
+No UI was newly built. Incoming dev changes retain their original ownership.

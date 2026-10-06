@@ -17,6 +17,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "verify:customer-schema": "node scripts/verify-customer-schema.mjs",
     "db:create": "bash scripts/db-create.sh",
     "db:migrate": "node scripts/migrate.mjs up",
     "db:grants": "node --env-file=.env scripts/apply-grants.mjs",

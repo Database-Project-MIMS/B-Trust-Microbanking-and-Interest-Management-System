@@ -26,6 +26,13 @@ database are what make the rule true.
 
 ## Products and eligibility
 
+**Customer schema enforcement (P02-M02-T01, 0220):** customer_number,
+nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
+app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
+ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
+ACTIVE/INACTIVE. Assignment, identity masking, audited registration and RLS remain
+their later service/database tasks. See schema Part B.4 for the implemented definition.
+
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; partial unique index on `customer_agent(customer_id) WHERE is_active` (G-10) |

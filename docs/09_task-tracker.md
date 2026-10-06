@@ -12,8 +12,9 @@ satisfied.
 
 **2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
 Phase 2 entry after verification. `DONE` below records verified implementation in the
-local working tree; closeout repairs await user-controlled review/publication because
-the user explicitly prohibited assistant commits, merges and PR creation. See the
+local working tree. Closeout repairs were subsequently committed in `fad4f13` and
+integrated into `dev` by PR #33 (`76701e7`). Current PR #34 customer-schema integration
+remains user-controlled; no assistant commit, push or completed merge is authorized. See the
 [approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 ---
@@ -24,12 +25,12 @@ the user explicitly prohibited assistant commits, merges and PR creation. See th
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 13 | 1 | 0 | 0 | 0 | 2 |
+| P2 | 16 | 11 | 2 | 0 | 0 | 0 | 3 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **69** | **1** | **0** | 0 | 0 | **27** |
+| **All** | **97** | **67** | **2** | **0** | 0 | 0 | **28** |
 
 ---
 
@@ -163,17 +164,24 @@ hardcoded in TypeScript.
 The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
 
 **Progress:** P02-M03-T01 and P02-M04-T01 are DONE (`0240` account and `0260`
-immutable transaction migrations). P02-M02-T01 is READY on the existing branch
-`feat/p02-m02-customer-schema`; no customer table has been implemented yet.
+immutable transaction migrations). P02-M02-T01 is also technically DONE on
+`feat/p02-m02-customer-schema`: migration 0220, 27 customer tests, schema/rule/index
+documentation and [customer handoff](../.agent/handoffs/p02-m02-t01-customer-schema.md).
+The original focused verification passed 65 tests. PR #34 is open; its local conflict
+resolution combines this work with `dev`'s Phase 1 closeout. Combined verification:
+211 tests pass, clean 12-migration rebuild, typecheck/lint/production build pass.
+User controls commit/push/merge; see the resolution handoff for current evidence.
+P02-M02-T02/T03 are READY in this PR's tree; later assignment/document/registration
+deliveries remain on their own branches. Customer runtime grants/RLS/audit remain M1 work.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
 | P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | TODO |
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | TODO |
 | P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
-| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | READY |
-| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | TODO |
-| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | TODO |
+| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
+| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | READY |
+| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | READY |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | TODO |
 | P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 | TODO |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |

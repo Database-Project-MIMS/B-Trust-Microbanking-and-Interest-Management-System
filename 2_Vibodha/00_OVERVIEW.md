@@ -11,16 +11,16 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-05:** Phase 1 T01–T04 verified DONE. P02-M02-T01 customer schema READY on feat/p02-m02-customer-schema.
+**Reconciled 2026-10-06 for PR #34:** Phase 1 T01–T04 and P02-M02-T01 customer schema DONE on feat/p02-m02-customer-schema.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs remain uncommitted under the user publication constraint.
+Closeout repairs are now in `origin/dev`; customer-schema conflict resolution awaits the user's commit/push/merge.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
 | ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
 | ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~~3~~ |
 | ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~~8~~ |
-| 04 | [Customer Schema](04_P2-T01_customer-schema.md) | P2 | T01 | `customer` table, identity uniqueness, trigram search index | ~4 |
+| ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
 | 05 | [Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md) | P2 | T02–T03 | `customer_agent` (one-active-assignment), `customer_document` | ~6 |
 | 06 | [Customer Registration Service](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, search, profile | ~10 |
 | 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API | ~6 |
@@ -61,7 +61,10 @@ consume from M1 and M4)*
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
 Identity gate **OQ-05** is resolved by ADR-0007: customer login is optional and
-`customer` uses an independent primary key. Phase 2 entry was approved on 2026-10-05; P02-M02-T01 is READY.
+`customer` uses an independent primary key. Phase 2 entry was approved on 2026-10-05;
+T01 schema is implemented and verified. Assignment/document tasks are READY in this
+PR's tree. The 2026-10-06 conflict resolution restores `dev`'s closeout changes;
+see the [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 ---
 

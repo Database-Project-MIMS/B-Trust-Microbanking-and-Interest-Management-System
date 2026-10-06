@@ -144,7 +144,7 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   removed before audit persistence.
 
 ### `customer`
-Subtype of `user` in the current ERD. G-20 is resolved by ADR-0007: Phase 2 will implement
+Subtype of `user` in the current ERD. G-20 is resolved by ADR-0007: migration 0220 implements
 the approved independent identity described in Part B.4 instead of this ERD key shape.
 
 | Column | Type | Notes |
@@ -429,6 +429,38 @@ corresponding open question is resolved and an ADR exists.**
 `app_user_id uuid NULL UNIQUE FK → app_user`, instead of `PK,FK`. **Approved by ADR-0007**
 on 2026-09-29: customer login is optional and most customers are agent-managed. `agent`
 keeps the subtype pattern.
+
+### Approved customer schema — P02-M02-T01
+
+The approved task card specifies this physical shape, replacing only Part A's
+customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `customer_id` | uuid | PK, defaults to gen_random_uuid(); independent of login |
+| `app_user_id` | uuid | NULL, UNIQUE, FK to app_user(user_id), ON DELETE RESTRICT |
+| `branch_id` | uuid | NOT NULL, FK to branch, ON DELETE RESTRICT |
+| `customer_number` | varchar(30) | NOT NULL, UNIQUE; assigned by later registration workflow |
+| `nic_passport_no` | varchar(50) | NOT NULL, UNIQUE |
+| `full_name` | varchar(150) | NOT NULL |
+| `date_of_birth` | date | NOT NULL, CHECK before CURRENT_DATE |
+| `gender` | varchar(20) | NULL |
+| `phone` | varchar(20) | NULL |
+| `address` | varchar(255) | NULL |
+| `email` | varchar(150) | NOT NULL, UNIQUE |
+| `status` | varchar(20) | NOT NULL, default ACTIVE; CHECK ACTIVE/INACTIVE |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); shared set_updated_at trigger |
+
+Indexes: `ix_customer_branch` B-tree on branch_id and `ix_customer_full_name_trgm`
+GIN on full_name using gin_trgm_ops. Named constraints provide deterministic error
+mapping. SQL uniqueness is exact/case-sensitive; normalization and identity masking
+belong to the later registration/search service. Assignment/document/holder FKs,
+customer audit, RLS and runtime grants remain their separately assigned tasks.
+
+Verified 2026-10-05: 27 customer constraints/search/rollback tests and 38 organization
+regressions pass. All 12 migrations rebuild from empty and local 0220 applies without
+reset. Complete contract: `.agent/handoffs/p02-m02-t01-customer-schema.md`.
 
 ## B.5 Denormalisation register
 

@@ -1,53 +1,23 @@
-# Memory — MIMS
+# Memory — PR #34 conflict resolution
 
-> Current state maintained by /remember save; no secrets or customer data.
+> /remember save: non-sensitive continuation state.
 
-**Last updated:** 2026-10-05
-**Current phase:** Phase 1 verified; Phase 2 entry approved by Vibodha.
+**Updated:** 2026-10-06
+**Branch:** feat/p02-m02-customer-schema
 
-## What was completed
+User asked to resolve PR #34 conflicts and will commit/merge. origin/dev is 76701e7;
+feature HEAD is 8fa18ba. A local --no-commit merge is pending. No assistant commit,
+push or completed merge into dev. Do not import later T02/T03/T04 feature branches.
 
-Resolved the Phase 1 exit blockers: authenticated/role-gated health service/page,
-ADMIN parameter validation/CSRF/auditing, transaction-safe session creation,
-configured sliding inactivity/absolute expiry, login origin checks, strict CSRF,
-exact migration ledger verification, atomic migration DDL/ledger writes, portable
-safe rebuild and Windows seed ordering. Tests no longer reset the development DB or
-edit actual migrations. Tracker, phase/member summaries and checkpoint were reconciled.
+Preserve customer migration 0220, 27 tests and docs/handoff plus dev's Phase 1 closeout
+repairs (fad4f13/PR #33). Historical 184-test closeout and 65-test customer results are
+distinct. Combined-tree verification passed: 211 tests (26 suites), zero failures/skips,
+clean 12-migration rebuild, typecheck/lint/production build. Disposable PostgreSQL 18.6
+cluster removed; development data preserved. Details:
+.agent/handoffs/p02-m02-t01-pr34-conflict-resolution.md.
 
-## Decisions
-
-ADR-0013 records isolated verification and restricted health details. User authorized
-cross-member closeout; owners retain their files. Phase approval applies to the verified
-working tree, not a published branch or lecturer approval. ADR-0007 remains the customer
-identity contract: independent customer_id and optional unique app_user_id.
-
-## Problems solved
-
-- Mere-cookie health access and swallowed page authorization: real session + page role guard.
-- Partial migration verification/destructive tests: exact ledger + disposable PG/fixtures.
-- CRLF seed load order skipped files on Windows: trimmed lines before resolving paths.
-- Session insertion outside caller transaction: shared executor; SQL expiry and cookie cap.
-- Parameter route SQL/missing CSRF/weak inputs: service-owned locked transaction and validation.
-- Mapped errors/PG18 RESTRICT assertion mismatch: preserved safe sqlstate and precise assertions.
-
-## Current state
-
-184 tests pass, 0 fail, 0 skipped; typecheck, lint, production build and clean rebuild pass.
-All 11 local migrations verify. Existing dev data retained; pending migrations/grants
-applied without reset. All 19 Phase 1 tasks verified; Phase 2 has 2 DONE, 1 READY, 13 TODO.
-Full evidence: [.agent/checkpoints/phase-01-checkpoint.md](.agent/checkpoints/phase-01-checkpoint.md).
-
-## Next session starts with
-
-P02-M02-T01 customer schema is READY on existing `feat/p02-m02-customer-schema`.
-Read the mandatory documents and architect the task; migration 0220 is free in M2's block.
-Customer implementation has not started. Do not redo the completed Phase 1 verification
-unless code changes or a new concern requires it.
-
-## Constraints and open items
-
-User prohibits assistant commits, merges and PR creation. Closeout is uncommitted;
-user-controlled integration is still pending. No merged migration was edited.
-Phase 3/4 retain OQ-12/OQ-13/OQ-14 and their own exit/entry approval gates; optional
-customer credential provisioning needs OQ-11 before its UI. RLS/holder/mandate/financial
-posting and full transactional seed sets remain future work.
+Tracker reconciled: P0 6 DONE, P1 19 DONE, P2 3 DONE/2 READY/11 TODO. T01 is DONE;
+T02/T03 READY in this tree, later implementations remain on their own branches.
+M1 customer grants/RLS/audit and M3 holder/opening work are pending. Phase 2 entry
+approval persists; no later phase approval. Old missing-closeout warnings now historical.
+Use verify:phase1 for disposable full validation; normal development data is preserved.

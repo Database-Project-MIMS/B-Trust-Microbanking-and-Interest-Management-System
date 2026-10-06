@@ -53,6 +53,7 @@ L01–L13.
 | `trg_account_prevent_branch_change` | M3 | `BEFORE UPDATE OF branch_id` on `account` | Owning branch is a snapshot taken at opening; never changes | ADR-0008, D-4 | L08 |
 | `trg_account_set_updated_at` | M3 | `BEFORE UPDATE` on `account` | Maintain the account modification timestamp | DB-CON-06 | L08 |
 | `trg_agent_set_updated_at` | M2 | `BEFORE UPDATE` on `agent` | Maintain the agent modification timestamp | DB-CON-06 | L08 |
+| `trg_customer_set_updated_at` | M2 | `BEFORE UPDATE` on `customer` | Maintain customer modification timestamp; migration 0220 | DB-CON-06, P02-M02-T01 | L08 |
 
 > **Design note.** Where a constraint or index can enforce a rule, it does — a partial
 > unique index is atomic, race-free and cheaper than a trigger. Triggers are used for
@@ -109,7 +110,8 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | `ix_audit_entity` `(entity_type, entity_id)` | `audit_log` | Entity history (§6.7) |
 | `ix_account_branch_status` `(branch_id, status)` | `account` | Branch-scoped listing |
 | `ix_account_holder_customer` `(customer_id)` | `account_holder` | "My accounts", RPT-05 |
-| `ix_customer_name_trgm` GIN `(full_name gin_trgm_ops)` | `customer` | Fuzzy name search — **L10 non-B-tree index** |
+| `ix_customer_full_name_trgm` GIN `(full_name gin_trgm_ops)` | `customer` | Fuzzy (%) and substring ILIKE name search; implemented in 0220 — **L10 non-B-tree index** |
+| `ix_customer_branch` B-tree `(branch_id)` | `customer` | Branch-scoped customer list/search and branch FK lookup; implemented in 0220 |
 | `ix_agent_branch_status` `(branch_id, status)` | `agent` | Branch-scoped active-agent listing |
 
 **Approximately 20 indexes.** Index choice, B-tree vs GIN, and selectivity are covered by
@@ -128,7 +130,7 @@ L09/L10; each `indexes/*.sql` file records the `EXPLAIN` plan before and after.
 
 | Concept | Where it is demonstrated |
 |---|---|
-| L02 ER model, subtypes, intersection entities | `agent`/`customer` subtypes; `account_holder`, `customer_agent` |
+| L02 ER model, subtypes, intersection entities | `agent` subtype; independent customer with optional login (ADR-0007); `account_holder`, `customer_agent` |
 | L03 DDL, sequences, basic SQL | All migrations; reference/number generators |
 | L04/L06 Normalisation to 3NF, documented denormalisation | `04_database-schema.md` §B.5, §B.6 |
 | L05 Joins, aggregation, views, constraints | All 10 views; `CHECK`/`UNIQUE`/FK throughout |

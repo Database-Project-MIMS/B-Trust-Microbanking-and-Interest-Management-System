@@ -9,6 +9,9 @@ the checks below passed; this does not claim approval by the lecturer or other m
 
 ## Evidence
 
+This is the original 2026-10-05 closeout record. Its test counts and "Next work"
+describe the pre-customer-schema tree. For current task status, use docs/09_task-tracker.md.
+
 - `npm run verify:phase1` / its script: disposable PostgreSQL 18.6 cluster; all 11
   numbered migrations apply from empty, ordered seeds load, and verification succeeds.
 - **184 tests pass, 0 fail, 0 skipped**, covering the current DB/API/workflow suites.
@@ -61,3 +64,13 @@ This approval applies to the verified working tree. Closeout changes remain unco
 at the user's request. The user controls review, commit, push, merge and PR creation;
 none was performed by the assistant. Other checkouts need these repairs before relying
 on this checkpoint. A later failing check must reopen the affected task/phase gate.
+
+## Integration update — 2026-10-06, PR #34
+
+The previously uncommitted closeout was committed as fad4f13 and integrated into
+origin/dev by PR #33 (76701e7). The user requested resolving PR #34's conflicts while
+retaining commit/merge control. Its local pending merge restores these repairs and
+retains customer migration 0220/tests. The old missing-repairs condition is historical,
+not the condition of this combined working tree. Combined verification is recorded in
+../handoffs/p02-m02-t01-pr34-conflict-resolution.md; it does not reuse 184 as a new count.
+Phase 2 approval persists; no Phase 2 exit or Phase 3 entry approval is implied.
