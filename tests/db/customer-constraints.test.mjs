@@ -227,12 +227,12 @@ describe('P02-M02-T01: customer schema constraints', () => {
     const result = await client.query('SELECT customer_id FROM customer WHERE customer_id = $1', [customer.customer_id]);
     assert.equal(result.rows.length, 0);
   });
-  test('runtime customer access remains denied until M1 grants scoped privileges', async () => {
+  test('runtime customer access is scoped: read/insert allowed (RLS-restricted), delete denied', async () => {
     const result = await client.query(
       `SELECT has_table_privilege('mims_app', 'customer', 'SELECT') AS can_read,
               has_table_privilege('mims_app', 'customer', 'INSERT') AS can_insert,
               has_table_privilege('mims_app', 'customer', 'DELETE') AS can_delete`,
     );
-    assert.deepEqual(result.rows[0], { can_read: false, can_insert: false, can_delete: false });
+    assert.deepEqual(result.rows[0], { can_read: true, can_insert: true, can_delete: false });
   });
 });

@@ -199,3 +199,6 @@ links the debit and credit legs. ERD Assumption 4 is dropped.
 3. If it affects schema, architecture, or a cross-member contract: write an ADR in
    `decisions/`.
 4. If it unblocks a task, update that task's status in `docs/09_task-tracker.md`.
+
+## P02-M01: migration number outside M1 block (resolved by user, 2026-10-06)
+0200/0201 (M1 block) run before customer 0220 / account 0240, so triggers and RLS policies cannot bind there. Functions stay in 0200/0201; binding is 0261_p02_m01_rls_audit_bind.sql (outside 0200-0219). Watch for M4 using 0261 in its own block (different filename, no clash).

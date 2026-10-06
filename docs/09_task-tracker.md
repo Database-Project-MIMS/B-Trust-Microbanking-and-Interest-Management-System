@@ -186,8 +186,8 @@ customer numbering/scope, avoiding dev's distinct ADR-0013. User controls public
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
-| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | TODO |
-| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | TODO |
+| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | DONE |
+| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | DONE |
 | P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
 | P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
