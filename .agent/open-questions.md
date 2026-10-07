@@ -20,20 +20,24 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
   Migration recording follows actual filename/checksum runner, not card version/name SQL.
 - docs/15's permission matrix permits ADMIN registration while docs/05 and the specific
   M2 task card list AGENT/BRANCH_MANAGER. T03 verification and T04 registration follow
-  the narrower mutation contract and deny ADMIN (ADR-0014). M1 should reconcile before exposure.
+  the narrower mutation contract and deny ADMIN (ADR-0014). T05 preserves this restriction;
+  M1 should reconcile docs/15 without broadening runtime mutation roles.
 - Tracker T05 describes frontend work; the specific 06 task card describes API integration
   with prebuilt dashboard screens. Inspection found prototypes in
   components/mims/workflow-screen.tsx, not completed dashboard customer bindings. T04
-  services are complete locally; T05 authenticated API/screen integration remains pending.
-- Customer runtime grants/RLS and generic audit bindings are absent in this checkout.
-  M1 integration is required before exposing customer services through runtime routes;
-  T04's actual app-role test uses temporary disposable grants, not runtime policies.
+  services were completed in T04; authenticated live routes/screens are completed by T05.
+- Historical missing-runtime blocker resolved by merged M1 0200/0201/0261 and T05 0223.
+  Customer routes use all three transaction-local RLS values and the customer audit trigger.
+  Current tests use migrated mims_app grants/policies, with no temporary child grants.
 - Pre-existing T03 verifyDocument locks role FOR SHARE, requiring an absent write grant.
   M2 must narrow that lock before verification endpoint exposure; retain read-only role
   permissions. T04 locks only writable staff/user/branch rows and its app-role test passes.
-- M3 account_holder is absent. T04 profile accounts is null until it lands; the disposable
-  fixture checks a future join contract, not actual M3 integration. No holder migration
-  or additional database entity was invented by M2.
+- M3 account_holder is merged (0241). T05 reads the real relation; fixture tests no longer
+  create/drop a substitute table. Empty account arrays mean no links; balances stay strings.
+- Shared overview/state records lagged the merged tracker: M1's overview struck T03 as
+  complete while its tracker row is TODO, and M3's overview still awaited the holder table.
+  2026-10-07 summary reconciliation uses existing tracker rows; no new other-member completion.
+  Historical PR #36 conflict-resolution notes retain their original dated snapshots.
 
 | ID    | Question                                                                                   | Recommendation                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |

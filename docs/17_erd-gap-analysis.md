@@ -356,6 +356,13 @@ created_at on every table and updated_at on mutable rows. 0221/0222 include thos
 the shared timestamp trigger; uploaded_date remains a distinct document field. No new
 business entity or identity decision is introduced. docs/04 B.4a records the exact shape.
 
+**2026-10-07 — P02-M02-T05:** session-authenticated HTTP tests now prove the same
+assignment-at-registration-commit and duplicate/child-failure rollback contract under
+the migrated application role. New 0223 adds child RLS/SELECT/INSERT scope, without
+changing the ERD entities. ADR-0015 reconciles T04's explicit audit with M1's merged
+customer trigger (one sanitized event); the ADMIN permission-document discrepancy
+remains recorded in open questions, with the narrower mutation contract retained.
+
 ---
 
 ## G-11 · Product rates not effective-dated; FD does not snapshot its rate

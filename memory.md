@@ -1,30 +1,31 @@
-# Memory — PR #36 conflict resolution
+# Memory — P02-M02-T05 customer API and screens
 
-> /remember save: non-sensitive continuation state.
+**Updated:** 2026-10-07 · /remember save (non-sensitive continuation state)
+**Branch:** feat/p02-m02-customer-api-ui · base dev 25fc264
 
-**Updated:** 2026-10-06
-**Branch:** feat/p02-m02-customer-registration
+## Completed
 
-User requests conflict resolution and PR #35-then-#36 merge order, retaining publication.
-HEAD 5ef06fd; dev 2e338a6; PR #35's latest pushed branch 888b983 contains that dev tip.
-PR #35 is not yet merged into dev. A local --no-commit merge of that dependency is
-pending on PR #36; nine current documentation conflicts reconciled.
-Preserve customer/relation/registration implementations and dev closeout repairs.
-Earlier combined verification passed: 328 tests in 31 suites, 0 failures/skips,
-clean 14-migration rebuild, TypeScript/lint/production build. Historical focused T04:
-181 tests. The holder fixture now removes its own accounts before seed validation.
-.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md.
-Fresh refresh verification passed 328 tests (31 suites), 0 failures/skips, clean
-14-migration rebuild, TypeScript/lint/production build. See
-.agent/handoffs/p02-m02-t04-pr36-after-pr35.md.
-This refresh changes documents only. ADR index and harness setup are already resolved.
+Customer registration/search/profile routes and live screens; M2 migration 0223 child
+SELECT/INSERT RLS; shared RLS context and one sanitized customer-trigger audit.
+M3 holder relation is merged and used directly. M2 T01–T05 technically DONE locally.
+365 tests in 35 suites, no failures/skips; clean isolated 19-migration rebuild,
+TypeScript/lint/build; synthetic browser workflow and duplicate/mobile checks pass.
+Handoff/review: .agent/handoffs/p02-m02-t05-customer-api-ui.md. ADR-0015 records integration.
+UI patterns saved to ui-registry.md.
 
-Customer numbering/scope ADR renumbered 0014 to avoid dev closeout ADR-0013; references
-updated, decision unchanged. Fixture guard supports full isolated test DB only with
-its marker. Fresh cluster grants mims_app to owner for SET ROLE regressions, never
-owner to app. No production grants/RLS changes or dev reset; ownership notes recorded.
+## Decisions and remaining work
 
-Tracker: P0 6 DONE; P1 19 DONE; P2 6 DONE/1 BLOCKED/9 TODO. M2 T01–T04 DONE; T05
-blocked on scoped runtime security/API/UI. M3 holder absent; profile accounts null.
-Existing T03 role lock issue remains recorded before exposure. Historical Phase 2
-entry approval persists; no later approval. No new UI/imprint or assistant publication.
+Retain existing AGENT/BRANCH_MANAGER mutation roles and server-side identity masking.
+No upload/verification route, login provisioning or reassignment in T05.
+M1 retains security review of 0223 and its broader route task. Pre-existing internal
+verifier role lock/scoped UPDATE gap must be resolved before exposure.
+P2: 10 DONE / 1 READY / 5 TODO; account opening/mandate/APIs/UI/full seeds incomplete.
+Phase 2 entry approved 2026-10-05; no Phase 2 exit or Phase 3 entry approval.
+
+## Next session
+
+Review the uncommitted diff and handoff. The user controls commit/push/PR/merge;
+the assistant must not publish. Normal development database was not reset or migrated.
+Apply new migrations through the existing migration runner when using this branch.
+Historical PR #35/#36 conflict histories stay in dated handoffs; current dev includes
+PR #35, registration PR #38, holder PR #37 and security PR #40.

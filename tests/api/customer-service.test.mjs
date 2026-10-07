@@ -35,8 +35,14 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     assert.deepEqual(rows.rows[0], { app_user_id: null, nic_passport_no: 'P00123456', email: 'synthetic@example.invalid', full_name: 'Synthetic Customer' });
     const audit = await client.query('SELECT user_id, actor_type, old_values, new_values FROM audit_log WHERE entity_id = $1', [created.customerId]);
     assert.equal(audit.rows.length, 1);
-    assert.deepEqual(audit.rows[0], { user_id: fixture.agentId, actor_type: 'USER', old_values: null,
-      new_values: { customer_number: created.customerNumber, branch_id: fixture.branchId, assigned_agent_id: fixture.agentId, document_count: 2 } });
+    assert.equal(audit.rows[0].user_id, fixture.agentId);
+    assert.equal(audit.rows[0].actor_type, 'USER');
+    assert.equal(audit.rows[0].old_values, null);
+    assert.equal(audit.rows[0].new_values.customer_number, created.customerNumber);
+    assert.equal(audit.rows[0].new_values.branch_id, fixture.branchId);
+    assert.equal(audit.rows[0].new_values.nic_passport_no, '****3456');
+    assert.equal(audit.rows[0].new_values.email, 's***@***');
+    assert.ok(!JSON.stringify(audit.rows[0]).includes('synthetic@example.invalid'));
   });
   test('manager chooses an active ordinary agent in own branch', async () => {
     const created = await create({ agentId: fixture.secondAgentId }, manager());
@@ -224,7 +230,7 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     assert.equal(profile.assignmentHistory.filter(row => row.isActive).length, 1);
     assert.equal(profile.documents.length, 2);
     assert.ok(profile.documents.every(row => !('filePath' in row) && row.verifiedBy === null));
-    assert.equal(profile.accounts, null, 'Unimplemented M3 holder relation must not pretend no accounts exist.');
+    assert.deepEqual(profile.accounts, [], 'The merged holder relation has no accounts for this customer.');
     await assert.rejects(() => getCustomerProfile(created.customerId, actor(fixture)), { code: 'NOT_FOUND' });
   });
   test('another branch and missing profile use safe not-found responses', async () => {
@@ -251,19 +257,15 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     await assert.rejects(() => searchCustomers({}, actor(fixture)), { code: 'NOT_AUTHORIZED' });
     await assert.rejects(() => getCustomerProfile(created.customerId, actor(fixture)), { code: 'NOT_AUTHORIZED' });
   });
-  test('runtime customer privileges are not widened by service work', async () => {
+  test('merged runtime grants retain read-only role access and prohibit customer deletion', async () => {
     const result = await client.query("SELECT has_table_privilege('mims_app', 'customer', 'SELECT') AS read, has_table_privilege('mims_app', 'customer', 'INSERT') AS write");
-    assert.deepEqual(result.rows[0], { read: false, write: false });
+    assert.deepEqual(result.rows[0], { read: true, write: true });
+    const restricted = await client.query("SELECT has_table_privilege('mims_app', 'role', 'UPDATE') AS role_update, has_table_privilege('mims_app', 'customer', 'DELETE') AS customer_delete");
+    assert.deepEqual(restricted.rows[0], { role_update: false, customer_delete: false });
   });
   test('holder read contract preserves money strings and filters account branch', async () => {
     const created = await create();
-    // A disposable contract fixture exercises the future join; it is not M3's migration.
-    await client.query(`CREATE TABLE account_holder (
-      account_holder_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      account_id uuid NOT NULL REFERENCES account(account_id) ON DELETE RESTRICT,
-      customer_id uuid NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT,
-      joined_date date NOT NULL DEFAULT CURRENT_DATE,
-      created_at timestamptz NOT NULL DEFAULT now(), UNIQUE (account_id, customer_id))`);
+    // Exercise M3's merged relation without replacing or dropping its schema.
     const accounts = [];
     try {
       for (const branchId of [fixture.branchId, fixture.otherBranchId]) {
@@ -284,15 +286,13 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
       assert.equal(wide.accounts.length, 2);
       assert.ok(wide.accounts.every(account => typeof account.currentBalance === 'string'));
     } finally {
-      await client.query('DROP TABLE account_holder');
+      await client.query('DELETE FROM account_holder WHERE account_id = ANY($1::uuid[])', [accounts]);
       await client.query('DELETE FROM account WHERE account_id = ANY($1::uuid[])', [accounts]);
     }
   });
-  test('application role executes services with narrow synthetic customer grants and read-only roles', async () => {
-    // Test-only grants in the disposable cluster. Production grants/RLS remain M1 work.
+  test('application role executes services using migrated grants and RLS', async () => {
     const originalConnect = pool.connect;
     const cleanups = [];
-    await client.query('GRANT SELECT, INSERT ON customer, customer_document, customer_agent TO mims_app');
     pool.connect = async () => {
       const connection = await originalConnect.call(pool);
       const release = connection.release.bind(connection);
@@ -314,7 +314,6 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     } finally {
       pool.connect = originalConnect;
       await Promise.all(cleanups);
-      await client.query('REVOKE SELECT, INSERT ON customer, customer_document, customer_agent FROM mims_app');
     }
   });
 });

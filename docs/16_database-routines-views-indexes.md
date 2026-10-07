@@ -148,7 +148,10 @@ P02-M02-T03's server service verifyDocument uses one withTransaction for paired
 verification plus explicit minimal audit; row locking serializes verification retries.
 It sets local app.current_user_id/app.current_branch_id for future M1 policies.
 0221/0222 do not grant runtime child-table access. Generic child/customer audit bindings
-remain M1-owned; the explicit verification audit does not cover arbitrary SQL mutations.
+are M1-owned; the explicit verification audit does not cover arbitrary SQL mutations.
+T05's new 0223 grants scoped child SELECT/INSERT with RLS; no child UPDATE/DELETE.
+M1's merged customer audit binding supplies registration's sole sanitized INSERT event,
+using the shared transaction-local RLS context. No routine, view or index is added by T05.
 
 | Object | Purpose |
 |---|---|

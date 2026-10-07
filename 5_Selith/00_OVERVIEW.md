@@ -8,9 +8,9 @@
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-05:** Phase 1 T01–T03 verified DONE. P02-M05-T01 full seed sets still wait for account opening.
+**Reconciled 2026-10-07:** Phase 1 T01–T03 retain DONE. Phase 2 full seed sets still wait for account opening; M2's disposable browser/test fixtures do not satisfy the seed targets.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs remain uncommitted under the user publication constraint.
+Closeout is merged into dev; the user retains all publication control.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|

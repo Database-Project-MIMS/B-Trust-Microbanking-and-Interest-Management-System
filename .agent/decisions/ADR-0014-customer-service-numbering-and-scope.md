@@ -23,3 +23,8 @@ This does not approve a change to M1's role matrix/grants/RLS or a new endpoint.
 ADMIN discrepancy is already recorded in open questions. Runtime controller integration
 is T05 plus M1 security work. M3 account_holder is currently absent; profile accounts
 is null until its published contract is available, then links follow account scope.
+
+2026-10-07 integration update: account_holder and M1 security are now merged.
+ADR-0015 supersedes the explicit registration audit format above with M1's sanitized
+customer-trigger event and completes runtime route/child-scope integration for T05.
+Numbering, mutation roles and response masking remain as specified here.

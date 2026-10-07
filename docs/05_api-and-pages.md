@@ -98,20 +98,33 @@ admin identity workflow and must atomically receive its required `agent` profile
   audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
 
 ### `POST /api/customers`
-**Planned endpoint (T05):** T04 services below are implemented; this route is not yet wired.
+**Implemented in P02-M02-T05:** session-authenticated, role/branch scoped and CSRF-protected.
 
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER
 - **Body** `{ fullName, nicPassportNo, dateOfBirth, gender, phone, address, email, branchId, agentId, documents[] }`
 - **Validation** NIC/passport format; `dateOfBirth` in the past; email format; `branchId` within the caller's scope
-- **SQL / routine** one transaction: `INSERT customer` → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)` → `INSERT audit_log`
+- **SQL / routine** one transaction: `INSERT customer` (M1's trigger inserts one sanitized audit) → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)`
 - **Transaction** all four, atomic (§4.3: "Customer, documents, assignment and audit event are inserted in one database transaction")
 - **Success** `201 { data: { customerId, customerNumber } }`
-- **Errors** `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`
+- **Errors** `400` invalid JSON/strict fields; `401` invalid session; `403` role/branch/assignment/CSRF denied; `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`; safe `500` for unexpected failures
 - **Page** `/customers/new`
 
-| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; identity masked for unauthorised roles (FR-CUS-04); sort column via `allowListed()` |
+| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; NIC/email masked for branch staff (FR-CUS-04); fixed sort-column allow-list |
 | `GET /api/customers/{id}` | Profile with accounts and assignment history | as above; CUSTOMER for self only | RLS enforces self-access |
+
+Search query keys: `q`, `name`, `nicPassportNo`, `branchId`, `agentId`, `status`,
+`sortBy` (fullName/customerNumber/createdAt), `sortDirection` (asc/desc), `page` (1–100000)
+and `pageSize` (1–100, default 25). Numeric query strings are parsed by the controller;
+unknown/repeated keys and invalid identifiers return 400. Result: `{ data: { customers,
+total, page, pageSize } }`. Missing and inaccessible profiles both return 404.
+
+Live screens: `/customers` has scoped named branch/agent filters, sorting, pagination,
+loading/error/empty states and profile links. `/customers/new` uses the session branch,
+active agent options and zero to twenty document references, then navigates to the created
+profile. `/customers/{id}` shows identity, all assignment history, safe document verification
+metadata and real account-holder links. Registration does not upload files, verify documents
+or provision customer logins. Page guards mirror route roles; server checks remain authoritative.
 
 ---
 
@@ -126,8 +139,8 @@ The service rechecks these conditions in SQL and locks the relevant rows. Verifi
 and minimal audit commit/rollback together. A same-verifier retry returns the original
 { docId, customerId, verifiedBy, verifiedDate }; another verifier gets
 DOCUMENT_ALREADY_VERIFIED (409). UUID validation, forbidden and not-found use typed
-400/403/404 errors. No path/document content is returned. Runtime scoped grants/RLS
-remain M1 work; the customer endpoints above are still planned T05 work. Review also
+400/403/404 errors. No path/document content is returned. T05 adds scoped child SELECT/INSERT
+in 0223, but no UPDATE grant or verification endpoint. Review also
 found that this pre-existing verifier locks `role` with `FOR SHARE`, requiring a write
 privilege absent from the runtime role. Resolve that lock scope before exposing it;
 do not grant broad role-update access to work around the issue.
@@ -140,21 +153,22 @@ do not grant broad role-update access to work around the issue.
 Services recheck current active user/role/staff/branch state. Registration permits
 AGENT self-assignment or a BRANCH_MANAGER selecting an active ordinary agent in its
 branch. Customer, zero to twenty unverified document metadata rows, exactly one active
-assignment and minimal audit commit together. Identity is uppercase; email lowercase;
-numbers follow ADR-0014. Typed duplicate errors map to the planned 409 responses.
+assignment and one sanitized customer-trigger audit commit together. Identity is uppercase;
+email lowercase; numbers follow ADR-0014. Typed duplicate errors map to 409 responses.
 
 Search accepts q/name/NIC/branch/agent/status, fixed sortBy/sortDirection, page and
-pageSize (maximum 100). Controllers must parse numeric query strings. SQL predicates
+pageSize (maximum 100). Controllers parse numeric query strings. SQL predicates
 restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/AUDITOR
 are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
 Staff NIC/email are masked; documents omit paths. Profiles include all assignment
-history. `accounts` is null while M3's account_holder table is absent; once available,
-links apply account branch scope and balances remain strings. Reads use repeatable-read
-transactions; transaction-local actor settings prepare for M1 policy integration.
+history. The merged M3 account_holder relation supplies account links (empty array when
+none exist), with account branch scope and string balances. The null fallback is retained
+for incomplete schemas. Reads use repeatable-read transactions; `setRlsContext` supplies
+transaction-local user, role and branch from revalidated database state.
 
-No customer HTTP endpoint, session/CSRF integration or UI binding is certified here.
-Runtime use requires M1's scoped grants/RLS/audit work. Service contract, review and
-181-test verification: [T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
+T04's historical 181-test service evidence: [T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
+T05 route/runtime/screen integration and security handoff:
+[T05 handoff](../.agent/handoffs/p02-m02-t05-customer-api-ui.md).
 
 ## Plans and accounts — Member 3
 

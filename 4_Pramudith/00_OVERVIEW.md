@@ -15,9 +15,9 @@ transaction), and **idempotency as a database constraint**, not an in-memory cac
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-05:** Phase 1 T01–T04 and P02-M04-T01 transaction schema verified DONE. Phase 3 retains its separate approval/decision gates.
+**Reconciled 2026-10-07:** Phase 1 T01–T04 and Phase 2 transaction-schema T01 retain DONE. M2 T05 uses shared transaction/error helpers without changing lib/db. Phase 3 retains its separate approval/decision gates.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
-Closeout repairs remain uncommitted under the user publication constraint.
+Closeout is merged into dev; the user retains all publication control.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|

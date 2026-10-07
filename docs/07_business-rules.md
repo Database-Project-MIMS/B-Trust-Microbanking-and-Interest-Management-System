@@ -111,6 +111,15 @@ the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
 
+P02-M02-T05 customer routes authenticate live sessions, enforce route roles and SQL
+branch/assignment/self scope, validate strict fields and verify CSRF for registration.
+The service rechecks stored actor state before setting transaction-local RLS context.
+Migration 0223 extends parent scope to customer assignment/document SELECT/INSERT;
+it permits only unverified document inserts and self-agent assignment for AGENT.
+The customer trigger writes one sanitized audit in the registration transaction,
+including rollback when a later document/assignment insert fails (ADR-0015).
+NIC/email masking is performed in response shaping, before data reaches the browser.
+
 P02-M02-T03 implements document verification in services/customer-document-service.ts:
 active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,
 branch scope in SQL, current assignment required for AGENT. The caller supplies the

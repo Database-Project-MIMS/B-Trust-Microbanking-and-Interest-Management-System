@@ -1,29 +1,23 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** IN_PROGRESS — 6 DONE, 1 BLOCKED, 9 TODO · **Tasks:** 16 · **Effort:** 47 points
+**Status:** IN_PROGRESS — 10 DONE, 1 READY, 5 TODO · **Tasks:** 16 · **Effort:** 47 points
 
-**2026-10-05:** Vibodha's retained Phase 2 approval/customer-schema authorization is
-recorded in [checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md). P02-M02-T01
-is technically complete locally. P02-M02-T02/T03 are also technically complete:
-0221/0222, assignment history/partial uniqueness, paired document verification and
-transactional verification service/audit. All 134 selected tests and clean 14-migration
-rebuild/reapply/verify/typecheck/lint pass. T04 registration/search/profile services
-are now technically complete locally: 181 selected tests and the same rebuild/checks
-pass. T05 runtime API/screen integration is BLOCKED pending M1 scoped grants/RLS/audit
-coordination; M3 account_holder is also absent. The registration transaction, duplicate
-rollback and assignment-at-commit are proven at service level; runtime demonstration
-and full phase exit criteria remain incomplete. No new phase approval is inferred.
-The missing-closeout condition describes the original checkout. PR #36's 2026-10-06
-conflict resolution restores committed dev closeout repairs. Fresh combined-tree
-evidence is recorded in the [resolution handoff](../../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
+Phase 2 entry was approved by Vibodha on 2026-10-05 in the
+[checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
+No Phase 2 exit or Phase 3 entry approval has been recorded.
 
-**PR #36 refresh:** PR #34 is merged into dev 2e338a6. PR #35's updated branch 888b983
-includes that tip but is not yet merged into dev. The user requests #35 then #36;
-the prepared PR #36 merge includes 888b983 and reconciles the documentation histories,
-retaining T01–T04 DONE/T05 BLOCKED. Scope/fresh verification are in
-[the dependency handoff](../../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
-This changes no application service, numbered migration, runtime grant or phase approval.
+**2026-10-07:** dev 25fc264 contains M2 T01–T04, M3 account/holder, M4 transaction,
+and M1 parent RLS/audit. M2 T05 is verified locally: session/CSRF-protected customer
+routes, live registration/search/profile, M2 child grants/RLS migration 0223 and shared
+audit integration. Full isolated verification passes 365 tests (35 suites), clean
+19-migration rebuild, TypeScript, lint and production build. Browser flow, duplicate
+errors and responsive layout pass. User controls publication.
+[T05 handoff](../../.agent/handoffs/p02-m02-t05-customer-api-ui.md).
 
+Earlier 134/181/328-test evidence and PR #35/#36 conflict histories remain in their
+dated handoffs; they do not describe the current holder/security availability.
+M1-T03 remains its owner's customer/account route review; M3-T03 is READY.
+Remaining account-opening/mandate/API/UI and seed work prevents phase exit.
 ## Goal
 
 Customers can be registered and assigned to agents; individual and joint accounts can be
@@ -60,14 +54,14 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Exit criteria
 
-- [ ] A customer can be registered with documents and an agent assignment in one transaction
-- [ ] A duplicate NIC is rejected and leaves **no partial customer row**
-- [ ] Exactly one active agent assignment per customer is enforced
+- [x] A customer can be registered with documents and an agent assignment in one transaction
+- [x] A duplicate NIC is rejected and leaves **no partial customer row**
+- [x] Exactly one active agent assignment at registration commit is enforced; the partial index prevents competing active assignments
 - [ ] An individual account opens with plan eligibility checked from date of birth
 - [ ] A joint account opens with 2–4 adult holders and a stored mandate
 - [ ] 1-holder and 5-holder joint accounts are both rejected by the trigger
 - [ ] An opening amount below the plan minimum is rejected
-- [ ] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
+- [x] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
 - [x] Posted `transaction` rows reject `UPDATE` and `DELETE`
 - [ ] Seed loads 18 customers, 22 accounts including 3 joint
 
