@@ -4,6 +4,11 @@
 **Depends on:** T04 (`sp_open_savings_account`), **I-1** (M1 RBAC)
 **Story Points:** ~4 + ~5 = ~9 · **Layer:** Backend only
 
+> **Status note (2026-10-07):** T05 is built (`/api/accounts`, `/{id}`, `/{id}/holders`, `/{id}/close` stub) with two extra
+> migrations: `0244` idempotency table and `0245` `sp_add_account_holder`. The "UI COMPLETE" banner below is wrong:
+> `app/accounts/**` still renders the hardcoded demo screen, so the pages are T06's work. See the
+> [T05 handoff](../.agent/handoffs/p02-m03-t05-accounts-api.md).
+
 > ⚡ **UI COMPLETE** — Account opening, list/search and detail screens have been
 > pre-built in `app/dashboard/**`. Your job is to implement the **service layer and API
 > routes** that back those screens. Do not rebuild any UI component.
