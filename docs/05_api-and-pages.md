@@ -180,19 +180,36 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `POST /api/accounts`
 - **Purpose** Open an individual or joint savings account (FR-ACC-01…04).
-- **Roles** AGENT, BRANCH_MANAGER
-- **Body** `{ planId, branchId, holders: [{ customerId, holderType }], mandate?: { type, requiredSignatories }, initialDeposit? }`
-- **Validation** plan active; 1 holder for individual, 2–4 for joint; every holder's age satisfies the plan; joint requires a mandate; `initialDeposit ≥ plan.min_balance`
-- **SQL routine** `CALL sp_open_savings_account(...)`
-- **Transaction** account + holders + mandate + optional initial deposit ledger row + balance + audit — **all atomic**
-- **Success** `201 { data: { accountId, accountNumber, currentBalance } }`
-- **Errors** `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED` · `409 DOCUMENTS_NOT_VERIFIED` · `409 AGENT_NOT_ELIGIBLE` · `409 HOLDER_NOT_FOUND` · `409 MANDATE_NOT_ALLOWED` · `422 INVALID_MANDATE_TYPE` · `422 INVALID_DEPOSIT_AMOUNT` · `409 OUTSIDE_BUSINESS_HOURS` (deposit only) · `422 INVALID_HOLDERS_PAYLOAD` · `422 CHANNEL_REQUIRED` / `CHANNEL_NOT_FOUND` (the routine raises `P0001` with a named constraint; the service maps by `err.constraint`; the routine's `ACTOR_MISMATCH` means a service bug → `500`)
+- **Roles** AGENT, BRANCH_MANAGER · CSRF required
+- **Headers** `Idempotency-Key` (**required**, 8–80 chars of `A–Z a–z 0–9 _ -`)
+- **Body** `{ planId, branchId, holders: [{ customerId, holderType: "PRIMARY"|"JOINT" }] (1–4, exactly one PRIMARY), mandate?: { type: "ANY_ONE"|"ALL_HOLDERS", requiredSignatories? }, initialDeposit?: "1500.50" }` — strict; `initialDeposit` is a **string** (a JSON number is rejected). `branchId` must equal the caller's branch (ADR-0008) or `403`. An AGENT may open only for customers actively assigned to them (otherwise `409 HOLDER_NOT_FOUND`, which also hides whether the customer exists). The deposit channel is chosen by the server (`BRANCH_COUNTER`), never by the client.
+- **Validation** plan active; holder count within the plan's range; primary applicant eligible by age; every holder active with a verified document; joint plans need a mandate; `initialDeposit ≥ plan.min_balance`, positive, two decimals, business hours only
+- **SQL routine** `CALL sp_open_savings_account(...)` (migration 0243); the service wraps it in one transaction and writes the `account_opening_request` row in the same transaction
+- **Transaction** account + holders + mandate + optional initial deposit ledger row + balance + audit + idempotency record — **all atomic**
+- **Idempotency** a repeated key from the same user with the same request returns **`200`** with the original `{ accountId, accountNumber, currentBalance }` and no second account or credit; the same key with a different request → `422 IDEMPOTENCY_KEY_REUSED`; a failed open stores no key
+- **Success** `201 { data: { accountId, accountNumber, currentBalance } }` (money as a string)
+- **Errors** `400 VALIDATION_FAILED` (body or header) · `401` · `403` (role, CSRF, other branch, `AGENT_NOT_ELIGIBLE`) · `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED` · `409 MANDATE_NOT_ALLOWED` · `409 INVALID_MANDATE_SIGNATORIES` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 UNDERAGE_HOLDER` · `409 OUTSIDE_BUSINESS_HOURS` (deposit only) · `409 CHANNEL_UNAVAILABLE` · `409 DUPLICATE_HOLDER` · `422 PLAN_NOT_FOUND` · `422 INVALID_MANDATE_TYPE` · `422 INVALID_DEPOSIT_AMOUNT` · `422 INVALID_HOLDERS_PAYLOAD` · `422 IDEMPOTENCY_KEY_REUSED`. The routine raises `P0001` with a named constraint; the service translates it inside the transaction (`services/account-errors.ts`) so no ids or SQL text reach the client; an actor mismatch is a service bug → `500`
 - **Page** `/accounts/new`
 
-| `GET /api/accounts` | List / search, scoped | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR |
-| `GET /api/accounts/{id}` | Detail: plan, holders, mandate, balance, FD | as above; CUSTOMER if a holder |
-| `POST /api/accounts/{id}/holders` | Add a joint holder and mandate | BRANCH_MANAGER |
-| `POST /api/accounts/{id}/close` | Close — requires zero balance and no active FD (BR-18) | BRANCH_MANAGER |
+### `GET /api/accounts`
+- **Roles** AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR. Branch roles are limited to their branch in the query and by RLS; an **AGENT sees only accounts with a holder actively assigned to them** (as in the customer API); a different `branchId` filter → `403`
+- **Query** `q` (account number, holder name or customer number), `status`, `planId`, `branchId`, `sortBy` (`accountNumber|openedDate|currentBalance|status`), `sortDirection`, `page`, `pageSize` (≤ 100); repeated or unknown parameters → `400`
+- **Success** `200 { data: { accounts: [{ accountId, accountNumber, status, currentBalance, openedDate, branchId, planId, planName, holderCount, primaryHolderName }], total, page, pageSize } }`
+
+### `GET /api/accounts/{id}`
+- **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
+- **Success** `200 { data: { ...summary, minBalance, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
+
+### `POST /api/accounts/{id}/holders`
+- **Purpose** Add a joint holder to an existing account (`CALL sp_add_account_holder`, migration 0245).
+- **Roles** BRANCH_MANAGER of the owning branch · CSRF required · **Body** `{ customerId }` (strict)
+- **Rules** account ACTIVE; customer active with a verified document; the 0242 trigger enforces holder count and adult holders and sets an `ALL_HOLDERS` mandate's signatories to the new holder count (changing a mandate's type is not supported)
+- **Success** `201 { data: { accountHolderId, holderCount, mandate: { mandateType, requiredSignatories } | null } }`
+- **Errors** `404` (account outside scope) · `409 ACCOUNT_NOT_ACTIVE` · `409 INVALID_HOLDER_COUNT` · `409 UNDERAGE_HOLDER` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 DUPLICATE_HOLDER`
+
+### `POST /api/accounts/{id}/close`
+- **Roles** BRANCH_MANAGER · CSRF required · **Currently `501 NOT_IMPLEMENTED`** (stub). The rule (zero balance, no active FD, BR-18) is Phase 4 (`sp_close_account`).
 
 ---
 

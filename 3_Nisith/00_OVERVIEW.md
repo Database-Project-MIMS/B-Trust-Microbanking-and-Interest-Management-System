@@ -11,7 +11,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is built and tested locally, in REVIEW pending `/review` and the PR; APIs/UI remain pending.
+**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is DONE; the accounts and holders APIs (T05, `0244`/`0245`) are built and tested locally, in REVIEW pending `/review` and the PR; the UI (T06) remains pending.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.
 
@@ -21,7 +21,7 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~02~~ | ~~[Plan Eligibility Function](02_P1-T02_plan-eligibility-function.md)~~ | ~~P1~~ | ~~T02~~ | ~~`fn_check_plan_eligibility` — data-driven, not hardcoded~~ | ~~~3~~ |
 | ~~03~~ | ~~[Plan API](03_P1-T03_plan-api-admin-page.md)~~ | ~~P1~~ | ~~T03~~ | ~~`GET/PATCH /api/plans` + `app/plans/page.tsx` (built full-scope; the "UI COMPLETE, backend only" note this file's own PR #16 update added was checked and did not hold — no plan UI existed anywhere in `app/dashboard/**`)~~ | ~~~3~~ |
 | 04 | [Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md) | P2 | ~~T01–T02~~, T03 | `account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08) | ~10 |
-| 05 | [sp_open_savings_account](05_P2-T04_sp-open-savings-account.md) | P2 | T04 | Atomic account opening: account + holders + mandate + optional deposit | ~6 |
+| ~~05~~ | ~~[sp_open_savings_account](05_P2-T04_sp-open-savings-account.md)~~ | ~~P2~~ | ~~T04~~ | ~~Atomic account opening: account + holders + mandate + optional deposit~~ | ~~~6~~ |
 | 06 | [Accounts API](06_P2-T05-T06_accounts-api-ui.md) | P2 | T05–T06 | `/api/accounts/**` | ~9 |
 | 07 | [fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md) | P3 | T01 | Post-withdrawal minimum-balance rule — **publishes I-4** | ~3 |
 | 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | Joint-mandate check callable from withdrawal path; balance/authority endpoint | ~5 |

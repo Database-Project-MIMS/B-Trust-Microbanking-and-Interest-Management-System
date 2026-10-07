@@ -319,6 +319,21 @@ joint accounts possible (SRS §6.3).
   `CONSTRAINT`: `INVALID_HOLDER_COUNT` (`ck_account_holder_count`), `MISSING_PRIMARY_HOLDER`
   (`ck_account_holder_one_primary`), `UNDERAGE_HOLDER` (`ck_account_holder_adult`).
 
+### `account_opening_request`
+
+| Column | Type | Notes |
+|---|---|---|
+| `request_id` | uuid | **PK** |
+| `user_id` | uuid | **FK → app_user** — the user who sent the key |
+| `idempotency_key` | varchar(80) | `CHECK` 8–80 chars `[A-Za-z0-9_-]` |
+| `request_hash` | char(64) | SHA-256 (hex) of the canonical request; detects a reused key with a different body |
+| `account_id` | uuid | **FK → account, UK** — the account this request opened |
+| `created_at` | timestamptz | |
+| — | | **UK (user_id, idempotency_key)** |
+
+- Implemented in `0244_p02_m03_account_opening_request.sql` (P02-M03-T05). Insert-only (`mims_app` has no `UPDATE`/`DELETE`); `RESTRICT` on both foreign keys.
+- Written in the same transaction as the account, so a failed open leaves no key. The service takes `pg_advisory_xact_lock` on (user, key) before reading, so concurrent requests with one key serialise; the unique constraint is the backstop. This is the account-opening counterpart of G-04's `transaction.idempotency_key`.
+
 ### `joint_mandate`
 
 | Column | Type | Notes |

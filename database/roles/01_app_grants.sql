@@ -26,6 +26,9 @@ GRANT SELECT, INSERT, UPDATE ON joint_mandate TO mims_app;
 -- Grants for Member 3 (Nisith) - Account numbers (P02-M03-T04). fn_next_account_number runs as the caller.
 GRANT USAGE ON SEQUENCE account_number_seq TO mims_app;
 
+-- Grants for Member 3 (Nisith) - Account opening idempotency (P02-M03-T05). Insert-only.
+GRANT SELECT, INSERT ON account_opening_request TO mims_app;
+
 -- Grants for Member 1 (Nadija) - Customer (P02-M01-T01). No DELETE; rows limited by RLS (0201).
 GRANT SELECT, INSERT, UPDATE ON customer TO mims_app;
 

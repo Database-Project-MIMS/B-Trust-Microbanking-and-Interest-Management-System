@@ -206,3 +206,12 @@ links the debit and credit legs. ERD Assumption 4 is dropped.
 
 ## P02-M01: migration number outside M1 block (resolved by user, 2026-10-06)
 0200/0201 (M1 block) run before customer 0220 / account 0240, so triggers and RLS policies cannot bind there. Functions stay in 0200/0201; binding is 0261_p02_m01_rls_audit_bind.sql (outside 0200-0219). Watch for M4 using 0261 in its own block (different filename, no clash).
+
+### P02-M03-T05 account opening idempotency — 2026-10-07
+
+`POST /api/accounts` is money-moving (optional initial deposit) and AGENTS §9 requires an
+`Idempotency-Key`. G-04 only covers `transaction.idempotency_key` (M4, Phase 3). Decision (confirmed by
+the user, Member 3): a separate insert-only table `account_opening_request` (migration 0244) keyed
+`UNIQUE (user_id, idempotency_key)` with a request hash and `account_id`, written in the same
+transaction as the account. No other member's table or file was changed. Holder additions use a new
+routine `sp_add_account_holder` (0245) so the verified-document rule lives in the database.

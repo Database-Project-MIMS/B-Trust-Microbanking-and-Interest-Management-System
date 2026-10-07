@@ -1,7 +1,7 @@
 # P02-M03-T04: sp_open_savings_account
 
 **From:** Member 3 · **To:** Member 3 (T05 API, T06 UI), Member 5 (P02-M05-T01 seeds), Member 4 (Phase 3), Member 2 (document verification) · **Date:** 2026-10-07
-**Status:** built and tested locally; `/review` and the user's PR pending (the user publishes).
+**Status:** DONE (2026-10-07). The T05 API consumes this contract; see the [T05 handoff](p02-m03-t05-accounts-api.md).
 
 ## Call contract (migration `0243_p02_m03_sp_open_savings_account.sql`)
 ```sql

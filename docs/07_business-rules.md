@@ -64,6 +64,7 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 | BR-18 | Account closure requires zero balance and no active FD | SRV, SP, CON | Checked in the closure procedure against `current_balance = 0` and the absence of an `ACTIVE` FD |
 | BR-I1 | A repeated request with the same idempotency key must not create a second financial effect | CON, SRV | Partial unique index on `transaction(idempotency_key)`; the routine catches `23505` and returns the original row (G-04, FR-DEP-04) |
 | BR-I2 | Withdrawal limits: LKR 100,000 single, LKR 200,000 daily per account, unless a manager approves | SRV, SP | Values in `system_parameter`; daily total computed inside the locked transaction (SRS §7.1) |
+| BR-I3 | A repeated account-opening request (same `Idempotency-Key`) never opens a second account or credits a second initial deposit | CON, SRV | `account_opening_request` `UNIQUE (user_id, idempotency_key)` written in the opening transaction (migration 0244); per-key advisory lock; replay returns the original result (FR-DEP-04 pattern for accounts) |
 | BR-L1 | A rejected withdrawal creates **no ledger row** but is still recorded | SRV | Audit event only; no `transaction` insert (FR-WD-05) |
 
 ### Why `FOR UPDATE` and not just a `CHECK`

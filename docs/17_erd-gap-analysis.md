@@ -33,7 +33,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-01 | One FD *ever* per account vs one *active* FD | HIGH | **YES — blocking** |
 | G-02 | No reversal support in the ledger | HIGH | YES |
 | G-03 | No central interest-run tracking | HIGH | YES |
-| G-04 | No idempotency key on transactions | HIGH | YES |
+| G-04 | No idempotency key on transactions | HIGH | YES (account opening has its own record, `account_opening_request`, migration 0244) |
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
 | G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transactions have no agent or branch attribution | HIGH | YES |
