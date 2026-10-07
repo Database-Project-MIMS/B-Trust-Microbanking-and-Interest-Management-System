@@ -31,10 +31,14 @@ P02-M03-T05 built locally (REVIEW): accounts and holders APIs, `0244` idempotenc
 pending; next is M3-T06 (UI). [Handoff](handoffs/p02-m03-t05-accounts-api.md).
 [Handoff](handoffs/p02-m03-t04-sp-open-savings-account.md).
 
+P02-M03-T06 built locally (REVIEW): live account list, opening wizard, account detail with add-holder,
+and the real plans page; 12 new model tests, isolated suite 486/486; `/review` important findings fixed, typecheck/lint/build clean. Manual
+browser pass, `/review` and the user's PR are pending. [Handoff](handoffs/p02-m03-t06-account-screens.md).
+
 ## Task snapshot
 
-P0 6 DONE; P1 19 DONE; P2 11 DONE / 2 REVIEW / 3 TODO; P3–P6 remain future work.
-M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T04 DONE, M3-T03 and M3-T05 REVIEW (local); M4-T01 DONE.
+P0 6 DONE; P1 19 DONE; P2 11 DONE / 3 REVIEW / 2 TODO; P3–P6 remain future work.
+M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T04 DONE, M3-T03, M3-T05 and M3-T06 REVIEW (local); M4-T01 DONE.
 No new other-member completion is inferred by this task.
 
 ## Remaining coordination
