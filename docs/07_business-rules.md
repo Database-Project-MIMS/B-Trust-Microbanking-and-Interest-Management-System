@@ -33,7 +33,7 @@ ck_customer_birth_date_past rejects today/future dates; ck_customer_status permi
 ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
 atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
 Registration accepts metadata-only, initially unverified documents (zero to twenty);
-M3 enforces required verified documentation at account opening. The service uppercases
+M3 enforces required verified documentation at account opening (`sp_open_savings_account`, `DOCUMENTS_NOT_VERIFIED`, migration 0243). The service uppercases
 identity and lowercases email before the database UNIQUE checks. Audit contains only
 customer reference, branch, assigned agent and document count, in the same transaction.
 See schema Part B.4 and ADR-0014 for the implemented definition.
@@ -56,7 +56,7 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-08 | Deposits and withdrawals only through authorised users, during configured business hours | SRV, CON | Role check in `requireRole()`; hours read from `system_parameter` / `business_calendar`, re-checked inside `sp_post_deposit` / `sp_post_withdrawal` (G-15) |
+| BR-08 | Deposits and withdrawals only through authorised users, during configured business hours | SRV, CON | Role check in `requireRole()`; hours read from `system_parameter` / `business_calendar`, re-checked inside `sp_post_deposit` / `sp_post_withdrawal` (G-15); the initial deposit of `sp_open_savings_account` is checked with `fn_is_business_hour` (`OUTSIDE_BUSINESS_HOURS`) |
 | BR-09 | **Overdrafts are never allowed**; withdrawals must preserve the plan minimum | UI, SRV, SP, CON | `SELECT … FOR UPDATE` on the account row, then `fn_check_plan_minimum` inside the transaction; last line of defence is `CHECK (current_balance >= 0)` (G-18) |
 | BR-10 | Every transaction has a unique reference, timestamp, type, amount, account and responsible user | CON | `transaction.reference_number UNIQUE NOT NULL` (G-05); `NOT NULL` on type, amount, account, initiator; `amount` uses the `positive_money` domain |
 | BR-16 | Posted transactions are **never physically deleted**; corrections use linked reversing entries | TRG, CON | `trg_financial_transaction_immutable` rejects `UPDATE`/`DELETE`; the app role has no `DELETE` grant; `transaction_reversal.original_transaction_id UNIQUE` makes a transaction reversible exactly once (DB-CON-04, G-02) |
