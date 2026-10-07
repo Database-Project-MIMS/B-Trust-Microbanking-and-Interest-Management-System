@@ -194,6 +194,7 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     const account = (await response.json()).data;
     assert.equal(account.planName, 'Joint'); assert.equal(account.currentBalance, '5000.00');
     assert.equal(account.holderCount, 2); assert.equal(account.holders.length, 2);
+    assert.deepEqual({ min: account.minHolders, max: account.maxHolders, minBalance: account.minBalance }, { min: 2, max: 4, minBalance: '5000.00' });
     assert.equal(account.holders[0].holderType, 'PRIMARY');
     assert.deepEqual({ type: account.mandate.mandateType, n: account.mandate.requiredSignatories }, { type: 'ALL_HOLDERS', n: 2 });
     assert.ok(!('nicPassportNo' in account.holders[0]));

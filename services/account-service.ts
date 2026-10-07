@@ -29,7 +29,7 @@ export interface AccountSummary {
 }
 export interface AccountSearchResult { accounts: AccountSummary[]; total: number; page: number; pageSize: number }
 export interface AccountDetail extends AccountSummary {
-  minBalance: string;
+  minBalance: string; minHolders: number; maxHolders: number;
   holders: { accountHolderId: string; customerId: string; customerNumber: string; fullName: string; holderType: string; joinedDate: string }[];
   mandate: { mandateType: string; requiredSignatories: number; effectiveFrom: string; effectiveTo: string | null } | null;
 }
@@ -218,8 +218,8 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
   return withTransaction(async tx => {
     const scope = await resolveScope(tx, authenticated, DETAIL_ROLES);
     // A CUSTOMER sees only accounts they hold, an AGENT only accounts of assigned customers, staff only their branch.
-    const result = await tx.query<SummaryRow & { min_balance: string }>(
-      `SELECT ${SUMMARY_COLUMNS}, sp.min_balance::text AS min_balance
+    const result = await tx.query<SummaryRow & { min_balance: string; min_holders: number; max_holders: number }>(
+      `SELECT ${SUMMARY_COLUMNS}, sp.min_balance::text AS min_balance, sp.min_holders, sp.max_holders
          FROM account a JOIN savings_plan sp ON sp.plan_id = a.plan_id
         WHERE a.account_id = $1 AND ($2::uuid IS NULL OR a.branch_id = $2)
           AND ${assignedTo("$3", "$4")}
@@ -239,6 +239,7 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
          FROM joint_mandate WHERE account_id = $1`, [accountId]);
     const row = mandate.rows[0];
     return { ...mapSummary(account), minBalance: account.min_balance,
+      minHolders: account.min_holders, maxHolders: account.max_holders,
       holders: holders.rows.map(holder => ({ accountHolderId: holder.account_holder_id, customerId: holder.customer_id,
         customerNumber: holder.customer_number, fullName: holder.full_name, holderType: holder.holder_type, joinedDate: holder.joined_date })),
       mandate: row ? { mandateType: row.mandate_type, requiredSignatories: row.required_signatories,
