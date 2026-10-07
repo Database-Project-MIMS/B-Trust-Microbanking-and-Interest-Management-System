@@ -198,7 +198,7 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `GET /api/accounts/{id}`
 - **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
-- **Success** `200 { data: { ...summary, minBalance, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
 - **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
 
 ### `POST /api/accounts/{id}/holders`
@@ -329,8 +329,8 @@ T05 route/runtime/screen integration and security handoff:
 | `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
 | `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
-| `/plans` | `GET /api/plans` | all | M3 |
-| `/accounts`, `/accounts/new`, `/accounts/{id}` | `/api/accounts` | AGENT, BRANCH_MANAGER | M3 |
+| `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; no nav link yet — shell is M1's) |
+| `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
 | `/transactions/deposit` | `POST /api/transactions/deposits` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/withdraw` | `POST /api/transactions/withdrawals` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/{id}` | `GET`, `POST .../reverse` | staff; manager to reverse | M4 |
