@@ -201,3 +201,27 @@ Last updated: 29 Sep 2026
 | Forms | One logical column of sections, using the shared two-column field grid on wider screens; every field has a visible required label. |
 | Destructive action | Deactivation names the exact record, retains history and requires confirmation; there is no delete control. |
 | Responsive behaviour | Toolbars stack and tables scroll horizontally on narrow screens. |
+
+### Customer registration, search and profile
+
+Files: `app/customers/customer-list.tsx`, `app/customers/new/customer-registration.tsx`,
+`app/customers/[id]/customer-profile.tsx`
+Last updated: 7 Oct 2026 · /imprint
+
+| Property | Class / existing token |
+|---|---|
+| Background / border | `card`, `input`; `--surface`, `--border`, inherited Emerald workspace |
+| Radius / shadow | Existing card 18px, input/button 10px; card shadow from globals.css |
+| Text | `page-title`, `eyebrow`, `field`, `muted`, `section-heading`; `--text`, `--text-muted` |
+| Spacing | 24px card padding / `mt-6`, 28px `form-grid`, 16px `form-section`/`two-col` |
+| Actions / focus | `btn btn-primary`, `btn btn-secondary`, existing primary hover/focus rules |
+| Errors / states | `--danger` with role=alert; role=status loading, explicit empty rows; retry actions |
+| Tables / money | `table-wrap`, `data-table`, `status-pill`, `amount`; string-only currency formatting |
+
+Use named branch/agent selects populated on the server, session-derived registration
+branch, visible required labels, disabled saving fields and preserved inputs after failure.
+Metadata references are editable; profile DTOs omit document paths. Mask sensitive identity
+on the server. Optional account links and empty states replace prototype values.
+Existing two-column forms collapse below 640px; tables scroll inside their containers.
+Browser checks cover live registration/search/profile, duplicate errors and a narrow
+viewport with no document overflow. No shared styling or shell component was changed.

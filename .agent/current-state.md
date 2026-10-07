@@ -1,46 +1,38 @@
 # Current State
 
-**Updated:** 2026-10-06 · **Owner:** M1, PR #— (feat/p02-m01-rls-audit-scope)
+**Updated:** 2026-10-07 · **Owner:** M2
+**Checkout:** feat/p02-m02-customer-api-ui · base dev 25fc264; uncommitted T05 work
 
-## Current checkout
+## Completed customer integration
 
-feat/p02-m01-rls-audit-scope at latest. Phase 2 M1 RLS and audit trigger work (T01, T02) is successfully merged with dev. Syntax issues in `0261` have been fixed. 205 tests are passing. T01 and T02 are DONE. T03 remains BLOCKED pending M2/M3 API routes.
+M2 T01–T05 are technically DONE locally. T05 adds customer GET/POST and profile GET
+routes, live registration/search/profile pages, migration 0223 child SELECT/INSERT
+grants/RLS, shared setRlsContext and one sanitized customer-trigger audit.
+M3's merged account_holder is read directly. No merged migration or another member's
+service/security file was edited.
 
-Phase 1 is verified; Phase 2 has started. M3's P02-M03-T01 (`account`, migration
-`0240`, `tests/db/account-constraints.test.mjs` 10/10) is DONE alongside M2's customer
-schema.
+365 tests in 35 suites pass, zero failures/skips; clean isolated 19-migration rebuild,
+typecheck, lint and production build. Browser flow covers synthetic registration,
+profile navigation, masked identity, assignment/document metadata, filtered search,
+duplicate errors and narrow-layout checks. Development data is preserved.
+[Implementation, ownership, review and verification](handoffs/p02-m02-t05-customer-api-ui.md).
 
-## Preserved implementation
+## Task snapshot
 
-Original focused T04 evidence: 181 tests, clean 14-migration rebuild/reapply/verify,
-typecheck/lint. Earlier combined-tree verification passed: 328 tests in 31 suites,
-0 failures/skips; clean 14-migration rebuild, TypeScript, lint and production build.
-[Resolution handoff](handoffs/p02-m02-t04-pr36-conflict-resolution.md).
-The restored isolated full harness supports committing relation fixtures and disposable
-SET ROLE app-role regressions; it never grants owner privileges to the app role.
-The holder-contract test removes its own synthetic accounts before seed validation.
-Normal development data is preserved; production grants/RLS are unchanged.
-Fresh validation of the PR #35 dependency refresh passed: 328 tests in 31 suites,
-0 failures/skips, clean 14-migration rebuild, TypeScript/lint/production build. See
-[the new handoff](handoffs/p02-m02-t04-pr36-after-pr35.md).
-ADR index and disposable SET ROLE harness remain as already reconciled in 5ef06fd.
+P0 6 DONE; P1 19 DONE; P2 10 DONE / 1 READY / 5 TODO; P3–P6 remain future work.
+M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T03 READY; M4-T01 DONE.
+No new other-member completion is inferred by this task.
 
-## Task snapshot in this PR
+## Remaining coordination
 
-P0 6 DONE; P1 19 DONE; P2 7 DONE/1 READY/1 BLOCKED/7 TODO; P3–P6 TODO.
-T01 customer schema, T02 assignment, T03 documents and T04 registration (M2),
-M3 account and M3-T02 `account_holder` (0241), and M4 transaction schemas are DONE.
-M3-T03 is READY.
-M2-T05 remains blocked on M1 scoped customer/child grants, RLS/audit coordination
-and real API/screen binding. Customer screens remain prototypes. Owner-based tests
-do not certify runtime RLS.
-Existing T03 role FOR SHARE issue remains recorded for narrowing before exposure.
-Historical Phase 2 entry approval persists; no later phase approval is inferred.
+M1 reviews 0223/security integration and completes its broader customer/account route
+work. ADMIN mutation permission discrepancy remains restricted to AGENT/BRANCH_MANAGER.
+Existing internal document verification is not exposed: narrow its role lock and
+complete scoped UPDATE integration before adding a verification endpoint.
+Account-opening services/pages and full Phase 2 seeds remain incomplete.
 
 ## Approval and publication
 
-Historical Phase 2 entry approval persists; restored closeout makes old missing-file
-notes historical. No later phase approval or new UI. Incoming M1/M4 ownership retained;
-test-harness integration and EOF-only cleanup documented before edits.
-User commits/pushes; merge PR #35 into dev before PR #36. Local merge uses --no-commit.
-/imprint not applicable. No service, migration, test or harness changes in this refresh.
+Phase 2 entry approval from 2026-10-05 remains valid; no later phase approval.
+The user commits, pushes, opens PRs and merges. Nothing was committed or published
+by the assistant. /review, /imprint and /remember records accompany this task.

@@ -1,11 +1,12 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import { withTransaction, type Executor } from "@/lib/db";
+import { withTransaction } from "@/lib/db";
 import { BusinessRuleError, DatabaseError, NotAuthorizedError, NotFoundError,
   UniqueViolationError, ValidationError } from "@/lib/db/errors";
 import { customerSearchSchema, registerCustomerSchema } from "@/lib/validation/customer";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
+import { setRlsContext } from "@/lib/db/rls-context";
 
 export type CustomerActor = Pick<AuthenticatedUser, "userId" | "roleName" | "branchId">;
 interface ActorScope { userId: string; roleName: string; branchId: string | null; today: string }
@@ -51,7 +52,7 @@ function validateActor(actor: CustomerActor, allowedRoles: readonly string[]): C
   return result.data;
 }
 
-async function resolveScope(tx: Executor, actor: CustomerActor, allowedRoles: readonly string[]): Promise<ActorScope> {
+async function resolveScope(tx: Parameters<typeof setRlsContext>[0], actor: CustomerActor, allowedRoles: readonly string[]): Promise<ActorScope> {
   const result = await tx.query<{ role_name: string; today: string }>(
     `SELECT r.role_name, CURRENT_DATE::text AS today FROM app_user u JOIN role r ON r.role_id = u.role_id
       WHERE u.user_id = $1 AND u.status = 'ACTIVE' AND r.status = 'ACTIVE' FOR SHARE OF u`, [actor.userId],
@@ -67,8 +68,7 @@ async function resolveScope(tx: Executor, actor: CustomerActor, allowedRoles: re
     branchId = profile.rows[0]?.branch_id ?? null;
     if (!branchId || branchId !== actor.branchId) throw new NotAuthorizedError();
   }
-  await tx.query("SELECT set_config('app.current_user_id', $1, true), set_config('app.current_branch_id', $2, true)",
-    [actor.userId, branchId ?? ""]);
+  await setRlsContext(tx, { userId: actor.userId, branchId, roleName: current.role_name });
   return { userId: actor.userId, roleName: current.role_name, branchId, today: current.today };
 }
 
@@ -80,7 +80,7 @@ function mapCustomer(row: CustomerRow, scope: ActorScope): Customer {
     email: masked ? "***@***" : row.email, status: row.status, createdAt: row.created_at };
 }
 
-/** Registers customer, document metadata, one assignment and minimal audit in one transaction. */
+/** Registers customer, metadata and assignment with the customer audit trigger in one transaction. */
 export async function registerCustomer(input: unknown, actor: CustomerActor): Promise<{ customerId: string; customerNumber: string }> {
   const authenticated = validateActor(actor, WRITE_ROLES);
   const parsed = registerCustomerSchema.safeParse(input);
@@ -112,13 +112,7 @@ export async function registerCustomer(input: unknown, actor: CustomerActor): Pr
         [customer.customer_id, document.docType, document.filePath],
       );
       await tx.query("INSERT INTO customer_agent (customer_id, agent_id) VALUES ($1,$2)", [customer.customer_id, value.agentId]);
-      // Never use the existing global-pool audit helper inside this transaction.
-      await tx.query(
-        `INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, old_values, new_values)
-         VALUES ($1,'USER','customer',$2,'INSERT',NULL,$3::jsonb)`,
-        [scope.userId, customer.customer_id, JSON.stringify({ customer_number: customer.customer_number,
-          branch_id: value.branchId, assigned_agent_id: value.agentId, document_count: value.documents.length })],
-      );
+      // M1's customer trigger writes one sanitized audit in this same transaction.
       return { customerId: customer.customer_id, customerNumber: customer.customer_number };
     });
   } catch (error) {

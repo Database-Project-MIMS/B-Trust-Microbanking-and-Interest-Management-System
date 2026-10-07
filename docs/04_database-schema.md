@@ -523,10 +523,20 @@ account opening. These tables add AGENTS.md-required timestamps beyond the abbre
 ERD; see docs/17 and the reconciliation note in .agent/open-questions.md.
 
 Server-only verifyDocument uses authenticated staff identity, branch/assignment predicates,
-row locks and a same-transaction minimal audit event. No customer grants are added;
-M1's scoped runtime grants/RLS and generic master-data audit binding remain pending.
+row locks and a same-transaction minimal audit event. The original 0221/0222 migrations
+add no grants; verification is not exposed by T05 and still needs its runtime lock/grant integration.
 Verified 2026-10-05: 134 selected tests pass, all 14 migrations rebuild/reapply/verify,
 typecheck/lint pass. See the [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
+
+**T05 runtime access — 0223_p02_m02_customer_child_access.sql (new, M2 block):**
+enables RLS and grants mims_app SELECT/INSERT on customer_agent/customer_document.
+SELECT requires a parent customer visible under M1's branch/bank-wide/optional-login
+scope helpers. INSERT requires branch staff and an in-branch parent; AGENT assignments
+must name the current user, and document verification fields must both be null.
+No child UPDATE/DELETE or role UPDATE is granted. Services impose stricter current
+assignment predicates on agent reads. M1's merged 0200/0201/0261 supply parent
+policies, helper functions and sanitized customer audit; T05 reuses these without
+changing merged migrations. See ADR-0015 and the M1 coordination handoff.
 
 ## B.5 Denormalisation register
 

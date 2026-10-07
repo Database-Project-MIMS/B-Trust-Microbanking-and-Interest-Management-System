@@ -110,13 +110,13 @@ describe('P02-M02-T03: document metadata and verification constraints', () => {
     const result = await client.query('SELECT indexdef FROM pg_indexes WHERE indexname = $1', ['ix_customer_document_customer']);
     assert.match(result.rows[0].indexdef, /\(customer_id\)/);
   });
-  test('runtime child access remains denied pending scoped M1 grants', async () => {
+  test('runtime child reads are granted while updates remain denied', async () => {
     for (const table of ['customer_agent', 'customer_document']) {
       const result = await client.query(
         `SELECT has_table_privilege('mims_app', $1, 'SELECT') AS read,
                 has_table_privilege('mims_app', $1, 'UPDATE') AS update`, [table],
       );
-      assert.deepEqual(result.rows[0], { read: false, update: false });
+      assert.deepEqual(result.rows[0], { read: true, update: false });
     }
   });
 });
