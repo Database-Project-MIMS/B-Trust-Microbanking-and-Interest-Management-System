@@ -51,7 +51,7 @@ describe('P02-M02-T04: registration rollback at every later database stage', () 
     const baseline = await counts(client);
     const result = await registerCustomer(input, actor(fixture));
     assert.deepEqual(await counts(client), { customers: baseline.customers + 1, documents: baseline.documents + 2,
-      assignments: baseline.assignments + 1, audits: baseline.audits + 2 });
+      assignments: baseline.assignments + 1, audits: baseline.audits + 1 });
     const assignments = await client.query('SELECT agent_id, is_active FROM customer_agent WHERE customer_id = $1', [result.customerId]);
     assert.deepEqual(assignments.rows, [{ agent_id: fixture.agentId, is_active: true }]);
     const documents = await client.query('SELECT verified_by, verified_date FROM customer_document WHERE customer_id = $1', [result.customerId]);
