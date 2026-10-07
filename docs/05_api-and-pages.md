@@ -186,7 +186,7 @@ T05 route/runtime/screen integration and security handoff:
 - **SQL routine** `CALL sp_open_savings_account(...)`
 - **Transaction** account + holders + mandate + optional initial deposit ledger row + balance + audit — **all atomic**
 - **Success** `201 { data: { accountId, accountNumber, currentBalance } }`
-- **Errors** `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED`
+- **Errors** `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED` · `409 DOCUMENTS_NOT_VERIFIED` · `409 AGENT_NOT_ELIGIBLE` · `409 HOLDER_NOT_FOUND` · `409 MANDATE_NOT_ALLOWED` · `422 INVALID_MANDATE_TYPE` · `422 INVALID_DEPOSIT_AMOUNT` · `409 OUTSIDE_BUSINESS_HOURS` (deposit only) · `422 INVALID_HOLDERS_PAYLOAD` · `422 CHANNEL_REQUIRED` / `CHANNEL_NOT_FOUND` (the routine raises `P0001` with a named constraint; the service maps by `err.constraint`; the routine's `ACTOR_MISMATCH` means a service bug → `500`)
 - **Page** `/accounts/new`
 
 | `GET /api/accounts` | List / search, scoped | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR |

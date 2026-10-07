@@ -30,13 +30,15 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 
 | Routine | Owner | Purpose | Transaction boundary | Requirements | Concepts |
 |---|---|---|---|---|---|
-| `sp_open_savings_account` | M3 | Validate plan, ages and holder count; create account, holders, mandate and optional initial deposit | One — all or nothing | FR-ACC-01…04, BR-02, BR-07 | L08 procedures, L11 atomicity |
+| `sp_open_savings_account` | M3 | Validate plan, agent/branch, payload, holders (locked), eligibility, verified documents, mandate and deposit (incl. business hours); then write account, holders (one statement), mandate and optional initial deposit. Migration 0243, `SECURITY INVOKER`. Errors: see below | The caller's — never commits; all or nothing | FR-ACC-01…04, BR-02, BR-07, BR-08 | L08 procedures, L11 atomicity |
 | `sp_post_deposit` | M4 | Lock account, insert ledger, update balance and `balance_after`, audit, return reference | One, `FOR UPDATE` | FR-DEP-01…05, BR-10 | L08, L11 ACID |
 | `sp_post_withdrawal` | M4 | Re-validate status, mandate, hours, limits and minimum **after** the lock; then debit | One, `FOR UPDATE` | FR-WD-01…05, BR-09, NFR-SAFE-01/02 | L11 isolation, locking |
 | `sp_reverse_transaction` | M4 | Insert a linked compensating entry; never modify the original | One, `FOR UPDATE` | FR-TXN-03, BR-16, DB-CON-04 | L08, L11 |
 | `sp_open_fixed_deposit` | M5 | Check eligibility under lock, debit principal through the ledger, create the FD with maturity and rate snapshot | One | FR-FD-01…04, BR-11, BR-19 | L08, L11 |
 | `sp_run_interest_cycle` | M5 | Create the run, select due FDs with locking, process **each FD in its own transaction**, reconcile totals | **One per FD**, not per run | FR-INT-01…05, NFR-SAFE-03 | L08, L11 idempotency |
 | `sp_close_account` | M3 | Require zero balance and no active FD, then close | One | FR-ACC-05, BR-18 | L08 |
+
+**`sp_open_savings_account` errors** (all `P0001`, message starts with the code, named `CONSTRAINT` for mapping; services must never forward the message): `PLAN_NOT_FOUND`, `AGENT_NOT_ELIGIBLE`, `ACTOR_MISMATCH` (service bug → 500), `INVALID_HOLDER_COUNT`, `INVALID_HOLDERS_PAYLOAD`, `HOLDER_NOT_FOUND`, `MISSING_PRIMARY_HOLDER`, `PLAN_ELIGIBILITY_FAILED`, `DOCUMENTS_NOT_VERIFIED`, `MANDATE_REQUIRED`, `MANDATE_NOT_ALLOWED`, `INVALID_MANDATE_TYPE`, `INVALID_MANDATE_SIGNATORIES`, `INVALID_DEPOSIT_AMOUNT`, `BELOW_MINIMUM_BALANCE`, `OUTSIDE_BUSINESS_HOURS`, `CHANNEL_REQUIRED`, `CHANNEL_NOT_FOUND`; plus 0242 `UNDERAGE_HOLDER` and `23505` for a duplicate holder. Locks taken: plan `FOR SHARE`, holder customers `FOR SHARE` (id order), then the 0242 account lock.
 
 ## Functions
 
@@ -45,7 +47,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `fn_calculate_fd_interest(principal, rate)` | M5 | `numeric(15,2)` | `round(principal × rate × 30 / 365, 2)` — exact decimal, reads the **snapshot** rate | FR-INT-01, BR-14, BR-19 | L08 functions |
 | `fn_check_plan_eligibility(plan_id, dob, holder_count)` | M3 | `boolean` | Data-driven age and holder-count check against `savings_plan` for the primary applicant only — never raises, returns `false` on any missing plan, inactive plan, or invalid input. Implemented in `database/routines/fn_check_plan_eligibility.sql` (`P01-M03-T02`, `docs/specs/0002-plan-eligibility-function.md`) | FR-ACC-02, BR-E1 | L05, L08 |
 | `fn_check_plan_minimum(account_id, proposed_debit)` | M3 | `boolean` | Post-withdrawal balance ≥ plan minimum | FR-ACC-03, BR-09 | L05, L08 |
-| `fn_next_account_number(branch_code)` | M3 | `varchar` | Sequential, unique, branch-prefixed account number | FR-ACC-01 | L03 sequences |
+| `fn_next_account_number(branch_code)` | M3 | `varchar` | `<BRANCH_CODE>-<8-digit>` from `account_number_seq` (migration 0243); unique under concurrency, gaps after rollback expected; blank code rejected | FR-ACC-01 | L03 sequences |
 | `fn_next_transaction_reference()` | M4 | `varchar` | Unique transaction reference (BR-10) | FR-DEP-02 | L03 |
 | `fn_is_business_hour(ts)` | M1 | `boolean` | Reads `business_calendar` / `system_parameter` | BR-08 | L05 |
 | `fn_account_running_balance(account_id)` | M4 | table | Window-function running balance, used to reconcile `balance_after` | FR-TXN-04 | **L13 window functions** |
