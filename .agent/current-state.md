@@ -23,10 +23,14 @@ P02-M03-T03 built locally (REVIEW): `0242_p02_m03_joint_mandate.sql`, 32 new DB 
 isolated suite 397/397; `/review` findings resolved. The user's PR is pending; next is M3-T04.
 [Handoff](handoffs/p02-m03-t03-joint-mandate.md).
 
+P02-M03-T04 built locally (REVIEW): `0243_p02_m03_sp_open_savings_account.sql`, 29 new DB tests,
+isolated suite 426/426; `/review` findings resolved (idempotency deferred to T05). The user's PR is pending; next is M3-T05.
+[Handoff](handoffs/p02-m03-t04-sp-open-savings-account.md).
+
 ## Task snapshot
 
-P0 6 DONE; P1 19 DONE; P2 10 DONE / 1 REVIEW / 5 TODO; P3–P6 remain future work.
-M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T03 REVIEW (local); M4-T01 DONE.
+P0 6 DONE; P1 19 DONE; P2 10 DONE / 2 REVIEW / 4 TODO; P3–P6 remain future work.
+M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T03 and M3-T04 REVIEW (local); M4-T01 DONE.
 No new other-member completion is inferred by this task.
 
 ## Remaining coordination

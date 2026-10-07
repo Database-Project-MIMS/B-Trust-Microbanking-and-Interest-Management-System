@@ -1,6 +1,12 @@
 # 🟢 Phase 2 — Task 04: `sp_open_savings_account`
 **Task ID:** `P02-M03-T04` · **Branch:** `feat/p02-m03-sp-open-savings-account`
-**File:** `database/routines/sp_open_savings_account.sql` · **Status:** TODO
+**File:** `database/migrations/0243_p02_m03_sp_open_savings_account.sql` · **Status:** built locally, in REVIEW (2026-10-07)
+
+> **As built differs from the draft below:** migration 0243 (not `routines/`); audit rows use `old_values`/`new_values`
+> and account/holder audit comes from the existing triggers; eligibility is checked for the PRIMARY applicant only
+> (the 0242 trigger covers all-adult holders); added `AGENT_NOT_ELIGIBLE`, `HOLDER_NOT_FOUND`, `DOCUMENTS_NOT_VERIFIED`,
+> `MANDATE_NOT_ALLOWED`, `INVALID_MANDATE_TYPE`, `INVALID_DEPOSIT_AMOUNT`, `CHANNEL_*`, `ACTOR_MISMATCH`. See the
+> [handoff](../.agent/handoffs/p02-m03-t04-sp-open-savings-account.md) for the real call contract.
 **Depends on:** T03 (`joint_mandate`), `P02-M04-T01` (`transaction` schema, M4)
 **Story Points:** ~6 · **Layer:** Database — your hardest task this phase
 
