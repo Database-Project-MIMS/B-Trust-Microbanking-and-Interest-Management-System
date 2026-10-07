@@ -123,11 +123,23 @@ describe("P02-M03-T02: account_holder schema constraints", () => {
     });
 
     test("4. An account allows only one PRIMARY holder but many JOINT holders", async () => {
-        const acc = await makeAccount();
+        // Holder counts are plan-driven (trg_validate_joint_mandate, 0242): several holders
+        // need the Joint plan and must arrive in one statement.
+        const jointPlan = await client.query("SELECT plan_id FROM savings_plan WHERE plan_name = 'Joint'");
+        assert.ok(jointPlan.rows[0], "seeded 'Joint' savings plan is required");
+        const acc = (
+            await client.query(
+                `INSERT INTO account (plan_id, branch_id, opened_by_agent_id, account_number)
+                 VALUES ($1, $2, $3, $4) RETURNING account_id`,
+                [jointPlan.rows[0].plan_id, branchId, agentId, `${ACC_PREFIX}J0001`],
+            )
+        ).rows[0].account_id;
         const [c1, c2, c3] = [await makeCustomer(1), await makeCustomer(2), await makeCustomer(3)];
-        await addHolder(acc, c1, "PRIMARY");
-        await addHolder(acc, c2, "JOINT");
-        await addHolder(acc, c3, "JOINT");
+        await client.query(
+            `INSERT INTO account_holder (account_id, customer_id, holder_type)
+             VALUES ($1, $2, 'PRIMARY'), ($1, $3, 'JOINT'), ($1, $4, 'JOINT')`,
+            [acc, c1, c2, c3],
+        );
         const c4 = await makeCustomer(4);
         const err = await expectError(
             "INSERT INTO account_holder (account_id, customer_id, holder_type) VALUES ($1, $2, 'PRIMARY')",
