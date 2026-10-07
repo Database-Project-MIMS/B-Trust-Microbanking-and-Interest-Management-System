@@ -17,10 +17,16 @@ profile navigation, masked identity, assignment/document metadata, filtered sear
 duplicate errors and narrow-layout checks. Development data is preserved.
 [Implementation, ownership, review and verification](handoffs/p02-m02-t05-customer-api-ui.md).
 
+## M3 update (2026-10-07)
+
+P02-M03-T03 built locally (REVIEW): `0242_p02_m03_joint_mandate.sql`, 32 new DB tests,
+isolated suite 397/397; `/review` findings resolved. The user's PR is pending; next is M3-T04.
+[Handoff](handoffs/p02-m03-t03-joint-mandate.md).
+
 ## Task snapshot
 
-P0 6 DONE; P1 19 DONE; P2 10 DONE / 1 READY / 5 TODO; P3–P6 remain future work.
-M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T03 READY; M4-T01 DONE.
+P0 6 DONE; P1 19 DONE; P2 10 DONE / 1 REVIEW / 5 TODO; P3–P6 remain future work.
+M1-T01/T02 DONE, M1-T03 TODO; M3-T01/T02 DONE, M3-T03 REVIEW (local); M4-T01 DONE.
 No new other-member completion is inferred by this task.
 
 ## Remaining coordination

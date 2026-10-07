@@ -20,6 +20,9 @@ GRANT SELECT, INSERT, UPDATE ON account TO mims_app;
 -- Grants for Member 3 (Nisith) - Account holders (P02-M03-T02)
 GRANT SELECT, INSERT, UPDATE ON account_holder TO mims_app;
 
+-- Grants for Member 3 (Nisith) - Joint mandate (P02-M03-T03). No DELETE.
+GRANT SELECT, INSERT, UPDATE ON joint_mandate TO mims_app;
+
 -- Grants for Member 1 (Nadija) - Customer (P02-M01-T01). No DELETE; rows limited by RLS (0201).
 GRANT SELECT, INSERT, UPDATE ON customer TO mims_app;
 

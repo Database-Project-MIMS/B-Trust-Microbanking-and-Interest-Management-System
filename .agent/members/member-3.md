@@ -35,3 +35,5 @@ Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).
 *(empty)*
 
 - 2026-10-06: P02-M03-T02 complete — `0241_p02_m03_account_holder.sql` (holder_type PRIMARY/JOINT, one-PRIMARY partial unique index, RESTRICT FKs), `mims_app` grant, `tests/db/account-holder-constraints.test.mjs` 7/7. The 2–4 adult count rule is deliberately left to T03's trigger (ADR-0009).
+
+- 2026-10-07: P02-M03-T03 built locally — `0242_p02_m03_joint_mandate.sql` (`joint_mandate`, `fn_validate_account_holders` bound as `trg_validate_joint_mandate`, `trg_joint_mandate_fit`, update trigger, account row lock), `mims_app` grant, `tests/db/joint-mandate-trigger.test.mjs` 32/32, T02 test 4 rewritten for plan-driven holder counts. Full isolated suite 397/397. `/review` run; locking, UPDATE-path, mandate-sync and mims_app findings resolved. Status REVIEW: the user's PR outstanding. Next: T04 `sp_open_savings_account` — see [handoff](../handoffs/p02-m03-t03-joint-mandate.md).

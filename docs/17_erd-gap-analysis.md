@@ -37,7 +37,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
 | G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transactions have no agent or branch attribution | HIGH | YES |
-| G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved** |
+| G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved; implemented in `0241`/`0242`** |
 | G-09 | Single role per user vs `user_role` many-to-many | MEDIUM | YES |
 | G-10 | Nothing prevents two active customer–agent assignments | MEDIUM | NO |
 | G-11 | Product rates not effective-dated; FD does not snapshot its rate | HIGH | YES |

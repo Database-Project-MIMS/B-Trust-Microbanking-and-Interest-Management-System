@@ -306,8 +306,44 @@ joint accounts possible (SRS §6.3).
 - Implemented in `0241_p02_m03_account_holder.sql` (P02-M03-T02). An account has at most
   one `PRIMARY` holder; additional holders are `JOINT`.
 - The cross-row rule — a joint account has 2–4 adult holders and a mandate — cannot be a
-  row `CHECK`. It is enforced by `trg_validate_joint_mandate` (P02-M03-T03) and
-  `sp_open_savings_account` (P02-M03-T04), not by this table alone (**G-08**, ADR-0009).
+  row `CHECK`. It is enforced by `trg_validate_joint_mandate` (P02-M03-T03, migration
+  `0242`) and `sp_open_savings_account` (P02-M03-T04), not by this table alone
+  (**G-08**, ADR-0009). The statement-level triggers (`AFTER INSERT` and `AFTER UPDATE`,
+  both calling `fn_check_account_holder_sets`) read `savings_plan.min_holders`,
+  `max_holders` and `requires_all_adult`, require exactly one `PRIMARY`, and reject a
+  holder under 18 when the plan requires adults. The checker first locks the account row
+  (`FOR NO KEY UPDATE`), so concurrent holder changes on one account are serialised. All
+  holders of an account must be inserted in **one multi-row `INSERT`** because the check
+  runs once per statement. Errors are `P0001` with a message prefix and a named
+  `CONSTRAINT`: `INVALID_HOLDER_COUNT` (`ck_account_holder_count`), `MISSING_PRIMARY_HOLDER`
+  (`ck_account_holder_one_primary`), `UNDERAGE_HOLDER` (`ck_account_holder_adult`).
+
+### `joint_mandate`
+
+| Column | Type | Notes |
+|---|---|---|
+| `mandate_id` | uuid | **PK** |
+| `account_id` | uuid | **FK → account, UK** — one mandate per account |
+| `mandate_type` | varchar(20) | `ANY_ONE` / `ALL_HOLDERS` |
+| `required_signatories` | int | default 1; `CHECK` 1–4; `ANY_ONE` must be 1 |
+| `effective_from` | date | default `CURRENT_DATE` |
+| `effective_to` | date | nullable; `CHECK` not before `effective_from` |
+| `created_at` / `updated_at` | timestamptz | `updated_at` maintained by `set_updated_at` |
+
+- Implemented in `0242_p02_m03_joint_mandate.sql` (P02-M03-T03, **G-08**, ADR-0009).
+- Delete: `RESTRICT` on the account foreign key; `mims_app` has no `DELETE` grant.
+- `trg_joint_mandate_fit` (row-level, after insert/update): the account's plan must allow
+  more than one holder, signatories cannot exceed holders, and `ALL_HOLDERS` equals the
+  holder count at the time the mandate is stored. Constraint names:
+  `ck_joint_mandate_multi_holder_plan`, `ck_joint_mandate_signatories_fit`.
+- When holders are added or changed, the holder trigger sets an `ALL_HOLDERS` mandate's
+  `required_signatories` to the new holder count, so the stored mandate never goes stale.
+  `ANY_ONE` stays 1.
+- The trigger functions are `SECURITY DEFINER` (they must see every holder and customer
+  regardless of the caller's RLS scope) with `EXECUTE` revoked from `PUBLIC`.
+- "A joint account must have a mandate" cannot live in the holder trigger (holders are
+  inserted first); `sp_open_savings_account` (T04) writes holders then the mandate in one
+  transaction. Audit and RLS for this table are not yet bound (follow-up for M1).
 
 ### `fixed_deposit`
 

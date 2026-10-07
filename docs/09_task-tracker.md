@@ -28,12 +28,12 @@ control; no assistant commit, push or completed merge is authorized. See the
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 5 | 1 | 0 | 0 | 0 | 10 |
+| P2 | 16 | 5 | 0 | 0 | 0 | 1 | 10 |
 | P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **65** | **0** | **0** | **1** | 0 | **31** |
+| **All** | **97** | **61** | **0** | **0** | **0** | 1 | **35** |
 
 ---
 
@@ -188,7 +188,8 @@ for scoped child SELECT/INSERT. 365 tests (35 suites) pass, with a clean 19-migr
 rebuild, typecheck, lint and production build. Browser registration/search/profile and
 duplicate handling also pass. [T05 handoff](../.agent/handoffs/p02-m02-t05-customer-api-ui.md)
 and ADR-0015 record scope/security review. M1-T03 remains its owner's broader route
-task; M3-T03 is READY. User controls publication. No Phase 2 exit/Phase 3 entry approval.
+task. M3-T03 (`0242` joint mandate, 397 tests passing locally) is in REVIEW awaiting the
+user's PR; M3-T04 is next. User controls publication. No Phase 2 exit/Phase 3 entry approval.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
@@ -202,7 +203,7 @@ task; M3-T03 is READY. User controls publication. No Phase 2 exit/Phase 3 entry 
 | P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | DONE |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, ADR-0009 approved | READY |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) — `0242_p02_m03_joint_mandate.sql`, `tests/db/joint-mandate-trigger.test.mjs` 32/32 (incl. concurrency, UPDATE paths, `mims_app` under RLS); full isolated suite 397/397; `/review` findings resolved | DB | P02-M03-T02, ADR-0009 approved | REVIEW (local; `/review` and PR pending) |
 | P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 | TODO |
 | P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** | TODO |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 | TODO |
