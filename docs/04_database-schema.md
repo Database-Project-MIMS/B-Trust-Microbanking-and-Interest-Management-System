@@ -276,7 +276,7 @@ and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
 - Delete: `RESTRICT` — referenced by `transaction`, `account_holder`, `fixed_deposit`.
 - Indexes: `account_number` unique; `(plan_id)`; `(branch_id, status)` (ADR-0008); `(status)`.
 - Rows are created only by `sp_open_savings_account` (0243), which writes the account, holders, mandate and optional initial deposit atomically.
-- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`).
+- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`). `trg_account_close_guard` (`0441`, P04-M03-T02) rejects a move to `CLOSED` unless `current_balance = 0` and no `ACTIVE` fixed deposit exists (SQLSTATE `P0001`, `ck_close_account_balance` / `ck_close_account_active_fd`).
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).

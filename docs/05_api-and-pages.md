@@ -245,7 +245,11 @@ T05 route/runtime/screen integration and security handoff:
 - **Errors** `404` (account outside scope) · `409 ACCOUNT_NOT_ACTIVE` · `409 INVALID_HOLDER_COUNT` · `409 UNDERAGE_HOLDER` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 DUPLICATE_HOLDER`
 
 ### `POST /api/accounts/{id}/close`
-- **Roles** BRANCH_MANAGER · CSRF required · **Currently `501 NOT_IMPLEMENTED`** (stub). The rule (zero balance, no active FD, BR-18) is Phase 4 (`sp_close_account`).
+- **Purpose** Close an account (`CALL sp_close_account`, migration 0441; BR-18). No request body.
+- **Roles** BRANCH_MANAGER of the owning branch · CSRF required · no `Idempotency-Key` (nothing moves money; a repeat is a conflict)
+- **Rules** account ACTIVE (a FROZEN account stays frozen); `current_balance = 0`; no fixed deposit with status `ACTIVE`. `MATURED` and `CLOSED` FDs do not block. The same balance and FD rule is enforced by `trg_account_close_guard` on any direct `UPDATE` to `CLOSED`; it also waits for an FD insert that is still in flight.
+- **Success** `200 { data: { accountId, status: "CLOSED", closedAt } }` · audited as a `CLOSE` event for the acting manager
+- **Errors** `400` malformed id · `401` · `403` (role or CSRF) · `404` (account outside the manager's branch) · `409 ACCOUNT_ALREADY_CLOSED` · `409 ACCOUNT_NOT_ACTIVE` · `409 BALANCE_NOT_ZERO` · `409 ACTIVE_FD_EXISTS`
 
 ---
 
