@@ -1,6 +1,6 @@
 # 🟡 Phase 3 — Task 01: `fn_check_plan_minimum` — Publishes I-4
 **Task ID:** `P03-M03-T01` · **Branch:** `feat/p03-m03-fn-check-plan-minimum`
-**File:** `database/routines/fn_check_plan_minimum.sql` · **Status:** TODO
+**File:** `database/routines/fn_check_plan_minimum.sql` · **Status:** DONE (2026-10-08; no migration, routine file only)
 **Depends on:** `P02-M03-T01` (`account`)
 **Story Points:** ~3 · **Layer:** Database only — **you are the producer of I-4**
 
@@ -61,9 +61,10 @@ $$;
 
 ## How to Implement
 
-### Step 1 — Write the Migration
-`database/migrations/0340_p03_m03_fn_check_plan_minimum.sql` containing the function
-above.
+### Step 1 — Write the Routine File
+`database/routines/fn_check_plan_minimum.sql` containing the function above (routine file,
+not a migration — decided 2026-10-08, same placement as `fn_check_plan_eligibility`; no
+`0340` migration exists). The shipped version also returns `false` for NULL inputs.
 
 ### Step 2 — Write SQL Tests
 Create file: `tests/db/fn-check-plan-minimum.test.mjs`
@@ -74,7 +75,7 @@ Create file: `tests/db/fn-check-plan-minimum.test.mjs`
    test that a negative input still returns a deterministic boolean rather than erroring
    strangely)
 3. ✅ Non-existent `account_id` → `false`
-4. ✅ Changing `savings_plan.min_balance` for a test plan changes the function's answer
+4. ✅ (shipped as tests 1–11 in the test file, run in one rolled-back transaction) Changing `savings_plan.min_balance` for a test plan changes the function's answer
    without redeploying it — proves the rule stays data-driven, consistent with
    `fn_check_plan_eligibility`'s design in Phase 1
 
