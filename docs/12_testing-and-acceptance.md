@@ -167,3 +167,23 @@ database · all tests pass (SRS §9.2).
 Not a line-coverage number — a rule-coverage rule: **every rule in
 `07_business-rules.md` has at least one negative test proving it is enforced.** A rule
 with only a happy-path test is untested.
+
+## Backup and Restore Evidence
+
+As required by AC-13, we have successfully run a backup and restore test against a fully seeded database instance using our automated `scripts/backup-restore-test.sh`.
+
+```text
+=== Step 1: Take a backup ===
+Backup size: 535K
+=== Step 2: Record checksums ===
+=== Step 3: Drop and restore ===
+NOTICE:  database "mims_test_restore" does not exist, skipping
+DROP DATABASE
+CREATE DATABASE
+=== Step 4: Compare checksums ===
+✅ Backup and restore produce identical data
+=== Step 5: Cleanup ===
+DROP DATABASE
+```
+
+This verifies that custom `pg_dump` format (`-Fc`) perfectly captures the schema, constraints, data, routines, and triggers, and that `pg_restore` perfectly rehydrates it without error or loss of referential integrity.

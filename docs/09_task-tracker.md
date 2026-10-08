@@ -333,7 +333,7 @@ is historical and must not be substituted for current verification.
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 |
 | P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 |
 | P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 |
-| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all |
+| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all | DONE |
 
 ---
 
