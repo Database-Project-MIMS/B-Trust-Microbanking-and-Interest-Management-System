@@ -1,6 +1,6 @@
 # 🟠 Phase 4 — Tasks 01–02: Customer↔FD Linkage & Branch-Scoped FD Access
 **Task IDs:** `P04-M02-T01`, `P04-M02-T02` · **Branch:** `feat/p04-m02-customer-fd-linkage`
-**Migrations:** `0420_p04_m02_customer_fd_view.sql`, `0421_p04_m02_customer_fd_scope_guard.sql` · **Status:** T01 DONE (PR #60); T02 local REVIEW (ADR-0019)
+**Migrations:** `0420_p04_m02_customer_fd_view.sql`, `0421_p04_m02_customer_fd_scope_guard.sql` · **Status:** T01 DONE (PR #60); T02 DONE (PR #62, dev 48f4185; ADR-0019)
 **Depends on:** `P04-M05-T02` (`sp_open_fixed_deposit`, M5)
 **Story Points:** ~3 + ~2 = ~5 · **Layer:** Database + Backend + Frontend
 

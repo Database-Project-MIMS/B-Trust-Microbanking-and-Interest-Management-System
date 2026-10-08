@@ -678,3 +678,60 @@ after the listing installer in the existing views file on a clean rebuild and di
 on an existing FD schema. No merged migration, table column, write grant/policy or
 financial state changes. This checks trusted context consistency, not session tokens.
 M1/M5 policy review: ../.agent/handoffs/p04-m02-fd-branch-scope.md.
+
+## RPT-01 agent transaction view (P05-M02-T01, ADR-0020)
+
+Migration `0520_p05_m02_rpt01_view.sql` creates `vw_rpt01_agent_transactions`.
+Its grain is `(agent_id, branch_id, transaction_type, transaction_date)`: exact
+posting timestamps remain available for filtering before final report totals.
+
+| Columns | Meaning |
+|---|---|
+| `agent_id`, `employee_no`, `agent_name`, `agent_status` | Current profile metadata for every attribution identity in `agent`, including inactive and manager profiles |
+| `agent_branch_id`, `agent_branch_name` | Current roster branch; never historical scope |
+| `branch_id`, `branch_name` | Captured posting branch; NULL remains NULL |
+| `transaction_type`, `transaction_date` | Posted type and exact timestamp; NULL for an empty-history roster row |
+| `transaction_count` | bigint COUNT(transaction_id); zero for an empty-history roster row |
+| `total_value` | Unbounded NUMERIC SUM(amount), zero `0.00` for an empty-history roster row; unsigned by type |
+
+No agent attribution is inferred for NULL `transaction.agent_id`. No current-role
+or active-status filter removes historical totals. Multiple postings with identical
+agent/branch/type/timestamp share one aggregate row. There is no new table or index.
+
+For range-specific zeros, LEFT JOIN the eligible agent roster to date/branch-filtered
+view facts, then aggregate counts and values. Convert inclusive Colombo dates to
+half-open timestamp bounds. The branch roster includes current members plus agents
+with matching historical posting-branch facts; transferred history is not lost.
+The corrected consumer contract is in `../2_Vibodha/09_P5_rpt01-report.md` and its
+SQL regression tests. Do not filter an all-time outer join afterwards.
+
+The view has `security_invoker=true` and `security_barrier=true` and no SELECT grant
+to PUBLIC or mims_app. M1/I-7 must establish authorized SQL scope, underlying RLS,
+grants and report-access auditing before T02 enables access. This is a database-only
+delivery, not a live report API. No signed net/reversal direction is invented.
+
+## Withdrawal corrective routine contract (P03-M04-T03, ADR-0021)
+
+New M4 migration 0363 replaces the broken 0362 definitions without changing merged
+migrations or table shape. `sp_post_withdrawal` retains the single-customer signature
+and adds an array-signers overload for I-4/ALL_HOLDERS. `sp_try_post_withdrawal` is
+the array-signers audited entry, adding `p_rejection_code` to the four financial OUT
+fields. All are SECURITY INVOKER with explicit mims_app EXECUTE and no PUBLIC grant.
+
+Success locks the account before financial decisions and atomically writes an
+attributed WITHDRAWAL row with exact balance_after, debits account.current_balance
+and writes audit_log.new_values. No after_value column is added. AGENT attribution
+comes from its verified profile; manager/admin/customer do not become reporting
+agents automatically. Branch comes from trusted staff scope or the locked account.
+Existing legacy/system attribution is unchanged. Per-key serialization and exact
+payload/signers replay checking preserve one effect; the existing unique index
+remains the cross-producer backstop. Positive finite cents, current actor/scope,
+active channel, business calendar, real parameter keys, Colombo-day limits, mandate
+and minimum are validated in the transaction.
+
+Known financial rejection: inner financial subtransaction rolls back, outer audit
+is written via CALL sp_write_rejection_audit, and the attempt returns a code with
+NULL financial outputs. The future service commits this audit-only result through
+withTransaction, then throws/maps the safe domain error outside it. Unexpected
+errors abort all effects. A legacy throwing call cannot preserve its audit through
+a caller rollback. No autonomous transaction, new table or live API is introduced.

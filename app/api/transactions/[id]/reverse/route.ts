@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
+import { requireUser, requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
 import { reverseTransaction } from "@/services/transaction-service";
 import { DomainError } from "@/lib/db/errors";
@@ -26,9 +26,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
     );
   }
 
-  const reason = body?.reason?.trim() ?? "";
-
-  if (!reason) {
+  if (!body || typeof body.reason !== "string" || body.reason.trim() === "") {
     return NextResponse.json(
       { error: { code: "VALIDATION_FAILED", message: "A reversal reason is required." } },
       { status: 400 }
@@ -36,7 +34,6 @@ export const POST = withAuth(async (request: NextRequest, user) => {
   }
 
   try {
-    // Note: passing body which contains reason.
     const result = await reverseTransaction(transactionId, body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId });
     return NextResponse.json({ data: result.data }, { status: 201 });
   } catch (err) {
