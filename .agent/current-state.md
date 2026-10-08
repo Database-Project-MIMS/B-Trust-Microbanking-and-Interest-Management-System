@@ -301,3 +301,11 @@ P04-M03-T03 DONE as an early start at the user's direction (no Phase 3 exit, gen
 `tsc --noEmit`, `eslint .`, `next build` clean; `/imprint` saved. All three Phase 4 tasks on M3's card (T01–T03) are done.
 [Handoff](handoffs/p04-m03-t03-fd-panel.md).
 
+## M3 update — P05-M03-T01 (2026-10-08)
+
+P05-M03-T01 DONE as an early start at the user's direction (no general Phase 5 entry approval): migration `0540_p05_m03_rpt02_view.sql`
+(`vw_rpt02_account_summary`) and `0541_p05_m03_sp_open_account_balance_after.sql` (opening deposit now records `balance_after`).
+`tests/db/rpt02-view.test.mjs` 13/13. Full isolated suite 852 tests / 824 pass / 28 fail: the failures that already occur on dev
+(a clean export of the committed HEAD fails 29). `tsc --noEmit` and `eslint .` clean. T02 (service, API, CSV, page) not started.
+[Handoff](handoffs/p05-m03-t01-rpt02-view.md).
+

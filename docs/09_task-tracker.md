@@ -31,9 +31,9 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
 | P3 | 14 | 0 | 0 | 0 | 0 | 0 | 14 |
 | P4 | 14 | 4 | 0 | 0 | 0 | 0 | 10 |
-| P5 | 15 | 6 | 0 | 0 | 0 | 1 | 8 |
+| P5 | 15 | 5 | 0 | 0 | 0 | 1 | 9 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **23** | **0** | **0** | **0** | **1** | **73** |
+| **All** | **97** | **22** | **0** | **0** | **0** | **1** | **74** |
 
 ---
 
@@ -282,7 +282,7 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** | DONE |
 | P04-M05-T05 | 5 | FD opening page, FD list, interest run console | BE + FE | P04-M05-T04, **I-1** |
 
-## Phase 5 — Reports, Audit & Reconciliation (6 TODO, 1 REVIEW, 8 DONE; general entry pending)
+## Phase 5 — Reports, Audit & Reconciliation (5 TODO, 1 REVIEW, 9 DONE; general entry pending)
 
 **Scoped start/repair (2026-10-08):** ADR-0020 authorizes M2's T01 database-only
 view; ADR-0021 records the user's explicit authorization for M4's T03 correction
@@ -295,6 +295,7 @@ exact totals and snapshot CSV/access audit. Relevant checks pass; the current fu
 suite has unrelated legacy failures recorded in the T02 handoff. General entry
 remains pending. Unannotated statuses below remain TODO. The earlier full result
 is historical and must not be substituted for current verification.
+**M3 early start (2026-10-08):** P05-M03-T01 (RPT-02 view) was started at the user's direction and is DONE; it does not approve general Phase 5 entry. T02 (API, page, CSV) is not started.
 [RPT-01 handoff](../.agent/handoffs/p05-m02-rpt01-view.md) ·
 [M4 correction](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 
@@ -306,7 +307,7 @@ is historical and must not be substituted for current verification.
 | P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 | DONE |
 | P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01; scoped start ADR-0020 | DONE (0520, PR #67 merged at 4095b38) |
 | P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7**; approved ADR-0022 | REVIEW (local implementation; 0521; report checks/browser/type/lint/build pass; full-suite legacy failures documented; user publication pending) |
-| P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance | DB | P03-M04-T02 |
+| P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance — `0540_p05_m03_rpt02_view.sql` (`vw_rpt02_account_summary`: per ledger event, `balance_before`/`balance_after_effective` from the stored `balance_after`, reversals net into their original category) and `0541_p05_m03_sp_open_account_balance_after.sql` (the opening deposit now records `balance_after`; it was NULL since 0243); `tests/db/rpt02-view.test.mjs` 13/13; handoff [t01](../.agent/handoffs/p05-m03-t01-rpt02-view.md). The card's SQL used `posted_at`/`status`, which do not exist | DB | P03-M04-T02 | DONE (early start at the user's direction; no phase approval) |
 | P05-M03-T02 | 3 | RPT-02 API, page and CSV | BE + FE | P05-M03-T01, **I-7** |
 | P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 |
 | P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** |
