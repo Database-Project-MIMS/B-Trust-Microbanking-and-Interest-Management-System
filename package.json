@@ -31,6 +31,8 @@
     "test": "node scripts/verify-phase-01.mjs --tests-only",
     "test:db": "node scripts/verify-phase-01.mjs --tests-only --suite=db",
     "test:api": "node scripts/verify-phase-01.mjs --tests-only --suite=api",
+    "test:security": "node scripts/verify-phase-01.mjs --tests-only --suite=security",
+    "verify:deployment": "node scripts/check-deployment-security.mjs",
     "db:seed-check": "node --env-file=.env scripts/seed-check.mjs"
   },
   "dependencies": {

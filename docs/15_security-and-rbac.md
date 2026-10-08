@@ -189,6 +189,21 @@ Environment variables only. `.env` is gitignored; `.env.example` holds no real v
 Separate secrets per environment. **No `NEXT_PUBLIC_*` variable may ever contain a
 credential** — that prefix ships to the browser.
 
+### Production deployment boundary (P06-M01-T04)
+
+`npm run verify:deployment` validates the **runtime** environment before start: an
+HTTPS public `APP_BASE_URL`, `mims_app` in `DATABASE_URL`, non-placeholder session,
+CSRF and interest-worker secrets, no owner migration URL in the app process, and no
+credential-like `NEXT_PUBLIC_*` variable. It reports variable names, not values.
+The owner URL belongs only in a separate migration job. The sample `.env.example`
+is for local setup and must never be deployed unchanged.
+
+Production TLS is terminated at a trusted reverse proxy/load balancer, which must
+redirect HTTP to HTTPS. The Next.js app sends `Strict-Transport-Security` only in
+production, plus frame, MIME-sniffing, referrer and browser-permission headers.
+No hosting provider or certificate is provisioned by this repository; deployment
+must verify the live HTTPS URL and response headers before claiming completion.
+
 ## Logging
 
 Structured logs with redaction. Never log: passwords or hashes, session tokens, full

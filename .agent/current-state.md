@@ -1,5 +1,18 @@
 # Current State
 
+## M1 Phase 6 deployment-security draft (2026-10-08)
+
+P06-M01-T04 is `IN_PROGRESS` on `feat/p06-m01-deployment` in an isolated
+worktree. The sample environment is sanitized; a production-only HSTS header,
+browser-permission header, runtime environment validator and security test
+suite are added. Focused tests 6/6, disposable 41-migration rebuild,
+typecheck/lint/build pass. The combined suite is 733 pass / 28 fail outside
+these six tests. No live HTTPS target was supplied; no deployment, commit or PR
+was performed. See [handoff](handoffs/p06-m01-deployment-security.md).
+
+The user's request is a scoped early start, not general Phase 6 entry.
+Phase 5-dependent M1 T01/T02 remain TODO.
+
 **Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
 **Work:** PR #67 task-tracker conflict resolved locally; user commit/push/merge pending.
