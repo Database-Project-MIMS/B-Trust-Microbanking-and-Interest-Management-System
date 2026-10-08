@@ -139,3 +139,6 @@ the assistant must not publish. Normal development database was not reset or mig
 Apply new migrations through the existing migration runner when using this branch.
 Historical PR #35/#36 conflict histories stay in dated handoffs; current dev includes
 PR #35, registration PR #38, holder PR #37 and security PR #40.
+
+## 2026-10-08 — M3 P03-M03-T02 (saved)
+`fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` + `fn_withdrawal_mandate_verdict` (reason codes) in `database/routines/fn_check_withdrawal_mandate.sql`; 16/16 tests. No-mandate rule uses actual holder count, not plan `max_holders`; dates in Asia/Colombo. Migration `0246` makes `fn_next_account_number` skip seeded numbers. Open for M4: withdrawal API needs a multi-signer field for ALL_HOLDERS (handoff i-4-fn-check-withdrawal-mandate.md). Remaining full-suite failure: seed-validation transaction count 93<100 (M5). Next: P03-M03-T03 balance panel.

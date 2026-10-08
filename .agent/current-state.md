@@ -1,8 +1,8 @@
 # Current State
 
-**Updated:** 2026-10-08 · **Owner:** M2
-**Checkout:** feat/p03-m02-agent-daily-activity · HEAD d2901b7 · incoming dev af07af8
-**Work:** P03-M02-T02 REVIEW in open PR #53; local dev conflicts resolved; pending user merge commit
+**Updated:** 2026-10-08 · **Owner:** M2 (M3 section below is the latest)
+**Checkout:** dev · PR #53 merged (6583463)
+**Work:** P03-M02-T02 merged; P03-M03-T02 DONE locally, uncommitted (see M3 update)
 
 ## Delivered work
 
@@ -46,7 +46,7 @@ implementation/status changed. Other members retain ownership of their stale lab
 Vibodha explicitly authorized T02 after the general phase restriction was explained;
 ADR-0017 extends the scoped early-start exception. No Phase 2 exit/general Phase 3
 entry, OQ-12/OQ-14 or unrelated task approval is recorded. Historical Phase 2 entry
-approval remains valid. Overall tracker: 52 TODO / 1 REVIEW / 44 DONE (97 tasks).
+approval remains valid. Overall tracker: 51 TODO / 1 REVIEW / 45 DONE (97 tasks).
 
 M4/M3 still need to populate trusted attribution inside posting transactions;
 existing opening deposits remain unattributed. M1 owns future transaction RLS;
@@ -94,3 +94,15 @@ Log: test-results/p03-activity-pr53-conflict-verification.log (ignored).
 The user already committed/pushed T02 and opened PR #53. This assistant session
 performs only local resolution and staging; no commit, push, PR creation or
 completed merge. The pending merge commit and subsequent push remain with the user.
+
+## M3 update — P03-M03-T02 (2026-10-08)
+
+P03-M03-T02 DONE (early, at the user's direction; same scoped basis as T01): `database/routines/fn_check_withdrawal_mandate.sql`
+publishes the mandate half of I-4, `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[]) → boolean`
+(STABLE, SECURITY INVOKER, never raises, fails closed). `tests/db/fn-check-withdrawal-mandate.test.mjs` 16/16 in one
+rolled-back transaction; companion `fn_withdrawal_mandate_verdict` returns the rejection reason. `/review` findings fixed.
+Migration `0246_p02_m03_account_number_skip_existing.sql` (M3 block) fixes `fn_next_account_number` colliding with seeded
+account numbers (5 `sp-open-savings-account` tests failed on a seeded DB). Full isolated `test:db`: 348/349; the one failure is
+`seed-validation` ("transaction: expected >= 100, got 93") — M5's seed-set-4 target, not part of this change. Typecheck, lint, build clean. M4's `sp_post_withdrawal` (P03-M04-T03) now has both checks it needs.
+**Open for M4:** `docs/05` withdrawal body has only `onBehalfOfCustomerId`; `ALL_HOLDERS` accounts need a multi-signer
+field. [Handoff](handoffs/i-4-fn-check-withdrawal-mandate.md).
