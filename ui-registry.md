@@ -281,3 +281,18 @@ Today recomputes the Colombo date on click. Applied dates remain beside the resu
 and new period loads hide stale totals. No sum across transaction types or account
 balance is displayed. Browser QA covers populated/filtered/empty/denied/self views;
 screenshots are local ignored test evidence, described in the T02 handoff.
+
+### Account balance and authority panel
+
+Files: `app/accounts/[id]/account-detail.tsx`, helpers in `app/accounts/account-format.ts`
+(`authoritySummary`, `holderAuthority`, `transactionTypeLabel`). Updated 8 Oct 2026 · /imprint.
+
+| Property | Existing class / token |
+|---|---|
+| Surface | `detail-grid` of `card`s; balance uses `card balance-card` with a `dl` for Available to withdraw and Last transaction |
+| Status | `status-pill` for mandate state (Effective / Not yet effective / Expired); `card` with `role=status` for a non-ACTIVE account notice |
+| Blocked text | `text-[var(--danger)]` on the authority sentence when withdrawals are blocked; no new color |
+| Table | existing `table-wrap`/`data-table`; Authority column between Role and Joined |
+| Money | strings through `displayMoney`; Available is "—" when the account is not ACTIVE |
+
+No new class, token, radius or shadow.

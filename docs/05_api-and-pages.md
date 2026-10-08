@@ -234,7 +234,7 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `GET /api/accounts/{id}`
 - **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
-- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, availableToWithdraw, lastTransaction: { transactionType, amount, transactionDate, referenceNumber } | null, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo, state: "EFFECTIVE"|"NOT_YET_EFFECTIVE"|"EXPIRED" } | null } }`. `availableToWithdraw` is `max(0, currentBalance − minBalance)` computed in SQL (string, `NUMERIC(15,2)`); `lastTransaction` is the newest ledger row (no user ids) or `null`; `mandate.state` compares the effective dates with the Asia/Colombo calendar date (P03-M03-T03). A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
 - **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
 
 ### `POST /api/accounts/{id}/holders`

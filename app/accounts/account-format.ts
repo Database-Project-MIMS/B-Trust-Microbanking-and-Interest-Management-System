@@ -38,6 +38,40 @@ export function mandateSummary(
   return "Operating mandate recorded.";
 }
 
+export type MandateState = "EFFECTIVE" | "NOT_YET_EFFECTIVE" | "EXPIRED";
+
+/** Who may authorise a withdrawal, and whether the stored mandate currently allows it. */
+export function authoritySummary(input: {
+  holderCount: number;
+  mandate: { mandateType: string; requiredSignatories: number; state: MandateState } | null;
+}): { text: string; blocked: boolean; stateLabel: string | null } {
+  const { holderCount, mandate } = input;
+  if (!mandate) {
+    // Several holders without a mandate cannot withdraw (fn_check_withdrawal_mandate fails closed).
+    if (holderCount > 1) return { text: "Withdrawals are blocked until a valid operating mandate exists.", blocked: true, stateLabel: null };
+    return { text: "Sole holder. The holder may withdraw alone.", blocked: false, stateLabel: null };
+  }
+  const rule = mandateSummary(mandate);
+  if (mandate.state === "NOT_YET_EFFECTIVE") return { text: `${rule} The mandate is not yet in effect, so withdrawals are blocked.`, blocked: true, stateLabel: "Not yet effective" };
+  if (mandate.state === "EXPIRED") return { text: `${rule} The mandate has expired, so withdrawals are blocked.`, blocked: true, stateLabel: "Expired" };
+  return { text: rule, blocked: false, stateLabel: "Effective" };
+}
+
+/** What a holder's signature is worth under the account's mandate. */
+export function holderAuthority(mandate: { mandateType: string } | null, holderCount: number): string {
+  if (!mandate) return holderCount > 1 ? "No mandate" : "Can authorise alone";
+  return mandate.mandateType === "ANY_ONE" ? "Can authorise alone" : "Must co-sign";
+}
+
+const TRANSACTION_TYPES: Record<string, string> = {
+  DEPOSIT: "Deposit", WITHDRAWAL: "Withdrawal", INTEREST_CREDIT: "Interest credit", REVERSAL: "Reversal",
+};
+
+/** Plain label for a ledger type. */
+export function transactionTypeLabel(type: string): string {
+  return TRANSACTION_TYPES[type] ?? "Transaction";
+}
+
 /** Eligibility text for a plan row, built only from the plan's own data. */
 export function eligibilitySummary(plan: {
   minAgeYears: number | null; maxAgeYears: number | null; minHolders: number; maxHolders: number; requiresAllAdult: boolean;
