@@ -1,8 +1,16 @@
 # Current State
 
 **Updated:** 2026-10-08 · **Owner:** M2
-**Checkout:** feat/p03-m02-agent-attribution-activity · HEAD d8d1be2 (contains dev a4a6b9f)
-**Work:** uncommitted P03-M02-T01, verified locally and ready for review
+**Checkout:** feat/p03-m02-agent-attribution-activity · HEAD 67b1817
+**Work:** PR #49 tracker resolution; uncommitted local merge from dev 2208986
+
+The user committed/pushed T01 and opened PR #49. Incoming seed PR #48 is retained;
+the tracker combines M5-T01 DONE with M2-T01 REVIEW (56 TODO / 4 REVIEW / 37 DONE).
+No general phase approval is inferred. The user finishes the merge commit and push.
+[Conflict-resolution evidence](handoffs/p03-m02-t01-pr49-conflict-resolution.md).
+Fresh combined checks pass: clean isolated 24-migration rebuild/checksums and all
+501 tests in 45 suites, zero failures/skips. No unmerged entries or conflict markers
+remain. The incoming seed/phase target contradiction is in open-questions.md.
 
 ## Current implementation
 
@@ -28,7 +36,8 @@ T01 is REVIEW pending the user's PR and M4/team review, rather than formally DON
 PRs #41 (M2 customer APIs), #42/#45/#46 (M3 mandate/opening/APIs), and #47 (M3 screens)
 are merged. Existing M3 tracker REVIEW labels and its pending browser checklist need
 owner reconciliation; no other member's status is changed by this task. M1-T03 and
-M5's complete Phase 2 seeds remain recorded TODO. Old T05/M3 local-only publication
+M5's complete Phase 2 seeds are now recorded DONE by merged PR #48; phase target
+reconciliation remains pending. Old T05/M3 local-only publication
 notes in dated handoffs are historical.
 
 ## Handoff and next work

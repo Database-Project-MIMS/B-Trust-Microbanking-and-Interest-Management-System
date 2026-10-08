@@ -28,12 +28,12 @@ control; no assistant commit, push or completed merge is authorized. See the
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 2 | 0 | 0 | 0 | 3 | 11 |
+| P2 | 16 | 1 | 0 | 0 | 0 | 3 | 12 |
 | P3 | 14 | 13 | 0 | 0 | 0 | 1 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **57** | **0** | **0** | **0** | 4 | **36** |
+| **All** | **97** | **56** | **0** | **0** | **0** | 4 | **37** |
 
 ---
 
@@ -208,7 +208,7 @@ user's PR; M3-T04 (`0243` account-opening routine) is DONE. M3-T05 (accounts and
 | P02-M03-T05 | 3 | Accounts and holders APIs — `POST/GET /api/accounts`, `GET /api/accounts/{id}`, `POST …/holders`, `POST …/close` (501 stub); migrations `0244` (idempotency table) and `0245` (`sp_add_account_holder`); `services/account-service.ts`; `tests/api/accounts.test.mjs` 23/23, DB tests 15; full isolated suite 464/464; typecheck, lint, build clean | BE + DB | P02-M03-T04, **I-1** | REVIEW (local; `/review` and PR pending) |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages — live `/accounts`, `/accounts/new` (review step, idempotent submit), `/accounts/{id}` (add holder), real `/plans`; pure-logic tests `tests/e2e/accounts-ui-model.test.mjs` 12/12 and `tests/e2e/plan-edit-ui-model.test.mjs` 10/10; `/review` important findings fixed (focus trap, NaN age guard, review-step error); full isolated suite 486/486; typecheck, lint, build clean; manual browser pass pending | FE | P02-M03-T05 | REVIEW (local; `/review`, manual browser pass and PR pending) |
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
-| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 3 joint accounts | DB | P02-M03-T04, P01-M05-T03 | TODO |
+| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
 ## Phase 3 — Financial Transactions (13 TODO, 1 local REVIEW)
 

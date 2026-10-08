@@ -9,6 +9,16 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### Incoming Phase 2 seed targets versus phase exit — 2026-10-08
+
+PR #48 (dev 2208986) marks M5-T01 DONE and revises docs/06 to 15 customers,
+10 accounts and 2 joint accounts. docs/phases/phase-02-customers-and-accounts.md
+still requires 18 customers, 22 accounts and 3 joint accounts. PR #49's tracker
+resolution preserves the seed owner's DONE status and incoming specification;
+it does not silently amend those exit criteria or approve phase exit. M5/the lead
+must reconcile the targets before Phase 2 exit verification. This does not block
+the separately authorized T01 attribution schema or its tracker resolution.
+
 ### Customer contract discrepancies recorded 2026-10-05
 
 - G-10/task card says "exactly one", but the prescribed partial index only enforces

@@ -1,5 +1,18 @@
 # Memory — P03-M02-T01 transaction attribution
 
+## Latest continuation — PR #49 conflict resolution, 2026-10-08
+
+User committed T01 (HEAD 67b1817) and opened PR #49. A local --no-commit merge of
+dev 2208986 is now prepared and must be completed by the user, then pushed. The
+tracker preserves merged M5 seed DONE and M2 attribution REVIEW; overall 56 TODO,
+4 REVIEW, 37 DONE. No conflicts remain in Git's index. Fresh combined verification
+passes a clean 24-migration rebuild and all 501 tests/45 suites. Development DB
+preserved. No assistant commit/push/PR creation/completed merge.
+Evidence: .agent/handoffs/p03-m02-t01-pr49-conflict-resolution.md. Incoming seed
+targets (15/10/2) differ from the still-unchecked Phase 2 exit targets (18/22/3);
+owner reconciliation is recorded in open-questions.md. No phase exit is approved.
+The older session/publication notes below are historical, superseded by this entry.
+
 **Updated:** 2026-10-08 · /remember save (non-sensitive continuation state)
 **Branch:** feat/p03-m02-agent-attribution-activity · HEAD d8d1be2 contains dev a4a6b9f
 
