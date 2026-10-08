@@ -281,3 +281,12 @@ OQ-13/OQ-14 approval is inferred. M2 uses disposable synthetic FD rows, not the 
 opening routine. M1/M5 review the new SELECT-only FD RLS/column grants in 0420; no
 owner source files/write policies are changed. The numbering/start_date discrepancies
 are resolved in ADR-0018 and docs17; broader opening/interest integration stays pending.
+
+## P04-M02-T02 scoped access completion — 2026-10-08
+
+T01 is merged (PR #60, dev e9291dc); its REVIEW label was stale. After the remaining
+phase gate was explained, Vibodha said “do it now”, authorizing T02's read-side scope
+only (ADR-0019). New 0421 ANDs a current stored-actor guard with 0420 FD SELECT scope.
+M1/M5 review the additive restrictive policy; no ownership shift, write access or
+owner source changes. General phase gates/OQ-13/OQ-14 stay pending. M2's route/service/
+view inventory is covered; future M5/M3 FD/report read paths need their owner review.

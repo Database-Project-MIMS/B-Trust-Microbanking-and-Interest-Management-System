@@ -11,9 +11,15 @@ authorized a scoped early start for P03-M02-T01 and its G-07 schema;
 M2 Phase 3 T01/T02 are merged through PR #49/#53. The user also authorized the
 P04-M02-T01 read-side start against merged M5 0480;
 [ADR-0018](../.agent/decisions/ADR-0018-customer-fd-listing.md) records its scope.
-Customer FD view/API/profile panel is verified locally, REVIEW pending user
-publication and teammate review. M5 opening remains partial. Phase 2/3 exit and
+Customer FD view/API/profile panel is merged through PR #60 (dev e9291dc). Vibodha
+authorized scoped P04-M02-T02 implementation in
+[ADR-0019](../.agent/decisions/ADR-0019-customer-fd-branch-scope.md); broader FD paths
+remain with their owners. M5 opening remains partial. Phase 2/3 exit and
 general Phase 3/4 entry remain pending. The user controls publication.
+
+T02 is verified locally, REVIEW: current stored-actor FD guard (0421), 630 tests /60
+suites, clean isolated 31-migration rebuild/type/lint/build. M1/M5 policy review and
+user publication pending. [Handoff](../.agent/handoffs/p04-m02-fd-branch-scope.md).
 
 ## If you are new, read in this order
 

@@ -421,6 +421,22 @@ referential integrity, not authorization or required attribution. M4 posting rou
 and M3 opening-deposit producers still need to capture trusted attribution; existing
 opening deposits remain unattributed. M1 retains transaction RLS/scope ownership.
 
+### `transaction_reversal`
+
+Implemented in `0363_p03_m04_transaction_reversal.sql`. Links an original transaction to its compensating entry, resolving G-02 without requiring a mutable status column on the ledger.
+
+| Column | Type | Notes |
+|---|---|---|
+| `reversal_id` | uuid | **PK** |
+| `original_transaction_id` | uuid | **FK → transaction, UK** — enforces "reversible once" |
+| `reversal_transaction_id` | uuid | **FK → transaction, UK** — the compensating transaction |
+| `reason` | varchar(255) | |
+| `reversed_by_user_id` | uuid | **FK → user** |
+| `created_at` | timestamptz | |
+
+- Delete: `RESTRICT` on all foreign keys.
+- Immutability: The transaction ledger remains completely immutable. Reversal state is derived dynamically by joining to this table.
+
 ### `interest_payout`
 
 | Column | Type | Notes |
@@ -465,7 +481,6 @@ corresponding open question is resolved and an ADR exists.**
 
 | Table | Purpose | Gap | Owner |
 |---|---|---|---|
-| `transaction_reversal` | Links an original transaction to its compensating entry; `UNIQUE(original_transaction_id)` enforces "reversible once" (DB-CON-04) | G-02 | M4 |
 | `interest_run` | One row per 30-day cycle. `UNIQUE(cycle_date)` prevents duplicate runs; stores counts, totals, exceptions (FR-INT-05) | G-03 | M5 |
 | `joint_mandate` | `ANY_ONE` / `ALL_HOLDERS` operating rule per joint account (FR-ACC-04, BR-17; approved ADR-0009) | G-08 | M3 |
 | `system_parameter` | Business hours, withdrawal limits as data, not code (BR-08, §7.1) | G-15 | M1 |
@@ -484,7 +499,7 @@ corresponding open question is resolved and an ADR exists.**
 | `transaction` (0320 implemented) | `branch_id uuid NULL FK` | Historical posting branch; ADR-0016 | G-07 |
 | `transaction` | `idempotency_key varchar(80) NULL` | FR-DEP-04, AC-06 | G-04 |
 | `transaction` | `balance_after money_amount NOT NULL` | FR-TXN-04 running-balance evidence | G-14 |
-| `transaction` | `status varchar(20)` | `POSTED` / `REVERSED` | G-02 |
+| `transaction` | `status varchar(20)` | **REJECTED**: Reversal state is derived purely via `transaction_reversal` to preserve the trigger immutability. | G-02 |
 | `fixed_deposit` | `maturity_date date NOT NULL` | FR-FD-04, RPT-03 | G-23 |
 | `fixed_deposit` | `interest_rate_at_opening interest_rate NOT NULL` | Rate fixed at opening; protects historical payouts (BR-19) | G-11 |
 | `interest_payout` | `interest_run_id uuid FK`, `cycle_date date` | Cycle idempotency | G-03 |
@@ -647,3 +662,19 @@ needs a current customer assignment plus matching customer/account branch, manag
 needs both branches, CUSTOMER sees self, CENTRAL_OPS/AUDITOR read bankwide.
 No FD write grant/policy, ledger change, opening change or seed is introduced.
 M1/M5 security integration handoff: ../.agent/handoffs/p04-m02-customer-fd-listing.md.
+
+### Current FD read actor (P04-M02-T02, ADR-0019)
+
+0421 adds fn_customer_fd_actor_is_current(), STABLE SECURITY INVOKER with explicit
+runtime EXECUTE and no PUBLIC grant. An additive RESTRICTIVE SELECT-only policy
+requires active stored user/role matching transaction context; AGENT/BRANCH_MANAGER
+also need an active staff profile/branch matching the current branch claim. Missing
+identity, role escalation and stale branch context see no FD rows even via direct
+SELECT. Existing 0420 assignment/customer/account/self row scope remains authoritative.
+CENTRAL_OPS/AUDITOR and CUSTOMER do not inherit a retained staff profile's restrictions.
+
+Owner-only fn_install_customer_fd_scope_guard() follows 0420's late binder, invoked
+after the listing installer in the existing views file on a clean rebuild and directly
+on an existing FD schema. No merged migration, table column, write grant/policy or
+financial state changes. This checks trusted context consistency, not session tokens.
+M1/M5 policy review: ../.agent/handoffs/p04-m02-fd-branch-scope.md.

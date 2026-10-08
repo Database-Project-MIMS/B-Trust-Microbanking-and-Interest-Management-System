@@ -1,4 +1,44 @@
-# Memory — P04-M02-T01 customer FD listing
+# Memory — P04-M02-T02 customer FD scope
+
+**Updated:** 2026-10-08 · /remember save
+**Branch:** feat/p04-m02-fd-branch-scope · HEAD/base dev e9291dc
+
+T01 merged PR #60; its stale REVIEW labels reconciled to DONE. User said “do it now”
+after general phase gate was explained, authorizing T02 only (ADR-0019). T02 is now
+implemented/verified locally, REVIEW pending user publication and M1/M5 policy review.
+
+T01 already scoped the endpoint/service/view correctly. T02 closes the direct SQL
+context gap with new0421: STABLE SECURITY INVOKER fn_customer_fd_actor_is_current()
+requires matching active stored user/role, plus active matching staff branch for
+AGENT/BRANCH_MANAGER. Bankwide/customer roles ignore historical staff profiles.
+An additive restrictive SELECT-only FD policy ANDs this with the existing 0420
+row predicates. It validates trusted context consistency, not session authentication.
+Owner-only fn_install_customer_fd_scope_guard() binds on an existing FD schema;
+the existing M2 views binder invokes it after0420 on clean post-migration builds.
+No merged migrations or other-owner auth/grant/seed/financial source changes.
+No new route, DTO/UI changes or runtime write grants/policies.
+
+Full verify:phase1 PASS: 630 tests /60 suites, zero failures/skips; clean isolated
+31-migration rebuild/checksums, typecheck/lint/production build. 14 new DB10/API4
+cases cover role-only/missing/forged/inactive/stale SQL context, assignments/both
+branches/self links, live-session branch/role/self changes, COMMIT/ROLLBACK cleanup,
+installer denial and unchanged financial state. Initial branch test-file failure
+without diagnostics did not reproduce: unchanged 4/4 isolated and630/630 repeat
+combined passed. Recorded, no production workaround. Ignored logs:
+test-results/fd-branch-scope-verification-final.log and fd-scope-branch-debug.log.
+
+/review three layers complete; no new /imprint/browser needed for unchanged UI.
+T01's browser evidence retained. Normal development database not migrated/reset;
+verification clusters cleaned up. Handoff: .agent/handoffs/p04-m02-fd-branch-scope.md.
+M5/M3 global FD/report/account paths retain owner integration responsibility;
+general phase gates/OQ-13/OQ-14 pending. All five overview tables reviewed, only M2
+updated. Tracker: 48 TODO /1 REVIEW /48 DONE (97). User owns staging/commit/push/PR/
+merge; assistant published nothing. Apply0421 through ordinary owner migration/
+binder workflow before using this guard in the normal development database.
+
+---
+
+## Historical P04-M02-T01 delivery (subsequently merged PR #60)
 
 **Updated:** 2026-10-08 · /remember save
 **Branch:** feat/p04-m02-customer-fd-linkage · HEAD c5fed03

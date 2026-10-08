@@ -1,45 +1,41 @@
-import { NextRequest } from 'next/server';
-import { requireUser, requireRole, branchScope } from '@/lib/auth/rbac';
-import { pool, withTransaction, NotFoundError, BusinessRuleError } from '@/lib/db';
-import { auditReversal } from '@/services/audit-service';
+import { NextRequest, NextResponse } from "next/server";
+import { requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
+import { verifyCsrf } from "@/lib/auth/csrf";
+import { pool, withTransaction, NotFoundError, BusinessRuleError } from "@/lib/db";
+import { auditReversal } from "@/services/audit-service";
 
-/**
- * POST /api/transactions/[id]/reverse
- * Roles: BRANCH_MANAGER, ADMIN only.
- * Branch scope: BRANCH_MANAGER can only reverse transactions belonging to their branch.
- */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  let user;
-  try {
-    user = await requireUser(request);
-  } catch (e) {
-    if (e instanceof Response) return e;
-    throw e;
-  }
-
-  try {
-    requireRole(user, 'BRANCH_MANAGER', 'ADMIN');
-  } catch (e) {
-    if (e instanceof Response) return e;
-    throw e;
-  }
-
+export const POST = withAuth(async (request: NextRequest, user) => {
+  // Only BRANCH_MANAGER and ADMIN can reverse a transaction
+  requireRole(user, "BRANCH_MANAGER", "ADMIN");
+  
+  // Enforce CSRF protection for this state-changing endpoint
+  verifyCsrf(request);
+  
   const scope = branchScope(user);
-  const body = await request.json().catch(() => ({})) as { reason?: string };
-  const reason = body.reason?.trim() ?? '';
+  
+  const parts = request.nextUrl.pathname.split("/");
+  const id = parts[parts.length - 2];
 
-  if (!reason) {
-    return Response.json(
-      { error: { code: 'VALIDATION_FAILED', message: 'A reason is required to reverse a transaction.' } },
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: { code: "VALIDATION_FAILED", message: "Invalid JSON body." } },
       { status: 400 }
     );
   }
 
-  const ipAddress = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+  const reason = body?.reason?.trim() ?? "";
+
+  if (!reason) {
+    return NextResponse.json(
+      { error: { code: "VALIDATION_FAILED", message: "A reversal reason is required." } },
+      { status: 400 }
+    );
+  }
+
+  const ipAddress = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
 
   return await withTransaction(async (tx) => {
     // Verify the transaction exists and (if branch-scoped) belongs to this branch
@@ -82,7 +78,7 @@ export async function POST(
 
     if (!procCheck.rows[0]?.exists) {
       // M4's procedure not yet merged; scaffold route returns 503
-      return Response.json(
+      return NextResponse.json(
         { error: { code: 'NOT_AVAILABLE', message: 'Reversal procedure is not yet available. Dependency P03-M04-T04 is pending.' } },
         { status: 503 }
       );
@@ -105,6 +101,6 @@ export async function POST(
       ipAddress,
     }, tx);
 
-    return Response.json({ data: { reversalTransactionId: reversalId, originalTransactionId: id } });
+    return NextResponse.json({ data: { reversalTransactionId: reversalId, originalTransactionId: id } });
   });
-}
+});

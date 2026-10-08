@@ -1,83 +1,122 @@
-import "server-only";
-import { query, withTransaction, BusinessRuleError } from "@/lib/db";
-import { getParameter } from "@/services/parameter-service";
+import { withTransaction } from "@/lib/db";
+import { BusinessRuleError, ValidationError } from "@/lib/db/errors";
 
-// ─── Domain Errors ────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────
 
-/** Thrown when an operation is attempted outside configured business hours. */
-export class OutsideBusinessHoursError extends BusinessRuleError {
-  constructor() {
-    super("OUTSIDE_BUSINESS_HOURS", "This operation can only be performed during business hours.");
-  }
+export interface WithdrawalLimitCheck {
+  singleLimitOk: boolean;
+  dailyLimitOk: boolean;
+  singleLimit: string;
+  dailyLimit: string;
+  dailyUsed: string;
 }
 
-/** Thrown when a withdrawal exceeds a single-transaction or daily limit. */
-export class LimitExceededError extends BusinessRuleError {
-  constructor(limitType: "single" | "daily", limit: string) {
-    super(
-      "LIMIT_EXCEEDED",
-      limitType === "single"
-        ? `This withdrawal exceeds the maximum single-transaction limit of ${limit}.`
-        : `This withdrawal would exceed the daily withdrawal limit of ${limit}.`
+// ── Business hours ─────────────────────────────────────────────────────────
+
+/**
+ * Checks whether the current time (now()) is within business hours.
+ * Reads from fn_is_business_hour() which consults business_calendar and
+ * system_parameter (BUSINESS_HOUR_START, BUSINESS_HOUR_END).
+ * Transaction boundary: single read query; caller may pass their own executor.
+ *
+ * @throws BusinessRuleError OUTSIDE_BUSINESS_HOURS (409) if outside hours.
+ */
+export async function enforceBusinessHours(): Promise<void> {
+  const result = await withTransaction(async (tx) => {
+    const row = await tx.query<{ is_open: boolean }>(
+      "SELECT fn_is_business_hour(now()) AS is_open"
+    );
+    return row.rows[0]?.is_open ?? false;
+  });
+  if (!result) {
+    throw new BusinessRuleError(
+      "OUTSIDE_BUSINESS_HOURS",
+      "Transactions can only be processed during business hours."
     );
   }
 }
 
-// ─── Business Hours Check ─────────────────────────────────────────────────────
-
 /**
- * Checks if the current server time is within business hours configured in
- * system_parameter (BUSINESS_HOUR_START / BUSINESS_HOUR_END).
- * Throws OutsideBusinessHoursError if outside hours.
- * Must be called INSIDE a transaction to benefit from a consistent snapshot.
+ * Reads a system_parameter value as a numeric string.
+ * Returns null if the key is not configured.
+ * Transaction boundary: single read query.
  */
-export async function checkBusinessHours(): Promise<void> {
-  const rows = await query<{ is_open: boolean }>(
-    "SELECT fn_is_business_hour(now() AT TIME ZONE 'Asia/Colombo') AS is_open"
-  );
-  if (!rows[0]?.is_open) {
-    throw new OutsideBusinessHoursError();
-  }
+export async function getParameter(key: string): Promise<string | null> {
+  return withTransaction(async (tx) => {
+    const row = await tx.query<{ param_value: string }>(
+      "SELECT fn_get_parameter($1) AS param_value",
+      [key]
+    );
+    return row.rows[0]?.param_value ?? null;
+  });
 }
 
-// ─── Withdrawal Limits ────────────────────────────────────────────────────────
+// ── Withdrawal limits ──────────────────────────────────────────────────────
 
 /**
- * Validates that a withdrawal amount does not exceed the single-transaction
- * limit, and that the day's total withdrawals for the account do not exceed
- * the daily limit. Must be called INSIDE a transaction AFTER the account
- * row lock (SELECT … FOR UPDATE) has been acquired so the daily total is
- * accurate and race-condition-safe.
+ * Checks both the single-transaction and daily withdrawal limits for an account.
+ * MUST be called INSIDE the locked withdrawal transaction (after SELECT … FOR UPDATE)
+ * and BEFORE the ledger insert, so the daily sum is computed on the same snapshot
+ * as the balance check.
+ *
+ * @param tx       - The open transaction executor (from withTransaction callback).
+ * @param accountId - The account being debited.
+ * @param amount   - The withdrawal amount as a numeric string (never a JS float).
+ *
+ * @throws BusinessRuleError SINGLE_LIMIT_EXCEEDED (409) if the single transaction limit is breached.
+ * @throws BusinessRuleError DAILY_LIMIT_EXCEEDED  (409) if the daily total would be exceeded.
  */
-export async function checkWithdrawalLimits(
+export async function enforceWithdrawalLimits(
+  tx: { query: <T>(sql: string, params?: unknown[]) => Promise<{ rows: T[] }> },
   accountId: string,
   amount: string
 ): Promise<void> {
-  const [singleLimit, dailyLimit] = await Promise.all([
-    getParameter("WITHDRAWAL_SINGLE_LIMIT"),
-    getParameter("WITHDRAWAL_DAILY_LIMIT"),
-  ]);
-
-  const amountNum = parseFloat(amount);
-  const singleLimitNum = parseFloat(singleLimit);
-  const dailyLimitNum = parseFloat(dailyLimit);
-
-  if (amountNum > singleLimitNum) {
-    throw new LimitExceededError("single", singleLimit);
-  }
-
-  // Check daily total for this account (INSIDE the lock)
-  const dailyRows = await query<{ total: string }>(
-    `SELECT COALESCE(SUM(amount), 0)::text AS total
-     FROM transaction
-     WHERE account_id = $1
-       AND transaction_type = 'WITHDRAWAL'
-       AND transaction_date::date = CURRENT_DATE`,
-    [accountId]
+  // Single-transaction limit
+  const singleOk = await tx.query<{ ok: boolean }>(
+    "SELECT fn_check_withdrawal_single_limit($1::numeric(15,2)) AS ok",
+    [amount]
   );
-
-  const dailyTotal = parseFloat(dailyRows[0]?.total ?? "0");
-  if (dailyTotal + amountNum > dailyLimitNum) {
-    throw new LimitExceededError("daily", dailyLimit);
+  if (!(singleOk.rows[0]?.ok ?? true)) {
+    const limitRow = await tx.query<{ param_value: string }>(
+      "SELECT fn_get_parameter('WITHDRAWAL_SINGLE_LIMIT') AS param_value"
+    );
+    const limit = limitRow.rows[0]?.param_value ?? "unknown";
+    throw new BusinessRuleError(
+      "SINGLE_LIMIT_EXCEEDED",
+      `Withdrawal exceeds the single-transaction limit of LKR ${limit}.`
+    );
   }
+
+  // Daily cumulative limit (computed inside the lock)
+  const dailyOk = await tx.query<{ ok: boolean }>(
+    "SELECT fn_check_withdrawal_daily_limit($1::uuid, $2::numeric(15,2)) AS ok",
+    [accountId, amount]
+  );
+  if (!(dailyOk.rows[0]?.ok ?? true)) {
+    const limitRow = await tx.query<{ param_value: string }>(
+      "SELECT fn_get_parameter('WITHDRAWAL_DAILY_LIMIT') AS param_value"
+    );
+    const limit = limitRow.rows[0]?.param_value ?? "unknown";
+    throw new BusinessRuleError(
+      "DAILY_LIMIT_EXCEEDED",
+      `This withdrawal would exceed the daily limit of LKR ${limit}.`
+    );
+  }
+}
+
+// ── Parameter validation helper ────────────────────────────────────────────
+
+/**
+ * Parses a system_parameter value as a positive numeric string.
+ * Throws ValidationError if the value is null or non-numeric.
+ */
+export function parsePositiveNumericParameter(key: string, value: string | null): string {
+  if (value === null) {
+    throw new ValidationError(`System parameter '${key}' is not configured.`);
+  }
+  const n = Number(value);
+  if (!isFinite(n) || n < 0) {
+    throw new ValidationError(`System parameter '${key}' has an invalid value: '${value}'.`);
+  }
+  return value;
 }

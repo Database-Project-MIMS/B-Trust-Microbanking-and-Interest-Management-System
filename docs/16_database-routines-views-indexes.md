@@ -41,6 +41,8 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 
 **`sp_post_deposit` errors** (all `P0001`, named `CONSTRAINT` for mapping): `ACCOUNT_ID_REQUIRED` (`ck_deposit_account_id`), `INVALID_DEPOSIT_AMOUNT` (`ck_deposit_amount_positive`), `USER_ID_REQUIRED` (`ck_deposit_user_id`), `CHANNEL_REQUIRED` (`ck_deposit_channel_required`), `CHANNEL_UNAVAILABLE` (`ck_deposit_channel_active`), `ACCOUNT_NOT_FOUND` (`ck_deposit_account_exists`), `ACCOUNT_NOT_ACTIVE` (`ck_deposit_account_active`), `OUTSIDE_BUSINESS_HOURS` (`ck_deposit_business_hours`). Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising or modifying balance.
 
+**`sp_post_withdrawal` errors** (all `P0001`, raised natively by the procedure): `ACCOUNT_NOT_FOUND`, `ACCOUNT_NOT_ACTIVE`, `OUTSIDE_BUSINESS_HOURS`, `MANDATE_NOT_SATISFIED`, `LIMIT_EXCEEDED`, `INSUFFICIENT_FUNDS`, `BELOW_MINIMUM_BALANCE`. It uses `sp_write_rejection_audit` to atomically log failures. Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising.
+
 **`sp_open_savings_account` errors** (all `P0001`, message starts with the code, named `CONSTRAINT` for mapping; services must never forward the message): `PLAN_NOT_FOUND`, `AGENT_NOT_ELIGIBLE`, `ACTOR_MISMATCH` (service bug → 500), `INVALID_HOLDER_COUNT`, `INVALID_HOLDERS_PAYLOAD`, `HOLDER_NOT_FOUND`, `MISSING_PRIMARY_HOLDER`, `PLAN_ELIGIBILITY_FAILED`, `DOCUMENTS_NOT_VERIFIED`, `MANDATE_REQUIRED`, `MANDATE_NOT_ALLOWED`, `INVALID_MANDATE_TYPE`, `INVALID_MANDATE_SIGNATORIES`, `INVALID_DEPOSIT_AMOUNT`, `BELOW_MINIMUM_BALANCE`, `OUTSIDE_BUSINESS_HOURS`, `CHANNEL_REQUIRED`, `CHANNEL_NOT_FOUND`; plus 0242 `UNDERAGE_HOLDER` and `23505` for a duplicate holder. Locks taken: plan `FOR SHARE`, holder customers `FOR SHARE` (id order), then the 0242 account lock.
 
 ## Functions
@@ -55,6 +57,10 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `fn_next_account_number(branch_code)` | M3 | `varchar` | `<BRANCH_CODE>-<8-digit>` from `account_number_seq` (migration 0243); unique under concurrency, gaps after rollback expected; blank code rejected; from migration 0246 it skips numbers already used by directly inserted (seed) accounts, `SECURITY DEFINER` so RLS cannot hide them | FR-ACC-01 | L03 sequences |
 | `fn_next_transaction_reference()` | M4 | `varchar` | Unique transaction reference (BR-10) | FR-DEP-02 | L03 |
 | `fn_is_business_hour(ts)` | M1 | `boolean` | Reads `business_calendar` / `system_parameter` | BR-08 | L05 |
+| `fn_check_business_hours(check_ts timestamptz)` | M1 | `boolean` | **P03-M01-T01.** Thin wrapper around `fn_is_business_hour(now())`; `false` → reject with `OUTSIDE_BUSINESS_HOURS`. Migration `0300`. | BR-08 | L05, L08 |
+| `fn_get_parameter(key varchar)` | M1 | `varchar \| null` | **P03-M01-T01.** Reads one `system_parameter` value; STABLE; returns NULL for unknown keys. Migration `0300`. | BR-08, BR-I2 | L05 |
+| `fn_check_withdrawal_single_limit(amount numeric)` | M1 | `boolean` | **P03-M01-T01.** `false` when `amount > WITHDRAWAL_SINGLE_LIMIT`; also `false` for NULL input; `true` if parameter is not configured. Call after account lock, before ledger insert. Migration `0300`. | BR-I2 | L05, L08 |
+| `fn_check_withdrawal_daily_limit(account_id uuid, amount numeric)` | M1 | `boolean` | **P03-M01-T01.** Sums today's `WITHDRAWAL` rows for the account (Asia/Colombo date) and checks `(used + amount) <= WITHDRAWAL_DAILY_LIMIT`. `false` for NULL inputs; `true` if parameter not configured. Call after account lock. Migration `0300`. | BR-I2 | L05, L08 |
 | `fn_account_running_balance(account_id)` | M4 | table | Window-function running balance, used to reconcile `balance_after` | FR-TXN-04 | **L13 window functions** |
 | `fn_validate_agent_active_branch()` | M2 | `trigger` | Lock and verify that an active agent references an active branch | FR-ORG-02 | L08 triggers, L11 locking |
 | `fn_prevent_account_branch_change()` | M3 | `trigger` | Reject any change to `account.branch_id` after opening | ADR-0008, D-4 | L08 triggers |
@@ -115,6 +121,13 @@ RLS/assignment/self scope at the database boundary (ADR-0018).
 0420, revoked from PUBLIC/mims_app. It idempotently binds the view and SELECT-only FD
 policy/column grants after 0480 through database/views/customer-fd-summary.sql.
 No financial routine or new index is introduced. M1/M5 handoff records this boundary.
+
+P04-M02-T02 adds `fn_customer_fd_actor_is_current()` (0421), STABLE SECURITY INVOKER
+boolean checking active stored identity/role/profile/branch against transaction
+context. `fn_install_customer_fd_scope_guard()` is an owner-only invoker bootstrap
+for the additive RESTRICTIVE SELECT policy, invoked after 0420 by the same views
+binder. Missing/stale context fails closed; current row scope remains ANDed. No
+financial routine, view columns or index changes. ADR-0019; M1/M5 scope handoff.
 
 ## Indexes
 
