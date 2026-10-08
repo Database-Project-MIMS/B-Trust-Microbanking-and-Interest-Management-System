@@ -25,7 +25,7 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~02~~ | ~~[Transaction Channel Schema](02_P1-T02_transaction-channel-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`transaction_channel` + seed (`BRANCH_COUNTER`, `ONLINE`, `SYSTEM`)~~ | ~~~2~~ |
 | ~~03~~ | ~~[Migration Runner Tests & Health Endpoint](03_P1-T03-T04_migration-runner-health-page.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~Rebuild proof, edited-migration rejection, `/admin/health` API~~ | ~~~5~~ |
 | ~~04~~ | ~~[Transaction Schema & Immutability](04_P2-T01_transaction-schema-immutability.md)~~ | ~~P2~~ | ~~T01~~ | ~~`transaction` ledger table + `trg_financial_transaction_immutable`~~ | ~~~5~~ |
-| 05 | [Reference & Idempotency Indexes](05_P3-T01_reference-idempotency-indexes.md) | P3 | T01 | `reference_number UNIQUE`, `idempotency_key` partial unique index (G-04, G-05) | ~4 |
+| ~~05~~ | ~~[Reference & Idempotency Indexes](05_P3-T01_reference-idempotency-indexes.md)~~ | ~~P3~~ | ~~T01~~ | ~~`reference_number UNIQUE`, `idempotency_key` partial unique index (G-04, G-05)~~ | ~~~4~~ |
 | 06 | [sp_post_deposit](06_P3-T02_sp-post-deposit.md) | P3 | T02 | Lock, insert ledger, update balance, `balance_after`, audit | ~6 |
 | 07 | [sp_post_withdrawal](07_P3-T03_sp-post-withdrawal.md) | P3 | T03 | Lock, re-validate status/mandate/limits/minimum, debit — consumes **I-4** | ~7 |
 | 08 | [Transaction Reversal](08_P3-T04_transaction-reversal.md) | P3 | T04 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | ~5 |

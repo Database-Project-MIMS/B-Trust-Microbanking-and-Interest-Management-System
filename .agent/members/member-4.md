@@ -7,7 +7,11 @@ Slice: [member prompt](../../docs/member-prompts/member-4.md).
 
 P01-M04-T01–T04 are verified DONE: hardened data access (I-2), transaction channels
 0160, migration/rebuild proof and authenticated health. P02-M04-T01 immutable
-transaction schema 0260 is also verified DONE. Earlier documentation was stale.
+transaction schema 0260 is verified DONE.
+P03-M04-T01 is verified DONE: migration 0360 added transaction_reference_seq,
+fn_next_transaction_reference(), UNIQUE constraint on transaction.reference_number
+(G-05/ADR-0010), and partial unique index ux_transaction_idempotency (G-04). All 471
+isolated tests pass.
 
 ## Closeout repairs
 
@@ -18,9 +22,8 @@ Mapped SQLSTATE uses lowercase sqlstate. See ADR-0013 and the closeout handoff.
 
 ## Next work and dependencies
 
-Phase 3 is not approved. Posting/reference/transfer work waits for Phase 2 exit,
-OQ-12 transfer typing and OQ-14 lecturer scope acceptance. ADR-0010 accepts linked
-transfer legs; do not use the stale no-transfer assumption.
+P03-M04-T02 (sp_post_deposit) is next: pessimistic locking (FOR UPDATE), ledger insert,
+balance update, balance_after calculation, and audit logging.
 
 ## Publication
 
