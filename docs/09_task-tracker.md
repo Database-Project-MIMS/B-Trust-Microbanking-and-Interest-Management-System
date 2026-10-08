@@ -252,7 +252,7 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M03-T03 | 3 | Account balance panel and holder authority display — `GET /api/accounts/{id}` gains `availableToWithdraw`, `lastTransaction`, `mandate.state`; `/accounts/{id}` shows available amount, last transaction, who can authorise withdrawals and a status notice; `tests/e2e/accounts-ui-model.test.mjs` +6, `tests/api/accounts.test.mjs` +4; full isolated suite 580/580; handoff [t03](../.agent/handoffs/p03-m03-t03-balance-panel.md) | FE | P03-M04-T02 | DONE |
 | P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** (ADR-0010) | DONE (migration `0360`, branch `feat/p03-m04-reference-idempotency-indexes`) |
 | P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | DONE (migration `0361`, branch `feat/p03-m04-sp-post-deposit`) |
-| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** | TODO |
+| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** | DONE (branch `feat/p03-m04-sp-post-withdrawal`) |
 | P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | TODO |
 | P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | TODO |
 | P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | TODO |
