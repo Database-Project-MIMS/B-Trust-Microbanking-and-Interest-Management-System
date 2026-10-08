@@ -11,6 +11,12 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**2026-10-09 master-data verification:** P06-M02-T02 is explicitly authorized by
+ADR-0025 on `feat/p06-m02-master-data-integrity`. 100 DB/16 API adversarial cases;
+focused 309 and full 1062 tests (including security), 51-migration rebuild/checksums/
+typecheck/lint pass. T02 REVIEW; local commits authorized; publication remains with Vibodha. T03 remains
+TODO. [Coverage and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
+
 **2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
 reported integration failures in other members' code. Full current865/latest940
 tests pass; original stewardship and unfinished task statuses remain.
@@ -42,7 +48,7 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
 | ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
 | ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
-| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 REVIEW (implemented, AC-12 passes); T02–T03 TODO | Strict seed/ledger/payout validation and authorized seed completion; user publication pending | ~6 |
+| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 REVIEW; T02 REVIEW (ADR-0025); T03 TODO | Seed acceptance and master-data integrity proof; user publication/review pending | ~6 |
 
 ---
 

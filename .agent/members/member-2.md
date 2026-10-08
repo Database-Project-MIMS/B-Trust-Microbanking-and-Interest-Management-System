@@ -1,4 +1,27 @@
-# Member 2 — current seed acceptance delivery
+# Member 2 — current master-data integrity delivery
+
+## P06-M02-T02 — verified integrity tests (2026-10-09)
+
+**Branch:** `feat/p06-m02-master-data-integrity` · **Base:** user-merged `fe7034f`
+**Status:** REVIEW; local implementation verified, publication/review pending.
+Explicit user-confirmed blueprint: ADR-0025. Later instruction authorizes failure
+fixes across owners and local commits, with no push/PR/merge.
+
+100 DB/16 API cases cover all five master tables, named constraints/required fields,
+history/verification/deletion integrity, deactivation retention and complete rollback
+of linked-user/profile/customer-child/audit changes. Repaired the verifier's outdated
+database-creation assumption. No production schema/service/UI change was needed.
+Focused309/14 suites, full1062/98 suites including security, clean51-migration
+rebuild/checksums and final-source typecheck/lint PASS; no failures/cancellations/skips.
+Temporary clusters removed; normal DB preserved. Test/tooling commit `a58112e`;
+documentation/state saved in a separate local commit. /architect and /review pass;
+/remember overwrite explicitly approved; no UI, /imprint N/A. All overviews reviewed.
+Tracker97:15 TODO,1 IN_PROGRESS,2 REVIEW,79 DONE. General Phase 6/T03 stay separate.
+T01 remains REVIEW as recorded; previous pending PR #88 merge notes are historical
+because Git already showed the user's fe7034f merge before T02 began.
+[Coverage and handoff](../handoffs/p06-m02-master-data-integrity.md).
+
+---
 
 ## M2 P06-M02-T01 — seed acceptance completed locally (2026-10-09)
 

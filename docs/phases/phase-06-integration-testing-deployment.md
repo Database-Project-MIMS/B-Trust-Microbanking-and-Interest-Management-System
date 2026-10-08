@@ -2,6 +2,17 @@
 
 **Status:** TODO · **Tasks:** 13 · **Effort:** 40 points · **Est.** ~1 week
 
+**M2 T02 scoped start (2026-10-09):** Vibodha instructed implementation and
+explicitly confirmed the blueprint in
+[ADR-0025](../../.agent/decisions/ADR-0025-master-data-integrity.md).
+Phase 2 dependencies are DONE. 100 database/16 API cases implement the master-data
+stress pass; focused 309 tests, clean rebuild/checksums/typecheck/lint pass.
+Full 1062 tests /98 suites (including security) pass with zero failures,
+cancellations or skips; 51-migration rebuild/checksums pass. T02 is REVIEW
+pending user publication/review. Local commits are authorized; no push, PR
+creation or merge. General entry/T03 remain separate.
+[Evidence and review](../../.agent/handoffs/p06-m02-master-data-integrity.md).
+
 **Scoped early work (2026-10-08):** The user's direct request started M1's
 security tasks only; it does not satisfy Phase 5 exit or approve general Phase 6
 entry. T04 is in progress with local configuration checks, but no live HTTPS
@@ -20,7 +31,7 @@ of the reported seed blockers, authorizing the necessary M5/M4 contributions.
 Strict global AC-12 now passes on `p06-m02-seed-validation`: twelve funded FDs,
 three completed nonempty cycles, thirty payouts and all seven roles/profile links.
 T01 is implemented locally, REVIEW awaiting user publication. General entry and
-T02/T03 remain separate. Vibodha additionally authorized repairs to the reported
+T02 is separately authorized in ADR-0025 above; T03 remains separate. Vibodha additionally authorized repairs to the reported
 full-suite failures in other members' code. The current branch full865 tests and
 latest-dev overlay full940 tests all pass, with zero cancellations/skips; focused
 seed/date proof is186 tests. These results do not certify general Phase 6 exit.
