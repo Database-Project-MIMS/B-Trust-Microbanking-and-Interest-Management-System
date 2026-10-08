@@ -98,10 +98,8 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] Function signature matches what's documented in the handoff exactly
-- [ ] Boundary case (`resulting_balance == min_balance`) returns `true`, one cent below
-      returns `false`
-- [ ] Function reads the minimum from `savings_plan` via `account.plan_id` — no
-      hardcoded amount anywhere
-- [ ] Handoff published in `.agent/handoffs/` before this task is marked `DONE`
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] Function signature matches what's documented in the handoff exactly
+- [x] Boundary case (`resulting_balance == min_balance`) returns `true`, one cent below returns `false`
+- [x] Function reads the minimum from `savings_plan` via `account.plan_id` — no hardcoded amount anywhere
+- [x] Handoff published in `.agent/handoffs/` before this task is marked `DONE`
+- [x] `npm run db:rebuild` succeeds from empty

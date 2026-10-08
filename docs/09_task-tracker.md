@@ -28,12 +28,21 @@ control; no assistant commit, push or completed merge is authorized. See the
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
+<<<<<<< HEAD
 | P2 | 16 | 1 | 0 | 0 | 0 | 0 | 15 |
 | P3 | 14 | 7 | 0 | 0 | 0 | 0 | 7 |
 | P4 | 14 | 13 | 0 | 0 | 0 | 1 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
 | **All** | **97** | **49** | **0** | **0** | **0** | **1** | **47** |
+=======
+| P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
+| P3 | 14 | 9 | 0 | 0 | 0 | 1 | 4 |
+| P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
+| P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
+| P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
+| **All** | **97** | **51** | **0** | **0** | **0** | **1** | **45** |
+>>>>>>> 7faf714 (phase 7)
 
 ---
 
@@ -194,7 +203,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 |---|---|---|---|---|---|
 | P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | DONE |
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | DONE |
-| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
+| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | DONE |
 | P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
