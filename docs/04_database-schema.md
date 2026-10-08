@@ -397,6 +397,8 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
 | `amount` | numeric(15,2) | Always positive; direction comes from the type |
 | `transaction_date` | timestamptz | Business timestamp |
 | `narration` | varchar(255) | |
+| `balance_after` | numeric(15,2) NULL | Balance after this row (G-14, added by `0361`). **Nullable:** opening deposits written by `sp_open_savings_account` before `0541` have NULL and cannot be corrected (immutable ledger); RPT-02 derives them |
+| `ledger_seq` | bigint | **NOT NULL**, default `nextval('transaction_ledger_seq')` (`0542`, G-24, ADR-0023): posting order of the row, unique per account; internal, never displayed |
 | `idempotency_key` | varchar(80) | Nullable; partial unique index `ux_transaction_idempotency` (G-04) |
 | `created_at` | timestamptz | System insert time |
 
@@ -405,13 +407,14 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
   `ux_transaction_reference` unique (`reference_number`, SRS §6.7, G-05);
   `ux_transaction_idempotency` partial unique on `idempotency_key WHERE idempotency_key IS NOT NULL` (G-04);
   `ix_transaction_agent_date (agent_id, transaction_date)` and
-  `ix_transaction_branch_date (branch_id, transaction_date)` for reporting (0320, G-07).
+  `ix_transaction_branch_date (branch_id, transaction_date)` for reporting (0320, G-07);
+  `ux_transaction_account_ledger_seq` unique `(account_id, ledger_seq)` for the strict per-account posting order RPT-02 needs (0542, G-24).
 - Implemented in `0260_p02_m04_transaction.sql`, `0320_p03_m02_transaction_attribution.sql`,
   `0360_p03_m04_transaction_reference_idempotency.sql` (P03-M04-T01), and
   `0361_p03_m04_sp_post_deposit.sql` (P03-M04-T02).
 - Invariants: `amount > 0`; no row may be updated or deleted by an application role;
   every row has a unique reference, timestamp and type (BR-10).
-- Gaps: no reversal link (**G-02**); no `status` (**G-02**). G-04, G-05, G-07, and G-14 are resolved.
+- Gaps: no reversal link (**G-02**); no `status` (**G-02**). G-04, G-05, G-07, G-14 and G-24 are resolved.
 
 **G-07 implementation:** M2 migration `0320_p03_m02_transaction_attribution.sql`
 adds nullable posting-time attribution under ADR-0016. Existing rows and omitted

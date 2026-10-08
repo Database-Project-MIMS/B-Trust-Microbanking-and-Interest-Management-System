@@ -6,7 +6,7 @@ distinct-ledger total. This report's grand total is labelled holder-attributed; 
 the reconciliation report for a distinct-ledger control total.
 
 **Compares:** `Project 4` assignment brief · `Group 32 SRS v1.1` · `group_32_ERD2`
-**Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 3 remain blocking.
+**Status:** Phase 0 analysis complete; updated during Phase 1. **22 tracked findings** (G-22/G-23 are referenced from other documents). 3 remain blocking.
 
 ---
 
@@ -56,6 +56,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-19 | Monetary and rate columns lack precision | MEDIUM | NO |
 | G-20 | Every customer is forced to have a login | HIGH | **YES — resolved** |
 | G-21 | Branch managers have no defined branch-assignment source | HIGH | **YES — accepted** |
+| G-24 | Ledger rows have no posting-order key; `transaction_date` ties and inverts | MEDIUM | **YES — resolved; implemented in `0542` (ADR-0023)** |
 
 ---
 
@@ -774,3 +775,27 @@ allowing the outer audit to commit before the future service maps an error. Arra
 signers support the published I-4 ALL_HOLDERS function. No ERD/table change or edit
 to merged 0362. Per-account limits follow BR-I2/SRS §7.1; the old parameter description
 saying per-customer does not redefine that rule. All arithmetic remains exact SQL.
+
+---
+
+## G-24 · Ledger rows have no posting-order key
+
+**Current design** — `transaction` is ordered by `transaction_date`. `sp_post_deposit` and `sp_open_savings_account`
+stamp it with `now()` (the transaction's start time); `sp_post_withdrawal` uses `clock_timestamp()`.
+
+**Project requirement** — RPT-02 reports an opening and a closing balance per account for a date range (FR-ACC-05 /
+REP-02), and the ledger carries running-balance evidence (`balance_after`, G-14). Reading those balances needs the
+FIRST and LAST row of an account in the range, so the order of an account's rows must be exact.
+
+**Why they conflict** — Postings made inside one transaction share a timestamp, and a deposit that waits for the account
+lock behind a later-starting transaction is stamped EARLIER than the row posted before it. On the pure seed 73 of 125
+rows tie, the balance chain breaks 86 times by timestamp order, and 6 of 10 accounts' last row disagrees with
+`current_balance`.
+
+**Approved resolution (ADR-0023)** — Add `transaction.ledger_seq bigint NOT NULL DEFAULT nextval('transaction_ledger_seq')`
+with `UNIQUE (account_id, ledger_seq)`. Rows are written under the account row lock, so the sequence order within an
+account is the posting order. Existing rows are numbered in physical insertion order by the table rewrite.
+
+**Database impact** — One sequence, one column, one unique index; migration `0542` (M3 block, table owned by M4).
+No posting routine changes. `ledger_seq` is internal and never displayed.
+

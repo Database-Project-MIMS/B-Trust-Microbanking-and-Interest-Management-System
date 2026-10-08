@@ -12,6 +12,8 @@ interface ReportShellProps<T> {
   branches?: { id: string; name: string }[]; agents?: { id: string; name: string }[];
   branchLocked?: boolean; columns?: ReportColumn<T>[]; rowKey?: (row: T) => string;
   scopeLabel?: string; agentLabel?: string; reportCode?: string; filterExtras?: ReactNode; children?: ReactNode;
+  /** Optional per-report text; the defaults are RPT-01's. */
+  caption?: string; emptyText?: string; sortLabels?: Record<string, string>;
 }
 export default function ReportShell<T>(props: ReportShellProps<T>) {
   return <div className="space-y-6 min-w-0">
@@ -26,8 +28,8 @@ export default function ReportShell<T>(props: ReportShellProps<T>) {
     {props.loading ? <div className="card" role="status">Generating report…</div> : props.result
       ? <section className="card min-w-0 space-y-4">
         <ReportMetadata generatedAt={props.result.generatedAt} requestedBy={props.result.requestedBy}
-          filters={props.result.filters} scopeLabel={props.scopeLabel} agentLabel={props.agentLabel} />
-        <ReportTable result={props.result} columns={props.columns} rowKey={props.rowKey} />
+          filters={props.result.filters} scopeLabel={props.scopeLabel} agentLabel={props.agentLabel} sortLabels={props.sortLabels} />
+        <ReportTable result={props.result} columns={props.columns} rowKey={props.rowKey} caption={props.caption} emptyText={props.emptyText} />
       </section> : null}
   </div>;
 }

@@ -1,5 +1,23 @@
 # Current State
 
+## PR #88 conflict resolution — 2026-10-09
+
+Branch `p06-m02-seed-validation` remains at feature HEAD f323516. Latest dev78aae1e
+is prepared with --no-commit --no-ff; the user completes the merge commit and push.
+The five conflicts preserve tested code and both owners' task histories. The
+tracker has 97 tasks:16 TODO,1 IN_PROGRESS,1 REVIEW,79 DONE; seed T01 is REVIEW,
+M2 RPT-01 is DONE, incoming M3/M5 DONE and M1 deployment IN_PROGRESS are retained.
+General phase gates remain separate. The M5 ops note/tracker discrepancy is
+recorded without changing its TODO status. Actual resolved-tree verification passes:
+940 full tests,186 focused,6 security;51-migration rebuild/reseed/typecheck/lint.
+The resolution is staged for the user; see the [resolution handoff](handoffs/p06-m02-pr88-conflict-resolution.md).
+The development DB is preserved. No new commit, push or completed merge.
+
+---
+
+## Historical delivery evidence before latest-dev preparation
+
+
 ## M2 P06-M02-T01 — seed acceptance completed locally (2026-10-09)
 
 **Checkout:** `p06-m02-seed-validation` · **Base:** dev 095ea9c
@@ -333,3 +351,35 @@ approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_clos
 `tests/db/sp-close-account.test.mjs` 17/17 (incl. two-connection races against an in-flight FD insert) and 6 new API tests. Full isolated suite 777 tests / 750 pass / 27 fail: the same
 27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
 panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
+
+## M3 update — P04-M03-T03 (2026-10-08)
+
+P04-M03-T03 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval), tests only:
+`GET /api/accounts/{id}` gains `fixedDeposits`, and `/accounts/{id}` has a read-only Fixed deposits panel (table, closure-blocked note, link to
+`/fixed-deposits/new?accountId=…`). No migration. Full isolated suite on the tree merged with dev 81fd25c: 828 tests / 801 pass / 27 fail, the same 27 failures that already occur on dev. `fixedDeposits` is `null` when the list cannot be read; the panel's rendered markup is tested.
+`tsc --noEmit`, `eslint .`, `next build` clean; `/imprint` saved. All three Phase 4 tasks on M3's card (T01–T03) are done.
+[Handoff](handoffs/p04-m03-t03-fd-panel.md).
+
+## M3 update — P05-M03-T01 (2026-10-08)
+
+P05-M03-T01 DONE as an early start at the user's direction (no general Phase 5 entry approval): migration `0540_p05_m03_rpt02_view.sql`
+(`vw_rpt02_account_summary`) and `0541_p05_m03_sp_open_account_balance_after.sql` (opening deposit now records `balance_after`).
+`tests/db/rpt02-view.test.mjs` 13/13. Full isolated suite 852 tests / 824 pass / 28 fail: the failures that already occur on dev
+(a clean export of the committed HEAD fails 29). `tsc --noEmit` and `eslint .` clean. T02 (service, API, CSV, page) not started.
+[Handoff](handoffs/p05-m03-t01-rpt02-view.md).
+
+## M3 update — RPT-02 view hardening and ledger order (2026-10-08)
+
+Review of P05-M03-T01 found the view's ordering wrong on the seeded ledger. Fixed at the user's direction (ADR-0023, gap G-24):
+`0542_p05_m03_transaction_ledger_seq.sql` adds `transaction.ledger_seq` (posting order per account, M4's table, additive, handoff
+`handoffs/p05-m03-ledger-seq-for-m4.md`) and `0543_p05_m03_rpt02_view_v2.sql` replaces the view (ordered by `ledger_seq`, no overflow
+cast, no whole-ledger window). On the pure seed: balance-chain breaks 86 → 0, last-row mismatches 6 → 0. `tests/db/rpt02-view.test.mjs` 18/18,
+`tests/db/transaction-ledger-seq.test.mjs` 7/7. Full isolated suite 865 tests / 837 pass / 28 fail: the failures that already occur on dev.
+`tsc --noEmit` and `eslint .` clean. Open for other owners: seed dates are all one day (M5); M4 to review the new column.
+
+## M3 update — P05-M03-T02 (2026-10-08)
+
+P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 entry approval), tests only: `GET /api/reports/account-summary` (JSON and all-rows CSV,
+identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
+`tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
+already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).

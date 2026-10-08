@@ -332,6 +332,23 @@ File: app/customers/[id]/customer-fixed-deposits.tsx · Updated 2026-10-08 · /i
 
 Embedded only after an authorized customer profile. No opening action or invented
 financial data; product rates come from FD snapshots. Existing profile patterns retained.
+### Account fixed-deposits panel
+
+Files: `app/accounts/[id]/account-fixed-deposits.tsx` (presentational component, used by `account-detail.tsx`), text rules in
+`app/accounts/account-format.ts` (`fixedDepositPanel`) · Updated 2026-10-08 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Surface | `card mt-6 min-w-0` after the Holders card, same as the customer FD panel |
+| Heading / body | `h2` (like Holders), `muted` explanatory line; `muted` for the "cannot open" note |
+| Table | `table-wrap mt-4` + `data-table`; `sr-only` caption; `scope="col"` headers and a `scope="row"` product cell; same seven columns as the customer panel minus the account column |
+| Values | `displayMoney` (`amount whitespace-nowrap`), `displayRate` for the opening-rate snapshot, `displayDate` (`whitespace-nowrap`), `status-pill` |
+| Closure note | plain `role="status"` paragraph above the table when an ACTIVE FD exists (no new colour; it informs, it is not an error) |
+| Action | `btn btn-primary mt-4` link "Open a fixed deposit" to `/fixed-deposits/new?accountId=…`; shown only when the role may open FDs, the account is ACTIVE and no ACTIVE FD exists |
+| States | `role="status"` empty text ("No fixed deposits on this account."); an unreadable list shows `role="status"` "Fixed deposits could not be loaded. The rest of this account is shown." (never the empty text) and offers no action; data arrives with the account detail, so the page's existing loading and error/Retry states cover the rest |
+
+No new class, token, radius or shadow. Read-only: no write action on a deposit. The link target is M5's page.
+
 ## RPT-01 live report and typed I-7 primitives — 2026-10-08
 
 Files: app/reports/agent-transactions/rpt01-screen.tsx; components/report/*.tsx.
@@ -355,3 +372,19 @@ selectors precede Apply; CSV export uses applied filters. Preserve exact cents
 without Number conversion; unresolved net is text, not a fabricated zero. Keep
 wide tables inside table-wrap;375px QA confirmed no document horizontal overflow.
 ReportShell's code/endpoint/named metadata are optional for other report owners.
+
+## RPT-02 account summary screen — 2026-10-08
+
+Files: `app/reports/account-summary/account-summary-screen.tsx`, `page.tsx`; shared `components/report/*` (three optional props added: `caption`, `emptyText`, `sortLabels`). Captured through /imprint.
+
+| Property | Pattern |
+|---|---|
+| Frame | `ReportShell` (page header with `RPT-02 ·` eyebrow, filter `card`, results `card min-w-0 space-y-4`); same as RPT-01 |
+| Filters | shell date inputs plus `filterExtras` fields in `field`/`input`: Branch (disabled and single-option for a manager), Savings plan, Account status, Sort by, Order, Rows per page; no agent filters |
+| Table | shared `ReportTable`: first column is the row header, money columns `amount` via `reportMoney` (LKR, exact strings), count columns right-aligned; page subtotal and grand total rows in `tfoot` |
+| Opening / closing | plain money columns "Opening balance" and "Closing balance"; net movement last; no colour coding |
+| States | shell loading `role=status`; error `card text-[var(--danger)]` `role=alert` with Retry; empty text "No accounts match these filters. Grand totals still cover all applied filters."; pagination `nav` with `role=status` page text |
+| Notes | `text-sm text-[var(--text-muted)]` list under the table explaining Colombo days, opening/closing and reversal netting |
+
+No new class, token, radius or shadow. Wide tables stay inside `table-wrap`. CSV button comes from the shell and exports all filtered accounts.
+

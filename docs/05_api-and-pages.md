@@ -234,7 +234,7 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `GET /api/accounts/{id}`
 - **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
-- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, availableToWithdraw, lastTransaction: { transactionType, amount, transactionDate, referenceNumber } | null, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo, state: "EFFECTIVE"|"NOT_YET_EFFECTIVE"|"EXPIRED" } | null } }`. `availableToWithdraw` is `max(0, currentBalance − minBalance)` computed in SQL (string, `NUMERIC(15,2)`); `lastTransaction` is the newest ledger row (no user ids) or `null`; `mandate.state` compares the effective dates with the Asia/Colombo calendar date (P03-M03-T03). A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, availableToWithdraw, lastTransaction: { transactionType, amount, transactionDate, referenceNumber } | null, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo, state: "EFFECTIVE"|"NOT_YET_EFFECTIVE"|"EXPIRED" } | null, fixedDeposits: [{ fdId, fdPlanId, planName, principalAmount, interestRateAtOpening, startDate, maturityDate, nextInterestDate, status: "ACTIVE"|"MATURED"|"CLOSED" }] | null } }`. `availableToWithdraw` is `max(0, currentBalance − minBalance)` computed in SQL (string, `NUMERIC(15,2)`); `lastTransaction` is the newest ledger row (no user ids) or `null`; `mandate.state` compares the effective dates with the Asia/Colombo calendar date (P03-M03-T03). A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. `fixedDeposits` lists every FD on the account, newest opening first, with exact money/rate strings (the rate is the snapshot taken at opening); it is read under the caller's row-level security on `fixed_deposit` (0420/0421), so a role or branch that cannot see an FD sees none. `fixedDeposits` is `null` (not an empty list) when the list could not be read: the rest of the account is still returned and the page says the deposits could not be loaded (P04-M03-T03).
 - **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
 
 ### `POST /api/accounts/{id}/holders`
@@ -368,6 +368,25 @@ The page shows named scoped selectors, applied metadata, exact LKR values, expli
 zeros/empty/loading/error/retry states and pagination. Export uses applied filters.
 Other report endpoints below remain their owners' contracts.
 
+**RPT-02 live delivery (2026-10-08, P05-M03-T02):** `GET /api/reports/account-summary` and
+`/reports/account-summary` (built on the shared report shell). Allowed roles: BRANCH_MANAGER (own branch only),
+ADMIN, CENTRAL_OPS, AUDITOR. Strict query keys: `from`, `to` (real ordered inclusive Colombo dates; one implies a
+single day, absent defaults to today), `branchId`, `accountId`, `planId` (UUIDs), `status=ACTIVE|FROZEN|CLOSED`,
+`format=json|csv`, `page` (1–1,000,000), `pageSize` (1–100, default 25), `sort=accountNumber|openingBalance|
+closingBalance|netMovement`, `direction=asc|desc`. Unknown, repeated or malformed keys are `400 VALIDATION_FAILED`. A
+manager asking for another branch is `403`; a manager's `accountId` from another branch simply matches nothing.
+One row per account in scope (an account with no posting in the period is included): `accountId`, `accountNumber`,
+`branchId`, `branchName`, `planName`, `accountStatus`, `openingBalance`, `closingBalance`, `depositCount`,
+`depositTotal`, `withdrawalCount`, `withdrawalTotal`, `interestCount`, `interestTotal`, `reversalCount`, `netMovement`.
+Money and counts are exact strings. Opening is the balance before the first posting in the period and closing the
+balance after the last, both read from the ledger's stored running balance (`vw_rpt02_account_summary`, posting order
+`ledger_seq`); totals are net of reversals and `closing − opening = deposits − withdrawals + interest`. `{data}` holds
+`reportName`, `rows`, `subtotals` (current page, summed by the database), `grandTotal` (all filtered accounts),
+effective `filters`, `generatedAt`, `requestedBy`, `totalRows`, `page`, `pageSize`, `timeZone`, `notes`.
+CSV runs the same query and returns EVERY filtered account (not one page) with the same grand total; more than 50,000
+accounts is a `400` asking to narrow the filters. Rows, totals and the `REPORT_ACCESSED` audit row are produced in one
+REPEATABLE READ transaction; refused and invalid requests are not audited. Responses are private/no-store.
+
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·
 `customer-activity` (RPT-05).
@@ -429,7 +448,7 @@ separate M5 runtime work and is not certified by these request-auth tests.
 | `/agents/{id}/activity` | `GET /api/agents/{id}/activity` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER (own branch), AGENT (self) | M2 (live T02) |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
 | `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; no nav link yet — shell is M1's) |
-| `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
+| `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder, fixed-deposit panel with an "Open a fixed deposit" link to `/fixed-deposits/new?accountId=…` for AGENT, BRANCH_MANAGER, CENTRAL_OPS) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
 | `/transactions/deposit` | `POST /api/transactions/deposits` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/withdraw` | `POST /api/transactions/withdrawals` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/{id}` | `GET`, `POST .../reverse` | staff; manager to reverse | M4 |
@@ -445,7 +464,7 @@ deactivation. Deactivation preserves the record and its history.
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |
 | `/reports/agent-transactions` | RPT-01 | manager+, auditor | M2 |
-| `/reports/account-summary` | RPT-02 | manager+, auditor | M3 |
+| `/reports/account-summary` | RPT-02 (live, `GET /api/reports/account-summary`) | BRANCH_MANAGER (own branch), CENTRAL_OPS, AUDITOR, ADMIN | M3 |
 | `/reports/customer-activity` | RPT-05 | manager+, auditor | M4 |
 | `/reports/active-fds` | RPT-03 | manager+, auditor | M5 |
 | `/reports/interest-distribution` | RPT-04 | CENTRAL_OPS, auditor | M5 |

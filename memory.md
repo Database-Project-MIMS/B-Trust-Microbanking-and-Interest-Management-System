@@ -1,3 +1,26 @@
+# Memory — PR #88 conflicts resolved locally
+
+Last updated: 2026-10-09
+
+## Current operation
+
+Branch p06-m02-seed-validation, feature HEAD f323516. Latest origin/dev78aae1e
+is prepared with --no-commit --no-ff. The user showed PR #88's five conflicts;
+resolution and staging are authorized, but no additional commit, push or completed
+merge is performed. Keep the previous three local commits. User completes the
+merge commit and push after reviewing the resolved working tree.
+
+Preserve M2 seed REVIEW/RPT-01 DONE and M3/M5 newer DONE/M1 deployment IN_PROGRESS.
+Tracker97:16 TODO,1 IN_PROGRESS,1 REVIEW,79 DONE. M5 ops notes claim DONE but its
+incoming tracker has no status; TODO retained and discrepancy recorded. General
+phase gates remain pending. The resolution handoff lists the code choices and
+verification. Normal DB preserved. Actual resolved-tree proof:940 full tests,
+186 focused,6 separate security;51-migration rebuild/checksums/reseed/typecheck/lint
+pass. All temporary clusters are stopped/removed. Resolution is staged; user
+makes the merge commit and pushes. See p06-m02-pr88-conflict-resolution.md.
+
+## Previous delivery evidence (retained)
+
 # Memory — P06-M02-T01 seed acceptance completed locally
 
 Last updated: 2026-10-09

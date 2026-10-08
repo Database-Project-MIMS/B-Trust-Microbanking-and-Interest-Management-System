@@ -52,6 +52,16 @@ BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch m
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### M5 ops status differs between notes and tracker — 2026-10-09 (owner M5)
+
+During PR #88 conflict resolution against dev78aae1e,
+`5_Selith/notes/notesP6T2.md` claims P06-M05-T02 DONE, while the incoming
+`docs/09_task-tracker.md` row has no status. The resolution retains TODO, rather
+than certifying backup/restore/migration evidence from a status note. M5 should
+reconcile the authoritative row with its execution evidence. This does not block
+the seed/conflict delivery or imply general Phase 6 acceptance.
+[Resolution handoff](handoffs/p06-m02-pr88-conflict-resolution.md).
+
 ### 27 failing tests on dev 93a82f8 — resolved locally 2026-10-09 (found by M3, owners M1/M4/M5)
 
 The historical failures below, and the 29 later observed on dev78aae1e, are
@@ -79,6 +89,39 @@ caller-side FD check can miss rows hidden by `fixed_deposit` RLS. (4) Backend on
 (5) Suggestion for M5: the database does not stop an FD being inserted for an already CLOSED account by SQL that skips
 `sp_open_fixed_deposit` (the foreign key only checks the row exists); a `BEFORE INSERT` guard on `fixed_deposit` requiring an
 ACTIVE account would close that. Handoff: `handoffs/p04-m03-t02-account-closure.md`.
+
+### Account FD panel: visibility limit, placeholder link target, missing FD seed — 2026-10-08 (raised by M3, task P04-M03-T03)
+
+(1) The panel reads `fixed_deposit` under the caller's RLS (0420/0421), which needs a holder in the caller's branch scope; an account
+whose holders are all in another branch would show a manager no FDs (display only; closing is still blocked by the guard trigger).
+(2) The "Open a fixed deposit" link goes to `/fixed-deposits/new?accountId=…`, which is M5's placeholder `WorkflowScreen` and ignores the
+parameter. (3) `database/seed/_load-order.txt` lists `14_fixed_deposits.sql` (and `15_interest_runs.sql`) but neither file exists, so there is
+no FD demo data. (4) No browser pass was run for the panel; its rendered markup is covered by `tests/e2e/account-fixed-deposits-panel.test.mjs`, but the visual layout (narrow width) was not looked at. Handoff: `handoffs/p04-m03-t03-fd-panel.md`.
+
+### RPT-02 view: balance_after gaps, ledger ordering, seed dates — 2026-10-08 (raised by M3, task P05-M03-T01)
+
+**Resolved by M3 (ADR-0023):** (1) `sp_open_savings_account` (0243) wrote the opening-deposit row without `balance_after`;
+`0541` fixes new rows and the view derives the old NULL ones (the ledger is immutable). (2) `transaction_date` ties and inverts
+(`sp_post_deposit` stamps `now()`, `sp_post_withdrawal` `clock_timestamp()`; the seed posts ~120 rows in one block). Measured on
+the pure seed: 73 of 125 rows tied, 86 balance-chain breaks, 6 of 10 accounts' last row disagreed with `current_balance`.
+`0542` adds `transaction.ledger_seq` (G-24); the seed now shows 0 breaks and 0 mismatches. (3) The view could fail on one
+out-of-range row and scanned the whole ledger for branch queries; `0543` fixes both. (4) The task card's SQL used `posted_at` and
+`status`, which do not exist. **Open, other owners:** (a) every seeded transaction carries the seed run time (one day), so
+date-range reports over seed data show a single day although the seed card asks for rows "across dates" (M5, seed set 4).
+(b) All 10 seeded accounts start with a balance that exists outside the ledger (first row's `balance_before` is not 0), so a
+check that `current_balance` equals the sum of the ledger will not hold on seed data (M4's reconciliation, M5's seed).
+(c) M4 should review the additive `ledger_seq` column on their table: `handoffs/p05-m03-ledger-seq-for-m4.md`.
+Handoff: `handoffs/p05-m03-t01-rpt02-view.md`.
+
+### RPT-02 report: scale, shared components, CSV behaviour — 2026-10-08 (raised by M3, task P05-M03-T02)
+
+(1) **Scale (NFR-PERF-04, P06-M04-T02):** a multi-account RPT-02 request reads the scoped accounts' ledger history (one branch page 65 ms, bank-wide
+176 ms at 40,000 ledger rows; a single account 0.3 ms via `ux_transaction_account_ledger_seq`) and runs the aggregate three times (totals, rows,
+page subtotal). Fine for the sample data (NFR-PERF-03), several seconds per query at a million rows; a single-pass query would cut it to one.
+(2) `components/report/**` (M1) got three optional props, `caption`, `emptyText`, `sortLabels` (defaults unchanged): `handoffs/p05-m03-report-shell-props-for-m1.md`.
+`ReportFilters` still labels its branch select "Posting branch". (3) RPT-05's CSV (`app/api/reports/customer-activity`, M4) exports only the current page,
+not every filtered row as REP-COM-04 and the shell's "Export CSV · all filtered rows" button promise; RPT-02 exports all rows. (4) No browser pass for the page.
+Handoff: `handoffs/p05-m03-t02-rpt02-report.md`.
 
 ### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
 

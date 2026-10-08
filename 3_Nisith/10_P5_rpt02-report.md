@@ -1,6 +1,6 @@
 # 🔴 Phase 5 — Tasks 01–02: RPT-02 Account Summary Report
 **Task IDs:** `P05-M03-T01`, `P05-M03-T02` · **Branch:** `feat/p05-m03-rpt02-account-summary`
-**Migration:** `0540_p05_m03_rpt02_view.sql` · **Status:** TODO
+**Migration:** `0540_p05_m03_rpt02_view.sql` (+ `0541_p05_m03_sp_open_account_balance_after.sql`, `0542_p05_m03_transaction_ledger_seq.sql`, `0543_p05_m03_rpt02_view_v2.sql`) · **Status:** T01 DONE · T02 DONE
 **Depends on:** `P03-M04-T02` (M4's `sp_post_deposit`, for real ledger data), **I-7**
 (report shell from M1)
 **Story Points:** ~3 + ~4 = ~7 · **Layer:** Database + Backend
