@@ -209,7 +209,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (8 TODO, 1 REVIEW, 5 DONE)
+## Phase 3 — Financial Transactions (7 TODO, 1 REVIEW, 6 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -237,7 +237,7 @@ PR #53 conflict resolution against dev af07af8 passes 554 tests /49 suites, a cl
 [Resolution evidence](../.agent/handoffs/p03-m02-t02-pr53-conflict-resolution.md).
 
 **M3 early start (2026-10-08):** P03-M03-T01 (`fn_check_plan_minimum`, I-4) and P03-M03-T02
-(`fn_check_withdrawal_mandate`, I-4) were started at the user's direction and are DONE. ADR-0016 covers only P03-M02-T01, so this does not
+(`fn_check_withdrawal_mandate`, I-4) and P03-M03-T03 (balance panel) were started at the user's direction and are DONE. ADR-0016 covers only P03-M02-T01, so this does not
 extend that exception; it likewise does not approve Phase 2 exit or general Phase 3 entry.
 
 | ID | M | Title | Layers | Depends on | Status |
@@ -249,7 +249,7 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | REVIEW (open PR #53; verified locally; integration review and user merge pending) |
 | P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
 | P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path — `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` in `database/routines/fn_check_withdrawal_mandate.sql`, `tests/db/fn-check-withdrawal-mandate.test.mjs` 16/16 (+ `fn_withdrawal_mandate_verdict`; migration `0246` makes `fn_next_account_number` skip seeded numbers); handoff [i-4 mandate](../.agent/handoffs/i-4-fn-check-withdrawal-mandate.md) | DB | P02-M03-T03 | DONE |
-| P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 | TODO |
+| P03-M03-T03 | 3 | Account balance panel and holder authority display — `GET /api/accounts/{id}` gains `availableToWithdraw`, `lastTransaction`, `mandate.state`; `/accounts/{id}` shows available amount, last transaction, who can authorise withdrawals and a status notice; `tests/e2e/accounts-ui-model.test.mjs` +6, `tests/api/accounts.test.mjs` +4; full isolated suite 580/580; handoff [t03](../.agent/handoffs/p03-m03-t03-balance-panel.md) | FE | P03-M04-T02 | DONE |
 | P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** (ADR-0010) | DONE (migration `0360`, branch `feat/p03-m04-reference-idempotency-indexes`) |
 | P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | DONE (migration `0361`, branch `feat/p03-m04-sp-post-deposit`) |
 | P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** | TODO |
