@@ -15,9 +15,9 @@ reports have enough variety to be interesting.
 |---|---|---|---|
 | Branches | 3 | **3** | FR-ORG-01 |
 | Agents | 5 | **6** | FR-ORG-01 |
-| Customers | 15 | **18** | FR-CUS-05 |
-| Joint accounts | 2 | **3** | brief |
-| Savings accounts | — | **22** | — |
+| Customers | 15 | **15** | FR-CUS-05 |
+| Joint accounts | 2 | **2** | brief |
+| Savings accounts | — | **10** | — |
 | Fixed deposits | 10 | **12** | FR-FD-05 |
 | Transactions | 100 | **140** | brief, SRS B.2 |
 | Application users | one per role | **9** (7 roles) | SRS B.2 |
@@ -65,14 +65,14 @@ real distribution rather than identical rows.
 
 ## Customers
 
-18 customers with Sri Lankan names, NIC-format identifiers and Asia/Colombo addresses,
+15 customers with Sri Lankan names, NIC-format identifiers and Asia/Colombo addresses,
 spread across branches. Ages are chosen to exercise **every** plan boundary:
 
 | Age band | Count | Exercises |
 |---|---|---|
 | Under 13 | 3 | Children plan (12%, no minimum) |
 | 13–17 | 3 | Teen plan (11%, LKR 500) |
-| 18–59 | 9 | Adult plan (10%, LKR 1,000) and joint holders |
+| 18–59 | 6 | Adult plan (10%, LKR 1,000) and joint holders |
 | 60+ | 3 | Senior plan (13%, LKR 1,000) |
 
 Includes at least one customer whose age sits exactly on a boundary (12, 13, 17, 18, 59,
@@ -80,9 +80,9 @@ Includes at least one customer whose age sits exactly on a boundary (12, 13, 17,
 
 ## Accounts
 
-22 accounts: 19 individual across the four age plans, plus **3 joint accounts** — two with
+10 accounts: 8 individual across the four age plans, plus **2 joint accounts** — one with
 2 holders, one with 3 — all under the Joint plan (7%, LKR 5,000 minimum), each with a
-stored mandate (two `ANY_ONE`, one `ALL_HOLDERS`) so both mandate paths are demonstrable.
+stored mandate (one `ANY_ONE`, one `ALL_HOLDERS`) so both mandate paths are demonstrable.
 
 Balances are spread from just above the plan minimum to LKR 500,000, including at least
 one account sitting **exactly at** its minimum balance — the boundary case a withdrawal

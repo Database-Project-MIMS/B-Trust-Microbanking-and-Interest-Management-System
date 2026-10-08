@@ -227,3 +227,11 @@ Verification is crucial to confirm that all `INSERT` statements are correctly or
 In the simplest sense, the `scratch` folder is a temporary 'sandbox' or rough-draft area used by me (your AI assistant). When I need to write complex scripts, format large SQL statements, or prepare multiple files at once, I write them into the `scratch` folder first. 
 
 I do this so that I can safely generate and test files without accidentally breaking your real project files. Once I am completely sure the scripts in the `scratch` folder are correct, I run them to safely move the changes into the real codebase and make the Git commits. It's essentially my digital workbench!
+
+## Step 5 Execution: Update Docs
+### What I Did
+- Updated `docs/06_seed-data-spec.md` to accurately reflect the 15 customers, 10 accounts, and 2 joint accounts we seeded.
+- Updated `docs/09_task-tracker.md` to change `P02-M05-T01` from `TODO` to `DONE`, and updated the summary counts at the top of the file.
+
+### Why I Did It
+This is the final requirement for completing the task as per the Definition of Done in `AGENTS.md`. Keeping documentation exactly aligned with the codebase ensures our tests and future work have a single source of truth.
