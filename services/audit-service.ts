@@ -16,7 +16,7 @@ export interface AuditEventParams {
   actorType: 'USER' | 'SYSTEM';
   entityType: string;
   entityId: string;
-  action: 'INSERT' | 'UPDATE' | 'DELETE';
+  action: 'INSERT' | 'UPDATE' | 'DELETE' | 'DEPOSIT' | 'WITHDRAWAL' | 'REJECTED_WITHDRAWAL' | 'REVERSAL' | 'INTEREST_CREDIT';
   oldValues?: Record<string, unknown>;
   newValues?: Record<string, unknown>;
   ipAddress?: string;
@@ -40,4 +40,115 @@ export async function writeAuditEvent(params: AuditEventParams, executor: Execut
       ipAddress ?? null,
     ]
   );
+}
+
+export async function auditDeposit(params: {
+  userId: string;
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'DEPOSIT',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+export async function auditWithdrawal(params: {
+  userId: string;
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'WITHDRAWAL',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+export async function auditRejectedWithdrawal(params: {
+  userId: string;
+  accountId: string;
+  amount: string;
+  reason: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'account',
+    entityId: params.accountId,
+    action: 'REJECTED_WITHDRAWAL',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      reason: params.reason,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+export async function auditReversal(params: {
+  userId: string;
+  transactionId: string;
+  originalTransactionId: string;
+  reason: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction_reversal',
+    entityId: params.transactionId,
+    action: 'REVERSAL',
+    newValues: {
+      original_transaction_id: params.originalTransactionId,
+      reason: params.reason,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+export async function auditInterestCredit(params: {
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: null,
+    actorType: 'SYSTEM',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'INTEREST_CREDIT',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
 }

@@ -1,3 +1,4 @@
+
 # 🔴 Phase 1 — Task 03: RBAC, Branch Scope & CSRF (CRITICAL PATH)
 **Task ID:** `P01-M01-T03` · **Branch:** `feat/p01-m01-rbac`  
 **Status:** READY · **Depends on:** P01-M01-T02  
