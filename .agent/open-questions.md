@@ -34,6 +34,18 @@ A clean export of origin/dev (735 tests, 75 suites) fails 27 tests; the same 27 
 `P03-M04-T04: sp_reverse_transaction`, `P04-M04-T02: Transaction running balance is monotonic`. Each owner should re-check
 their suite against the merged schema/session code. (The earlier `sp_post_withdrawal` 42809 defect was repaired upstream by 0363.)
 
+### Account closure: card SQL corrections and decisions — 2026-10-08 (raised by M3, task P04-M03-T02)
+
+(1) The card's `sp_close_account` wrote audit rows with `before_value` / `after_value`, which do not exist; the table has
+`old_values` / `new_values`. (2) The card did not check account status. Implemented: only an ACTIVE account closes, a
+FROZEN one is rejected with `ACCOUNT_NOT_ACTIVE`, a CLOSED one with `ACCOUNT_ALREADY_CLOSED`; there is no unfreeze path yet,
+so a FROZEN account cannot be closed in the app (team decision if that is wrong). (3) Beyond the card, a database guard
+trigger (`trg_account_close_guard`) enforces zero balance and no ACTIVE FD on any direct `UPDATE` to CLOSED, because the
+caller-side FD check can miss rows hidden by `fixed_deposit` RLS. (4) Backend only; the Close button is not built.
+(5) Suggestion for M5: the database does not stop an FD being inserted for an already CLOSED account by SQL that skips
+`sp_open_fixed_deposit` (the foreign key only checks the row exists); a `BEFORE INSERT` guard on `fixed_deposit` requiring an
+ACTIVE account would close that. Handoff: `handoffs/p04-m03-t02-account-closure.md`.
+
 ### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
 
 The P04-M03-T01 card prescribes `fn_check_account_fd_eligible(account_id) → boolean` (status only; caller locks and
@@ -337,3 +349,20 @@ are verified. Full 663 tests /62 suites, 34-migration rebuild/checksums and type
 build PASS, no exclusions. Earlier blocker resolved. T03 and M2 T01 remain local
 REVIEW until user publication. T04 reversal/T05 API and I-7 work remain separate;
 general phase approvals are not inferred. M1 audit/runtime review is in the handoff.
+## RPT-01 runtime integration note (2026-10-08, ADR-0022)
+
+Inspection finds no transaction RLS policy in the integrated migrations. T02 keeps
+0520 private and exposes only fixed scoped aggregates through database-guarded
+routines. Operational transaction visibility/writers retain their existing contract.
+M1/M4 retain responsibility for the broader NFR-SEC-07 transaction RLS integration.
+The user approved M1 report-interface repairs for this task; ownership is unchanged.
+
+## Current full-suite integration failures (2026-10-08)
+
+T02's relevant report checks pass, but the full merged-tree run has 767 tests:
+729 pass, 27 fail, 11 cancelled. Legacy session fixtures use a token hash as the
+UUID session primary key (22P02); older branch fixtures omit district (23502);
+financial audit tests assume missing account fixtures/old event shapes; two older
+withdrawal callers hit ambiguous overloads (42725). These files are unchanged by
+T02. M1/M4 own their fixes; see p05-m02-rpt01-api-ui.md for exact files/evidence.
+This prevents claiming full integration acceptance or general phase approval.

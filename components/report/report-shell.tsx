@@ -1,44 +1,33 @@
-import React from 'react';
-import ReportFilters from './report-filters';
-import ReportTable from './report-table';
-import ReportMetadata from './report-metadata';
-import ReportExportButton from './report-export-button';
-import type { ReportRequest, ReportResult } from '../../lib/report/report-handler';
+"use client";
+import type { ReactNode } from "react";
+import ReportFilters from "./report-filters";
+import ReportTable, { type ReportColumn } from "./report-table";
+import ReportMetadata from "./report-metadata";
+import ReportExportButton from "./report-export-button";
+import type { ReportRequest, ReportResult } from "@/lib/report/report-handler";
 
 interface ReportShellProps<T> {
-  title: string;
-  filters: ReportRequest;
-  onFilterChange: (filters: ReportRequest) => void;
-  result?: ReportResult<T>;
-  loading?: boolean;
+  title: string; filters: ReportRequest; onFilterChange: (filters: ReportRequest) => void;
+  onApply?: () => void; result?: ReportResult<T>; loading?: boolean; endpoint?: string;
+  branches?: { id: string; name: string }[]; agents?: { id: string; name: string }[];
+  branchLocked?: boolean; columns?: ReportColumn<T>[]; rowKey?: (row: T) => string;
+  scopeLabel?: string; agentLabel?: string; reportCode?: string; filterExtras?: ReactNode; children?: ReactNode;
 }
-
-export default function ReportShell<T>({
-  title,
-  filters,
-  onFilterChange,
-  result,
-  loading
-}: ReportShellProps<T>) {
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {result && <ReportExportButton filters={filters} />}
-      </div>
-      
-      <div className="bg-white p-4 rounded shadow-sm border border-gray-200">
-        <ReportFilters filters={filters} onChange={onFilterChange} disabled={loading} />
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center p-8">Loading...</div>
-      ) : result ? (
-        <div className="space-y-4">
-          <ReportMetadata generatedAt={result.generatedAt} requestedBy={result.requestedBy} />
-          <ReportTable result={result} />
-        </div>
-      ) : null}
+export default function ReportShell<T>(props: ReportShellProps<T>) {
+  return <div className="space-y-6 min-w-0">
+    <div className="page-header flex flex-wrap items-center justify-between gap-4">
+      <div><p className="eyebrow">{props.reportCode ? props.reportCode + " · " : ""}Management reports</p><h1 className="page-title">{props.title}</h1></div>
+      {props.result && <ReportExportButton filters={props.result.filters} endpoint={props.endpoint} disabled={props.loading} />}
     </div>
-  );
+    <section className="card"><ReportFilters filters={props.filters} onChange={props.onFilterChange}
+      onApply={props.onApply} disabled={props.loading} branches={props.branches} agents={props.agents}
+      branchLocked={props.branchLocked}>{props.filterExtras}</ReportFilters></section>
+    {props.children}
+    {props.loading ? <div className="card" role="status">Generating report…</div> : props.result
+      ? <section className="card min-w-0 space-y-4">
+        <ReportMetadata generatedAt={props.result.generatedAt} requestedBy={props.result.requestedBy}
+          filters={props.result.filters} scopeLabel={props.scopeLabel} agentLabel={props.agentLabel} />
+        <ReportTable result={props.result} columns={props.columns} rowKey={props.rowKey} />
+      </section> : null}
+  </div>;
 }

@@ -276,7 +276,7 @@ and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
 - Delete: `RESTRICT` — referenced by `transaction`, `account_holder`, `fixed_deposit`.
 - Indexes: `account_number` unique; `(plan_id)`; `(branch_id, status)` (ADR-0008); `(status)`.
 - Rows are created only by `sp_open_savings_account` (0243), which writes the account, holders, mandate and optional initial deposit atomically.
-- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`).
+- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`). `trg_account_close_guard` (`0441`, P04-M03-T02) rejects a move to `CLOSED` unless `current_balance = 0` and no `ACTIVE` fixed deposit exists (SQLSTATE `P0001`, `ck_close_account_balance` / `ck_close_account_active_fd`).
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).
@@ -706,9 +706,30 @@ The corrected consumer contract is in `../2_Vibodha/09_P5_rpt01-report.md` and i
 SQL regression tests. Do not filter an all-time outer join afterwards.
 
 The view has `security_invoker=true` and `security_barrier=true` and no SELECT grant
-to PUBLIC or mims_app. M1/I-7 must establish authorized SQL scope, underlying RLS,
-grants and report-access auditing before T02 enables access. This is a database-only
-delivery, not a live report API. No signed net/reversal direction is invented.
+to PUBLIC or mims_app. Runtime access is now through the guarded aggregate functions
+below; no direct view grant is introduced. The view itself retains unsigned type totals.
+
+## RPT-01 runtime integration (P05-M02-T02, ADR-0022)
+
+New M2 migration `0521_p05_m02_rpt01_runtime.sql` adds `fn_rpt01_scope(uuid)`,
+`fn_rpt01_rows(date,date,uuid,uuid)` and `fn_rpt01_exclusions(date,date,uuid)`.
+The guard checks current active stored user/role and, for managers, an active
+profile/branch matching transaction-local context. Managers cannot request another
+branch; ADMIN/CENTRAL_OPS/AUDITOR may request one branch or bankwide totals.
+The two SECURITY DEFINER readers pin search_path, fully qualify relations, revoke
+PUBLIC EXECUTE and expose fixed aggregate DTOs through mims_app EXECUTE only.
+
+Rows group by agent and captured posting branch, preserving inactive/transferred
+identities and range-specific roster zeros. They include exact counts and values
+for deposits, withdrawals, interest and reversals, reversal credits/debits,
+unresolved reversal count and net. A valid transaction_reversal link determines
+direction; an absent/invalid original link makes net NULL. Exclusions separately
+count/sum NULL-agent rows within dates/branch, independently of the agent filter.
+All aggregate counts/values become strings in the API; no money arithmetic uses JS.
+
+The 0520 view remains private. No new table, column, raw ledger grant or financial
+write is added. Global transaction RLS remains a separate M1/M4 integration gap;
+the execute-only report scope guard is the database backstop for this capability.
 
 ## Withdrawal corrective routine contract (P03-M04-T03, ADR-0021)
 

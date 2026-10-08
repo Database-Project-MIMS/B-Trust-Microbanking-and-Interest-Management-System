@@ -245,7 +245,11 @@ T05 route/runtime/screen integration and security handoff:
 - **Errors** `404` (account outside scope) · `409 ACCOUNT_NOT_ACTIVE` · `409 INVALID_HOLDER_COUNT` · `409 UNDERAGE_HOLDER` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 DUPLICATE_HOLDER`
 
 ### `POST /api/accounts/{id}/close`
-- **Roles** BRANCH_MANAGER · CSRF required · **Currently `501 NOT_IMPLEMENTED`** (stub). The rule (zero balance, no active FD, BR-18) is Phase 4 (`sp_close_account`).
+- **Purpose** Close an account (`CALL sp_close_account`, migration 0441; BR-18). No request body.
+- **Roles** BRANCH_MANAGER of the owning branch · CSRF required · no `Idempotency-Key` (nothing moves money; a repeat is a conflict)
+- **Rules** account ACTIVE (a FROZEN account stays frozen); `current_balance = 0`; no fixed deposit with status `ACTIVE`. `MATURED` and `CLOSED` FDs do not block. The same balance and FD rule is enforced by `trg_account_close_guard` on any direct `UPDATE` to `CLOSED`; it also waits for an FD insert that is still in flight.
+- **Success** `200 { data: { accountId, status: "CLOSED", closedAt } }` · audited as a `CLOSE` event for the acting manager
+- **Errors** `400` malformed id · `401` · `403` (role or CSRF) · `404` (account outside the manager's branch) · `409 ACCOUNT_ALREADY_CLOSED` · `409 ACCOUNT_NOT_ACTIVE` · `409 BALANCE_NOT_ZERO` · `409 ACTIVE_FD_EXISTS`
 
 ---
 
@@ -333,13 +337,36 @@ T05 route/runtime/screen integration and security handoff:
 
 ## Reports — framework M1, each report by its owner
 
-**RPT-01 database delivery (2026-10-08):** P05-M02-T01 provides owner-only
-`vw_rpt01_agent_transactions` (0520), retaining exact posting timestamps and branches.
-P05-M02-T02 remains pending I-7/CSV/access auditing; the endpoint below is still a
-planned contract. Runtime authorization/RLS/grants must be established before SELECT
-is enabled. The [SQL consumer contract](../2_Vibodha/09_P5_rpt01-report.md) applies
-date/branch filters before a roster outer join, preserving range-specific zero rows
-and transferred historical attribution. M2 has not added a route or altered the UI.
+**RPT-01 live delivery (2026-10-08, ADR-0022):**
+`GET /api/reports/agent-transactions` and `/reports/agent-transactions` consume I-7.
+Allowed roles: BRANCH_MANAGER (current own branch), ADMIN, CENTRAL_OPS, AUDITOR.
+Strict query keys: `from`, `to` (real ordered inclusive Colombo dates; one implies a
+single day, absent defaults today), `branchId`, `agentId` (UUIDs), `format=json|csv`,
+`page` (1–1,000,000), `pageSize` (1–100, default25), `sort=employeeNo|agentName|netTotal`,
+`direction=asc|desc`. Unknown/repeated keys are rejected. Explicit foreign manager
+branch returns403. Stored active identity and role/profile/branch are revalidated
+inside the service transaction and guarded again by 0521 SQL readers.
+
+JSON `{data}` contains `reportName`, `rows`, `subtotals` (current page), `grandTotal`
+(all applied filters), effective `filters`, `generatedAt`, `requestedBy`, `totalRows`,
+`page`, `pageSize`, `timeZone`, `scopeLabel`, `exclusions` and `notes`. Detail/count/
+money fields are exact strings; detail net is NULL and aggregate net `UNRESOLVED`
+when any legacy reversal lacks a valid original link. Rows preserve captured
+posting branch and inactive/transferred history. NULL-agent exclusions cover the
+selected branch/date scope independently of agent selection, never inferred attribution.
+
+CSV uses the same materialized aggregate snapshot/order and SQL totals, exports all
+filtered detail rows, and records fixed-width HEADER/METADATA/DETAIL/PAGE_SUBTOTAL/
+GRAND_TOTAL records. Metadata contains applied filters, UTC generation time, user and
+notes/exclusions. Signed decimal strings remain exact; quotes/CRLF/formula prefixes
+are escaped. Batches spool privately to disk within REPEATABLE READ preparation;
+the access audit commits before backpressure-aware delivery. Completion, failure
+and cancellation close/remove the spool; network delivery holds no DB transaction.
+JSON/CSV and errors are private/no-store. Safe errors:400 validation,401 missing
+session,403 role/scope/stale actor,500 unexpected preparation/audit failure.
+The page shows named scoped selectors, applied metadata, exact LKR values, explicit
+zeros/empty/loading/error/retry states and pagination. Export uses applied filters.
+Other report endpoints below remain their owners' contracts.
 
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·

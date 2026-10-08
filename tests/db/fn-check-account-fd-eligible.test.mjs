@@ -93,7 +93,7 @@ describe("P04-M03-T01: fn_check_account_fd_eligible / fn_fd_funding_verdict (I-6
     test("0. fn_check_account_fd_eligible (card contract): true only for an existing ACTIVE account", async () => {
         const active = await openAccount({ balance: "0.00" });
         const frozen = await openAccount({ status: "FROZEN" });
-        const closed = await openAccount({ status: "CLOSED" });
+        const closed = await openAccount({ balance: "0.00", status: "CLOSED" });
         assert.equal(await eligible(active), true, "status only: a zero balance does not matter");
         assert.equal(await eligible(frozen), false);
         assert.equal(await eligible(closed), false);
@@ -138,7 +138,7 @@ describe("P04-M03-T01: fn_check_account_fd_eligible / fn_fd_funding_verdict (I-6
 
     test("5. FROZEN and CLOSED accounts give ACCOUNT_NOT_ACTIVE (BR-11)", async () => {
         const frozen = await openAccount({ status: "FROZEN" });
-        const closed = await openAccount({ status: "CLOSED" });
+        const closed = await openAccount({ balance: "0.00", status: "CLOSED" });
         assert.equal(await verdict(frozen, "1000.00"), "ACCOUNT_NOT_ACTIVE");
         assert.equal(await verdict(closed, "1000.00"), "ACCOUNT_NOT_ACTIVE");
     });

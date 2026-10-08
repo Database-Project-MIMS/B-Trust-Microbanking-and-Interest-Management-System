@@ -30,10 +30,10 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
 | P3 | 14 | 1 | 0 | 0 | 0 | 1 | 12 |
-| P4 | 14 | 7 | 0 | 0 | 0 | 0 | 7 |
+| P4 | 14 | 6 | 0 | 0 | 0 | 0 | 8 |
 | P5 | 15 | 10 | 0 | 0 | 0 | 1 | 4 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **31** | **0** | **0** | **0** | **2** | **64** |
+| **All** | **97** | **30** | **0** | **0** | **0** | **2** | **65** |
 
 ---
 
@@ -209,7 +209,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (1 TODO, 1 REVIEW, 12 DONE)
+## Phase 3 — Financial Transactions (1 TODO, 13 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -241,7 +241,7 @@ PR #53 conflict resolution against dev af07af8 passes 554 tests /49 suites, a cl
 extend that exception; it likewise does not approve Phase 2 exit or general Phase 3 entry.
 
 **M3 Phase 4 early start (2026-10-08):** P04-M03-T01 (`fn_check_account_fd_eligible`, I-6) was started at the
-user's direction and is DONE. It does not approve general Phase 4 entry, Phase 3 exit, OQ-13 or OQ-14.
+user's direction and is DONE; P04-M03-T02 (`sp_close_account`, BR-18) followed on the same basis and is DONE. Neither approves general Phase 4 entry, Phase 3 exit, OQ-13 or OQ-14.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
@@ -255,12 +255,12 @@ user's direction and is DONE. It does not approve general Phase 4 entry, Phase 3
 | P03-M03-T03 | 3 | Account balance panel and holder authority display — `GET /api/accounts/{id}` gains `availableToWithdraw`, `lastTransaction`, `mandate.state`; `/accounts/{id}` shows available amount, last transaction, who can authorise withdrawals and a status notice; `tests/e2e/accounts-ui-model.test.mjs` +6, `tests/api/accounts.test.mjs` +4; full isolated suite 580/580; handoff [t03](../.agent/handoffs/p03-m03-t03-balance-panel.md) | FE | P03-M04-T02 | DONE |
 | P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** (ADR-0010) | DONE (migration `0360`, branch `feat/p03-m04-reference-idempotency-indexes`) |
 | P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | DONE (migration `0361`, branch `feat/p03-m04-sp-post-deposit`) |
-| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4**; user-authorized repair ADR-0021 | REVIEW (PR #61 original merged; corrective 0363 in open PR #67; pre-integration verification: 663 tests /62 suites) |
+| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4**; user-authorized repair ADR-0021 | DONE (original PR #61 and corrective 0363 PR #67 merged; current legacy caller ambiguities recorded in T02 handoff) |
 | P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | DONE (branch `feat/p03-m04-transaction-reversal`) |
 | P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | DONE (branch `feat/p03-m04-transaction-apis`) |
 | P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | DONE |
 
-## Phase 4 — Fixed Deposits & Interest (7 TODO, 7 DONE; general entry pending)
+## Phase 4 — Fixed Deposits & Interest (6 TODO, 8 DONE; general entry pending)
 
 **Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
 OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
@@ -272,7 +272,7 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing API/profile panel | DB + BE + FE | P04-M05-T02 (partial); read-side exception ADR-0018 | DONE (PR #60 merged into dev e9291dc) |
 | P04-M02-T02 | 2 | Branch-scoped FD access; current-actor RLS backstop and regression tests | DB + BE + tests | P04-M02-T01; scoped start ADR-0019 | DONE (PR #62 merged into dev 48f4185) |
 | P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) — `fn_check_account_fd_eligible(account_id)` (card contract) and `fn_fd_funding_verdict(account_id, principal)` in `database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql`, `tests/db/fn-check-account-fd-eligible.test.mjs` 20/20; handoff [i-6](../.agent/handoffs/i-6-fn-check-account-fd-eligible.md). The listed dependency on P04-M05-T02 is circular (I-6 flows M3 → M5) and was not needed to build it | DB | P04-M05-T02 (circular, see handoff) | DONE (early start at the user's direction; no phase approval) |
-| P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) | DB + BE | P04-M03-T01 |
+| P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) — `0441_p04_m03_sp_close_account.sql` (`sp_close_account` + `trg_account_close_guard`), `closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` now live (was a 501 stub); `tests/db/sp-close-account.test.mjs` 17/17, `tests/api/accounts.test.mjs` +6; handoff [t02](../.agent/handoffs/p04-m03-t02-account-closure.md). Backend only; no UI | DB + BE | P04-M03-T01 | DONE (early start at the user's direction; no phase approval) |
 | P04-M03-T03 | 3 | FD panel on the account detail page | FE | P04-M05-T03 |
 | P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 | DONE |
 | P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 | DONE |
@@ -282,18 +282,19 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** | DONE |
 | P04-M05-T05 | 5 | FD opening page, FD list, interest run console | BE + FE | P04-M05-T04, **I-1** |
 
-## Phase 5 — Reports, Audit & Reconciliation (7 TODO, 3 REVIEW, 5 DONE; general entry pending)
+## Phase 5 — Reports, Audit & Reconciliation (9 TODO, 1 REVIEW, 5 DONE; general entry pending)
 
 **Scoped start/repair (2026-10-08):** ADR-0020 authorizes M2's T01 database-only
 view; ADR-0021 records the user's explicit authorization for M4's T03 correction
 and its documentation. Both passed verification before the current dev integration:
 663 tests /62 suites, clean 34-migration rebuild/checksums, typecheck/lint/build,
-no exclusions. PR #67 is open; T01 and the corrective withdrawal work remain REVIEW
-until integration. Member 1's I-7, CSV utility and report access auditing are now
-published in dev through PR #65 (d466866). T02 awaits T01 integration and its own
-start authorization; general phase entry remains pending. Unannotated statuses
-below remain TODO. The earlier full verification is historical, not a test result
-for the current combined tree.
+no exclusions. PR #67 has merged both deliveries. PR #69 restores Member 1's I-7
+on dev 93a82f8. The user explicitly approved T02 and the required shared repairs
+(ADR-0022). T02 is implemented locally and in REVIEW: 0521 readers, scoped API/page,
+exact totals and snapshot CSV/access audit. Relevant checks pass; the current full
+suite has unrelated legacy failures recorded in the T02 handoff. General entry
+remains pending. Unannotated statuses below remain TODO. The earlier full result
+is historical and must not be substituted for current verification.
 [RPT-01 handoff](../.agent/handoffs/p05-m02-rpt01-view.md) ·
 [M4 correction](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 
@@ -303,16 +304,16 @@ for the current combined tree.
 | P05-M01-T02 | 1 | CSV export utility — same query, same totals (REP-COM-04) | BE | P05-M01-T01 | DONE |
 | P05-M01-T03 | 1 | Report access auditing (REP-COM-06) | BE + DB | P05-M01-T01 | DONE |
 | P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 | DONE |
-| P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01; scoped start ADR-0020 | REVIEW (PR #67 open; 0520; pre-integration verification: 663 tests /62 suites) |
-| P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7** | TODO (T01 PR #67 integration pending; I-7 published) |
+| P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01; scoped start ADR-0020 | DONE (0520, PR #67 merged at 4095b38) |
+| P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7**; approved ADR-0022 | REVIEW (local implementation; 0521; report checks/browser/type/lint/build pass; full-suite legacy failures documented; user publication pending) |
 | P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance | DB | P03-M04-T02 |
 | P05-M03-T02 | 3 | RPT-02 API, page and CSV | BE + FE | P05-M03-T01, **I-7** |
-| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 | REVIEW (0560; RPT-05 DB tests 4/4; combined gates pending) |
-| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** | REVIEW (API tests 4/4; combined gates pending) |
-| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 | DONE |
-| P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 |
-| P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 |
-| P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** |
+| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 |
+| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** |
+| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 |
+| P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 | DONE |
+| P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 | DONE |
+| P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** | DONE |
 | P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 |
 
 ## Phase 6 — Integration, Testing & Deployment (13 tasks, TODO)

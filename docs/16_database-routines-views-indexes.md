@@ -39,7 +39,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `sp_reverse_transaction` | M4 | Insert a linked compensating entry; never modify the original | One, `FOR UPDATE` | FR-TXN-03, BR-16, DB-CON-04 | L08, L11 |
 | `sp_open_fixed_deposit` | M5 | Check eligibility under lock, debit principal through the ledger, create the FD with maturity and rate snapshot | One | FR-FD-01…04, BR-11, BR-19 | L08, L11 |
 | `sp_run_interest_cycle` | M5 | Create the run, select due FDs with locking, process **each FD in its own transaction**, reconcile totals | **One per FD**, not per run | FR-INT-01…05, NFR-SAFE-03 | L08, L11 idempotency |
-| `sp_close_account` | M3 | Require zero balance and no active FD, then close | One | FR-ACC-05, BR-18 | L08 |
+| `sp_close_account(account_id, actor_user_id)` | M3 | Lock the account `FOR UPDATE`, re-validate it is `ACTIVE`, balance is zero and no `ACTIVE` FD exists, set `CLOSED`, write one `CLOSE` audit row. `SECURITY INVOKER`; errors are `P0001` with named constraints `ck_close_account_*` (`0441`; `tests/db/sp-close-account.test.mjs`) | One, `FOR UPDATE` | FR-ACC-05, BR-18 | L08, L11 |
 
 **`sp_post_deposit` errors** (all `P0001`, named `CONSTRAINT` for mapping): `ACCOUNT_ID_REQUIRED` (`ck_deposit_account_id`), `INVALID_DEPOSIT_AMOUNT` (`ck_deposit_amount_positive`), `USER_ID_REQUIRED` (`ck_deposit_user_id`), `CHANNEL_REQUIRED` (`ck_deposit_channel_required`), `CHANNEL_UNAVAILABLE` (`ck_deposit_channel_active`), `ACCOUNT_NOT_FOUND` (`ck_deposit_account_exists`), `ACCOUNT_NOT_ACTIVE` (`ck_deposit_account_active`), `OUTSIDE_BUSINESS_HOURS` (`ck_deposit_business_hours`). Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising or modifying balance.
 
@@ -80,6 +80,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `trg_financial_transaction_immutable` | M4 | `BEFORE UPDATE OR DELETE` on `transaction` | Raise unconditionally — posted rows are immutable | FR-TXN-02, BR-16 | L08 triggers |
 | `trg_audit_log_immutable` | M1 | `BEFORE UPDATE OR DELETE` on `audit_log` | Append-only audit | FR-AUD-01 | L08 |
 | `trg_audit_master_changes` | M1/M2 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write sanitized before/after values as `jsonb`; sensitive keys are removed | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_account_close_guard` (`fn_account_close_guard`) | M3 | `BEFORE UPDATE OF status` on `account`, only when the new status is `CLOSED` and the old one was not | Locks the account row `FOR UPDATE` (so it waits for an in-flight FD insert), then rejects the close unless `current_balance = 0` and no `ACTIVE` fixed deposit exists. `SECURITY DEFINER` with a pinned `search_path` so row-level security on `fixed_deposit` cannot hide an FD; execute revoked from `PUBLIC`. Migration `0441` | BR-18, FR-ACC-05 | L08, L06 |
 | `trg_audit_customer`, `trg_audit_account`, `trg_audit_account_holder` | M1 | `AFTER INSERT/UPDATE` on `customer`, `account`, `account_holder` | Audit master data in the caller transaction, capturing session context via RLS helpers | FR-ORG-04, NFR-SEC-05 | L08, ACID |
 | `trg_audit_branch` / `trg_audit_agent` | M2 | `AFTER INSERT/UPDATE/DELETE` on `branch` / `agent` | Audit organisation master data in the caller transaction | FR-ORG-04, FR-AUD-01 | L08, ACID |
 | `trg_validate_joint_mandate`, `trg_validate_joint_mandate_update` | M3 | `AFTER INSERT` / `AFTER UPDATE` on `account_holder`, **statement-level with transition tables** (wrappers `fn_trg_account_holder_inserted/updated` → `fn_check_account_holder_sets`, `SECURITY DEFINER`, `EXECUTE` revoked from `PUBLIC`; migration 0242) | Lock the account (`FOR NO KEY UPDATE`), then holder count within the plan's `min_holders`/`max_holders`, exactly one `PRIMARY`, no holder under 18 when `requires_all_adult` — read from `savings_plan`, never from the plan name; keeps an `ALL_HOLDERS` mandate's signatories equal to the holder count | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
@@ -138,10 +139,23 @@ RPT-01 migration 0520 uses COUNT(transaction_id) and unbounded NUMERIC SUM at
 posting timestamp/type/branch grain. It includes zero rows for profiles without
 attributed history; selected-range zeros require the filtered-facts roster outer
 join documented in M2's task card. No current-role/status filter erases history.
-The SECURITY INVOKER/BARRIER view has no PUBLIC/mims_app grant until I-7/T02
-establish report scope, runtime RLS/grants and access auditing. Reuse existing
+The SECURITY INVOKER/BARRIER view remains private. Migration0521 adds scoped
+execute-only readers and service-owned auditing under ADR-0022. Reuse existing
 `ix_transaction_agent_date`; a selective view query's measured plan is recorded in
-the T01 handoff. This does not establish full report performance acceptance.
+the T01 handoff. The final 0521 function probe with 20,000 extra postings took
+6.826 ms; its wrapper plan is a Function Scan, not proof that every internal
+bankwide query uses an index. M5 retains representative bankwide tuning/review.
+
+| Routine | Owner | Security / return | Enforcement | Course concepts |
+|---|---|---|---|---|
+| `fn_rpt01_scope(uuid)` | M2 | STABLE INVOKER; effective branch UUID | Current active stored report actor, manager profile/branch/context; rejects widened scope | L08, L11 access control |
+| `fn_rpt01_rows(date,date,uuid,uuid)` | M2 | STABLE DEFINER; fixed agent/posting-branch aggregates | Guarded dates/scope, filtered roster outer join, exact NUMERIC/counts, linked reversal direction and unresolved net | L05 joins/aggregation; L10 indexes; L11 least privilege |
+| `fn_rpt01_exclusions(date,date,uuid)` | M2 | STABLE DEFINER; bigint count + NUMERIC unsigned value | Same guard and branch/date predicates; NULL-agent disclosure independently of agent filter | L05 aggregate; L11 scope |
+
+All three pin search_path and revoke PUBLIC EXECUTE; mims_app receives EXECUTE.
+Relations are fully qualified and no dynamic SQL or raw ledger DTO is exposed.
+0520 stays unchanged/private. The live service materializes rows/totals and writes
+REPORT_ACCESSED in REPEATABLE READ, then streams CSV after commit.
 
 ## Indexes
 

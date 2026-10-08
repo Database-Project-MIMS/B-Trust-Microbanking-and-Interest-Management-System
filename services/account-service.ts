@@ -17,6 +17,7 @@ interface ActorScope { userId: string; roleName: string; branchId: string | null
 
 const OPEN_ROLES = ["AGENT", "BRANCH_MANAGER"] as const;
 const HOLDER_ROLES = ["BRANCH_MANAGER"] as const;
+const CLOSE_ROLES = ["BRANCH_MANAGER"] as const;
 const READ_ROLES = ["AGENT", "BRANCH_MANAGER", "CENTRAL_OPS", "AUDITOR"] as const;
 const DETAIL_ROLES = [...READ_ROLES, "CUSTOMER"] as const;
 const BRANCH_ROLES: readonly string[] = ["AGENT", "BRANCH_MANAGER"];
@@ -287,5 +288,26 @@ export async function addAccountHolder(
     const current = mandate.rows[0];
     return { accountHolderId: row.p_account_holder_id, holderCount: row.p_holder_count,
       mandate: current ? { mandateType: current.mandate_type, requiredSignatories: current.required_signatories } : null };
+  });
+}
+
+/** Closes an ACTIVE account with a zero balance and no ACTIVE FD through sp_close_account in one transaction (BR-18). */
+export async function closeAccount(
+  accountId: string, actor: AccountActor,
+): Promise<{ accountId: string; status: "CLOSED"; closedAt: string }> {
+  const authenticated = validateActor(actor, CLOSE_ROLES);
+  if (!accountIdSchema.safeParse(accountId).success) throw new ValidationError("Account ID must be a UUID.");
+  return withTransaction(async tx => {
+    const scope = await resolveScope(tx, authenticated, CLOSE_ROLES);
+    const visible = await tx.query("SELECT 1 FROM account WHERE account_id = $1 AND branch_id = $2", [accountId, scope.branchId]);
+    if (!visible.rows[0]) throw new NotFoundError("Account");
+    let closed;
+    try {
+      closed = await tx.query<{ p_closed_at: Date | string }>(
+        "CALL sp_close_account($1::uuid, $2::uuid, NULL)", [accountId, scope.userId]);
+    } catch (error) { throwAccountDatabaseError(error); }
+    const row = closed.rows[0];
+    if (!row) throw new DatabaseError();
+    return { accountId, status: "CLOSED" as const, closedAt: new Date(row.p_closed_at).toISOString() };
   });
 }

@@ -53,6 +53,7 @@ describe('P02-M03-T05: account routes under mims_app', () => {
       await client.query('ALTER TABLE transaction DISABLE TRIGGER trg_financial_transaction_immutable');
       await client.query(`DELETE FROM transaction WHERE account_id IN (${scope})`, [branchIds]);
       await client.query('ALTER TABLE transaction ENABLE TRIGGER trg_financial_transaction_immutable');
+      await client.query(`DELETE FROM fixed_deposit WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM account_opening_request WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM joint_mandate WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM account_holder WHERE account_id IN (${scope})`, [branchIds]);
@@ -483,16 +484,80 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     await failsSafely(await addHolder(accountId, { customerId: await makeCustomer() }), 409, 'ACCOUNT_NOT_ACTIVE');
   });
 
-  // ------------------------------------------------------------------ close stub
+  // ------------------------------------------------------------------ closing (BR-18)
 
-  test('closing is a documented 501 stub for managers and forbidden for everyone else', async () => {
-    const { accountId } = await openOk(individual(await makeCustomer()));
-    const close = (token, csrfHeader = csrf) => CLOSE(request('POST', `/api/accounts/${accountId}/close`, { token, csrfHeader }), { params: Promise.resolve({ id: accountId }) });
-    const response = await close(tokens.manager); assert.equal(response.status, 501);
-    assert.equal((await response.json()).error.code, 'NOT_IMPLEMENTED');
-    assert.equal((await close(tokens.agent)).status, 403);
-    assert.equal((await close(tokens.manager, null)).status, 403);
-    assert.equal((await close(null)).status, 401);
-    assert.equal((await client.query('SELECT status FROM account WHERE account_id = $1', [accountId])).rows[0].status, 'ACTIVE');
+  const close = (id, token = tokens.manager, csrfHeader = csrf) =>
+    CLOSE(request('POST', `/api/accounts/${id}/close`, { token, csrfHeader }), { params: Promise.resolve({ id }) });
+  const statusOf = async id => (await client.query('SELECT status FROM account WHERE account_id = $1', [id])).rows[0].status;
+  const closeAudits = async id => (await client.query("SELECT user_id, old_values, new_values FROM audit_log WHERE entity_type = 'account' AND entity_id = $1 AND action = 'CLOSE'", [id])).rows;
+  async function addFixedDeposit(accountId, status) {
+    await client.query(
+      `INSERT INTO fixed_deposit (account_id, fd_plan_id, principal_amount, interest_rate_at_opening, start_date, maturity_date, next_interest_date, status)
+       SELECT $1, fd_plan_id, 1000.00, 0.1400, CURRENT_DATE, CURRENT_DATE + 365, CURRENT_DATE + 30, $2 FROM fd_plan ORDER BY tenure_months LIMIT 1`,
+      [accountId, status]);
+  }
+  const openZeroBalance = async () => (await openOk(individual(await makeCustomer()))).accountId;
+
+  test('a manager closes a zero-balance account with no FD: audited, CLOSED, safe body', async () => {
+    const accountId = await openZeroBalance();
+    const response = await close(accountId);
+    assert.equal(response.status, 200);
+    const { data } = await response.json();
+    assert.equal(data.accountId, accountId); assert.equal(data.status, 'CLOSED');
+    assert.ok(!Number.isNaN(Date.parse(data.closedAt)));
+    assert.equal(await statusOf(accountId), 'CLOSED');
+    const audits = await closeAudits(accountId);
+    assert.equal(audits.length, 1); assert.equal(audits[0].user_id, fixture.managerId);
+    assert.equal(audits[0].old_values.status, 'ACTIVE'); assert.equal(audits[0].new_values.status, 'CLOSED');
+  });
+
+  test('closing needs a BRANCH_MANAGER of the account\'s own branch, a CSRF token and a session', async () => {
+    const accountId = await openZeroBalance();
+    assert.equal((await close(accountId, tokens.agent)).status, 403);
+    assert.equal((await close(accountId, tokens.centralOps)).status, 403);
+    assert.equal((await close(accountId, tokens.customerLogin)).status, 403);
+    assert.equal((await close(accountId, tokens.manager, null)).status, 403);
+    assert.equal((await close(accountId, null)).status, 401);
+    await failsSafely(await close(accountId, tokens.otherManager), 404, 'NOT_FOUND');
+    assert.equal(await statusOf(accountId), 'ACTIVE');
+    assert.equal((await closeAudits(accountId)).length, 0);
+  });
+
+  test('a non-zero balance blocks closing with 409 BALANCE_NOT_ZERO and changes nothing', async () => {
+    const accountId = await openZeroBalance();
+    await client.query('UPDATE account SET current_balance = 0.01 WHERE account_id = $1', [accountId]);
+    await failsSafely(await close(accountId), 409, 'BALANCE_NOT_ZERO');
+    assert.equal(await statusOf(accountId), 'ACTIVE');
+    assert.equal((await closeAudits(accountId)).length, 0);
+  });
+
+  test('an ACTIVE fixed deposit blocks closing with 409 ACTIVE_FD_EXISTS; a MATURED or CLOSED one does not', async () => {
+    const blocked = await openZeroBalance();
+    await addFixedDeposit(blocked, 'ACTIVE');
+    await failsSafely(await close(blocked), 409, 'ACTIVE_FD_EXISTS');
+    assert.equal(await statusOf(blocked), 'ACTIVE');
+    assert.equal((await closeAudits(blocked)).length, 0);
+
+    const history = await openZeroBalance();
+    await addFixedDeposit(history, 'MATURED'); await addFixedDeposit(history, 'CLOSED');
+    assert.equal((await close(history)).status, 200);
+    assert.equal(await statusOf(history), 'CLOSED');
+  });
+
+  test('closing twice gives 409 ACCOUNT_ALREADY_CLOSED and a frozen account cannot be closed', async () => {
+    const accountId = await openZeroBalance();
+    assert.equal((await close(accountId)).status, 200);
+    await failsSafely(await close(accountId), 409, 'ACCOUNT_ALREADY_CLOSED');
+    assert.equal((await closeAudits(accountId)).length, 1);
+
+    const frozen = await openZeroBalance();
+    await client.query("UPDATE account SET status = 'FROZEN' WHERE account_id = $1", [frozen]);
+    await failsSafely(await close(frozen), 409, 'ACCOUNT_NOT_ACTIVE');
+    assert.equal(await statusOf(frozen), 'FROZEN');
+  });
+
+  test('a malformed account id is rejected before the database is touched', async () => {
+    const response = await close('not-a-uuid');
+    assert.equal(response.status, 400);
   });
 });

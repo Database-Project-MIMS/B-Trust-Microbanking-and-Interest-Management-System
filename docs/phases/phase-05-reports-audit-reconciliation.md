@@ -1,6 +1,6 @@
 # Phase 05 — Reports, Audit & Reconciliation
 
-**Status:** General entry pending; M2 T01 local REVIEW under scoped ADR-0020 · **Tasks:** 15 · **Effort:** 51 points · **Est.** ~1 week
+**Status:** General entry pending; M2 T01 merged and T02 local REVIEW under ADR-0022 · **Tasks:** 15 · **Effort:** 51 points · **Est.** ~1 week
 
 ## Entry criteria
 
@@ -9,16 +9,20 @@
 
 **M2 scoped early start (2026-10-08):** Vibodha authorized P05-M02-T01's database
 view only (ADR-0020), after merged attribution P03-M02-T01 and FD scope PR #62.
-This does not approve the entry criteria above. T02 remains pending I-7/CSV/access
-auditing. 0520 provides exact unsigned type totals with timestamps and captured
-posting branches; range-specific zeros use a filtered roster outer join. Runtime
-grants and signed net/reversal presentation remain future report integration work.
+This does not approve the entry criteria above. PR #67 merged T01 and PR #69
+restored I-7; the user approved T02 and required shared repairs (ADR-0022).
+0521 guarded execute-only readers keep 0520 private, preserve range-specific zeros/
+transferred history, and calculate linked-reversal net or explicitly unresolved net.
+The live API/page provides paginated JSON and snapshot CSV with identical totals.
+Preparation/access audit share REPEATABLE READ; network delivery follows commit.
 
 T01 and the separately user-authorized M4 withdrawal correction (0363, ADR-0021)
 pass 663 tests /62 suites, clean 34-migration rebuild/checksums, typecheck/lint/build
 with no exclusions. View index probe uses ix_transaction_agent_date; final report
-performance/CSV/access auditing remain T02/I-7 work. Both local tasks await user
-publication. [Handoff](../../.agent/handoffs/p05-m02-rpt01-view.md).
+performance/CSV/access auditing were subsequently implemented in T02. Both T01 and
+the correction are merged through PR #67. Current T02 checks and remaining full
+suite failures are recorded in [its handoff](../../.agent/handoffs/p05-m02-rpt01-api-ui.md).
+The earlier 663-test result predates integration and is historical.
 
 **M4 scoped RPT-05 start (2026-10-08):** The user requested T01/T02 and confirmed
 joint activity attribution to every holder (ADR-0022). Local implementation is in

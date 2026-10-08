@@ -12,6 +12,30 @@ Do not mark DONE yet.
 [Details](handoffs/p05-m04-rpt05.md). No assistant Git publication.
 
 **Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+**Work:** P05-M02-T02 implemented locally, REVIEW; user publication/integration review pending.
+
+The user explicitly approved T02 and M1 framework repairs (ADR-0022). T01 and
+corrective M4 withdrawal are DONE through PR #67; I-7 restored by PR #69 and
+M4 interest posting merged in PR #68. 0521 adds guarded aggregate-only readers;
+scoped API/page, exact totals, snapshot CSV/access audit and cleanup are delivered.
+
+Relevant72 tests /7 suites, clean40-migration disposable rebuild/checksums, typecheck,
+lint/build and browser checks pass. Full suite767:729 pass,27 fail,11 cancelled;
+legacy M1 fixtures/audit expectations and M4 withdrawal overload calls are recorded
+in the handoff. Broader raw transaction RLS is still M1/M4 integration work. Do not
+claim full-suite acceptance or mark T02 DONE. General phase gates remain pending.
+
+Tracker97 tasks:31 TODO /1 REVIEW /65 DONE; incoming M4 Phase4 DONE rows included
+in the recount. All five overview tables reviewed. /review, /imprint and /remember
+saved. Normal database preserved. The user subsequently authorized several local
+commits for this delivery. Push, PR creation and merge remain user-controlled.
+[Delivery and review](handoffs/p05-m02-rpt01-api-ui.md).
+
+---
+# Historical state before RPT-01 runtime delivery
+
+**Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
 **Work:** PR #67 task-tracker conflict resolved locally; user commit/push/merge pending.
 
@@ -259,3 +283,13 @@ P03-M03-T02/T03 are DONE (merged / on dev). P04-M03-T01 DONE as an early start a
 `open-questions.md`. The withdrawal defect M3 reported against merged `0362` was repaired upstream by 0363 (ADR-0021), and
 `sp-post-withdrawal.test.mjs` passes. Use the tracker header above for current task counts.
 [Handoff](handoffs/i-6-fn-check-account-fd-eligible.md). The unresolved merge-conflict markers from the "phase 7" merge were removed (both sections kept).
+
+## M3 update — P04-M03-T02 (2026-10-08)
+
+P04-M03-T02 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14
+approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_close_account`, `trg_account_close_guard`),
+`closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` live (BRANCH_MANAGER; was a 501 stub).
+`tests/db/sp-close-account.test.mjs` 17/17 (incl. two-connection races against an in-flight FD insert) and 6 new API tests. Full isolated suite 777 tests / 750 pass / 27 fail: the same
+27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
+panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
+
