@@ -20,9 +20,9 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~04~~ | ~~[Sign-in & Shell](04_P1-T04_sign-in-app-shell.md)~~ | ~~P1~~ | ~~T04~~ | ~~Sign-in page, app shell, role-aware nav~~ | ~~~2~~ |
 | ~~05~~ | ~~[Params & Audit](05_P1-T05_parameters-audit.md)~~ | ~~P1~~ | ~~T05~~ | ~~`system_parameter`, `business_calendar`, `audit_log`, triggers~~ | ~~~2~~ |
 | 06 | [RLS & Scope](06_P2_rls-audit-branchscope.md) | P2 | ~~T01–T03~~ | ~~Row Level Security, audit coverage, branch scope enforcement~~ | ~6 |
-| ~~07~~ | ~~[Hours & Reversals](07_P3_business-hours-reversal-audit.md)~~ | P3 | ~~T01~~, T02–T03 | ~~Business hours enforcement + withdrawal limits~~; reversal auth and financial audit remain blocked | ~8 |
-| 08 | [Worker Auth](08_P4_worker-auth-cycle-config.md) | P4 | T01–T02 | Interest run auth, cycle configuration | ~6 |
-| 09 | [Report Framework](09_P5_report-framework-csv-audit-search.md) | P5 | T01–T04 | Report framework (I-7), CSV export, audit search | ~12 |
+| ~~07~~ | ~~[Hours & Reversals](07_P3_business-hours-reversal-audit.md)~~ | ~~P3~~ | ~~T01–T03~~ | ~~Business hours enforcement, reversal auth, financial audit~~ | ~~~8~~ |
+| ~~08~~ | ~~[Worker Auth](08_P4_worker-auth-cycle-config.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~Interest run auth, cycle configuration~~ | ~~~6~~ |
+| ~~09~~ | ~~[Report Framework](09_P5_report-framework-csv-audit-search.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Report framework (I-7), CSV export, audit search~~ | ~~~12~~ |
 | 10 | [Security & Deploy](10_P6_security-testing-deployment.md) | P6 | T01–T04 | SQL injection tests, auth matrix, RLS verification, deployment | ~9 |
 
 ---
