@@ -29,11 +29,11 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 1 | 0 | 0 | 0 | 0 | 15 |
-| P3 | 14 | 12 | 0 | 0 | 0 | 1 | 1 |
+| P3 | 14 | 9 | 0 | 0 | 0 | 1 | 4 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **55** | **0** | **0** | **0** | 1 | **41** |
+| **All** | **97** | **52** | **0** | **0** | **0** | **1** | **44** |
 
 ---
 
@@ -209,7 +209,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (12 TODO, 1 REVIEW, 1 DONE)
+## Phase 3 — Financial Transactions (9 TODO, 1 REVIEW, 4 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -217,12 +217,24 @@ OQ-08 was resolved by ADR-0010; it is not an open blocker.
 **Scoped exception (2026-10-08):** Vibodha authorized P03-M02-T01 to start early
 and its prescribed G-07 schema (ADR-0016). M4 transaction schema is merged.
 This does not approve Phase 2 exit, general Phase 3 entry, or OQ-12/OQ-14.
-P03-M02-T02 remains TODO; user publication and M4 review are retained.
+T01 is merged through PR #49 (dev c2bce7c). Vibodha subsequently authorized an
+early start for P03-M02-T02 (ADR-0017); its dependency is satisfied. This extends
+the scoped exception to T02 only. T02 is published in PR #53 against dev;
+integration review and user merge remain.
 
 T01's 0320 migration and 15 attribution tests are verified locally: clean
 24-migration rebuild, 501 tests in 45 suites, TypeScript/lint/build all pass.
 [Handoff and review](../.agent/handoffs/p03-m02-transaction-attribution.md).
-REVIEW below means ready for the user's PR; it does not claim publication.
+T02 REVIEW records open PR #53; it does not claim integration or phase approval.
+
+T02 is implemented and verified on feat/p03-m02-agent-daily-activity: live scoped
+GET/page, exact SQL type totals and inclusive Colombo dates. Final isolated checks
+pass 529 tests / 48 suites, clean 24-migration rebuild/checksums, TypeScript, lint,
+production build and manual browser QA. /review findings resolved; /imprint saved.
+[T02 handoff and integration limits](../.agent/handoffs/p03-m02-agent-daily-activity.md).
+PR #53 conflict resolution against dev af07af8 passes 554 tests /49 suites, a clean
+26-migration rebuild/checksum check, TypeScript, lint and production build.
+[Resolution evidence](../.agent/handoffs/p03-m02-t02-pr53-conflict-resolution.md).
 
 **M3 early start (2026-10-08):** P03-M03-T01 (`fn_check_plan_minimum`, I-4) was started
 at the user's direction and is DONE. ADR-0016 covers only P03-M02-T01, so this does not
@@ -233,8 +245,8 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | TODO |
 | P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
 | P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
-| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | REVIEW (verified locally; user PR/M4 review pending) |
-| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01 | TODO |
+| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | DONE (merged PR #49, dev c2bce7c) |
+| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | REVIEW (open PR #53; verified locally; integration review and user merge pending) |
 | P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
 | P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path | DB | P02-M03-T03 | TODO |
 | P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 | TODO |

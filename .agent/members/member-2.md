@@ -1,15 +1,20 @@
 # Member 2 — current session
 
-**Updated:** 2026-10-08 · **Branch:** feat/p03-m02-agent-attribution-activity
+**Updated:** 2026-10-08 · **Branch:** feat/p03-m02-agent-daily-activity
 
-P03-M02-T01 implemented and verified locally (REVIEW). Migration 0320, nullable
-snapshot FKs and reporting indexes; 15 new regressions and full 501 tests/45 suites
-pass, clean 24-migration rebuild/checksums, TypeScript/lint/build pass. ADR-0016 records
-G-07 authorization and a scoped early start; no general Phase 3 approval. T02 is TODO.
-Handoff/review: ../handoffs/p03-m02-transaction-attribution.md. Future M4/M3 producers
-must populate attribution; existing opening deposits remain unattributed. M4 reviews.
-No assistant commit/push/PR/merge and no normal development DB migration/reset.
-All overview tables reviewed; only M2's new work is recorded. /imprint inapplicable.
+T01 is DONE (PR #49 merged into dev c2bce7c). T02 is implemented and verified,
+local REVIEW pending the user's PR/integration review: GET /api/agents/{id}/activity
+and live /agents/{id}/activity, directory and self links, inclusive Colombo dates,
+exact SQL type totals and transfer-safe branch predicates. ADR-0017 authorizes
+this scoped early start only; no Phase 2 exit/general Phase 3 approval.
+529 tests/48 suites, clean 24-migration rebuild/checksums, TypeScript/lint/build
+and browser QA pass. /review findings resolved; /imprint recorded in ui-registry.
+Handoff/review: ../handoffs/p03-m02-agent-daily-activity.md. No new migration.
+M4/M3 producer adoption and M1 transaction RLS remain their integration work;
+NULL attribution is excluded. Missing seed manager profiles are handed to M5/M1;
+only disposable QA fixtures were supplemented. All five overview tables reviewed,
+only M2's new work/status updated. User controls publication; no staging, commit,
+push, PR or merge by the assistant. Normal development database preserved.
 
 ---
 

@@ -1,12 +1,12 @@
 # 🟡 Phase 3 — Tasks 01–02: Transaction Attribution & Agent Daily Activity
-**Task IDs:** `P03-M02-T01`, `P03-M02-T02` · **Branch:** `feat/p03-m02-agent-attribution-activity`
-**Migration:** `0320_p03_m02_transaction_attribution.sql` · **Status:** T01 REVIEW (verified locally); T02 TODO
+**Task IDs:** `P03-M02-T01`, `P03-M02-T02` · **Branches:** T01 `feat/p03-m02-agent-attribution-activity`; T02 `feat/p03-m02-agent-daily-activity`
+**Migration:** `0320_p03_m02_transaction_attribution.sql` (T01; no new T02 migration) · **Status:** T01 DONE (PR #49 merged); T02 REVIEW (verified locally, user publication pending)
 **Depends on:** `P02-M04-T01` (`transaction` schema, M4), **G-07** approved
-**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend
+**Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend + Frontend
 
-**Scope (2026-10-08):** implement T01 only. Vibodha authorized its early start and
-the prescribed G-07 design (ADR-0016). No general Phase 3 entry approval. T02 remains
-a separate task; its existing UI must be assessed before integration.
+**Scope (2026-10-08):** T01 is merged through PR #49 (dev c2bce7c). Vibodha then
+explicitly authorized T02 on its own branch (ADR-0017). No general Phase 3 entry
+approval. Existing prototype screens did not provide a live agent activity page.
 
 ---
 
@@ -65,7 +65,7 @@ CREATE INDEX ix_transaction_branch_date ON transaction(branch_id, transaction_da
 
 **Verified:** 15 attribution tests and all 501 tests in 45 suites pass. Clean
 24-migration rebuild/checksum verification, TypeScript, lint, and production build
-pass. `/review` has no unresolved T01 findings; the user publishes and M4 reviews.
+pass. `/review` has no unresolved T01 findings. T01 is now merged through PR #49.
 
 ---
 
@@ -76,19 +76,40 @@ pass. `/review` has no unresolved T01 findings; the user publishes and M4 review
   precursor to RPT-01 (Phase 5)
 - **Roles** `ADMIN`, `CENTRAL_OPS`, `BRANCH_MANAGER` (own branch's agents only), the
   agent themself
-- **Query** `from`, `to` (default: today)
-- **SQL** `SELECT transaction_type, COUNT(*), SUM(amount) FROM transaction WHERE
-  agent_id = $1 AND transaction_date BETWEEN $2 AND $3 GROUP BY transaction_type` — parameterized,
-  branch scope applied via the agent's `branch_id`
-- **Success** `200 { data: { agentId, from, to, byType: [{ type, count, total }] } }`
+- **Query** optional real ISO calendar dates `from`, `to`; both absent = today in
+  Asia/Colombo, one supplied = that single day. Reject unknown/repeated keys and reversed ranges.
+- **SQL** parameterized COUNT/SUM by type, matching `agent_id` and half-open timestamp
+  bounds for both inclusive Colombo dates. Manager target must currently belong to
+  the caller's branch; totals additionally require the immutable posting `branch_id`
+  to equal that branch. Current-profile-only scope would leak history after transfers.
+- **Success** `200 { data: { agentId, from, to, timeZone, scope, agent: { fullName,
+  employeeNo, branchCode, branchName }, byType: [{ type, count, total }] } }`;
+  `count` integer, `total` exact decimal string. Empty `byType: []`; no net balance.
 
 ### Step 1 — Backend
-`services/agent-service.ts`: add `getAgentActivity(agentId, range, scope)`.
+`services/agent-service.ts`: `getAgentActivity(agentId, range, authenticatedActor)`
+revalidates stored role/profile, sets RLS context and reads target/totals in one
+read-only REPEATABLE READ transaction. All role/self/branch scope is server-side.
+ADMIN/CENTRAL_OPS bankwide; AGENT self only; manager current own branch and ledger
+posting branch. AUDITOR/CUSTOMER denied. No ledger/account mutation or new DDL.
+
+### Step 2 — Live UI
+
+`app/agents/[id]/activity`: authenticated live page with from/to controls, Today,
+type/count/amount table and loading/empty/error/retry states. Agent directory names
+link to activity; AGENT has My daily activity in Customers. Reuse existing Emerald
+tokens and string-only money formatter. Hide stale results while a new period loads.
 
 ### Step 3 — Write Tests
-- `tests/api/agent-activity.test.mjs`: totals match a manually-seeded set of
-  transactions; date range filters correctly; `BRANCH_MANAGER` cannot query an agent
-  outside their branch → 403
+- `tests/api/agent-activity.test.mjs`: 19 cases, real sessions under mims_app:
+  exact type sums/counts, midnight/final-day bounds, defaults, empty, role/self/branch
+  denial, transfer/NULL attribution, deactivation, invalid UUID/dates/scope queries.
+- `tests/db/agent-activity.test.mjs`: 7 cases, least-privilege service reads:
+  huge exact sums, alternate connection timezone, forged/stale identity denial,
+  stored status/role changes, unchanged ledger/balance/audit and discarded RLS context.
+- `tests/e2e/agent-activity-dates.test.mjs`: 2 pure calendar cases (Colombo midnight and leap day).
+- Full isolated verification: 529 tests / 48 suites, zero failures/skips; clean
+  24-migration rebuild/checksums, TypeScript, lint and production build all pass.
 
 ### Step 4 — Run & Verify
 ```bash
@@ -98,10 +119,10 @@ npm run typecheck && npm test
 ```
 
 ### Step 5 — Update Docs
-- Update `docs/04_database-schema.md` — `transaction` column additions (G-07 resolved)
-- Update `docs/05_api-and-pages.md` — add `GET /api/agents/{id}/activity`
-- Update `docs/17_erd-gap-analysis.md` — mark G-07 implemented
-- Update task statuses in `docs/09_task-tracker.md` → `DONE`
+- T01 already documented schema/indexes in docs/04 and G-07 in docs/17. No new T02 schema.
+- Update docs/05 API/page contract, docs/07 scope rule, docs/17 read-side progress,
+  tracker, phase exception, member state/overview, UI registry and memory.
+- T01 DONE (merged). T02 REVIEW after verification; user owns publication and team review.
 
 ---
 
@@ -109,6 +130,9 @@ npm run typecheck && npm test
 - [x] Handoff written before DDL; existing M4 handoff reserves these additions; final M4 review retained
 - [x] `agent_id`/`branch_id` columns added, nullable, FK-constrained (0320)
 - [x] Both reporting indexes exist using `transaction_date`
-- [ ] Agent activity endpoint respects branch scope in SQL
+- [x] Agent activity endpoint respects current-agent and posting-branch scope in SQL
 - [x] `npm run db:rebuild` succeeds from empty (disposable harness, 24 migrations)
-- [x] `npm run typecheck && npm test` pass (full verify:phase1, 501 tests)
+- [x] `npm run typecheck && npm test` pass (full verify:phase1, 529 tests)
+- [x] Live activity page with defaults, date filtering and explicit states
+- [x] Browser QA and /review finalized; /imprint recorded in ui-registry.md
+- [ ] User publication and integration review (local REVIEW)

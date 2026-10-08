@@ -1,6 +1,6 @@
 # Phase 03 — Financial Transactions
 
-**Status:** TODO · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
+**Status:** General entry pending; M2 T01 DONE and T02 local REVIEW under scoped exceptions · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
 
 The most important phase for the grade. Everything here is about **ACID under
 concurrency**.
@@ -8,6 +8,14 @@ concurrency**.
 **Scoped exception — 2026-10-08:** Vibodha authorized P03-M02-T01 to start early
 with the G-07 schema specified in ADR-0016. This database-only exception does not
 approve Phase 2 exit or general Phase 3 entry. Other tasks keep their existing gates.
+
+**Extension — 2026-10-08:** PR #49 merged T01 (dev c2bce7c). Vibodha explicitly
+authorized T02 implementation on feat/p03-m02-agent-daily-activity (ADR-0017).
+This read-only API/page exception retains all general entry criteria below.
+
+T02 implementation is verified: 529 tests / 48 suites, clean 24-migration rebuild,
+TypeScript/lint/build and manual browser QA pass; no new migration or posting workflow.
+See the [handoff and review](../../.agent/handoffs/p03-m02-agent-daily-activity.md).
 
 ## Entry criteria
 

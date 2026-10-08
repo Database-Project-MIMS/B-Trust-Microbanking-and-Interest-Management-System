@@ -24,6 +24,23 @@ BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch m
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### Agent activity task-card branch/date shorthand — resolved 2026-10-08
+
+The T02 card's current `agent.branch_id` filter alone could expose a transferred
+agent's previous branch amounts. Its timestamp BETWEEN shorthand also omits the
+final day's activity when supplied plain dates. ADR-0017 keeps the prescribed
+current-agent branch gate and adds an immutable posting-branch filter for managers;
+inclusive Asia/Colombo days use half-open timestamp bounds. The task card and API
+contract are updated together. No schema change or general phase approval.
+
+### Seeded branch-manager profiles missing — 2026-10-08
+
+Clean rebuild supplies bm_colombo/bm_kandy/bm_galle logins but no required active
+agent branch-staff profiles (ADR-0006). Sign-in succeeds then session validation
+fails closed. M5/M1 handoff: handoffs/p03-m02-activity-seed-manager-profile.md.
+T02 browser fixtures add the missing profile only in the disposable database;
+no steward-owned seed or another member's task status is changed here.
+
 ### Incoming Phase 2 seed targets versus phase exit — 2026-10-08
 
 PR #48 (dev 2208986) marks M5-T01 DONE and revises docs/06 to 15 customers,

@@ -1,3 +1,70 @@
+# Memory - PR #53 conflict resolution
+
+**Updated:** 2026-10-08 · /remember save
+**Branch:** feat/p03-m02-agent-daily-activity · HEAD d2901b7
+
+User committed/pushed T02 and opened PR #53 against dev. Prepared local
+origin/dev af07af8 merge with --no-commit --no-ff; resolved current-state/tracker
+by preserving T02 REVIEW and incoming M3/M4 DONE statuses. Counts reconciled:
+52 TODO /1 REVIEW /44 DONE (97). General phase gates remain pending.
+Combined verification PASS: 554 tests /49 suites, zero failures/skips;
+clean isolated 26-migration rebuild and checksum checks; TypeScript, lint and
+production build PASS. The normal development database was preserved.
+Log: test-results/p03-activity-pr53-conflict-verification.log (ignored).
+Handoff: .agent/handoffs/p03-m02-t02-pr53-conflict-resolution.md.
+User controls the pending merge commit, push and PR merge; no assistant publication.
+
+---
+
+## Previous delivery (historical)
+
+# Memory — P03-M02-T02 agent daily activity
+
+**Updated:** 2026-10-08 · /remember save
+**Branch:** feat/p03-m02-agent-daily-activity · base HEAD db6ff4e
+
+## Current continuation
+
+User (M2/Vibodha) explicitly authorized T02 implementation after its general phase
+restriction was explained. ADR-0017 extends the earlier T01 scoped start. No Phase 2
+exit/general Phase 3 entry or OQ-12/OQ-14 approval. T01 is DONE, PR #49 merged into
+dev c2bce7c. T02 is implemented/verified, local REVIEW for user publication and review.
+
+Live GET /api/agents/{id}/activity and /agents/{id}/activity; manager/bankwide directory
+links and AGENT My daily activity from Customers. Inclusive Colombo dates, Today,
+exact SQL COUNT/SUM decimal-string amounts; no net balance or missing attribution
+inference. Read-only REPEATABLE READ transaction revalidates stored active role/profile,
+sets RLS context and enforces self/branch predicates in SQL. Manager requires current
+target branch AND captured posting branch, preventing transferred-history leakage.
+Bankwide users may retain a staff profile without losing bankwide access. No new DDL;
+0320 is reused. Normal development DB preserved; M4/M3 producer adoption and M1 RLS
+remain integration follow-up, with NULL attribution excluded.
+
+Final verify:phase1 passes 529 tests / 48 suites, zero failures/skips, clean isolated
+24-migration rebuild/checksums, TypeScript/lint/build. 28 new cases (API19/DB7/date2).
+Browser manager/self access, populated/filter/empty/Today/error/retry and mobile
+internal-scroll/no-page-overflow checks pass; no console errors. Temporary preview
+and cluster cleaned up. Local ignored evidence: test-results/agent-daily-activity-verification.log,
+t02-activity-desktop.png, t02-activity-mobile.png. /review findings fixed; /imprint saved.
+Handoff: .agent/handoffs/p03-m02-agent-daily-activity.md.
+
+Seeded bm_colombo/bm_kandy/bm_galle lack required active agent profiles (ADR-0006),
+so their logins return to sign-in after session validation fails closed. Disposable
+browser fixtures supplied one synthetic manager profile; seed/auth code unchanged.
+M5/M1 handoff: .agent/handoffs/p03-m02-activity-seed-manager-profile.md. Phase 2 seed
+versus exit target mismatch remains recorded. Other members' stale labels need owner
+reconciliation; only M2 rows/overview changed. Overall 55 TODO /4 REVIEW /38 DONE.
+
+User prohibits assistant commits, pushes, PR creation and completed merges. Nothing
+staged/published here; leave changes for user. Do not start another phase/task from
+this delivery without checking its tracker/dependencies and phase authorization.
+The records below are historical; this current continuation supersedes old PR49
+merge/conflict notes and T02 TODO labels. No secrets or real customer data saved.
+
+---
+
+## Historical sessions (preserved)
+
 # Memory — P03-M02-T01 transaction attribution
 
 ## Latest continuation — PR #49 conflict resolution, 2026-10-08

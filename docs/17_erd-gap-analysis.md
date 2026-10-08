@@ -257,6 +257,12 @@ are preserved with NULL attribution. Future posting producers must capture trust
 values inside their transaction; this schema task does not complete that integration.
 No general Phase 3 entry or OQ-12/OQ-14 approval is inferred.
 
+**Read-side follow-up — T02, 2026-10-08:** ADR-0017 authorizes the separate early
+start for the live daily activity API/page. Exact SQL aggregates use the T01 indexes
+and immutable attribution; manager scope requires both current target branch and
+posting branch. NULL attribution is excluded, not backfilled or derived. Producer
+integration remains with M4/M3; this does not complete the Phase 5 RPT-01 report.
+
 **Current ERD design** — `transaction` has `initiated_by_user_id` and `channel_id` only.
 
 **Project / SRS requirement** — **RPT-01 is "Agent-wise total number and value of
