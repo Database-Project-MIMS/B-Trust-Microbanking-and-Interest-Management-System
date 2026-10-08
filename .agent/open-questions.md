@@ -46,6 +46,14 @@ caller-side FD check can miss rows hidden by `fixed_deposit` RLS. (4) Backend on
 `sp_open_fixed_deposit` (the foreign key only checks the row exists); a `BEFORE INSERT` guard on `fixed_deposit` requiring an
 ACTIVE account would close that. Handoff: `handoffs/p04-m03-t02-account-closure.md`.
 
+### Account FD panel: visibility limit, placeholder link target, missing FD seed — 2026-10-08 (raised by M3, task P04-M03-T03)
+
+(1) The panel reads `fixed_deposit` under the caller's RLS (0420/0421), which needs a holder in the caller's branch scope; an account
+whose holders are all in another branch would show a manager no FDs (display only; closing is still blocked by the guard trigger).
+(2) The "Open a fixed deposit" link goes to `/fixed-deposits/new?accountId=…`, which is M5's placeholder `WorkflowScreen` and ignores the
+parameter. (3) `database/seed/_load-order.txt` lists `14_fixed_deposits.sql` (and `15_interest_runs.sql`) but neither file exists, so there is
+no FD demo data. (4) No browser pass was run for the panel; its rendered markup is covered by `tests/e2e/account-fixed-deposits-panel.test.mjs`, but the visual layout (narrow width) was not looked at. Handoff: `handoffs/p04-m03-t03-fd-panel.md`.
+
 ### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
 
 The P04-M03-T01 card prescribes `fn_check_account_fd_eligible(account_id) → boolean` (status only; caller locks and

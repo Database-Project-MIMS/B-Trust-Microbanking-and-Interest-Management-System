@@ -293,3 +293,11 @@ approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_clos
 27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
 panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
 
+## M3 update — P04-M03-T03 (2026-10-08)
+
+P04-M03-T03 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval), tests only:
+`GET /api/accounts/{id}` gains `fixedDeposits`, and `/accounts/{id}` has a read-only Fixed deposits panel (table, closure-blocked note, link to
+`/fixed-deposits/new?accountId=…`). No migration. Full isolated suite on the tree merged with dev 81fd25c: 828 tests / 801 pass / 27 fail, the same 27 failures that already occur on dev. `fixedDeposits` is `null` when the list cannot be read; the panel's rendered markup is tested.
+`tsc --noEmit`, `eslint .`, `next build` clean; `/imprint` saved. All three Phase 4 tasks on M3's card (T01–T03) are done.
+[Handoff](handoffs/p04-m03-t03-fd-panel.md).
+
