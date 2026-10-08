@@ -1,6 +1,6 @@
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import pg from "pg";
+import { createMigrationClient } from "../../lib/db/migration-client.mjs";
 
 // Load .env if not already in environment
 if (!process.env.DATABASE_URL) {
@@ -28,8 +28,12 @@ describe("P01-M03-T02: fn_check_plan_eligibility", () => {
     }
 
     before(async () => {
-        client = new pg.Client({ connectionString });
+        client = createMigrationClient(connectionString);
         await client.connect();
+        const database = (await client.query('SELECT current_database() AS name')).rows[0].name;
+        assert.ok(database === 'mims_test_customer_schema' ||
+            (database === 'mims_test_closeout' && process.env.MIMS_ISOLATED_TEST === '1'),
+            'Eligibility fixtures require the approved disposable verification database.');
 
         const res = await client.query(
             `SELECT plan_id, plan_name FROM savings_plan`,
@@ -83,7 +87,7 @@ describe("P01-M03-T02: fn_check_plan_eligibility", () => {
 
     // AC-5: Children has no lower age bound (min_age_years IS NULL)
     test("5. Children accepts any age at or below max_age_years, no lower bound", async () => {
-        const dob = new Date().toISOString().slice(0, 10); // born today, age 0
+        const dob = (await client.query('SELECT CURRENT_DATE::text AS dob')).rows[0].dob; // born today, age 0
         const eligible = await checkEligibility(planIds["Children"], dob, 1);
         assert.equal(eligible, true);
     });
@@ -120,21 +124,17 @@ describe("P01-M03-T02: fn_check_plan_eligibility", () => {
 
     // AC-10: age is computed as whole completed years, not naive year subtraction
     test("10. Age is computed as whole completed years against CURRENT_DATE", async () => {
-        const today = new Date();
-
-        const turns18Today = new Date(today);
-        turns18Today.setFullYear(today.getFullYear() - 18);
-        const dobTurns18Today = turns18Today.toISOString().slice(0, 10);
+        const dates = (await client.query(`SELECT
+          (CURRENT_DATE - interval '18 years')::date::text AS today,
+          (CURRENT_DATE + 1 - interval '18 years')::date::text AS tomorrow`)).rows[0];
+        const dobTurns18Today = dates.today;
         assert.equal(
             await checkEligibility(planIds["Adult"], dobTurns18Today, 1),
             true,
             "someone who turns 18 today should already be eligible for Adult (min_age_years=18)",
         );
 
-        const turns18Tomorrow = new Date(today);
-        turns18Tomorrow.setFullYear(today.getFullYear() - 18);
-        turns18Tomorrow.setDate(turns18Tomorrow.getDate() + 1);
-        const dobTurns18Tomorrow = turns18Tomorrow.toISOString().slice(0, 10);
+        const dobTurns18Tomorrow = dates.tomorrow;
         assert.equal(
             await checkEligibility(planIds["Adult"], dobTurns18Tomorrow, 1),
             false,

@@ -74,7 +74,10 @@ describe("P04-M03-T01: fn_check_account_fd_eligible / fn_fd_funding_verdict (I-6
         fdPlanId = fdPlan.rows[0]?.fd_plan_id;
         assert.ok(fdPlanId, "a seeded fd_plan is required");
         const found = await client.query(
-            "SELECT agent_id, branch_id FROM agent WHERE status = 'ACTIVE' ORDER BY employee_no LIMIT 1",
+            `SELECT a.agent_id, a.branch_id FROM agent a
+             JOIN app_user u ON u.user_id = a.agent_id AND u.status = 'ACTIVE'
+             JOIN role r ON r.role_id = u.role_id AND r.role_name = 'AGENT' AND r.status = 'ACTIVE'
+             WHERE a.status = 'ACTIVE' ORDER BY a.employee_no LIMIT 1`,
         );
         agent = found.rows[0];
         assert.ok(agent, "a seeded active agent is required");

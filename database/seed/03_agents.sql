@@ -16,3 +16,11 @@ INSERT INTO agent (agent_id, branch_id, employee_no, nic_passport_no, full_name,
 ('00000000-0000-0000-0401-000000000015', '00000000-0000-0000-0101-000000000003', 'EMP005', '911234567V', 'Ruwan Kumara', '1991-07-25', 'MALE', '0775555555', '90 Galle Road', 'ruwan@btrust.lk', '2020-11-15', 'ACTIVE'),
 ('00000000-0000-0000-0401-000000000016', '00000000-0000-0000-0101-000000000003', 'EMP006', '931234567V', 'Samanthi de Silva', '1993-04-05', 'FEMALE', '0776666666', '12 Galle Road', 'samanthi@btrust.lk', '2021-08-20', 'ACTIVE')
 ON CONFLICT (agent_id) DO NOTHING;
+
+-- Branch managers use the same staff subtype; role-filtered counts still show six ordinary agents.
+INSERT INTO agent (agent_id, branch_id, employee_no, nic_passport_no, full_name,
+  date_of_birth, gender, phone, address, email, hired_date, status) VALUES
+('00000000-0000-0000-0401-000000000002', '00000000-0000-0000-0101-000000000001', 'BM001', '198000000002', 'Synthetic Colombo Manager', '1980-01-01', 'MALE', '0770000102', 'Synthetic Colombo branch', 'bm-colombo@example.com', '2020-01-01', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000003', '00000000-0000-0000-0101-000000000002', 'BM002', '198000000003', 'Synthetic Kandy Manager', '1980-01-01', 'FEMALE', '0770000103', 'Synthetic Kandy branch', 'bm-kandy@example.com', '2020-01-01', 'ACTIVE'),
+('00000000-0000-0000-0401-000000000004', '00000000-0000-0000-0101-000000000003', 'BM003', '198000000004', 'Synthetic Galle Manager', '1980-01-01', 'MALE', '0770000104', 'Synthetic Galle branch', 'bm-galle@example.com', '2020-01-01', 'ACTIVE')
+ON CONFLICT (agent_id) DO NOTHING;

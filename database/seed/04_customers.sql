@@ -15,3 +15,7 @@ INSERT INTO customer (customer_id, branch_id, customer_number, nic_passport_no, 
 ('00000000-0000-0000-0501-000000000014', '00000000-0000-0000-0101-000000000003', 'CUS-1A2B3C4D5E6F7A8B9C0D1E14', '198700000014', 'Adult Six', '1987-09-28', 'FEMALE', '0770000014', 'Gal', 'a6@example.com', 'ACTIVE'),
 ('00000000-0000-0000-0501-000000000015', '00000000-0000-0000-0101-000000000003', 'CUS-1A2B3C4D5E6F7A8B9C0D1E15', '195200000015', 'Senior Three', '1952-10-29', 'MALE', '0770000015', 'Gal', 's3@example.com', 'ACTIVE')
 ON CONFLICT (customer_number) DO NOTHING;
+
+-- Link the synthetic CUSTOMER login to its existing master row; preserve other links.
+UPDATE customer SET app_user_id = '00000000-0000-0000-0401-000000000023'
+WHERE customer_id = '00000000-0000-0000-0501-000000000003' AND app_user_id IS NULL;

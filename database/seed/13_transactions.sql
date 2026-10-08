@@ -1,6 +1,11 @@
 -- Seed Set 4: Financial transactions
 DO $$
 DECLARE
+    v_opening record;
+    v_old_start text := (SELECT param_value FROM system_parameter WHERE param_key = 'BUSINESS_HOUR_START');
+    v_old_end text := (SELECT param_value FROM system_parameter WHERE param_key = 'BUSINESS_HOUR_END');
+    v_old_daily text := (SELECT param_value FROM system_parameter WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT');
+    v_old_single text := (SELECT param_value FROM system_parameter WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT');
     v_branch_counter uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER');
     v_online uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'ONLINE');
     v_system uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'SYSTEM');
@@ -19,6 +24,29 @@ BEGIN
     -- Temporarily bump withdrawal limits to allow all seed transactions to run on the same day
     UPDATE system_parameter SET param_value = '999999999.00' WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT';
     UPDATE system_parameter SET param_value = '999999999.00' WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT';
+
+    -- Former opening balances are real idempotent deposits, so reconciliation starts at zero.
+    FOR v_opening IN SELECT a.account_id, a.opened_by_agent_id, a.branch_id, s.amount
+      FROM (VALUES
+        ('BR-COL-00000001', 15000.00), ('BR-COL-00000002', 25000.00),
+        ('BR-COL-00000003', 45000.00), ('BR-COL-00000004', 35000.00),
+        ('BR-COL-00000005', 200000.00), ('BR-KAN-00000001', 150000.00),
+        ('BR-KAN-00000002', 30000.00), ('BR-KAN-00000003', 40000.00),
+        ('BR-GAL-00000001', 50000.00), ('BR-GAL-00000002', 20000.00)
+      ) s(account_number, amount) JOIN account a USING (account_number)
+      ORDER BY a.account_id
+    LOOP
+      IF NOT EXISTS (SELECT 1 FROM transaction WHERE idempotency_key = 'seed-opening-' || v_opening.account_id::text)
+         AND (SELECT current_balance FROM account WHERE account_id = v_opening.account_id) <> 0 THEN
+        RAISE EXCEPTION 'Seed opening balance requires a clean rebuild; existing unledgered cash cannot be double credited';
+      END IF;
+      PERFORM set_config('app.current_user_id', v_opening.opened_by_agent_id::text, true);
+      PERFORM set_config('app.current_user_role', 'AGENT', true);
+      PERFORM set_config('app.current_branch_id', v_opening.branch_id::text, true);
+      CALL sp_post_deposit(v_opening.account_id, v_opening.amount, v_branch_counter,
+        v_opening.opened_by_agent_id, ('seed-opening-' || v_opening.account_id::text)::varchar,
+        'Seed opening cash'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    END LOOP;
     -- Seed Set 4: Financial transactions
     -- Posted through sp_post_deposit / sp_post_withdrawal to maintain balance integrity
     -- Day: 2025-07-01
@@ -839,9 +867,9 @@ BEGIN
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;
     -- Revert business hours
-    UPDATE system_parameter SET param_value = '08:00' WHERE param_key = 'BUSINESS_HOUR_START';
-    UPDATE system_parameter SET param_value = '17:00' WHERE param_key = 'BUSINESS_HOUR_END';
+    UPDATE system_parameter SET param_value = v_old_start WHERE param_key = 'BUSINESS_HOUR_START';
+    UPDATE system_parameter SET param_value = v_old_end WHERE param_key = 'BUSINESS_HOUR_END';
     -- Revert limits
-    UPDATE system_parameter SET param_value = '200000.00' WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT';
-    UPDATE system_parameter SET param_value = '100000.00' WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT';
+    UPDATE system_parameter SET param_value = v_old_daily WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT';
+    UPDATE system_parameter SET param_value = v_old_single WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT';
 END $$;

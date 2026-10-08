@@ -20,6 +20,8 @@
     "verify:customer-schema": "node scripts/verify-customer-schema.mjs",
     "verify:customer-agent-document": "node scripts/verify-customer-schema.mjs --relations",
     "verify:customer-registration": "node scripts/verify-customer-schema.mjs --relations --registration",
+    "verify:seed-validation": "node scripts/verify-seed-validation.mjs",
+    "db:seed-validate": "node scripts/seed-validation.mjs",
     "db:create": "bash scripts/db-create.sh",
     "db:migrate": "node scripts/migrate.mjs up",
     "db:grants": "node --env-file=.env scripts/apply-grants.mjs",
