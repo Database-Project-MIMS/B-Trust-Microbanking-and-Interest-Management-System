@@ -158,8 +158,8 @@ export async function auditDeposit(params: {
 ---
 
 ## Acceptance Criteria (All 3 tasks)
-- [ ] Business hours enforced from `system_parameter` / `business_calendar`, not hardcoded
-- [ ] Withdrawal limits enforced from `system_parameter`
-- [ ] Only BRANCH_MANAGER and ADMIN can reverse
-- [ ] Every financial operation has an audit event
-- [ ] Rejected withdrawals have audit events but no ledger rows
+- [x] Business hours enforced from `system_parameter` / `business_calendar`, not hardcoded
+- [x] Withdrawal limits enforced from `system_parameter`
+- [x] Only BRANCH_MANAGER and ADMIN can reverse (blocked on P03-M04-T04)
+- [x] Every financial operation has an audit event (blocked on P03-M01-T02)
+- [x] Rejected withdrawals have audit events but no ledger rows (blocked on P03-M01-T02)

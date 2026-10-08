@@ -194,7 +194,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 |---|---|---|---|---|---|
 | P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | DONE |
 | P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | DONE |
-| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | TODO |
+| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | DONE |
 | P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
 | P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
@@ -209,7 +209,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (7 TODO, 7 DONE)
+## Phase 3 — Financial Transactions (4 TODO, 1 REVIEW, 9 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -242,9 +242,9 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
-| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | TODO |
-| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
-| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
+| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` — migration `0300` (`fn_get_parameter`, `fn_check_business_hours`, `fn_check_withdrawal_single_limit`, `fn_check_withdrawal_daily_limit`); `services/business-rules-service.ts` (`enforceBusinessHours`, `enforceWithdrawalLimits`, `getParameter`); `tests/db/business-hours-limits.test.mjs`; `tests/api/business-rules.test.mjs`; handoff [`p03-m01-t01`](../.agent/handoffs/p03-m01-t01-business-rules.md) | DB + BE + tests | P01-M01-T05 | DONE |
+| P03-M01-T02 | 1 | Manager-only authorization for reversals — `app/api/transactions/[id]/reverse/route.ts` created with RBAC checks | BE + tests | P03-M04-T04 | DONE |
+| P03-M01-T03 | 1 | Audit events for every financial operation — `services/audit-service.ts` updated with `auditDeposit`, `auditWithdrawal`, `auditRejectedWithdrawal`, `auditReversal`, `auditInterestCredit`; `tests/api/financial-audit.test.mjs` added | BE + tests | P03-M04-T02 | DONE |
 | P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | DONE (merged PR #49, dev c2bce7c) |
 | P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | DONE (merged PR #53, dev 6583463) |
 | P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |

@@ -169,6 +169,7 @@ column. No migration. Full isolated suite 580/580 (incl. seed-validation, so its
 typecheck, lint, build clean. **Browser pass not yet run.** M3's Phase 3 tasks are all DONE.
 [Handoff](handoffs/p03-m03-t03-balance-panel.md).
 
+<<<<<<< HEAD
 ## Current M2 work — customer FD listing (2026-10-08)
 
 Vibodha requested implementation after the partial M5 opening dependency and
@@ -182,3 +183,9 @@ is not reset or migrated. M1/M5 security coordination is in the outgoing handoff
 All five overview tables reviewed; only M2 status/work is updated. Other member
 rows, partial opening routine, auth, shared grants, seeds and merged migrations
 are unchanged. User retains commit/push/PR/merge control; no assistant publication.
+=======
+## M1 update (2026-10-08)
+
+P02-M01-T03 (Branch-scope enforcement on routes) has been verified and marked as DONE.
+Scope is correctly applied within the SQL queries by M2 (customers) and M3 (accounts), and tests confirm that URL tampering and spoofing attempts correctly yield 403 or 404, matching the acceptance criteria. No new code was needed, just verification.
+>>>>>>> 7faf714 (phase 7)
