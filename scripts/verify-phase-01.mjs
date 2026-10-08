@@ -50,7 +50,7 @@ try {
   writeFileSync(passwordFile, password, { mode: 0o600 });
   command(binary("initdb"), ["-D", data, "-U", "mims_test_admin", "-A", "scram-sha-256", "--pwfile", passwordFile, "--encoding=UTF8", "--locale=C"], process.env, true);
   rmSync(passwordFile);
-  command(binary("pg_ctl"), ["-D", data, "-l", join(workspace, "postgres.log"), "-o", `-p ${port} -h 127.0.0.1`, "-w", "start"], process.env, true);
+  command(binary("pg_ctl"), ["-D", data, "-l", join(workspace, "postgres.log"), "-o", `-p ${port} -h 127.0.0.1 -k ${workspace}`, "-w", "start"], process.env, true);
   started = true;
   const admin = createMigrationClient(connection("mims_test_admin", "postgres"));
   await admin.connect();

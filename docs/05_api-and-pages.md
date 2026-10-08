@@ -354,6 +354,14 @@ and transferred historical attribution. M2 has not added a route or altered the 
 - **Audit** every report access is logged (REP-COM-06)
 - **Errors** `403` for a branch outside scope — **enforced in SQL, not by filtering after the fetch** (REP-COM-02)
 
+**RPT-05 implementation:** `GET /api/reports/customer-activity` reads
+`vw_rpt05_customer_activity` under caller RLS in one repeatable-read snapshot.
+`from`/`to` are inclusive Asia/Colombo dates; account/plan/status and customer/
+account branch predicates are applied in SQL. Reversals subtract from their original
+deposit, withdrawal or interest category on the reversal date. Totals are
+holder-attributed: a joint account entry appears in every holder's customer row.
+The page labels that meaning, and CSV uses the same report result and totals.
+
 ### `GET /api/audit`
 - **Roles** AUDITOR, ADMIN · **Query** `actorId`, `entityType`, `entityId`, `action`, `from`, `to`
 - Uses indexes `(user_id, logged_at DESC)` and `(entity_type, entity_id)`. Read-only; the audit log has no write endpoint.

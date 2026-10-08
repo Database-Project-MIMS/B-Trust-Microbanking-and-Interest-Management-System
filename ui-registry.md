@@ -173,6 +173,24 @@ the approved token set.
 Each entry, once built, must record: purpose · file path · props · variants · states
 (default / hover / focus / disabled / loading / error) · spacing · where it is used.
 
+### Live customer activity report
+
+File: `app/reports/customer-activity/customer-activity-report.tsx`
+Last updated: 8 Oct 2026 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Background and border | `card`, `table-wrap`, `data-table`; `--surface`, `--border` |
+| Radius and shadow | Existing card and input styles; no new values |
+| Text | `page-title`, `eyebrow`, `page-description`, `muted` |
+| Spacing | `space-y-6`, `form-grid`, `mt-6`, `gap-3` |
+| Actions | `btn btn-primary` for Apply; `btn btn-secondary` for CSV and paging |
+| States | Loading status, explicit empty row, safe alert with retry, disabled paging |
+| Money | `amount` cells; exact decimal strings formatted for display only |
+
+The filter card and paged table remain within the existing authenticated report
+layout. A joint-holder attribution note accompanies the displayed totals.
+
 ### MIMS workflow surfaces
 
 File: `components/mims/workflow-screen.tsx`, `app/globals.css`

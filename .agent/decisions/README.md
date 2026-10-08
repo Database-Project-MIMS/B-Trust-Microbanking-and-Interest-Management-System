@@ -39,3 +39,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0019](ADR-0019-customer-fd-branch-scope.md) | Current-actor FD RLS backstop and scoped P04-M02-T02 start | User-authorized M2 implementation; M1/M5 policy review retained |
 | [ADR-0020](ADR-0020-rpt01-view.md) | RPT-01 timestamp/type/posting-branch view and scoped P05-M02-T01 start | User-authorized M2 database-only implementation; I-7/T02 pending |
 | [ADR-0021](ADR-0021-withdrawal-contract-repair.md) | Authorized M4 withdrawal correction, array signers and audited rejection boundary | User-authorized cross-member repair; M4 ownership retained |
+| [ADR-0022](ADR-0022-rpt05-joint-attribution.md) | RPT-05 joint-holder attribution and reversal semantics | User confirmed every-holder attribution for P05-M04-T01/T02 |

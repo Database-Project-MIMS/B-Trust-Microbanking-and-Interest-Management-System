@@ -20,6 +20,12 @@ with no exclusions. View index probe uses ix_transaction_agent_date; final repor
 performance/CSV/access auditing remain T02/I-7 work. Both local tasks await user
 publication. [Handoff](../../.agent/handoffs/p05-m02-rpt01-view.md).
 
+**M4 scoped RPT-05 start (2026-10-08):** The user requested T01/T02 and confirmed
+joint activity attribution to every holder (ADR-0022). Local implementation is in
+REVIEW: seven RPT-05 DB/API tests pass and a disposable rebuild succeeds. The
+combined suite and typecheck still have failures outside RPT-05; general Phase 5
+entry remains pending. [Handoff](../../.agent/handoffs/p05-m04-rpt05.md).
+
 ## Tasks by member
 
 | Member | Focus |
