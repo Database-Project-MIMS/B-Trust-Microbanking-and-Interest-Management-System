@@ -207,3 +207,15 @@ All files use `INSERT INTO ... ON CONFLICT DO NOTHING` to guarantee idempotency.
 
 ### Why I Did It
 This finishes the assembly of Phase 2's required seed data natively via SQL scripts. Directly `INSERT`ing bypassing the application layer gives us complete control over UUIDs, letting the test suites deterministically expect certain accounts and balances in Phase 3 without messy discovery.
+
+## Step 4 Execution: Verify
+### What I Did
+I ran the commands to rebuild the database, insert the seed data, and check the seeds:
+`npm run db:rebuild -- --reset`
+`npm run db:seed`
+`node --env-file=.env scripts/seed-check.mjs`
+
+I noticed that `npm run db:seed-check` was missing from `package.json`, so I added the script `"db:seed-check": "node --env-file=.env scripts/seed-check.mjs"` to fix the error. The verification script then ran successfully and reported `[PASS] Seed is idempotent and minimums are met. All checks passed.`
+
+### Why I Did It
+Verification is crucial to confirm that all `INSERT` statements are correctly ordered to prevent foreign key violations, and that the idempotent design successfully ignores duplicates on repeated runs without errors. Fixing `package.json` ensures future developers won't hit the missing script error when following the instructions.

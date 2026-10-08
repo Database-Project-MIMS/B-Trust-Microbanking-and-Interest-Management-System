@@ -2,7 +2,7 @@
   "name": "mims",
   "version": "0.1.0",
   "private": true,
-  "description": "Microbanking and Interest Management System (MIMS) — B-Trust Microfinance Bank. CS3043 Group 32.",
+  "description": "Microbanking and Interest Management System (MIMS) \u2014 B-Trust Microfinance Bank. CS3043 Group 32.",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -30,7 +30,8 @@
     "verify:phase1": "node scripts/verify-phase-01.mjs",
     "test": "node scripts/verify-phase-01.mjs --tests-only",
     "test:db": "node scripts/verify-phase-01.mjs --tests-only --suite=db",
-    "test:api": "node scripts/verify-phase-01.mjs --tests-only --suite=api"
+    "test:api": "node scripts/verify-phase-01.mjs --tests-only --suite=api",
+    "db:seed-check": "node --env-file=.env scripts/seed-check.mjs"
   },
   "dependencies": {
     "argon2": "^0.41.0",
