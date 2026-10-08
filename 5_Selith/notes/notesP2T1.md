@@ -183,3 +183,12 @@ This `notesP2T1.md` log serves as the documentation update for this task's progr
 
 ### Why I Did It
 Since this task is only half done (blocked by other members' incomplete Phase 2 work), I must clearly define the boundaries of what is finished vs. what is pending. This allows the team to understand the current state without confusion.
+
+## Step 2 Execution: Assign Fixed UUIDs for Phase 2 entities
+### What I Did
+I extended `database/seed/_uuids.sql` with fixed UUID blocks for:
+- Block `0501` for Customers (15 customers mapped)
+- Block `0801` for Accounts (10 accounts mapped, including 2 joint)
+
+### Why I Did It
+By explicitly predefining UUIDs for these entities, I ensure deterministic seeding for `customer` and `account`. This guarantees that Phase 3 and Phase 4 can predictably reference these same entities when posting transactions and generating fixed deposits.
