@@ -33,17 +33,14 @@ Since M4 has merged the withdrawal and reversal stored procedures, I am **FULLY 
 - I fully built the `fn_calculate_fd_interest` math function.
 - I fully built the `sp_open_fixed_deposit` procedure and tested it automatically.
 
-### 🔴 Who I am blocked by:
-I am blocked by **Member 3 (M3)** and **Member 4 (M4)**.
-- M3 needs to complete **`P04-M03-T01`** (Eligibility Check - `I-6`). M3 officially owns the business rule that dictates if an account is allowed to open an FD. I temporarily hardcoded this rule myself so I wouldn't be stuck.
-- M3 needs to complete **`P04-M03-T02` & `P04-M03-T03`** (API & UI). They must build the frontend so users can actually click a button to trigger my procedure.
-- M4 needs to complete their **Ledger Routine (`I-5`)**. Currently, my procedure deducts money using a raw `UPDATE account SET current_balance...` query. It is supposed to route through M4's ledger.
+### 🟢 Blockers resolved!
+I am completely unblocked and finished with `P04-M05-T02`.
+- M3 completed **`P04-M03-T01`** (Eligibility Check - `I-6`). I have successfully integrated `fn_check_account_fd_eligible` and removed my hardcoded rules.
+- (M3's UI and API tasks `P04-M03-T02` & `P04-M03-T03` are not blocking my database procedure).
+- M4 completed their ledger integration path and I successfully updated `sp_open_fixed_deposit` to insert a direct `WITHDRAWAL` transaction into the ledger and log an audit event, completely fulfilling the requirement.
 
-### 🛠️ What I need to do once they finish:
-Once M3 and M4 finish their tasks, I need to:
-1. Re-open `sp_open_fixed_deposit.sql`.
-2. Delete my raw `UPDATE account...` logic and replace it with a call to M4's official ledger function.
-3. Ensure my locking logic aligns with M3's official `I-6` eligibility rules.
+### 🛠️ What I need to do next:
+Nothing for this part! Task `P04-M05-T02` is officially **100% DONE** and all tests are passing.
 
 ---
 
