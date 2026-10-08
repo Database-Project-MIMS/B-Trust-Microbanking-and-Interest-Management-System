@@ -734,3 +734,28 @@ service already revalidated these values. ADR-0019 extends that backstop to dire
 SQL using a restrictive SELECT-only stored-actor guard in new 0421. No ERD/table
 shape change or M1 context-helper rewrite. Cross-owner policy review is in the M1/M5
 handoff. The user authorized T02's scoped start; general phase gates remain pending.
+
+## P05-M02-T01 report illustration corrections (2026-10-08)
+
+The task card's COUNT(*) on a LEFT JOIN counted an empty agent as one. Its all-time
+aggregation discarded the timestamp needed for a selected range, and `posted_at` /
+`idx_transaction_agent_posted` do not exist: the merged names are `transaction_date`
+and `ix_transaction_agent_date`. Grouping by current agent branch would also relabel
+history after a transfer. ADR-0020 resolves these as a timestamp/type/posting-branch
+aggregate view with COUNT(transaction_id), exact NUMERIC sums and a tested filtered
+roster outer-join contract. No ERD/table change or index is added. Include every
+agent-table attribution profile, preserving inactive/promoted staff history. Runtime
+report scope and signed net/reversal presentation remain T02/M1/M4 responsibilities.
+
+## P03-M04-T03 merged routine correction (2026-10-08, ADR-0021)
+
+The merged 0362 used non-existent audit `after_value` (actor_type exists), PERFORM on
+a procedure and wrong SINGLE_WITHDRAWAL_LIMIT/DAILY_WITHDRAWAL_LIMIT parameter names.
+Its test expected an audit to survive an exception/rollback in the same transaction.
+Vibodha authorized M4 corrective work and documentation; new 0363 uses new_values,
+CALL and the actual WITHDRAWAL_SINGLE_LIMIT/WITHDRAWAL_DAILY_LIMIT keys. An audited
+attempt returns a known rejection code after rolling back inner financial work,
+allowing the outer audit to commit before the future service maps an error. Array
+signers support the published I-4 ALL_HOLDERS function. No ERD/table change or edit
+to merged 0362. Per-account limits follow BR-I2/SRS §7.1; the old parameter description
+saying per-customer does not redefine that rule. All arithmetic remains exact SQL.

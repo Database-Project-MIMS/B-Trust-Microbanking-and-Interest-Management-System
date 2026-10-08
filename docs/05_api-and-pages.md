@@ -269,10 +269,10 @@ T05 route/runtime/screen integration and security handoff:
 - **Headers** `Idempotency-Key` (**required**)
 - **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, narration? }`
 - **Validation** requester is an authorised holder; account active; business hours; single and daily limits
-- **SQL routine** `CALL sp_post_withdrawal(...)` — `FOR UPDATE`, then re-validate status, mandate, limits and post-withdrawal minimum **inside** the transaction
+- **SQL routine** Future service uses `CALL sp_try_post_withdrawal(...)` (0363), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
 - **Success** `201 { data: { transactionId, referenceNumber, amount, balanceAfter } }`
 - **Errors** `409 INSUFFICIENT_FUNDS` · `409 BELOW_MINIMUM_BALANCE` · `409 MANDATE_NOT_SATISFIED` · `409 LIMIT_EXCEEDED` · `409 ACCOUNT_NOT_ACTIVE`
-- **Note** A rejection writes an audit event and **no ledger row** (FR-WD-05).
+- **Note** A known financial rejection returns `p_rejection_code` and writes one audit event with **no ledger row** (FR-WD-05). Commit the audit-only result through withTransaction, then map the allow-listed error outside the transaction. An exception inside that transaction would roll back its audit too. Unexpected errors roll back every effect. T05 API/CSRF/service/signer-evidence integration remains planned; no live withdrawal route is added by this correction.
 - **Page** `/transactions/withdraw`
 
 ### `POST /api/transactions/{id}/reverse`
@@ -332,6 +332,14 @@ T05 route/runtime/screen integration and security handoff:
 ---
 
 ## Reports — framework M1, each report by its owner
+
+**RPT-01 database delivery (2026-10-08):** P05-M02-T01 provides owner-only
+`vw_rpt01_agent_transactions` (0520), retaining exact posting timestamps and branches.
+P05-M02-T02 remains pending I-7/CSV/access auditing; the endpoint below is still a
+planned contract. Runtime authorization/RLS/grants must be established before SELECT
+is enabled. The [SQL consumer contract](../2_Vibodha/09_P5_rpt01-report.md) applies
+date/branch filters before a roster outer join, preserving range-specific zero rows
+and transferred historical attribution. M2 has not added a route or altered the UI.
 
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·

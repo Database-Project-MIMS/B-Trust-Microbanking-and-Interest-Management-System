@@ -1,4 +1,24 @@
-# Member 2 — customer FD scope
+# Member 2 — RPT-01 database view
+
+**Updated:** 2026-10-08 · **Branch:** feat/p05-m02-rpt01-view · HEAD/base dev 48f4185
+
+P04-M02-T02 DONE through merged PR #62. P05-M02-T01 local REVIEW under the user's
+database-only scoped start (ADR-0020). 0520 creates the owner-only invoker/barrier
+view with exact counts/values by posting timestamp, type and branch; filtered
+roster outer joins preserve selected-range zeros and transferred history.
+RPT-01's 12 SQL cases pass; user-authorized M4 0363 correction (ADR-0021) repairs
+the shared withdrawal failure with 21 SQL cases. Full final 663 tests /62 suites,
+clean 34-migration rebuild/checksums, type/lint/build PASS, no exclusions. M2 T01 and
+M4 T03 remain local REVIEW pending user publication; M4 docs updated as requested.
+T02 waits for I-7/CSV/access auditing. General entry remains pending. /review and
+/remember complete; no UI or /imprint. Normal database preserved; all five overview
+tables reviewed and M2/M4 updated. Tracker: 46 TODO /2 REVIEW /49 DONE (97).
+Handoffs: p05-m02-rpt01-view.md and p03-m04-withdrawal-contract-repair.md. No assistant
+staging, commit, push, PR creation or merge.
+
+---
+
+## Historical customer FD scope delivery (subsequently merged PR #62)
 
 **Updated:** 2026-10-08 · **Branch:** feat/p04-m02-fd-branch-scope · HEAD e9291dc
 
