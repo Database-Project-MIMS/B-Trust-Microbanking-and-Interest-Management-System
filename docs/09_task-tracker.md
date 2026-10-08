@@ -315,7 +315,7 @@ is historical and must not be substituted for current verification.
 | P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 | DONE |
 | P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 | DONE |
 | P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** | DONE |
-| P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 |
+| P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 | DONE |
 
 ## Phase 6 — Integration, Testing & Deployment (13 tasks, TODO)
 
@@ -332,8 +332,8 @@ is historical and must not be substituted for current verification.
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 |
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 |
 | P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 |
-| P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 |
-| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all | DONE |
+| P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 | DONE |
+| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all |
 
 ---
 

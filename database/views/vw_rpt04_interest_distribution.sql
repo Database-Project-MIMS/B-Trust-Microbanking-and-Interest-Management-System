@@ -25,3 +25,5 @@ GROUP BY ROLLUP (
     (fp.plan_name),
     (a.branch_id, b.branch_name)
 );
+
+GRANT SELECT ON vw_rpt04_interest_distribution TO mims_app;
