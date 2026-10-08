@@ -242,9 +242,9 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
-| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | TODO |
-| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
-| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
+| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | DONE |
+| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | DONE |
+| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | DONE |
 | P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | DONE (merged PR #49, dev c2bce7c) |
 | P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | DONE (merged PR #53, dev 6583463) |
 | P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
@@ -264,8 +264,8 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
-| P04-M01-T01 | 1 | Worker authentication for interest runs; run authorization and audit | BE + tests | P04-M05-T04 |
-| P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 |
+| P04-M01-T01 | 1 | Worker authentication for interest runs; run authorization and audit | BE + tests | P04-M05-T04 | DONE |
+| P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 | DONE |
 | P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing API/profile panel | DB + BE + FE | P04-M05-T02 (partial); read-side exception ADR-0018 | REVIEW (verified locally; user publication/review pending) |
 | P04-M02-T02 | 2 | Branch-scoped FD access | BE + tests | P04-M02-T01 |
 | P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) | DB | P04-M05-T02 |
@@ -283,10 +283,10 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 
 | ID | M | Title | Layers | Depends on |
 |---|---|---|---|---|
-| P05-M01-T01 | 1 | Report framework: filters, scope, generation metadata (**publishes I-7**) | BE + FE | P01-M01-T03 |
-| P05-M01-T02 | 1 | CSV export utility — same query, same totals (REP-COM-04) | BE | P05-M01-T01 |
-| P05-M01-T03 | 1 | Report access auditing (REP-COM-06) | BE + DB | P05-M01-T01 |
-| P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 |
+| P05-M01-T01 | 1 | Report framework: filters, scope, generation metadata (**publishes I-7**) | BE + FE | P01-M01-T03 | DONE |
+| P05-M01-T02 | 1 | CSV export utility — same query, same totals (REP-COM-04) | BE | P05-M01-T01 | DONE |
+| P05-M01-T03 | 1 | Report access auditing (REP-COM-06) | BE + DB | P05-M01-T01 | DONE |
+| P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 | DONE |
 | P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01 |
 | P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7** |
 | P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance | DB | P03-M04-T02 |
