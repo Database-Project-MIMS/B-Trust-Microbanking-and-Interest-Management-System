@@ -4,7 +4,7 @@
 **Original branch:** `feat/p03-m04-sp-post-withdrawal` (PR #61 merged)
 **Corrective checkout:** `feat/p05-m02-rpt01-view` (user-authorized M4 work, ADR-0021)
 **Migrations:** merged 0362 retained; new `0363_p03_m04_withdrawal_contract_repair.sql`
-**Status:** Local REVIEW — 663 tests /62 suites combined verification, 34-migration rebuild/checksums, typecheck/lint/build PASS; user publication pending
+**Status:** DONE — original PR #61 and corrective PR #67 merged. Historical pre-integration verification:663 tests /62 suites,34-migration rebuild/type/lint/build pass; current legacy caller ambiguities are recorded in the RPT-01 T02 handoff.
 **Dependencies:** P03-M04-T02 and M3 I-4 (`fn_check_plan_minimum`, `fn_check_withdrawal_mandate`)
 
 ## Correction to the merged delivery
@@ -83,5 +83,6 @@ same-key retry races, competing debits, legacy compatibility, runtime-role execu
 and complete rollback when success auditing fails. All money assertions use strings.
 
 Final combined verification evidence and three-layer review are recorded in
-`.agent/handoffs/p03-m04-withdrawal-contract-repair.md`. Local REVIEW awaits user
-publication and teammate review; the assistant does not stage, commit, push or merge.
+`.agent/handoffs/p03-m04-withdrawal-contract-repair.md`. The user subsequently merged
+the correction through PR #67. Current integration failures in old untyped callers
+are in `.agent/handoffs/p05-m02-rpt01-api-ui.md`; the assistant does not publish work.

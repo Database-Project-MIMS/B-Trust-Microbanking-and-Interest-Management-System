@@ -1,4 +1,22 @@
-# Member 2 — RPT-01 database view
+# Member 2 — RPT-01 API, page and CSV
+
+**Updated:** 2026-10-08 · **Branch:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+
+P05-M02-T01 DONE in PR #67. T02 implemented locally, REVIEW under explicit user
+approval (ADR-0022), including M1-owned I-7 repairs without ownership transfer.
+0521 scoped aggregate readers, live API/page, exact totals and snapshot CSV/auditing.
+72 relevant tests /7 suites and isolated40-migration rebuild/type/lint/build pass;
+browser filter/zero/export/applied-filter/error/retry/mobile checks pass. Full suite
+767:729 pass,27 fail,11 cancelled; owner integration gaps recorded in handoff.
+Raw transaction RLS remains M1/M4 work. General phase gates remain pending.
+
+/review, /imprint and /remember complete; all five overviews reviewed. Tracker97:
+31 TODO /1 REVIEW /65 DONE. Normal database preserved. The user subsequently
+authorized several local commits; push/PR/merge remain user-controlled.
+Handoff: ../handoffs/p05-m02-rpt01-api-ui.md.
+
+---
+# Historical Member 2 — RPT-01 database view
 
 **Updated:** 2026-10-08 · **Branch:** feat/p05-m02-rpt01-view · HEAD/base dev 48f4185
 

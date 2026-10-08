@@ -1,6 +1,6 @@
 # Phase 03 — Financial Transactions
 
-**Status:** General entry pending; M2 T01/T02 DONE, M4 T03 corrective local REVIEW under scoped authorization · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
+**Status:** General entry pending; M2 T01/T02 and M4 T03 correction merged · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
 
 The most important phase for the grade. Everything here is about **ACID under
 concurrency**.
@@ -20,9 +20,10 @@ See the [handoff and review](../../.agent/handoffs/p03-m02-agent-daily-activity.
 **M4 correction — 2026-10-08:** the user explicitly authorized correcting the merged
 T03 implementation and updating its documentation (ADR-0021). New 0363 repairs
 audit columns/calls, real limit keys, caller-owned rejection-audit boundaries,
-array signers, trusted attribution and safe retries. Local REVIEW on the current
-M2 checkout: 663 tests /62 suites, clean 34-migration rebuild/checksums and
-typecheck/lint/build PASS, no exclusions. General entry remains pending.
+array signers, trusted attribution and safe retries. Merged through PR #67;
+historical pre-integration verification:663 tests /62 suites, clean34-migration
+rebuild/checksums and typecheck/lint/build pass, no exclusions. Current legacy caller
+ambiguities are recorded in the RPT-01 T02 handoff. General entry remains pending.
 [Corrected contract and review](../../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 
 ## Entry criteria

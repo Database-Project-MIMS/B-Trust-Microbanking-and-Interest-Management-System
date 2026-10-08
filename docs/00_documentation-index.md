@@ -23,14 +23,20 @@ P04-M02-T02 is DONE through merged PR #62 (dev 48f4185): current stored-actor FD
 
 Vibodha authorized the database-only P05-M02-T01 early start in
 [ADR-0020](../.agent/decisions/ADR-0020-rpt01-view.md). Its timestamp/type/posting-branch
-view is verified locally, REVIEW; T02 API/CSV/screen integration remains pending M1's I-7,
-CSV helper and report-access auditing. This does not approve general phase entry.
+view is merged through PR #67. PR #69 restores M1's I-7 framework on dev 93a82f8.
+The user explicitly approved T02 and shared framework repairs in
+[ADR-0022](../.agent/decisions/ADR-0022-rpt01-api-ui.md). T02 now delivers the live
+scoped API/page, execute-only aggregate readers (0521), exact reversal-aware totals,
+paginated JSON, snapshot CSV and atomic access audits. General phase entry remains pending.
 
 The user explicitly authorized M4 withdrawal correction and documentation in
 [ADR-0021](../.agent/decisions/ADR-0021-withdrawal-contract-repair.md). New 0363 repairs
 the merged audit/mandate/limit/retry contract without changing 0362. Both M2 T01 and
 M4 T03 pass **663 tests /62 suites**, a clean **34-migration** rebuild/checksums,
-typecheck/lint/build, with no exclusions; local REVIEW awaits user publication.
+typecheck/lint/build before integration, with no exclusions; both are merged in PR #67.
+That historical full-suite result does not describe the current merged baseline.
+Current T02 checks and remaining integration failures are recorded in its
+[handoff](../.agent/handoffs/p05-m02-rpt01-api-ui.md).
 [M2 handoff](../.agent/handoffs/p05-m02-rpt01-view.md) ·
 [M4 handoff](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 

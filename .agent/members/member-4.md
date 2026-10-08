@@ -1,4 +1,15 @@
-# Member 4 — context
+# Member 4 — status reconciliation after PR #67/#68
+
+**Updated:** 2026-10-08 · no new M4 feature implemented by this T02 session.
+The user-authorized withdrawal correction below is merged through PR #67, DONE.
+T04/T05 and Phase4 T01/T02 retain incoming DONE; earlier next-task/REVIEW statements
+below are historical. Current complete-suite evidence exposes old untyped withdrawal
+callers (42725) in reversal/running-balance tests. M4 owns that follow-up; see
+../handoffs/p05-m02-rpt01-api-ui.md. Do not substitute the historical663-test pass
+for the current merged-tree result. No assistant publication or general phase approval.
+
+---
+# Historical Member 4 — context
 
 **Updated:** 2026-10-08 · **Corrective checkout:** feat/p05-m02-rpt01-view · HEAD 48f4185
 
