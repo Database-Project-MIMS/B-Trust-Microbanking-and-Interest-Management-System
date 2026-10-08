@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AccountDetail as Detail } from "@/services/account-service";
 import { accountRequest, csrfToken } from "../account-client";
-import { displayDate, displayMoney, mandateSummary } from "../account-format";
+import { authoritySummary, displayDate, displayMoney, holderAuthority, transactionTypeLabel } from "../account-format";
 import type { HolderChoice } from "../new/account-opening-model";
 import { CustomerPicker } from "../new/customer-picker";
 
@@ -55,26 +55,36 @@ export function AccountDetail({ id, canAddHolder, canBrowse, notice }: { id: str
   if (!account) return <>{header}<p role="status" className="mt-6">Loading account…</p></>;
 
   const full = account.holderCount >= account.maxHolders;
+  const authority = authoritySummary({ holderCount: account.holderCount, mandate: account.mandate });
+  const withdrawalsClosed = account.status !== "ACTIVE";
   const canAdd = canAddHolder && account.status === "ACTIVE" && account.maxHolders > 1 && !full;
 
   return <>
     {header}
     {notice && NOTICES[notice] && <p role="status" className="card mt-6">{NOTICES[notice]}</p>}
+    {withdrawalsClosed && <p role="status" className="card mt-6">This account is {account.status.toLowerCase()}. Withdrawals are not allowed.</p>}
     <div className="detail-grid mt-6">
       <section className="card balance-card"><p>Current balance</p><strong className="amount">{displayMoney(account.currentBalance)}</strong><span className="status-pill">{account.status}</span>
-        <p className="mt-5">Deposits and withdrawals arrive in Phase 3.</p></section>
+        <dl className="mt-5">
+          <div><dt>Available to withdraw</dt><dd className="amount">{withdrawalsClosed ? "—" : displayMoney(account.availableToWithdraw)}</dd></div>
+          <div><dt>Last transaction</dt><dd>{account.lastTransaction
+            ? `${transactionTypeLabel(account.lastTransaction.transactionType)} of ${displayMoney(account.lastTransaction.amount)} on ${displayDate(account.lastTransaction.transactionDate)} (${account.lastTransaction.referenceNumber})`
+            : "No transactions yet"}</dd></div></dl>
+        <p className="muted mt-4">The plan minimum of {displayMoney(account.minBalance)} stays in the account.</p></section>
       <section className="card"><h2>Plan</h2><dl>
         <div><dt>Plan</dt><dd>{account.planName}</dd></div><div><dt>Minimum balance</dt><dd className="amount">{displayMoney(account.minBalance)}</dd></div>
         <div><dt>Opened</dt><dd>{displayDate(account.openedDate)}</dd></div><div><dt>Holders</dt><dd>{account.holderCount} of {account.maxHolders} allowed</dd></div></dl></section>
-      <section className="card"><h2>Operating mandate</h2><p>{mandateSummary(account.mandate)}</p>
+      <section className="card"><h2>Who can authorise withdrawals</h2>
+        {authority.stateLabel && <span className="status-pill">{authority.stateLabel}</span>}
+        <p className={authority.blocked ? "text-[var(--danger)]" : undefined}>{authority.text}</p>
         {account.mandate && <p className="muted">Effective from {displayDate(account.mandate.effectiveFrom)}{account.mandate.effectiveTo ? ` to ${displayDate(account.mandate.effectiveTo)}` : ""}.</p>}</section>
     </div>
 
     <section className="card mt-6"><h2>Holders</h2>
-      <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Name</th><th>Customer number</th><th>Role</th><th>Joined</th></tr></thead><tbody>
+      <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Name</th><th>Customer number</th><th>Role</th><th>Authority</th><th>Joined</th></tr></thead><tbody>
         {account.holders.map(holder => <tr key={holder.accountHolderId}><td><Link href={`/customers/${holder.customerId}`}>{holder.fullName}</Link></td><td>{holder.customerNumber}</td>
-          <td>{holder.holderType === "PRIMARY" ? "Primary" : "Joint"}</td><td>{displayDate(holder.joinedDate)}</td></tr>)}
-        {!account.holders.length && <tr><td colSpan={4}>No holders are visible to you.</td></tr>}
+          <td>{holder.holderType === "PRIMARY" ? "Primary" : "Joint"}</td><td>{holderAuthority(account.mandate, account.holderCount)}</td><td>{displayDate(holder.joinedDate)}</td></tr>)}
+        {!account.holders.length && <tr><td colSpan={5}>No holders are visible to you.</td></tr>}
       </tbody></table></div>
       {account.holders.length < account.holderCount && <p className="muted mt-4">You can see {account.holders.length} of {account.holderCount} holders.</p>}
     </section>
