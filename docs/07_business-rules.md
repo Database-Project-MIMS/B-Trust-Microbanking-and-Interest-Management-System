@@ -100,7 +100,7 @@ a negative balance (NFR-SAFE-01, AC-06).
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-11 | An FD may only be opened against an **active** savings account | SRV, SP, CON | `sp_open_fixed_deposit` reads the account under lock and requires `status = 'ACTIVE'` |
+| BR-11 | An FD may only be opened against an **active** savings account | SRV, SP, FN, CON | `sp_open_fixed_deposit` reads the account under lock and requires `status = 'ACTIVE'`; the account-side check is published as I-6: `fn_check_account_fd_eligible(account_id)` (status) and `fn_fd_funding_verdict(account_id, principal)` (lock + status + active-FD + balance, with reason) in `database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql` (P04-M03-T01) |
 | BR-12 | Only one **active** FD per savings account | IDX | Partial unique index `ON fixed_deposit(account_id) WHERE status='ACTIVE'` (**G-01 — pending OQ-01**) |
 | BR-13 | FD products: 6 months / 13%, 1 year / 14%, 3 years / 15% | CON | Three seeded `fd_plan` rows; `tenure_months > 0` |
 | BR-14 | FD interest is calculated every 30 days and credited to the linked savings account **as a separate transaction** | SP, CON | `sp_run_interest_cycle` posts an `INTEREST_CREDIT` through the ledger routine; `interest_payout.transaction_id UNIQUE` guarantees exactly one ledger row per distribution |
