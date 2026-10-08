@@ -1,4 +1,9 @@
 import "server-only";
+import { z } from "zod";
+import type { AuthenticatedUser } from "@/lib/auth/rbac";
+import { setRlsContext } from "@/lib/db/rls-context";
+import { AGENT_ACTIVITY_ROLES, agentActivityRangeSchema } from "@/lib/validation/agent-activity";
+import type { AgentActivity, AgentActivityRange, AgentActivityType } from "@/types/agent-activity";
 import { hashPassword } from "@/lib/auth/password";
 import { query, withTransaction, type Executor } from "@/lib/db";
 import {
@@ -13,6 +18,78 @@ import type {
   UpdateAgentInput,
 } from "@/lib/validation/organization";
 import { throwOrganizationDatabaseError } from "@/services/organization-errors";
+
+type ActivityActor = Pick<AuthenticatedUser, "userId" | "roleName" | "branchId">;
+const activityActorSchema = z.object({
+  userId: z.string().uuid(), roleName: z.enum(AGENT_ACTIVITY_ROLES), branchId: z.string().uuid().nullable(),
+});
+
+/** Reads caller identity, target and exact ledger totals in one REPEATABLE READ transaction. */
+export async function getAgentActivity(agentId: string, range: AgentActivityRange, actor: ActivityActor): Promise<AgentActivity> {
+  const identity = activityActorSchema.safeParse(actor);
+  if (!identity.success) throw new NotAuthorizedError();
+  const target = z.string().uuid().safeParse(agentId);
+  const dates = agentActivityRangeSchema.safeParse(range);
+  if (!target.success || !dates.success) throw new ValidationError("Choose an agent and a valid date range.");
+  return withTransaction(async tx => {
+    await tx.query("SET TRANSACTION READ ONLY");
+    const { rows: callers } = await tx.query<{ role_name: string; branch_id: string | null }>(
+      `SELECT r.role_name,
+              CASE WHEN r.role_name IN ('AGENT', 'BRANCH_MANAGER') THEN a.branch_id ELSE NULL END AS branch_id
+       FROM app_user u JOIN role r ON r.role_id = u.role_id
+       LEFT JOIN agent a ON a.agent_id = u.user_id
+       LEFT JOIN branch b ON b.branch_id = a.branch_id
+       WHERE u.user_id = $1 AND u.status = 'ACTIVE' AND r.status = 'ACTIVE'
+         AND (r.role_name NOT IN ('AGENT', 'BRANCH_MANAGER') OR (a.status = 'ACTIVE' AND b.status = 'ACTIVE'))`,
+      [identity.data.userId],
+    );
+    const caller = callers[0];
+    if (!caller || caller.role_name !== identity.data.roleName
+      || (["AGENT", "BRANCH_MANAGER"].includes(caller.role_name) && caller.branch_id !== identity.data.branchId)) {
+      throw new NotAuthorizedError();
+    }
+    if (caller.role_name === "AGENT" && agentId !== identity.data.userId) throw new NotAuthorizedError();
+    const branchId = caller.role_name === "BRANCH_MANAGER" ? caller.branch_id : null;
+    await setRlsContext(tx, { userId: identity.data.userId, roleName: caller.role_name, branchId: caller.branch_id });
+    const { rows: agents } = await tx.query<{
+      full_name: string; employee_no: string; branch_code: string; branch_name: string;
+    }>(
+      `SELECT a.full_name, a.employee_no, b.branch_code, b.branch_name
+       FROM agent a JOIN app_user u ON u.user_id = a.agent_id
+       JOIN role r ON r.role_id = u.role_id JOIN branch b ON b.branch_id = a.branch_id
+       WHERE a.agent_id = $1 AND r.role_name = 'AGENT'
+         AND ($2::uuid IS NULL OR a.branch_id = $2)
+         AND ($3::text <> 'AGENT' OR a.agent_id = $4)`,
+      [agentId, branchId, caller.role_name, identity.data.userId],
+    );
+    const agent = agents[0];
+    if (!agent) {
+      await assertScopedAgentExists(tx, agentId, branchId);
+      throw new NotFoundError("Agent");
+    }
+    const { rows: totals } = await tx.query<{ type: AgentActivityType; count: string; total: string }>(
+      `SELECT t.transaction_type AS type, COUNT(*)::text AS count, SUM(t.amount)::text AS total
+       FROM transaction t
+       WHERE t.agent_id = $1
+         AND t.transaction_date >= ($2::date::timestamp AT TIME ZONE 'Asia/Colombo')
+         AND t.transaction_date < (($3::date + 1)::timestamp AT TIME ZONE 'Asia/Colombo')
+         AND ($4::uuid IS NULL OR t.branch_id = $4)
+         AND ($5::text <> 'AGENT' OR t.agent_id = $6)
+       GROUP BY t.transaction_type ORDER BY t.transaction_type`,
+      [agentId, dates.data.from, dates.data.to, branchId, caller.role_name, identity.data.userId],
+    );
+    return {
+      agentId, ...dates.data, timeZone: "Asia/Colombo",
+      scope: caller.role_name === "AGENT" ? "SELF" : branchId ? "BRANCH" : "BANK",
+      agent: { fullName: agent.full_name, employeeNo: agent.employee_no, branchCode: agent.branch_code, branchName: agent.branch_name },
+      byType: totals.map(row => {
+        const count = Number(row.count);
+        if (!Number.isSafeInteger(count)) throw new DomainError("INTERNAL_ERROR", "The activity could not be loaded.", 500);
+        return { type: row.type, count, total: row.total };
+      }),
+    };
+  }, { isolationLevel: "REPEATABLE READ" });
+}
 
 interface AgentRow {
   agent_id: string;
