@@ -50,3 +50,23 @@ Apply 0320 through the normal migration runner when using the development databa
 
 The user commits, pushes, creates PRs and merges. Nothing is staged or published by
 this session. All five overview tables were reviewed; only M2's new work is recorded.
+
+## M3 update (2026-10-08)
+
+P02-M03-T03–T06 are DONE and merged into dev (PRs #42/#45/#46/#47): `0242` joint mandate,
+`0243` `sp_open_savings_account`, `0244`/`0245` accounts APIs and `sp_add_account_holder`,
+and the account screens plus real plans page. A partial browser pass found no defects; the
+successful opening and `/accounts/{id}` pages were untested because no verified document
+can exist yet. Handoffs: `handoffs/p02-m03-t03-joint-mandate.md`, `…t04-…`, `…t05-…`, `…t06-…`.
+
+P03-M03-T01 DONE (early, same scoped exception as M2-T01): `database/routines/fn_check_plan_minimum.sql`
+publishes I-4, `fn_check_plan_minimum(account_id, resulting_balance)`; `tests/db/fn-check-plan-minimum.test.mjs`
+11/11 in one rolled-back transaction; `/review` findings resolved. No migration (routine file, like
+`fn_check_plan_eligibility`). M4's `sp_post_withdrawal` is unblocked on the minimum check; the mandate
+check is P03-M03-T02. [Handoff](handoffs/i-4-fn-check-plan-minimum.md).
+
+Open coordination raised by M3 (recheck after the PR #48 seeds):
+1. **Document verification is not exposed (M2).** `customer_document.verified_*` can only be set outside the
+   app, so `DOCUMENTS_NOT_VERIFIED` can never clear for app-registered customers. See `open-questions.md`.
+2. **Seeded branch managers cannot sign in (M1/M5).** `bm_*` users had no `agent` row while `validateSession`
+   requires an ACTIVE agent row for BRANCH_MANAGER. Confirm whether PR #48 changed this. See `open-questions.md`.

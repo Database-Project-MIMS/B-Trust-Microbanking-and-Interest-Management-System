@@ -11,7 +11,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is DONE; the accounts and holders APIs (T05, `0244`/`0245`) are built and tested locally, in REVIEW pending `/review` and the PR; the account screens (T06) are built and tested locally, in REVIEW pending a manual browser pass and the PR.
+**Reconciled 2026-10-07:** Phase 1 T01–T03, Phase 2 T01–T06 and Phase 3 T01 (`fn_check_plan_minimum`, I-4) are DONE. T06 (account screens) is merged into dev; its browser pass is partial (happy path blocked by missing document verification, see `.agent/open-questions.md`).
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.
 
@@ -20,10 +20,10 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~01~~ | ~~[Savings Plan Schema](01_P1-T01_savings-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`savings_plan` + eligibility columns (G-13)~~ | ~~~3~~ |
 | ~~02~~ | ~~[Plan Eligibility Function](02_P1-T02_plan-eligibility-function.md)~~ | ~~P1~~ | ~~T02~~ | ~~`fn_check_plan_eligibility` — data-driven, not hardcoded~~ | ~~~3~~ |
 | ~~03~~ | ~~[Plan API](03_P1-T03_plan-api-admin-page.md)~~ | ~~P1~~ | ~~T03~~ | ~~`GET/PATCH /api/plans` + `app/plans/page.tsx` (built full-scope; the "UI COMPLETE, backend only" note this file's own PR #16 update added was checked and did not hold — no plan UI existed anywhere in `app/dashboard/**`)~~ | ~~~3~~ |
-| 04 | [Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md) | P2 | ~~T01–T02~~, T03 | `account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08) | ~10 |
+| ~~04~~ | ~~[Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md)~~ | ~~P2~~ | ~~T01–T03~~ | ~~`account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08)~~ | ~~~10~~ |
 | ~~05~~ | ~~[sp_open_savings_account](05_P2-T04_sp-open-savings-account.md)~~ | ~~P2~~ | ~~T04~~ | ~~Atomic account opening: account + holders + mandate + optional deposit~~ | ~~~6~~ |
-| 06 | [Accounts API](06_P2-T05-T06_accounts-api-ui.md) | P2 | T05–T06 | `/api/accounts/**` | ~9 |
-| 07 | [fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md) | P3 | T01 | Post-withdrawal minimum-balance rule — **publishes I-4** | ~3 |
+| ~~06~~ | ~~[Accounts API](06_P2-T05-T06_accounts-api-ui.md)~~ | ~~P2~~ | ~~T05–T06~~ | ~~`/api/accounts/**`~~ | ~~~9~~ |
+| ~~07~~ | ~~[fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md)~~ | ~~P3~~ | ~~T01~~ | ~~Post-withdrawal minimum-balance rule — **publishes I-4**~~ | ~~~3~~ |
 | 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | Joint-mandate check callable from withdrawal path; balance/authority endpoint | ~5 |
 | 09 | [FD Eligibility & Closure](09_P4_fd-eligibility-closure-panel.md) | P4 | T01–T03 | Account-side FD eligibility (**I-6**), closure rule (BR-18) | ~7 |
 | 10 | [RPT-02 Account Summary Report](10_P5_rpt02-report.md) | P5 | T01–T02 | Account-wise summary view, API, CSV | ~7 |
@@ -84,7 +84,7 @@ ADR-0009) were accepted on 1 Oct 2026. Phase 2 entry was approved on 2026-10-05.
 - `sp_close_account` — enforces BR-18 (zero balance, no active FD)
 - `fn_check_plan_eligibility(plan_id, date_of_birth, holder_count)` — data-driven, never
   `IF plan_name = 'Children'`
-- `fn_check_plan_minimum(plan_id, resulting_balance)` — post-withdrawal minimum rule,
+- `fn_check_plan_minimum(account_id, resulting_balance)` — post-withdrawal minimum rule,
   publishes I-4
 - `fn_next_account_number()` — account number generation
 - `trg_validate_joint_mandate` — statement-level trigger with transition tables
