@@ -1,255 +1,847 @@
-/* PENDING M4 PROCEDURES: DO NOT UNCOMMENT YET
 -- Seed Set 4: Financial transactions
--- Posted through sp_post_deposit / sp_post_withdrawal to maintain balance integrity
-
--- Day: 2025-07-01
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 3377.48, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0001');
--- Day: 2025-07-01
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 19681.86, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0002');
--- Day: 2025-07-01
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 2780.21, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0003');
--- Day: 2025-07-01
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 14604.37, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0004');
--- Day: 2025-07-02
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 12196.05, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0005');
--- Day: 2025-07-02
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 2881.75, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0006');
--- Day: 2025-07-02
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 4424.38, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0007');
--- Day: 2025-07-02
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 17102.39, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0008');
--- Day: 2025-07-03
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000010', 7250.02, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0009');
--- Day: 2025-07-03
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 11893.14, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0010');
--- Day: 2025-07-03
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 15438.15, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0011');
--- Day: 2025-07-03
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 3799.36, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0012');
--- Day: 2025-07-04
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000004', 20858.43, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0013');
--- Day: 2025-07-04
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 13078.0, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0014');
--- Day: 2025-07-04
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000006', 4980.63, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0015');
--- Day: 2025-07-04
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 17100.45, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0016');
--- Day: 2025-07-05
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 6129.01, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0017');
--- Day: 2025-07-05
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 14350.06, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0018');
--- Day: 2025-07-05
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 4975.35, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0019');
--- Day: 2025-07-05
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 18349.59, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0020');
--- Day: 2025-07-06
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 10485.39, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0021');
--- Day: 2025-07-06
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000008', 5685.92, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0022');
--- Day: 2025-07-06
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 4466.16, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0023');
--- Day: 2025-07-06
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 19949.19, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0024');
--- Day: 2025-07-07
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 1895.21, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0025');
--- Day: 2025-07-07
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 21523.02, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0026');
--- Day: 2025-07-07
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 12321.88, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0027');
--- Day: 2025-07-07
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000008', 19301.98, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0028');
--- Day: 2025-07-08
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 2149.28, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0029');
--- Day: 2025-07-08
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 9260.54, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0030');
--- Day: 2025-07-08
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000008', 11178.37, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0031');
--- Day: 2025-07-08
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 3021.81, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0032');
--- Day: 2025-07-09
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 15487.71, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0033');
--- Day: 2025-07-09
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 10283.51, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0034');
--- Day: 2025-07-09
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 13623.72, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0035');
--- Day: 2025-07-09
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 17682.18, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0036');
--- Day: 2025-07-10
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 7818.25, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0037');
--- Day: 2025-07-10
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 10030.37, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0038');
--- Day: 2025-07-10
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 17576.23, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0039');
--- Day: 2025-07-10
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000007', 22656.26, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0040');
--- Day: 2025-07-11
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 13762.05, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0041');
--- Day: 2025-07-11
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 33273.67, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0042');
--- Day: 2025-07-11
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 1399.65, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0043');
--- Day: 2025-07-11
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 1136.63, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0044');
--- Day: 2025-07-12
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 1596.85, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0045');
--- Day: 2025-07-12
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000006', 6291.07, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0046');
--- Day: 2025-07-12
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000008', 14743.7, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0047');
--- Day: 2025-07-12
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 9986.49, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0048');
--- Day: 2025-07-13
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 13520.67, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0049');
--- Day: 2025-07-13
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000006', 17412.9, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0050');
--- Day: 2025-07-13
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 14836.06, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0051');
--- Day: 2025-07-13
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 11189.43, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0052');
--- Day: 2025-07-14
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 9789.93, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0053');
--- Day: 2025-07-14
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 9619.28, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0054');
--- Day: 2025-07-14
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 3659.27, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0055');
--- Day: 2025-07-14
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 9167.95, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0056');
--- Day: 2025-07-15
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 5061.2, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0057');
--- Day: 2025-07-15
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 1040.95, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0058');
--- Day: 2025-07-15
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000007', 20354.68, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0059');
--- Day: 2025-07-15
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 81714.58, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0060');
--- Day: 2025-07-16
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 6637.45, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0061');
--- Day: 2025-07-16
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 821.8, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0062');
--- Day: 2025-07-16
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 17201.68, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0063');
--- Day: 2025-07-16
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 1927.59, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0064');
--- Day: 2025-07-17
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 13829.04, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0065');
--- Day: 2025-07-17
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 17915.46, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0066');
--- Day: 2025-07-17
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000004', 14324.38, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0067');
--- Day: 2025-07-17
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000010', 7533.94, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0068');
--- Day: 2025-07-18
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000006', 3486.69, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0069');
--- Day: 2025-07-18
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 15285.43, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0070');
--- Day: 2025-07-18
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 19970.63, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0071');
--- Day: 2025-07-18
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 10611.81, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0072');
--- Day: 2025-07-19
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 21400.94, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0073');
--- Day: 2025-07-19
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000006', 16841.15, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0074');
--- Day: 2025-07-19
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 43737.53, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0075');
--- Day: 2025-07-19
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 17904.54, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0076');
--- Day: 2025-07-20
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 12491.77, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0077');
--- Day: 2025-07-20
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 67001.36, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0078');
--- Day: 2025-07-20
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 18255.02, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0079');
--- Day: 2025-07-20
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 4827.86, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0080');
--- Day: 2025-07-21
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 3485.57, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0081');
--- Day: 2025-07-21
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 31445.16, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0082');
--- Day: 2025-07-21
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 18955.97, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0083');
--- Day: 2025-07-21
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 8113.58, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0084');
--- Day: 2025-07-22
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 6856.91, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0085');
--- Day: 2025-07-22
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 5741.07, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0086');
--- Day: 2025-07-22
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000002', 25483.87, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0087');
--- Day: 2025-07-22
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000007', 6321.15, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0088');
--- Day: 2025-07-23
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000003', 808.39, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0089');
--- Day: 2025-07-23
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 38924.08, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0090');
--- Day: 2025-07-23
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 14324.29, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0091');
--- Day: 2025-07-23
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000007', 5266.42, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0092');
--- Day: 2025-07-24
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000008', 16111.56, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0093');
--- Day: 2025-07-24
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 4669.47, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0094');
--- Day: 2025-07-24
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 24678.98, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0095');
--- Day: 2025-07-24
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 16635.01, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0096');
--- Day: 2025-07-25
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 5716.88, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0097');
--- Day: 2025-07-25
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 19687.46, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0098');
--- Day: 2025-07-25
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 7568.06, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0099');
--- Day: 2025-07-25
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 6978.45, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0100');
--- Day: 2025-07-26
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000007', 14466.92, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0101');
--- Day: 2025-07-26
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 2329.5, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0102');
--- Day: 2025-07-26
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000006', 1643.84, '00000000-0000-0000-0401-000000000014', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0103');
--- Day: 2025-07-26
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000005', 14165.82, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0104');
--- Day: 2025-07-27
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000005', 13633.66, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0105');
--- Day: 2025-07-27
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000007', 8333.34, '00000000-0000-0000-0401-000000000013', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0106');
--- Day: 2025-07-27
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 4993.47, '00000000-0000-0000-0401-000000000015', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0107');
--- Day: 2025-07-27
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 9401.04, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0108');
--- Day: 2025-07-28
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000004', 34392.38, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0109');
--- Day: 2025-07-28
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000003', 13613.22, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0110');
--- Day: 2025-07-28
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000010', 19087.99, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0111');
--- Day: 2025-07-28
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 4783.47, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0112');
--- Day: 2025-07-29
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000001', 10027.59, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0113');
--- Day: 2025-07-29
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 12965.54, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0114');
--- Day: 2025-07-29
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000004', 5635.7, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0115');
--- Day: 2025-07-29
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000001', 4303.54, '00000000-0000-0000-0401-000000000011', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0116');
--- Day: 2025-07-30
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000009', 5734.77, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0117');
--- Day: 2025-07-30
-SELECT sp_post_deposit('00000000-0000-0000-0801-000000000002', 9828.22, '00000000-0000-0000-0401-000000000012', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed deposit', 'seed-txn-0118');
--- Day: 2025-07-30
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000009', 43052.61, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0119');
--- Day: 2025-07-30
-SELECT sp_post_withdrawal('00000000-0000-0000-0801-000000000010', 25107.07, '00000000-0000-0000-0401-000000000016', (SELECT channel_id FROM transaction_channel WHERE channel_code = 'BRANCH_COUNTER'), 'Seed withdrawal', 'seed-txn-0120');
--- Reversal on 2025-08-01
-SELECT sp_reverse_transaction((SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0001'), '00000000-0000-0000-0401-000000000012', 'Seed reversal', 'seed-rev-0001');
--- Reversal on 2025-08-01
-SELECT sp_reverse_transaction((SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0002'), '00000000-0000-0000-0401-000000000011', 'Seed reversal', 'seed-rev-0002');
--- Reversal on 2025-08-01
-SELECT sp_reverse_transaction((SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0003'), '00000000-0000-0000-0401-000000000016', 'Seed reversal', 'seed-rev-0003');
--- Reversal on 2025-08-01
-SELECT sp_reverse_transaction((SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0004'), '00000000-0000-0000-0401-000000000012', 'Seed reversal', 'seed-rev-0004');
--- Reversal on 2025-08-01
-SELECT sp_reverse_transaction((SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0005'), '00000000-0000-0000-0401-000000000012', 'Seed reversal', 'seed-rev-0005');
-*/
+DO $$
+DECLARE
+    v_branch_counter uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER');
+    v_online uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'ONLINE');
+    v_system uuid := (SELECT channel_id FROM transaction_channel WHERE channel_name = 'SYSTEM');
+    v_tx_id uuid;
+    v_signers uuid[];
+    v_agent_id uuid;
+    v_branch_id uuid;
+    v_out_tx_id uuid;
+    v_out_ref varchar;
+    v_out_bal numeric;
+    v_out_posted timestamptz;
+BEGIN
+    -- Temporarily open business hours for seeding regardless of system time
+    UPDATE system_parameter SET param_value = '00:00' WHERE param_key = 'BUSINESS_HOUR_START';
+    UPDATE system_parameter SET param_value = '23:59' WHERE param_key = 'BUSINESS_HOUR_END';
+    -- Temporarily bump withdrawal limits to allow all seed transactions to run on the same day
+    UPDATE system_parameter SET param_value = '999999999.00' WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT';
+    UPDATE system_parameter SET param_value = '999999999.00' WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT';
+    -- Seed Set 4: Financial transactions
+    -- Posted through sp_post_deposit / sp_post_withdrawal to maintain balance integrity
+    -- Day: 2025-07-01
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 3377.48, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0001'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-01
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 19681.86, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0002'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-01
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 2780.21, v_branch_counter, v_agent_id, 'seed-txn-0003'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-01
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 14604.37, v_branch_counter, v_agent_id, 'seed-txn-0004'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-02
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 12196.05, v_branch_counter, v_agent_id, 'seed-txn-0005'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-02
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 2881.75, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0006'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-02
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 4424.38, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0007'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-02
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 17102.39, v_branch_counter, v_agent_id, 'seed-txn-0008'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-03
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000010';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000010'::uuid, 7250.02, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0009'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-03
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 11893.14, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0010'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-03
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 15438.15, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0011'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-03
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 3799.36, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0012'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-04
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000004';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000004'::uuid, 20858.43, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0013'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-04
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 13078.0, v_branch_counter, v_agent_id, 'seed-txn-0014'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-04
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000006'::uuid, 4980.63, v_branch_counter, v_agent_id, 'seed-txn-0015'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-04
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 17100.45, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0016'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-05
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 6129.01, v_branch_counter, v_agent_id, 'seed-txn-0017'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-05
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 14350.06, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0018'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-05
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 4975.35, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0019'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-05
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 18349.59, v_branch_counter, v_agent_id, 'seed-txn-0020'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-06
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 10485.39, v_branch_counter, v_agent_id, 'seed-txn-0021'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-06
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000008' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000008'::uuid, 5685.92, v_branch_counter, v_agent_id, 'seed-txn-0022'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-06
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 4466.16, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0023'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-06
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 19949.19, v_branch_counter, v_agent_id, 'seed-txn-0024'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-07
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 1895.21, v_branch_counter, v_agent_id, 'seed-txn-0025'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-07
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 21523.02, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0026'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-07
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 12321.88, v_branch_counter, v_agent_id, 'seed-txn-0027'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-07
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000008' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000008';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000008'::uuid, 19301.98, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0028'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-08
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 2149.28, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0029'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-08
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 9260.54, v_branch_counter, v_agent_id, 'seed-txn-0030'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-08
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000008' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000008';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000008'::uuid, 11178.37, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0031'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-08
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 3021.81, v_branch_counter, v_agent_id, 'seed-txn-0032'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-09
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 15487.71, v_branch_counter, v_agent_id, 'seed-txn-0033'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-09
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 10283.51, v_branch_counter, v_agent_id, 'seed-txn-0034'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-09
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 13623.72, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0035'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-09
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 17682.18, v_branch_counter, v_agent_id, 'seed-txn-0036'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-10
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 7818.25, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0037'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-10
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 10030.37, v_branch_counter, v_agent_id, 'seed-txn-0038'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-10
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 17576.23, v_branch_counter, v_agent_id, 'seed-txn-0039'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-10
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000007';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000007'::uuid, 22656.26, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0040'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-11
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 13762.05, v_branch_counter, v_agent_id, 'seed-txn-0041'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-11
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 33273.67, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0042'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-11
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 1399.65, v_branch_counter, v_agent_id, 'seed-txn-0043'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-11
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 1136.63, v_branch_counter, v_agent_id, 'seed-txn-0044'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-12
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 1596.85, v_branch_counter, v_agent_id, 'seed-txn-0045'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-12
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000006'::uuid, 6291.07, v_branch_counter, v_agent_id, 'seed-txn-0046'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-12
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000008' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000008'::uuid, 14743.7, v_branch_counter, v_agent_id, 'seed-txn-0047'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-12
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 9986.49, v_branch_counter, v_agent_id, 'seed-txn-0048'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-13
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 13520.67, v_branch_counter, v_agent_id, 'seed-txn-0049'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-13
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000006'::uuid, 17412.9, v_branch_counter, v_agent_id, 'seed-txn-0050'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-13
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 14836.06, v_branch_counter, v_agent_id, 'seed-txn-0051'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-13
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 11189.43, v_branch_counter, v_agent_id, 'seed-txn-0052'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-14
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 9789.93, v_branch_counter, v_agent_id, 'seed-txn-0053'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-14
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 9619.28, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0054'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-14
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 3659.27, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0055'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-14
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 9167.95, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0056'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-15
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 5061.2, v_branch_counter, v_agent_id, 'seed-txn-0057'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-15
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 1040.95, v_branch_counter, v_agent_id, 'seed-txn-0058'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-15
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000007';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000007'::uuid, 20354.68, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0059'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-15
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 81714.58, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0060'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-16
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 6637.45, v_branch_counter, v_agent_id, 'seed-txn-0061'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-16
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 821.8, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0062'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-16
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 17201.68, v_branch_counter, v_agent_id, 'seed-txn-0063'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-16
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 1927.59, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0064'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-17
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 13829.04, v_branch_counter, v_agent_id, 'seed-txn-0065'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-17
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 17915.46, v_branch_counter, v_agent_id, 'seed-txn-0066'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-17
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000004';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000004'::uuid, 14324.38, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0067'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-17
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000010';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000010'::uuid, 7533.94, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0068'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-18
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000006'::uuid, 3486.69, v_branch_counter, v_agent_id, 'seed-txn-0069'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-18
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 15285.43, v_branch_counter, v_agent_id, 'seed-txn-0070'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-18
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 19970.63, v_branch_counter, v_agent_id, 'seed-txn-0071'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-18
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 10611.81, v_branch_counter, v_agent_id, 'seed-txn-0072'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-19
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 21400.94, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0073'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-19
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000006'::uuid, 16841.15, v_branch_counter, v_agent_id, 'seed-txn-0074'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-19
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 43737.53, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0075'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-19
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 17904.54, v_branch_counter, v_agent_id, 'seed-txn-0076'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-20
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 12491.77, v_branch_counter, v_agent_id, 'seed-txn-0077'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-20
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 67001.36, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0078'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-20
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 18255.02, v_branch_counter, v_agent_id, 'seed-txn-0079'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-20
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 4827.86, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0080'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-21
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 3485.57, v_branch_counter, v_agent_id, 'seed-txn-0081'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-21
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 31445.16, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0082'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-21
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 18955.97, v_branch_counter, v_agent_id, 'seed-txn-0083'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-21
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 8113.58, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0084'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-22
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 6856.91, v_branch_counter, v_agent_id, 'seed-txn-0085'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-22
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 5741.07, v_branch_counter, v_agent_id, 'seed-txn-0086'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-22
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000002';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000002'::uuid, 25483.87, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0087'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-22
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000007';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000007'::uuid, 6321.15, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0088'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-23
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000003';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000003'::uuid, 808.39, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0089'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-23
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 38924.08, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0090'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-23
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 14324.29, v_branch_counter, v_agent_id, 'seed-txn-0091'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-23
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000007';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000007'::uuid, 5266.42, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0092'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-24
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000008' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000008'::uuid, 16111.56, v_branch_counter, v_agent_id, 'seed-txn-0093'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-24
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 4669.47, v_branch_counter, v_agent_id, 'seed-txn-0094'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-24
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 24678.98, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0095'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-24
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 16635.01, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0096'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-25
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 5716.88, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0097'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-25
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 19687.46, v_branch_counter, v_agent_id, 'seed-txn-0098'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-25
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 7568.06, v_branch_counter, v_agent_id, 'seed-txn-0099'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-25
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 6978.45, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0100'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-26
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000007'::uuid, 14466.92, v_branch_counter, v_agent_id, 'seed-txn-0101'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-26
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 2329.5, v_branch_counter, v_agent_id, 'seed-txn-0102'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-26
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000006' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000006';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000006'::uuid, 1643.84, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0103'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-26
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000005';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000005'::uuid, 14165.82, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0104'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-27
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000005' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000005'::uuid, 13633.66, v_branch_counter, v_agent_id, 'seed-txn-0105'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-27
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000007' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000007';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000007'::uuid, 8333.34, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0106'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-27
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 4993.47, v_branch_counter, v_agent_id, 'seed-txn-0107'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-27
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 9401.04, v_branch_counter, v_agent_id, 'seed-txn-0108'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-28
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000004';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000004'::uuid, 34392.38, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0109'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-28
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000003' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000003'::uuid, 13613.22, v_branch_counter, v_agent_id, 'seed-txn-0110'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-28
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000010'::uuid, 19087.99, v_branch_counter, v_agent_id, 'seed-txn-0111'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-28
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 4783.47, v_branch_counter, v_agent_id, 'seed-txn-0112'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-29
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000001'::uuid, 10027.59, v_branch_counter, v_agent_id, 'seed-txn-0113'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-29
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 12965.54, v_branch_counter, v_agent_id, 'seed-txn-0114'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-29
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000004' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000004'::uuid, 5635.7, v_branch_counter, v_agent_id, 'seed-txn-0115'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-29
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000001' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000001';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000001'::uuid, 4303.54, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0116'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-30
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000009'::uuid, 5734.77, v_branch_counter, v_agent_id, 'seed-txn-0117'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-30
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000002' LIMIT 1;
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_deposit('00000000-0000-0000-0801-000000000002'::uuid, 9828.22, v_branch_counter, v_agent_id, 'seed-txn-0118'::varchar, 'Seed deposit'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-30
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000009' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000009';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000009'::uuid, 43052.61, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0119'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Day: 2025-07-30
+    SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM account_holder ah JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE ah.account_id = '00000000-0000-0000-0801-000000000010' LIMIT 1;
+    SELECT ARRAY_AGG(ah.customer_id)::uuid[] INTO v_signers FROM account_holder ah WHERE ah.account_id = '00000000-0000-0000-0801-000000000010';
+    PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+    PERFORM set_config('app.current_user_role', 'AGENT', true);
+    PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+    CALL sp_post_withdrawal('00000000-0000-0000-0801-000000000010'::uuid, 25107.07, v_branch_counter, v_agent_id, v_signers, 'seed-txn-0120'::varchar, 'Seed withdrawal'::varchar, v_out_tx_id, v_out_ref, v_out_bal, v_out_posted);
+    -- Reversal on 2025-08-01
+    v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0001');
+    IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
+        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+        CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
+    END IF;
+    -- Reversal on 2025-08-01
+    v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0002');
+    IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
+        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+        CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
+    END IF;
+    -- Reversal on 2025-08-01
+    v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0003');
+    IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
+        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+        CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
+    END IF;
+    -- Reversal on 2025-08-01
+    v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0004');
+    IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
+        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+        CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
+    END IF;
+    -- Reversal on 2025-08-01
+    v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0005');
+    IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
+        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        PERFORM set_config('app.current_user_id', v_agent_id::text, true);
+        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
+        CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
+    END IF;
+    -- Revert business hours
+    UPDATE system_parameter SET param_value = '08:00' WHERE param_key = 'BUSINESS_HOUR_START';
+    UPDATE system_parameter SET param_value = '17:00' WHERE param_key = 'BUSINESS_HOUR_END';
+    -- Revert limits
+    UPDATE system_parameter SET param_value = '200000.00' WHERE param_key = 'WITHDRAWAL_DAILY_LIMIT';
+    UPDATE system_parameter SET param_value = '100000.00' WHERE param_key = 'WITHDRAWAL_SINGLE_LIMIT';
+END $$;
