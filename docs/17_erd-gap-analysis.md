@@ -31,7 +31,7 @@ structure and contradicts nothing — a member may implement it directly.
 | ID | Finding | Severity | Approval |
 |---|---|---|---|
 | G-01 | One FD *ever* per account vs one *active* FD | HIGH | **YES — blocking** |
-| G-02 | No reversal support in the ledger | HIGH | YES |
+| G-02 | No reversal support in the ledger | HIGH | **YES — resolved; implemented in `0363`** |
 | G-03 | No central interest-run tracking | HIGH | YES |
 | G-04 | No idempotency key on transactions | HIGH | **YES — resolved; implemented in `0360`** (and `0244` for accounts) |
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — resolved (ADR-0010); implemented in `0360`** |
