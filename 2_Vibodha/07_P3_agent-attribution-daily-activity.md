@@ -1,11 +1,12 @@
 # 🟡 Phase 3 — Tasks 01–02: Transaction Attribution & Agent Daily Activity
 **Task IDs:** `P03-M02-T01`, `P03-M02-T02` · **Branch:** `feat/p03-m02-agent-attribution-activity`
-**Migration:** `0320_p03_m02_transaction_attribution.sql` · **Status:** TODO
+**Migration:** `0320_p03_m02_transaction_attribution.sql` · **Status:** T01 REVIEW (verified locally); T02 TODO
 **Depends on:** `P02-M04-T01` (`transaction` schema, M4), **G-07** approved
 **Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend
 
-> ⚡ **UI COMPLETE** — Agent activity views are pre-built in `app/dashboard/**`. Your job
-> is to implement the **database migration and API** only. Do not rebuild any UI component.
+**Scope (2026-10-08):** implement T01 only. Vibodha authorized its early start and
+the prescribed G-07 design (ADR-0016). No general Phase 3 entry approval. T02 remains
+a separate task; its existing UI must be assessed before integration.
 
 ---
 
@@ -39,45 +40,32 @@ report totals. Both columns are captured **at posting time** and never re-derive
 
 **Indexes required (SRS §6.7):**
 ```sql
-CREATE INDEX idx_transaction_agent_posted ON transaction(agent_id, posted_at);
-CREATE INDEX idx_transaction_branch_posted ON transaction(branch_id, posted_at);
+CREATE INDEX ix_transaction_agent_date ON transaction(agent_id, transaction_date);
+CREATE INDEX ix_transaction_branch_date ON transaction(branch_id, transaction_date);
 ```
 
-### Step 1 — Write a Handoff First
-Before touching `transaction`, write `.agent/handoffs/p03-m02-transaction-attribution.md`
-explaining: which columns you're adding, why (G-07), and that M4's posting routines
-(`sp_post_deposit`, `sp_post_withdrawal`) must start setting these two columns. Confirm
-with M4 (or check their task status) before merging.
+### Implementation contract
 
-### Step 2 — Write the Migration
-Create file: `database/migrations/0320_p03_m02_transaction_attribution.sql`
+- Handoff: `.agent/handoffs/p03-m02-transaction-attribution.md`, written before DDL.
+  M4's existing transaction-schema handoff explicitly reserves these columns for M2.
+- New migration 0320 adds named `fk_transaction_agent` / `fk_transaction_branch`
+  with `ON DELETE RESTRICT`, plus the two reporting indexes above.
+- Use the real `transaction_date` column. The migration runner owns its filename/checksum
+  ledger entry; do not insert obsolete `version`/`name` fields into `schema_migration`.
+- No backfill, posting trigger, new API/UI, or edits to merged migrations. Existing
+  opening-deposit inserts remain valid and unattributed until M3 adopts this contract.
+- NULL attribution means unknown/system/unattributed. Future M4 routines capture trusted
+  authorized values in their transaction; FKs alone do not enforce attribution or scope.
+- Regression suite: `tests/db/transaction-attribution.test.mjs` — nullable UUIDs,
+  actual reporting indexes, valid/NULL/legacy inserts, both FK failures, referenced-agent
+  and branch deletion, transfer-stable totals, owner/runtime immutability, rollback,
+  and populated-ledger upgrade preservation. Runs only in the disposable harness.
+- T01's DB-only acceptance makes a new service/route/page and a new API test inapplicable;
+  existing customer/account API regressions must still pass.
 
-```sql
--- Migration 0320: Transaction agent/branch attribution (M2, G-07)
--- Adds agent_id and branch_id to transaction; required for RPT-01
-
-BEGIN;
-
-ALTER TABLE transaction
-    ADD COLUMN agent_id  uuid REFERENCES agent(agent_id),
-    ADD COLUMN branch_id uuid REFERENCES branch(branch_id);
-
-CREATE INDEX idx_transaction_agent_posted  ON transaction(agent_id, posted_at);
-CREATE INDEX idx_transaction_branch_posted ON transaction(branch_id, posted_at);
-
-INSERT INTO schema_migration(version, name)
-VALUES (320, '0320_p03_m02_transaction_attribution');
-
-COMMIT;
-```
-
-### Step 3 — Write SQL Tests
-`tests/db/transaction-attribution.test.mjs`:
-1. ✅ Columns exist and are nullable
-2. ✅ Indexes exist (`\d transaction` or `pg_indexes` query)
-3. ✅ A transaction row with `agent_id = NULL` (simulating `INTEREST_CREDIT`) inserts
-   cleanly
-4. ✅ A non-existent `agent_id` is rejected (`23503`)
+**Verified:** 15 attribution tests and all 501 tests in 45 suites pass. Clean
+24-migration rebuild/checksum verification, TypeScript, lint, and production build
+pass. `/review` has no unresolved T01 findings; the user publishes and M4 reviews.
 
 ---
 
@@ -90,7 +78,7 @@ COMMIT;
   agent themself
 - **Query** `from`, `to` (default: today)
 - **SQL** `SELECT transaction_type, COUNT(*), SUM(amount) FROM transaction WHERE
-  agent_id = $1 AND posted_at BETWEEN $2 AND $3 GROUP BY transaction_type` — parameterized,
+  agent_id = $1 AND transaction_date BETWEEN $2 AND $3 GROUP BY transaction_type` — parameterized,
   branch scope applied via the agent's `branch_id`
 - **Success** `200 { data: { agentId, from, to, byType: [{ type, count, total }] } }`
 
@@ -118,9 +106,9 @@ npm run typecheck && npm test
 ---
 
 ## Acceptance Criteria
-- [ ] Handoff written and acknowledged before modifying `transaction`
-- [ ] `agent_id`/`branch_id` columns added, nullable, FK-constrained
-- [ ] Both reporting indexes exist
+- [x] Handoff written before DDL; existing M4 handoff reserves these additions; final M4 review retained
+- [x] `agent_id`/`branch_id` columns added, nullable, FK-constrained (0320)
+- [x] Both reporting indexes exist using `transaction_date`
 - [ ] Agent activity endpoint respects branch scope in SQL
-- [ ] `npm run db:rebuild` succeeds from empty
-- [ ] `npm run typecheck && npm test` pass
+- [x] `npm run db:rebuild` succeeds from empty (disposable harness, 24 migrations)
+- [x] `npm run typecheck && npm test` pass (full verify:phase1, 501 tests)

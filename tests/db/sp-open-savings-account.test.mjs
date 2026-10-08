@@ -116,6 +116,26 @@ describe("P02-M03-T04: sp_open_savings_account", () => {
             [isBusinessDay],
         );
 
+    // For tests that commit: pin today as a business day, then put back whatever row existed.
+    const withOpenCalendar = async (fn) => {
+        const original = (
+            await client.query("SELECT * FROM business_calendar WHERE calendar_date = (now() AT TIME ZONE 'Asia/Colombo')::date")
+        ).rows[0];
+        await setToday(client, true);
+        try {
+            await fn();
+        } finally {
+            await client.query("DELETE FROM business_calendar WHERE calendar_date = (now() AT TIME ZONE 'Asia/Colombo')::date");
+            if (original) {
+                await client.query(
+                    `INSERT INTO business_calendar (calendar_date, is_business_day, open_time, close_time, description)
+                     VALUES ($1, $2, $3, $4, $5)`,
+                    [original.calendar_date, original.is_business_day, original.open_time, original.close_time, original.description],
+                );
+            }
+        }
+    };
+
     const scenario = (fn) => async () => {
         await client.query("BEGIN");
         try {
@@ -425,7 +445,7 @@ describe("P02-M03-T04: sp_open_savings_account", () => {
 
     // ---------------------------------------------------------------- atomicity
 
-    test("19. A failure after partial writes leaves nothing behind in any table", async () => {
+    test("19. A failure after partial writes leaves nothing behind in any table", async () => withOpenCalendar(async () => {
         // Committed fixtures + autocommit CALL: the procedure's own implicit transaction is the unit.
         const ids = [await makeCustomer(client), await makeCustomer(client)];
         const before = {
@@ -458,7 +478,7 @@ describe("P02-M03-T04: sp_open_savings_account", () => {
         } finally {
             await cleanupCommitted();
         }
-    });
+    }));
 
     // ---------------------------------------------------------------- account numbers
 

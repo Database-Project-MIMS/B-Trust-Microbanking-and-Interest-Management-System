@@ -5,9 +5,34 @@ blocks so nobody discovers the dependency by surprise.
 
 ## Blocking (must resolve before the phase noted can _finish_)
 
-_(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)_
+### Account opening blocked: no document verification path — 2026-10-08 (raised by M3, owner M2)
+
+`sp_open_savings_account` and `sp_add_account_holder` require every holder to have a verified document
+(`DOCUMENTS_NOT_VERIFIED`, ERD Assumption 3). Registration only inserts unverified documents and the RLS policy
+`customer_document_insert_scope` forbids verified rows, and no endpoint or page sets `verified_by`/`verified_date`.
+Result: an app-registered customer can never be opened an account through the UI (found in the 2026-10-08 browser pass).
+Needed: a scoped verification endpoint and UI (and the role lock narrowing already noted in `current-state.md`), or
+seed data with verified documents so the demo works. Blocks the Phase 2 exit demonstration. Not an M3 file change.
+
+### Seeded branch managers cannot hold a session — 2026-10-08 (raised by M3, owner M1/M5)
+
+Seed users `bm_colombo`, `bm_kandy`, `bm_galle` have no `agent` row. `validateSession` (`lib/auth/session.ts`) requires an
+ACTIVE `agent` row for AGENT and BRANCH_MANAGER, so login returns 200 and then every page redirects to `/sign-in`
+(also `branchId` is null in the login response). The account wizard and customer registration are meant for
+BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch managers get `agent` rows (seed and
+`assertBranchProfile` expectations) or a different branch link, and fix the seed or the session query. Not an M3 file change.
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
+
+### Incoming Phase 2 seed targets versus phase exit — 2026-10-08
+
+PR #48 (dev 2208986) marks M5-T01 DONE and revises docs/06 to 15 customers,
+10 accounts and 2 joint accounts. docs/phases/phase-02-customers-and-accounts.md
+still requires 18 customers, 22 accounts and 3 joint accounts. PR #49's tracker
+resolution preserves the seed owner's DONE status and incoming specification;
+it does not silently amend those exit criteria or approve phase exit. M5/the lead
+must reconcile the targets before Phase 2 exit verification. This does not block
+the separately authorized T01 attribution schema or its tracker resolution.
 
 ### Customer contract discrepancies recorded 2026-10-05
 
@@ -60,6 +85,20 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 | OQ-14 | Does the lecturer accept customer self-service and transfers, given the SRS says self-service is "limited to inquiry functions" and transfers out of scope? | Before Phase 3               |
 
 ## Resolved
+
+### P03-M02-T01 scoped early start and task-card reconciliation — 2026-10-08
+
+After being informed of the phase gate and G-07 decision, Vibodha instructed
+"so lets do them" and "do the task now". ADR-0016 records authorization for the
+prescribed nullable attribution schema and T01's early start only. Phase 2 exit,
+general Phase 3 entry and OQ-12/OQ-14 remain unresolved. M4's schema handoff already
+reserves these columns for M2; M4 review of the outgoing contract remains required.
+
+The task card used a nonexistent `posted_at` column and an obsolete
+`schema_migration(version, name)` insert. Implementation uses `transaction_date`
+and the runner's filename/checksum ledger, matching the actual merged schema.
+No existing migration or other member's posting routine is edited. NULL legacy
+attribution is preserved, and producer integration remains separately assigned.
 
 ### Documentation/status contradictions — 2026-10-05 closeout
 

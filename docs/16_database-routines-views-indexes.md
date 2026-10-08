@@ -49,7 +49,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 |---|---|---|---|---|---|
 | `fn_calculate_fd_interest(principal, rate)` | M5 | `numeric(15,2)` | `round(principal × rate × 30 / 365, 2)` — exact decimal, reads the **snapshot** rate | FR-INT-01, BR-14, BR-19 | L08 functions |
 | `fn_check_plan_eligibility(plan_id, dob, holder_count)` | M3 | `boolean` | Data-driven age and holder-count check against `savings_plan` for the primary applicant only — never raises, returns `false` on any missing plan, inactive plan, or invalid input. Implemented in `database/routines/fn_check_plan_eligibility.sql` (`P01-M03-T02`, `docs/specs/0002-plan-eligibility-function.md`) | FR-ACC-02, BR-E1 | L05, L08 |
-| `fn_check_plan_minimum(account_id, proposed_debit)` | M3 | `boolean` | Post-withdrawal balance ≥ plan minimum | FR-ACC-03, BR-09 | L05, L08 |
+| `fn_check_plan_minimum(account_id, resulting_balance)` | M3 | `boolean` | **I-4.** `true` when the balance **after** the withdrawal (`current_balance - amount`, not the debit) is ≥ the plan's `min_balance`, read via `account.plan_id`. SECURITY INVOKER, STABLE, never raises: unknown/NULL account, NULL balance or an RLS-hidden account returns `false`. Call after `SELECT … FOR UPDATE` and before the ledger insert. Implemented in `database/routines/fn_check_plan_minimum.sql` (`P03-M03-T01`; `tests/db/fn-check-plan-minimum.test.mjs`) | FR-ACC-03, BR-09 | L05, L08 |
 | `fn_next_account_number(branch_code)` | M3 | `varchar` | `<BRANCH_CODE>-<8-digit>` from `account_number_seq` (migration 0243); unique under concurrency, gaps after rollback expected; blank code rejected | FR-ACC-01 | L03 sequences |
 | `fn_next_transaction_reference()` | M4 | `varchar` | Unique transaction reference (BR-10) | FR-DEP-02 | L03 |
 | `fn_is_business_hour(ts)` | M1 | `boolean` | Reads `business_calendar` / `system_parameter` | BR-08 | L05 |
@@ -131,8 +131,8 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | Index | Table | Serves |
 |---|---|---|
 | `ix_transaction_account_date` `(account_id, transaction_date DESC)` | `transaction` | Statements, RPT-02 |
-| `ix_transaction_agent_date` `(agent_id, transaction_date)` | `transaction` | **RPT-01** (§6.7) |
-| `ix_transaction_branch_date` `(branch_id, transaction_date)` | `transaction` | Branch reporting, RLS |
+| `ix_transaction_agent_date` B-tree `(agent_id, transaction_date)` | `transaction` | Implemented 0320, P03-M02-T01: agent equality + business-date range for **RPT-01** (§6.7) and agent FK lookup |
+| `ix_transaction_branch_date` B-tree `(branch_id, transaction_date)` | `transaction` | Implemented 0320: historical branch equality + business-date range and branch FK lookup; does not itself enforce scope/RLS |
 | `ix_transaction_type_date` `(transaction_type, transaction_date)` | `transaction` | RPT-04, filters |
 | `ix_fd_status_next_interest` `(status, next_interest_date)` | `fixed_deposit` | Selecting FDs due for interest (§6.7) |
 | `ix_audit_actor_time` `(user_id, logged_at DESC)` | `audit_log` | Security investigation (§6.7) |

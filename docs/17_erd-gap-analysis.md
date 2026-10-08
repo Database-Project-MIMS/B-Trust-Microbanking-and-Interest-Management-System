@@ -36,7 +36,7 @@ structure and contradicts nothing — a member may implement it directly.
 | G-04 | No idempotency key on transactions | HIGH | **YES — resolved; implemented in `0360`** (and `0244` for accounts) |
 | G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — resolved (ADR-0010); implemented in `0360`** |
 | G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
-| G-07 | Transactions have no agent or branch attribution | HIGH | YES |
+| G-07 | Transaction agent/branch attribution — schema implemented in 0320; posting integration remains | HIGH | User-authorized T01, ADR-0016; M4/team review retained |
 | G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved; implemented in `0241`/`0242`** |
 | G-09 | Single role per user vs `user_role` many-to-many | MEDIUM | YES |
 | G-10 | Nothing prevents two active customer–agent assignments | MEDIUM | NO |
@@ -247,6 +247,15 @@ snapshot and branch-scope anchor. Recorded in ADR-0008.
 ---
 
 ## G-07 · Transactions have no agent or branch attribution
+
+**Implementation — 2026-10-08:** Vibodha authorized the prescribed G-07 schema
+and an early start for P03-M02-T01 after the phase restriction was explained.
+ADR-0016 records that limited authorization. Migration 0320 adds both nullable UUID
+FKs with ON DELETE RESTRICT and B-tree reporting indexes on `transaction_date`,
+the actual ledger column (the SRS/card's `posted_at` name is stale). Existing rows
+are preserved with NULL attribution. Future posting producers must capture trusted
+values inside their transaction; this schema task does not complete that integration.
+No general Phase 3 entry or OQ-12/OQ-14 approval is inferred.
 
 **Current ERD design** — `transaction` has `initiated_by_user_id` and `channel_id` only.
 
