@@ -255,7 +255,7 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4**; user-authorized repair ADR-0021 | REVIEW (PR #61 original merged; corrective 0363 in open PR #67; pre-integration verification: 663 tests /62 suites) |
 | P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | DONE (branch `feat/p03-m04-transaction-reversal`) |
 | P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | DONE (branch `feat/p03-m04-transaction-apis`) |
-| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | TODO |
+| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | DONE |
 
 ## Phase 4 — Fixed Deposits & Interest (10 TODO, 4 DONE; general entry pending)
 

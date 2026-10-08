@@ -112,11 +112,11 @@ HAVING a.current_balance != SUM(...);  -- Must return 0 rows
 ---
 
 ## Acceptance Criteria
-- [ ] 100+ transactions exist across 30+ days
-- [ ] Transactions spread across all branches and multiple agents
-- [ ] All five savings plan types have associated transactions
-- [ ] All balances remain non-negative after seeding
-- [ ] `current_balance` matches ledger SUM for every account
-- [ ] `balance_after` column is correct on every transaction row
-- [ ] Seeding is deterministic — identical results every run
-- [ ] Sufficient balances remain for Phase 4 FD opening
+- [x] 100+ transactions exist across 30+ days
+- [x] Transactions spread across all branches and multiple agents
+- [x] All five savings plan types have associated transactions
+- [x] All balances remain non-negative after seeding
+- [x] `current_balance` matches ledger SUM for every account
+- [x] `balance_after` column is correct on every transaction row
+- [x] Seeding is deterministic — identical results every run
+- [x] Sufficient balances remain for Phase 4 FD opening
