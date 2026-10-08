@@ -248,3 +248,13 @@ P03-M03-T02/T03 are DONE (merged / on dev). P04-M03-T01 DONE as an early start a
 `open-questions.md`. The withdrawal defect M3 reported against merged `0362` was repaired upstream by 0363 (ADR-0021), and
 `sp-post-withdrawal.test.mjs` passes. Use the tracker header above for current task counts.
 [Handoff](handoffs/i-6-fn-check-account-fd-eligible.md). The unresolved merge-conflict markers from the "phase 7" merge were removed (both sections kept).
+
+## M3 update — P04-M03-T02 (2026-10-08)
+
+P04-M03-T02 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14
+approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_close_account`, `trg_account_close_guard`),
+`closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` live (BRANCH_MANAGER; was a 501 stub).
+`tests/db/sp-close-account.test.mjs` 17/17 (incl. two-connection races against an in-flight FD insert) and 6 new API tests. Full isolated suite 777 tests / 750 pass / 27 fail: the same
+27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
+panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
+
