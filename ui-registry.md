@@ -372,3 +372,19 @@ selectors precede Apply; CSV export uses applied filters. Preserve exact cents
 without Number conversion; unresolved net is text, not a fabricated zero. Keep
 wide tables inside table-wrap;375px QA confirmed no document horizontal overflow.
 ReportShell's code/endpoint/named metadata are optional for other report owners.
+
+## RPT-02 account summary screen — 2026-10-08
+
+Files: `app/reports/account-summary/account-summary-screen.tsx`, `page.tsx`; shared `components/report/*` (three optional props added: `caption`, `emptyText`, `sortLabels`). Captured through /imprint.
+
+| Property | Pattern |
+|---|---|
+| Frame | `ReportShell` (page header with `RPT-02 ·` eyebrow, filter `card`, results `card min-w-0 space-y-4`); same as RPT-01 |
+| Filters | shell date inputs plus `filterExtras` fields in `field`/`input`: Branch (disabled and single-option for a manager), Savings plan, Account status, Sort by, Order, Rows per page; no agent filters |
+| Table | shared `ReportTable`: first column is the row header, money columns `amount` via `reportMoney` (LKR, exact strings), count columns right-aligned; page subtotal and grand total rows in `tfoot` |
+| Opening / closing | plain money columns "Opening balance" and "Closing balance"; net movement last; no colour coding |
+| States | shell loading `role=status`; error `card text-[var(--danger)]` `role=alert` with Retry; empty text "No accounts match these filters. Grand totals still cover all applied filters."; pagination `nav` with `role=status` page text |
+| Notes | `text-sm text-[var(--text-muted)]` list under the table explaining Colombo days, opening/closing and reversal netting |
+
+No new class, token, radius or shadow. Wide tables stay inside `table-wrap`. CSV button comes from the shell and exports all filtered accounts.
+
