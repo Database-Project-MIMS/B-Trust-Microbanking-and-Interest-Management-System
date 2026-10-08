@@ -1,17 +1,39 @@
 # Current State
 
-## M1 Phase 6 deployment-security draft (2026-10-08)
+## M4 RPT-05 update (2026-10-08)
 
-P06-M01-T04 is `IN_PROGRESS` on `feat/p06-m01-deployment` in an isolated
-worktree. The sample environment is sanitized; a production-only HSTS header,
-browser-permission header, runtime environment validator and security test
-suite are added. Focused tests 6/6, disposable 41-migration rebuild,
-typecheck/lint/build pass. The combined suite is 733 pass / 28 fail outside
-these six tests. No live HTTPS target was supplied; no deployment, commit or PR
-was performed. See [handoff](handoffs/p06-m01-deployment-security.md).
+P05-M04-T01/T02 are in local REVIEW on the current dirty M4 checkout. Migration
+0560, the report service/API, and the live report page implement holder-attributed
+activity with reversal adjustment, SQL scope, CSV and access audit. The user
+confirmed every-holder joint attribution (ADR-0022). RPT-05 tests pass 8/8 and
+the disposable 43-migration rebuild/checksum checks pass. The combined suite
+still has 27 failures outside RPT-05; typecheck, lint and production build pass.
+Do not mark DONE yet.
+[Details](handoffs/p05-m04-rpt05.md). No assistant Git publication.
 
-The user's request is a scoped early start, not general Phase 6 entry.
-Phase 5-dependent M1 T01/T02 remain TODO.
+**Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+**Work:** P05-M02-T02 implemented locally, REVIEW; user publication/integration review pending.
+
+The user explicitly approved T02 and M1 framework repairs (ADR-0022). T01 and
+corrective M4 withdrawal are DONE through PR #67; I-7 restored by PR #69 and
+M4 interest posting merged in PR #68. 0521 adds guarded aggregate-only readers;
+scoped API/page, exact totals, snapshot CSV/access audit and cleanup are delivered.
+
+Relevant72 tests /7 suites, clean40-migration disposable rebuild/checksums, typecheck,
+lint/build and browser checks pass. Full suite767:729 pass,27 fail,11 cancelled;
+legacy M1 fixtures/audit expectations and M4 withdrawal overload calls are recorded
+in the handoff. Broader raw transaction RLS is still M1/M4 integration work. Do not
+claim full-suite acceptance or mark T02 DONE. General phase gates remain pending.
+
+Tracker97 tasks:31 TODO /1 REVIEW /65 DONE; incoming M4 Phase4 DONE rows included
+in the recount. All five overview tables reviewed. /review, /imprint and /remember
+saved. Normal database preserved. The user subsequently authorized several local
+commits for this delivery. Push, PR creation and merge remain user-controlled.
+[Delivery and review](handoffs/p05-m02-rpt01-api-ui.md).
+
+---
+# Historical state before RPT-01 runtime delivery
 
 **Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
@@ -261,3 +283,38 @@ P03-M03-T02/T03 are DONE (merged / on dev). P04-M03-T01 DONE as an early start a
 `open-questions.md`. The withdrawal defect M3 reported against merged `0362` was repaired upstream by 0363 (ADR-0021), and
 `sp-post-withdrawal.test.mjs` passes. Use the tracker header above for current task counts.
 [Handoff](handoffs/i-6-fn-check-account-fd-eligible.md). The unresolved merge-conflict markers from the "phase 7" merge were removed (both sections kept).
+
+## M3 update — P04-M03-T02 (2026-10-08)
+
+P04-M03-T02 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14
+approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_close_account`, `trg_account_close_guard`),
+`closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` live (BRANCH_MANAGER; was a 501 stub).
+`tests/db/sp-close-account.test.mjs` 17/17 (incl. two-connection races against an in-flight FD insert) and 6 new API tests. Full isolated suite 777 tests / 750 pass / 27 fail: the same
+27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
+panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
+
+## M3 update — P04-M03-T03 (2026-10-08)
+
+P04-M03-T03 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval), tests only:
+`GET /api/accounts/{id}` gains `fixedDeposits`, and `/accounts/{id}` has a read-only Fixed deposits panel (table, closure-blocked note, link to
+`/fixed-deposits/new?accountId=…`). No migration. Full isolated suite on the tree merged with dev 81fd25c: 828 tests / 801 pass / 27 fail, the same 27 failures that already occur on dev. `fixedDeposits` is `null` when the list cannot be read; the panel's rendered markup is tested.
+`tsc --noEmit`, `eslint .`, `next build` clean; `/imprint` saved. All three Phase 4 tasks on M3's card (T01–T03) are done.
+[Handoff](handoffs/p04-m03-t03-fd-panel.md).
+
+## M3 update — P05-M03-T01 (2026-10-08)
+
+P05-M03-T01 DONE as an early start at the user's direction (no general Phase 5 entry approval): migration `0540_p05_m03_rpt02_view.sql`
+(`vw_rpt02_account_summary`) and `0541_p05_m03_sp_open_account_balance_after.sql` (opening deposit now records `balance_after`).
+`tests/db/rpt02-view.test.mjs` 13/13. Full isolated suite 852 tests / 824 pass / 28 fail: the failures that already occur on dev
+(a clean export of the committed HEAD fails 29). `tsc --noEmit` and `eslint .` clean. T02 (service, API, CSV, page) not started.
+[Handoff](handoffs/p05-m03-t01-rpt02-view.md).
+
+## M3 update — RPT-02 view hardening and ledger order (2026-10-08)
+
+Review of P05-M03-T01 found the view's ordering wrong on the seeded ledger. Fixed at the user's direction (ADR-0023, gap G-24):
+`0542_p05_m03_transaction_ledger_seq.sql` adds `transaction.ledger_seq` (posting order per account, M4's table, additive, handoff
+`handoffs/p05-m03-ledger-seq-for-m4.md`) and `0543_p05_m03_rpt02_view_v2.sql` replaces the view (ordered by `ledger_seq`, no overflow
+cast, no whole-ledger window). On the pure seed: balance-chain breaks 86 → 0, last-row mismatches 6 → 0. `tests/db/rpt02-view.test.mjs` 18/18,
+`tests/db/transaction-ledger-seq.test.mjs` 7/7. Full isolated suite 865 tests / 837 pass / 28 fail: the failures that already occur on dev.
+`tsc --noEmit` and `eslint .` clean. Open for other owners: seed dates are all one day (M5); M4 to review the new column.
+

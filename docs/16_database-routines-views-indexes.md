@@ -30,7 +30,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 
 | Routine | Owner | Purpose | Transaction boundary | Requirements | Concepts |
 |---|---|---|---|---|---|
-| `sp_open_savings_account` | M3 | Validate plan, agent/branch, payload, holders (locked), eligibility, verified documents, mandate and deposit (incl. business hours); then write account, holders (one statement), mandate and optional initial deposit. Migration 0243, `SECURITY INVOKER`. Errors: see below | The caller's — never commits; all or nothing | FR-ACC-01…04, BR-02, BR-07, BR-08 | L08 procedures, L11 atomicity |
+| `sp_open_savings_account` | M3 | Validate plan, agent/branch, payload, holders (locked), eligibility, verified documents, mandate and deposit (incl. business hours); then write account, holders (one statement), mandate and optional initial deposit. Migration 0243 (redefined by 0541, which makes the opening deposit record `balance_after`; before that it was NULL), `SECURITY INVOKER`. Errors: see below | The caller's — never commits; all or nothing | FR-ACC-01…04, BR-02, BR-07, BR-08 | L08 procedures, L11 atomicity |
 | `sp_add_account_holder` | M3 | Add one JOINT holder to an ACTIVE account: lock the account, require an active customer with a verified document; the 0242 trigger enforces count/adult rules and syncs an `ALL_HOLDERS` mandate. Migration 0245, `SECURITY INVOKER`. Errors (`P0001`, named constraint): `ACCOUNT_NOT_FOUND`, `ACCOUNT_NOT_ACTIVE`, `HOLDER_NOT_FOUND`, `DOCUMENTS_NOT_VERIFIED`, `ACTOR_MISMATCH`; `23505` duplicate holder | The caller's — never commits | FR-ACC-02/04, BR-02, BR-07 | L08 procedures, L11 locking |
 | `sp_post_deposit` | M4 | Lock account, insert ledger, update balance and `balance_after`, audit, return reference. Migration 0361, standalone routine file `database/routines/sp_post_deposit.sql`. Errors: see below | One, `FOR UPDATE` | FR-DEP-01…05, BR-08, BR-10, BR-I1 | L08, L11 ACID |
 | `sp_post_withdrawal` (corrected 0363) | M4 | Invoker core: current actor/scope, serialized payload-bound replay, then locked status/calendar/mandate/Colombo limits/minimum, attributed ledger/balance/success audit. Array signers plus legacy single-customer overload | Caller-owned; account `FOR UPDATE`, per-key advisory lock; never commits | FR-WD-01…05, BR-09/17/I1/I2 | L11 isolation, locking |
@@ -39,7 +39,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `sp_reverse_transaction` | M4 | Insert a linked compensating entry; never modify the original | One, `FOR UPDATE` | FR-TXN-03, BR-16, DB-CON-04 | L08, L11 |
 | `sp_open_fixed_deposit` | M5 | Check eligibility under lock, debit principal through the ledger, create the FD with maturity and rate snapshot | One | FR-FD-01…04, BR-11, BR-19 | L08, L11 |
 | `sp_run_interest_cycle` | M5 | Create the run, select due FDs with locking, process **each FD in its own transaction**, reconcile totals | **One per FD**, not per run | FR-INT-01…05, NFR-SAFE-03 | L08, L11 idempotency |
-| `sp_close_account` | M3 | Require zero balance and no active FD, then close | One | FR-ACC-05, BR-18 | L08 |
+| `sp_close_account(account_id, actor_user_id)` | M3 | Lock the account `FOR UPDATE`, re-validate it is `ACTIVE`, balance is zero and no `ACTIVE` FD exists, set `CLOSED`, write one `CLOSE` audit row. `SECURITY INVOKER`; errors are `P0001` with named constraints `ck_close_account_*` (`0441`; `tests/db/sp-close-account.test.mjs`) | One, `FOR UPDATE` | FR-ACC-05, BR-18 | L08, L11 |
 
 **`sp_post_deposit` errors** (all `P0001`, named `CONSTRAINT` for mapping): `ACCOUNT_ID_REQUIRED` (`ck_deposit_account_id`), `INVALID_DEPOSIT_AMOUNT` (`ck_deposit_amount_positive`), `USER_ID_REQUIRED` (`ck_deposit_user_id`), `CHANNEL_REQUIRED` (`ck_deposit_channel_required`), `CHANNEL_UNAVAILABLE` (`ck_deposit_channel_active`), `ACCOUNT_NOT_FOUND` (`ck_deposit_account_exists`), `ACCOUNT_NOT_ACTIVE` (`ck_deposit_account_active`), `OUTSIDE_BUSINESS_HOURS` (`ck_deposit_business_hours`). Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising or modifying balance.
 
@@ -80,6 +80,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `trg_financial_transaction_immutable` | M4 | `BEFORE UPDATE OR DELETE` on `transaction` | Raise unconditionally — posted rows are immutable | FR-TXN-02, BR-16 | L08 triggers |
 | `trg_audit_log_immutable` | M1 | `BEFORE UPDATE OR DELETE` on `audit_log` | Append-only audit | FR-AUD-01 | L08 |
 | `trg_audit_master_changes` | M1/M2 | `AFTER INSERT/UPDATE/DELETE` on master tables | Write sanitized before/after values as `jsonb`; sensitive keys are removed | FR-ORG-04, DB-CON-06 | L08, `jsonb` |
+| `trg_account_close_guard` (`fn_account_close_guard`) | M3 | `BEFORE UPDATE OF status` on `account`, only when the new status is `CLOSED` and the old one was not | Locks the account row `FOR UPDATE` (so it waits for an in-flight FD insert), then rejects the close unless `current_balance = 0` and no `ACTIVE` fixed deposit exists. `SECURITY DEFINER` with a pinned `search_path` so row-level security on `fixed_deposit` cannot hide an FD; execute revoked from `PUBLIC`. Migration `0441` | BR-18, FR-ACC-05 | L08, L06 |
 | `trg_audit_customer`, `trg_audit_account`, `trg_audit_account_holder` | M1 | `AFTER INSERT/UPDATE` on `customer`, `account`, `account_holder` | Audit master data in the caller transaction, capturing session context via RLS helpers | FR-ORG-04, NFR-SEC-05 | L08, ACID |
 | `trg_audit_branch` / `trg_audit_agent` | M2 | `AFTER INSERT/UPDATE/DELETE` on `branch` / `agent` | Audit organisation master data in the caller transaction | FR-ORG-04, FR-AUD-01 | L08, ACID |
 | `trg_validate_joint_mandate`, `trg_validate_joint_mandate_update` | M3 | `AFTER INSERT` / `AFTER UPDATE` on `account_holder`, **statement-level with transition tables** (wrappers `fn_trg_account_holder_inserted/updated` → `fn_check_account_holder_sets`, `SECURITY DEFINER`, `EXECUTE` revoked from `PUBLIC`; migration 0242) | Lock the account (`FOR NO KEY UPDATE`), then holder count within the plan's `min_holders`/`max_holders`, exactly one `PRIMARY`, no holder under 18 when `requires_all_adult` — read from `savings_plan`, never from the plan name; keeps an `ALL_HOLDERS` mandate's signatories equal to the holder count | FR-ACC-04, BR-07, BR-17 | **L08 statement-level triggers, transition tables** |
@@ -108,11 +109,12 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `vw_account_balance` | M3 | Account with plan, branch, holders and balance | RPT-02 | L05 joins |
 | `vw_transaction_detail` | M4 | Ledger joined to account, agent, branch, channel and reversal status | several | L05 |
 | `vw_rpt01_agent_transactions` (implemented 0520; supersedes planned `vw_agent_transaction_totals` name) | M2 | **RPT-01** — exact counts/unsigned values per agent, posting branch, type and timestamp; range filters precede final totals | RPT-01, FR-REP-02 | L05 outer joins, aggregation, `GROUP BY`; L10 agent/date index |
-| `vw_account_transaction_summary` | M3 | **RPT-02** — opening/closing balance, counts and totals by type | RPT-02 | L13 window functions |
+| `vw_rpt02_account_summary` (0540, replaced by **0543**; supersedes planned `vw_account_transaction_summary`) | M3 | **RPT-02** — one row per account per ledger event, ordered by `ledger_seq` (0542, G-24). An account with no ledger rows appears once. `balance_before` / `balance_after_effective` come from the stored `transaction.balance_after` (legacy NULL opening-deposit rows are derived by a correlated sum evaluated only for those rows); balances are plain `numeric`, so one out-of-range row cannot make the view fail. Reversals count in their original category with a negated amount, as in RPT-05, so `closing − opening = deposits − withdrawals + interest`. `security_invoker` + `security_barrier`; never takes a date range, the report query (T02) does | RPT-02 | L05 joins, L13 ordering |
 | `vw_active_fd_schedule` | M5 | **RPT-03** — active FDs with next payout and maturity | RPT-03 | L05 |
 | `vw_monthly_interest_distribution` | M5 | **RPT-04** — distributions per cycle per account type, with subtotals | RPT-04 | **L13 `ROLLUP` / `GROUPING SETS`** |
-| `vw_customer_activity` | M4 | **RPT-05** — deposits, withdrawals, interest and net movement per customer | RPT-05 | L05, L13 |
-| `vw_ledger_reconciliation` | M4 | Asserts `current_balance` = signed ledger sum = last `balance_after` | reconciliation | L11 consistency |
+| `vw_rpt05_customer_activity` (0560) | M4 | **RPT-05** — customer/account/ledger grain; reversals negate their original category; joint entries appear once per holder | RPT-05 | L05 outer joins, L13 filtered aggregation in service |
+| `vw_reconciliation_balance` | M4 | Asserts `current_balance` = signed ledger sum | reconciliation | L11 consistency |
+| `vw_reconciliation_running_balance` | M4 | Asserts `balance_after` = window function running balance | reconciliation | L11 consistency, L13 window |
 | `vw_interest_run_summary` | M5 | Run counts, totals and exceptions | audit | L05 |
 | `vw_customer_account_holdings` | M2 | Customers with their accounts, including joint | RPT-05 | L05 outer joins |
 | `vw_customer_fd_summary` (implemented 0420) | M2 | Customer→holder→account→FD/product; all statuses, exact snapshot values, caller RLS | customer profile | L05 joins, L07 privileges, L11 read snapshot |
@@ -137,10 +139,23 @@ RPT-01 migration 0520 uses COUNT(transaction_id) and unbounded NUMERIC SUM at
 posting timestamp/type/branch grain. It includes zero rows for profiles without
 attributed history; selected-range zeros require the filtered-facts roster outer
 join documented in M2's task card. No current-role/status filter erases history.
-The SECURITY INVOKER/BARRIER view has no PUBLIC/mims_app grant until I-7/T02
-establish report scope, runtime RLS/grants and access auditing. Reuse existing
+The SECURITY INVOKER/BARRIER view remains private. Migration0521 adds scoped
+execute-only readers and service-owned auditing under ADR-0022. Reuse existing
 `ix_transaction_agent_date`; a selective view query's measured plan is recorded in
-the T01 handoff. This does not establish full report performance acceptance.
+the T01 handoff. The final 0521 function probe with 20,000 extra postings took
+6.826 ms; its wrapper plan is a Function Scan, not proof that every internal
+bankwide query uses an index. M5 retains representative bankwide tuning/review.
+
+| Routine | Owner | Security / return | Enforcement | Course concepts |
+|---|---|---|---|---|
+| `fn_rpt01_scope(uuid)` | M2 | STABLE INVOKER; effective branch UUID | Current active stored report actor, manager profile/branch/context; rejects widened scope | L08, L11 access control |
+| `fn_rpt01_rows(date,date,uuid,uuid)` | M2 | STABLE DEFINER; fixed agent/posting-branch aggregates | Guarded dates/scope, filtered roster outer join, exact NUMERIC/counts, linked reversal direction and unresolved net | L05 joins/aggregation; L10 indexes; L11 least privilege |
+| `fn_rpt01_exclusions(date,date,uuid)` | M2 | STABLE DEFINER; bigint count + NUMERIC unsigned value | Same guard and branch/date predicates; NULL-agent disclosure independently of agent filter | L05 aggregate; L11 scope |
+
+All three pin search_path and revoke PUBLIC EXECUTE; mims_app receives EXECUTE.
+Relations are fully qualified and no dynamic SQL or raw ledger DTO is exposed.
+0520 stays unchanged/private. The live service materializes rows/totals and writes
+REPORT_ACCESSED in REPEATABLE READ, then streams CSV after commit.
 
 ## Indexes
 
@@ -165,7 +180,8 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 
 | Index | Table | Serves |
 |---|---|---|
-| `ix_transaction_account_date` `(account_id, transaction_date DESC)` | `transaction` | Statements, RPT-02 |
+| `ix_transaction_account_date` `(account_id, transaction_date DESC)` | `transaction` | Statements, RPT-02 date-range filter |
+| `ux_transaction_account_ledger_seq` UNIQUE `(account_id, ledger_seq)` (0542, G-24) | `transaction` | Strict per-account posting order: RPT-02's first/last row and legacy running total. Costs one sequence draw and one index entry per ledger row; justified because timestamps tie and invert (ADR-0023) |
 | `ix_transaction_agent_date` B-tree `(agent_id, transaction_date)` | `transaction` | Implemented 0320, P03-M02-T01: agent equality + business-date range for **RPT-01** (§6.7) and agent FK lookup |
 | `ix_transaction_branch_date` B-tree `(branch_id, transaction_date)` | `transaction` | Implemented 0320: historical branch equality + business-date range and branch FK lookup; does not itself enforce scope/RLS |
 | `ix_transaction_type_date` `(transaction_type, transaction_date)` | `transaction` | RPT-04, filters |

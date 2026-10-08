@@ -276,7 +276,7 @@ and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
 - Delete: `RESTRICT` — referenced by `transaction`, `account_holder`, `fixed_deposit`.
 - Indexes: `account_number` unique; `(plan_id)`; `(branch_id, status)` (ADR-0008); `(status)`.
 - Rows are created only by `sp_open_savings_account` (0243), which writes the account, holders, mandate and optional initial deposit atomically.
-- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`).
+- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`). `trg_account_close_guard` (`0441`, P04-M03-T02) rejects a move to `CLOSED` unless `current_balance = 0` and no `ACTIVE` fixed deposit exists (SQLSTATE `P0001`, `ck_close_account_balance` / `ck_close_account_active_fd`).
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).
@@ -397,6 +397,8 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
 | `amount` | numeric(15,2) | Always positive; direction comes from the type |
 | `transaction_date` | timestamptz | Business timestamp |
 | `narration` | varchar(255) | |
+| `balance_after` | numeric(15,2) NULL | Balance after this row (G-14, added by `0361`). **Nullable:** opening deposits written by `sp_open_savings_account` before `0541` have NULL and cannot be corrected (immutable ledger); RPT-02 derives them |
+| `ledger_seq` | bigint | **NOT NULL**, default `nextval('transaction_ledger_seq')` (`0542`, G-24, ADR-0023): posting order of the row, unique per account; internal, never displayed |
 | `idempotency_key` | varchar(80) | Nullable; partial unique index `ux_transaction_idempotency` (G-04) |
 | `created_at` | timestamptz | System insert time |
 
@@ -405,13 +407,14 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
   `ux_transaction_reference` unique (`reference_number`, SRS §6.7, G-05);
   `ux_transaction_idempotency` partial unique on `idempotency_key WHERE idempotency_key IS NOT NULL` (G-04);
   `ix_transaction_agent_date (agent_id, transaction_date)` and
-  `ix_transaction_branch_date (branch_id, transaction_date)` for reporting (0320, G-07).
+  `ix_transaction_branch_date (branch_id, transaction_date)` for reporting (0320, G-07);
+  `ux_transaction_account_ledger_seq` unique `(account_id, ledger_seq)` for the strict per-account posting order RPT-02 needs (0542, G-24).
 - Implemented in `0260_p02_m04_transaction.sql`, `0320_p03_m02_transaction_attribution.sql`,
   `0360_p03_m04_transaction_reference_idempotency.sql` (P03-M04-T01), and
   `0361_p03_m04_sp_post_deposit.sql` (P03-M04-T02).
 - Invariants: `amount > 0`; no row may be updated or deleted by an application role;
   every row has a unique reference, timestamp and type (BR-10).
-- Gaps: no reversal link (**G-02**); no `status` (**G-02**). G-04, G-05, G-07, and G-14 are resolved.
+- Gaps: no reversal link (**G-02**); no `status` (**G-02**). G-04, G-05, G-07, G-14 and G-24 are resolved.
 
 **G-07 implementation:** M2 migration `0320_p03_m02_transaction_attribution.sql`
 adds nullable posting-time attribution under ADR-0016. Existing rows and omitted
@@ -627,8 +630,8 @@ SRS §6.1 requires intentional denormalisation to be documented. Four entries:
 
 | # | Denormalised value | Derivable from | Why it is kept | Control |
 |---|---|---|---|---|
-| D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view asserts equality with the ledger |
-| D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view compares against the window-function result |
+| D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view `vw_reconciliation_balance` asserts equality with the ledger |
+| D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view `vw_reconciliation_running_balance` compares against the window-function result |
 | D-3 | `fixed_deposit.interest_rate_at_opening` | `fd_plan.interest_rate` | Rates are effective-dated (BR-19); reading through the plan would retroactively change historical payouts | `NOT NULL`; set once at opening; never updated |
 | D-4 | `account.branch_id` | Opening agent's branch at account creation | Branch ownership must not drift when an agent transfers; it is the RLS and historical-report anchor | `NOT NULL FK`; assigned from trusted branch scope at opening; never changed |
 
@@ -706,9 +709,30 @@ The corrected consumer contract is in `../2_Vibodha/09_P5_rpt01-report.md` and i
 SQL regression tests. Do not filter an all-time outer join afterwards.
 
 The view has `security_invoker=true` and `security_barrier=true` and no SELECT grant
-to PUBLIC or mims_app. M1/I-7 must establish authorized SQL scope, underlying RLS,
-grants and report-access auditing before T02 enables access. This is a database-only
-delivery, not a live report API. No signed net/reversal direction is invented.
+to PUBLIC or mims_app. Runtime access is now through the guarded aggregate functions
+below; no direct view grant is introduced. The view itself retains unsigned type totals.
+
+## RPT-01 runtime integration (P05-M02-T02, ADR-0022)
+
+New M2 migration `0521_p05_m02_rpt01_runtime.sql` adds `fn_rpt01_scope(uuid)`,
+`fn_rpt01_rows(date,date,uuid,uuid)` and `fn_rpt01_exclusions(date,date,uuid)`.
+The guard checks current active stored user/role and, for managers, an active
+profile/branch matching transaction-local context. Managers cannot request another
+branch; ADMIN/CENTRAL_OPS/AUDITOR may request one branch or bankwide totals.
+The two SECURITY DEFINER readers pin search_path, fully qualify relations, revoke
+PUBLIC EXECUTE and expose fixed aggregate DTOs through mims_app EXECUTE only.
+
+Rows group by agent and captured posting branch, preserving inactive/transferred
+identities and range-specific roster zeros. They include exact counts and values
+for deposits, withdrawals, interest and reversals, reversal credits/debits,
+unresolved reversal count and net. A valid transaction_reversal link determines
+direction; an absent/invalid original link makes net NULL. Exclusions separately
+count/sum NULL-agent rows within dates/branch, independently of the agent filter.
+All aggregate counts/values become strings in the API; no money arithmetic uses JS.
+
+The 0520 view remains private. No new table, column, raw ledger grant or financial
+write is added. Global transaction RLS remains a separate M1/M4 integration gap;
+the execute-only report scope guard is the database backstop for this capability.
 
 ## Withdrawal corrective routine contract (P03-M04-T03, ADR-0021)
 

@@ -5,8 +5,8 @@ import {
   keyFor, makePrimary, removeHolder, reviewProblems, selectPlan,
 } from "../../app/accounts/new/account-opening-model.ts";
 import {
-  authoritySummary, displayDate, displayMoney, displayRate, eligibilitySummary, holderAuthority, mandateSummary,
-  transactionTypeLabel,
+  authoritySummary, displayDate, displayMoney, displayRate, eligibilitySummary, fixedDepositPanel, holderAuthority,
+  mandateSummary, transactionTypeLabel,
 } from "../../app/accounts/account-format.ts";
 
 const adult = { planId: "p-adult", planName: "Adult", interestRate: "0.1000", minBalance: "1000.00", description: null,
@@ -166,3 +166,55 @@ describe("P02-M03-T06: account opening model", () => {
     assert.equal(reused.newKey, true); assert.doesNotMatch(reused.message, /technical/);
   });
 });
+
+describe("P04-M03-T03: fixed-deposit panel rules", () => {
+  const active = { status: "ACTIVE" }, matured = { status: "MATURED" }, closed = { status: "CLOSED" };
+  const panel = (overrides = {}) => fixedDepositPanel({ accountStatus: "ACTIVE", fixedDeposits: [], canOpenFd: true, ...overrides });
+
+  test("an active account with no fixed deposit can open one and nothing blocks closing", () => {
+    assert.deepEqual(panel(), { unavailable: false, activeCount: 0, closureBlocked: false, closureNote: null, canOpen: true, openNote: null });
+  });
+
+  test("an ACTIVE fixed deposit blocks closing and opening a second one, and says why", () => {
+    const result = panel({ fixedDeposits: [active, matured] });
+    assert.equal(result.activeCount, 1);
+    assert.equal(result.closureBlocked, true);
+    assert.match(result.closureNote, /cannot be closed/);
+    assert.equal(result.canOpen, false);
+    assert.match(result.openNote, /already has an active fixed deposit/);
+  });
+
+  test("MATURED and CLOSED fixed deposits block nothing", () => {
+    const result = panel({ fixedDeposits: [matured, closed] });
+    assert.equal(result.closureBlocked, false); assert.equal(result.closureNote, null);
+    assert.equal(result.canOpen, true); assert.equal(result.openNote, null);
+  });
+
+  test("a frozen or closed account cannot start a fixed deposit", () => {
+    for (const accountStatus of ["FROZEN", "CLOSED"]) {
+      const result = panel({ accountStatus });
+      assert.equal(result.canOpen, false);
+      assert.match(result.openNote, /active account/);
+    }
+  });
+
+  test("a role without the right gets no action; the closure note still shows", () => {
+    assert.equal(panel({ canOpenFd: false }).canOpen, false);
+    assert.equal(panel({ canOpenFd: false, fixedDeposits: [active] }).closureBlocked, true);
+  });
+
+  test("when the list could not be read nothing is claimed: no closure note, no opening, an honest note", () => {
+    const result = panel({ fixedDeposits: null });
+    assert.equal(result.unavailable, true);
+    assert.equal(result.closureBlocked, false); assert.equal(result.closureNote, null);
+    assert.equal(result.canOpen, false);
+    assert.match(result.openNote, /unavailable/);
+    assert.equal(panel({ fixedDeposits: [] }).unavailable, false, "an empty list is not the same as an unreadable one");
+  });
+
+  test("the panel text never carries ids or amounts", () => {
+    const result = panel({ fixedDeposits: [{ status: "ACTIVE", fdId: "fd-1", principalAmount: "1000.00" }] });
+    assert.ok(!/fd-1|1000/.test(JSON.stringify(result)));
+  });
+});
+

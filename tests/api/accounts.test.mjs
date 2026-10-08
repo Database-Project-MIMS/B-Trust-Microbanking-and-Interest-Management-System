@@ -53,6 +53,7 @@ describe('P02-M03-T05: account routes under mims_app', () => {
       await client.query('ALTER TABLE transaction DISABLE TRIGGER trg_financial_transaction_immutable');
       await client.query(`DELETE FROM transaction WHERE account_id IN (${scope})`, [branchIds]);
       await client.query('ALTER TABLE transaction ENABLE TRIGGER trg_financial_transaction_immutable');
+      await client.query(`DELETE FROM fixed_deposit WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM account_opening_request WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM joint_mandate WHERE account_id IN (${scope})`, [branchIds]);
       await client.query(`DELETE FROM account_holder WHERE account_id IN (${scope})`, [branchIds]);
@@ -483,16 +484,170 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     await failsSafely(await addHolder(accountId, { customerId: await makeCustomer() }), 409, 'ACCOUNT_NOT_ACTIVE');
   });
 
-  // ------------------------------------------------------------------ close stub
+  // ------------------------------------------------------------------ closing (BR-18)
 
-  test('closing is a documented 501 stub for managers and forbidden for everyone else', async () => {
-    const { accountId } = await openOk(individual(await makeCustomer()));
-    const close = (token, csrfHeader = csrf) => CLOSE(request('POST', `/api/accounts/${accountId}/close`, { token, csrfHeader }), { params: Promise.resolve({ id: accountId }) });
-    const response = await close(tokens.manager); assert.equal(response.status, 501);
-    assert.equal((await response.json()).error.code, 'NOT_IMPLEMENTED');
-    assert.equal((await close(tokens.agent)).status, 403);
-    assert.equal((await close(tokens.manager, null)).status, 403);
-    assert.equal((await close(null)).status, 401);
-    assert.equal((await client.query('SELECT status FROM account WHERE account_id = $1', [accountId])).rows[0].status, 'ACTIVE');
+  const close = (id, token = tokens.manager, csrfHeader = csrf) =>
+    CLOSE(request('POST', `/api/accounts/${id}/close`, { token, csrfHeader }), { params: Promise.resolve({ id }) });
+  const statusOf = async id => (await client.query('SELECT status FROM account WHERE account_id = $1', [id])).rows[0].status;
+  const closeAudits = async id => (await client.query("SELECT user_id, old_values, new_values FROM audit_log WHERE entity_type = 'account' AND entity_id = $1 AND action = 'CLOSE'", [id])).rows;
+  async function addFixedDeposit(accountId, status) {
+    await client.query(
+      `INSERT INTO fixed_deposit (account_id, fd_plan_id, principal_amount, interest_rate_at_opening, start_date, maturity_date, next_interest_date, status)
+       SELECT $1, fd_plan_id, 1000.00, 0.1400, CURRENT_DATE, CURRENT_DATE + 365, CURRENT_DATE + 30, $2 FROM fd_plan ORDER BY tenure_months LIMIT 1`,
+      [accountId, status]);
+  }
+  const openZeroBalance = async () => (await openOk(individual(await makeCustomer()))).accountId;
+
+  test('a manager closes a zero-balance account with no FD: audited, CLOSED, safe body', async () => {
+    const accountId = await openZeroBalance();
+    const response = await close(accountId);
+    assert.equal(response.status, 200);
+    const { data } = await response.json();
+    assert.equal(data.accountId, accountId); assert.equal(data.status, 'CLOSED');
+    assert.ok(!Number.isNaN(Date.parse(data.closedAt)));
+    assert.equal(await statusOf(accountId), 'CLOSED');
+    const audits = await closeAudits(accountId);
+    assert.equal(audits.length, 1); assert.equal(audits[0].user_id, fixture.managerId);
+    assert.equal(audits[0].old_values.status, 'ACTIVE'); assert.equal(audits[0].new_values.status, 'CLOSED');
+  });
+
+  test('closing needs a BRANCH_MANAGER of the account\'s own branch, a CSRF token and a session', async () => {
+    const accountId = await openZeroBalance();
+    assert.equal((await close(accountId, tokens.agent)).status, 403);
+    assert.equal((await close(accountId, tokens.centralOps)).status, 403);
+    assert.equal((await close(accountId, tokens.customerLogin)).status, 403);
+    assert.equal((await close(accountId, tokens.manager, null)).status, 403);
+    assert.equal((await close(accountId, null)).status, 401);
+    await failsSafely(await close(accountId, tokens.otherManager), 404, 'NOT_FOUND');
+    assert.equal(await statusOf(accountId), 'ACTIVE');
+    assert.equal((await closeAudits(accountId)).length, 0);
+  });
+
+  test('a non-zero balance blocks closing with 409 BALANCE_NOT_ZERO and changes nothing', async () => {
+    const accountId = await openZeroBalance();
+    await client.query('UPDATE account SET current_balance = 0.01 WHERE account_id = $1', [accountId]);
+    await failsSafely(await close(accountId), 409, 'BALANCE_NOT_ZERO');
+    assert.equal(await statusOf(accountId), 'ACTIVE');
+    assert.equal((await closeAudits(accountId)).length, 0);
+  });
+
+  test('an ACTIVE fixed deposit blocks closing with 409 ACTIVE_FD_EXISTS; a MATURED or CLOSED one does not', async () => {
+    const blocked = await openZeroBalance();
+    await addFixedDeposit(blocked, 'ACTIVE');
+    await failsSafely(await close(blocked), 409, 'ACTIVE_FD_EXISTS');
+    assert.equal(await statusOf(blocked), 'ACTIVE');
+    assert.equal((await closeAudits(blocked)).length, 0);
+
+    const history = await openZeroBalance();
+    await addFixedDeposit(history, 'MATURED'); await addFixedDeposit(history, 'CLOSED');
+    assert.equal((await close(history)).status, 200);
+    assert.equal(await statusOf(history), 'CLOSED');
+  });
+
+  test('closing twice gives 409 ACCOUNT_ALREADY_CLOSED and a frozen account cannot be closed', async () => {
+    const accountId = await openZeroBalance();
+    assert.equal((await close(accountId)).status, 200);
+    await failsSafely(await close(accountId), 409, 'ACCOUNT_ALREADY_CLOSED');
+    assert.equal((await closeAudits(accountId)).length, 1);
+
+    const frozen = await openZeroBalance();
+    await client.query("UPDATE account SET status = 'FROZEN' WHERE account_id = $1", [frozen]);
+    await failsSafely(await close(frozen), 409, 'ACCOUNT_NOT_ACTIVE');
+    assert.equal(await statusOf(frozen), 'FROZEN');
+  });
+
+  test('a malformed account id is rejected before the database is touched', async () => {
+    const response = await close('not-a-uuid');
+    assert.equal(response.status, 400);
+  });
+
+  // ------------------------------------------------------------------ fixed-deposit panel data (P04-M03-T03)
+
+  // start offset in days before today; the maturity and next-interest dates follow the opening date.
+  async function addFixedDepositOn(accountId, status, daysAgo, principal) {
+    await client.query(
+      `INSERT INTO fixed_deposit (account_id, fd_plan_id, principal_amount, interest_rate_at_opening, start_date, maturity_date, next_interest_date, status)
+       SELECT $1, fd_plan_id, $4::numeric, 0.1400, CURRENT_DATE - $3::int, CURRENT_DATE - $3::int + 365, CURRENT_DATE - $3::int + 30, $2
+         FROM fd_plan ORDER BY tenure_months LIMIT 1`,
+      [accountId, status, daysAgo, principal]);
+  }
+  const FD_KEYS = ['fdId', 'fdPlanId', 'interestRateAtOpening', 'maturityDate', 'nextInterestDate', 'planName', 'principalAmount', 'startDate', 'status'];
+  const fixedDepositsOf = async (id, token = tokens.manager) => (await (await detail(id, token)).json()).data.fixedDeposits;
+
+  test('the account detail lists no fixed deposits for a new account', async () => {
+    const accountId = await openZeroBalance();
+    assert.deepEqual(await fixedDepositsOf(accountId), []);
+  });
+
+  test('fixed deposits come back newest first with exact strings, every status and no internal ids', async () => {
+    const accountId = await openZeroBalance();
+    await addFixedDepositOn(accountId, 'MATURED', 400, '1000.00');
+    await addFixedDepositOn(accountId, 'ACTIVE', 10, '2500.50');
+    await addFixedDepositOn(accountId, 'CLOSED', 200, '750.25');
+    const deposits = await fixedDepositsOf(accountId);
+    assert.deepEqual(deposits.map(fd => [fd.status, fd.principalAmount]), [['ACTIVE', '2500.50'], ['CLOSED', '750.25'], ['MATURED', '1000.00']]);
+    for (const fd of deposits) {
+      assert.deepEqual(Object.keys(fd).sort(), FD_KEYS);
+      assert.equal(fd.interestRateAtOpening, '0.1400');
+      assert.equal(typeof fd.planName, 'string');
+      for (const key of ['startDate', 'maturityDate', 'nextInterestDate']) assert.match(fd[key], /^\d{4}-\d{2}-\d{2}$/);
+    }
+    // The only ids are the FD's own and its plan's; no account, customer, user or branch id is added.
+    const own = new Set(deposits.flatMap(fd => [fd.fdId, fd.fdPlanId]));
+    for (const found of JSON.stringify(deposits).match(new RegExp(UUID_TEXT.source, 'gi')) ?? []) assert.ok(own.has(found), `unexpected id ${found}`);
+  });
+
+  test('every role that may see the account sees its fixed deposits, others get the uniform 404 with no FD data', async () => {
+    const customerId = await makeCustomer({ login: fixture.customerLoginId });
+    const { accountId } = await openOk(individual(customerId));
+    await addFixedDepositOn(accountId, 'ACTIVE', 5, '5000.00');
+    const expected = (await fixedDepositsOf(accountId)).map(fd => fd.fdId);
+    assert.equal(expected.length, 1);
+    for (const token of [tokens.manager, tokens.agent, tokens.centralOps, tokens.auditor, tokens.customerLogin]) {
+      assert.deepEqual((await fixedDepositsOf(accountId, token)).map(fd => fd.fdId), expected);
+    }
+    for (const token of [tokens.otherManager, tokens.otherAgent, tokens.secondAgent]) {
+      const body = await failsSafely(await detail(accountId, token), 404, 'NOT_FOUND');
+      assert.equal(body.data, undefined);
+      assert.ok(!JSON.stringify(body).includes('principalAmount'));
+    }
+  });
+
+  test('if the fixed-deposit list cannot be read the account is still returned, with null and no false empty list', async () => {
+    const accountId = await openZeroBalance();
+    await addFixedDepositOn(accountId, 'ACTIVE', 3, '1500.00');
+    // Disposable database only: take away one column privilege, then give it back.
+    await client.query('REVOKE SELECT (status) ON fixed_deposit FROM mims_app');
+    let degraded;
+    try { degraded = await detail(accountId); }
+    finally { await client.query('GRANT SELECT (status) ON fixed_deposit TO mims_app'); }
+    assert.equal(degraded.status, 200);
+    const data = (await degraded.json()).data;
+    assert.equal(data.fixedDeposits, null);
+    assert.equal(data.status, 'ACTIVE'); assert.equal(data.currentBalance, '0.00'); assert.equal(data.holders.length, 1);
+    assert.ok(!SQL_TEXT.test(JSON.stringify(data)), 'no database detail in the body');
+    // Restored: the same account lists its deposit again, so the failure left nothing behind.
+    assert.equal((await fixedDepositsOf(accountId)).length, 1);
+  });
+
+  test('the last transaction is the last POSTED one, even when timestamps tie or the later row is stamped earlier (ledger_seq)', async () => {
+    const accountId = await openZeroBalance();
+    const insert = (type, amount, date) => client.query(
+      `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount, transaction_date, balance_after)
+       SELECT $1, $2, channel_id, $3, $4, $5::numeric, $6::timestamptz, $5::numeric FROM transaction_channel LIMIT 1`,
+      [accountId, fixture.managerId, `LAST-${randomUUID().slice(0, 10)}`, type, amount, date]);
+    // posted first, stamped LATER; posted second, stamped EARLIER (a deposit that waited for the account lock)
+    await insert('DEPOSIT', '100.00', '2025-03-05T10:00:00+05:30');
+    await insert('DEPOSIT', '250.00', '2025-03-04T10:00:00+05:30');
+    assert.equal((await (await detail(accountId)).json()).data.lastTransaction.amount, '250.00');
+    // identical timestamps: still the one posted last
+    const tied = await openZeroBalance();
+    const insertTied = (amount) => client.query(
+      `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount, transaction_date, balance_after)
+       SELECT $1, $2, channel_id, $3, 'DEPOSIT', $4::numeric, '2025-03-01T10:00:00+05:30', $4::numeric FROM transaction_channel LIMIT 1`,
+      [tied, fixture.managerId, `TIED-${randomUUID().slice(0, 10)}`, amount]);
+    await insertTied('10.00'); await insertTied('20.00'); await insertTied('30.00');
+    assert.equal((await (await detail(tied)).json()).data.lastTransaction.amount, '30.00');
   });
 });
+

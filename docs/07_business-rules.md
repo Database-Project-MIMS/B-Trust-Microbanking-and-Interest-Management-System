@@ -23,6 +23,7 @@ database are what make the rule true.
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 | BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
 | BR-O7 | Agent activity respects both current access and immutable posting-branch history | SRV + SQL | T02 revalidates active caller role/profile; AGENT is self-only, manager targets current own-branch ordinary agents and filters `transaction.branch_id` in SQL; ADMIN/CENTRAL_OPS are bankwide. NULL agent attribution is excluded; managers also exclude NULL branch attribution. Inclusive Asia/Colombo dates use half-open timestamp bounds. Counts/SUM are calculated in PostgreSQL; no net balance inferred. ADR-0017. |
+| BR-R5 | RPT-05 attributes joint account activity to every holder; reversals negate their original category | VIEW + SQL | `vw_rpt05_customer_activity` yields one row per holder/account/transaction and maps reversal rows to the original type with negative amount. The report service aggregates exact `NUMERIC` values with Colombo date and branch predicates in SQL. Its grand total is holder-attributed, not a distinct-ledger reconciliation total (ADR-0022). |
 | BR-O6 | Branch and agent master-data changes are audited atomically without storing passwords or identity numbers | TRG | `trg_audit_branch`, `trg_audit_agent` and the linked `app_user` trigger write through the sanitized `fn_audit_master_changes()` function in the caller transaction |
 
 ## Products and eligibility
@@ -62,7 +63,7 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 | BR-10 | Every transaction has a unique reference, timestamp, type, amount, account and responsible user | CON | `transaction.reference_number UNIQUE NOT NULL` (G-05); `NOT NULL` on type, amount, account, initiator; `amount` uses the `positive_money` domain |
 | BR-16 | Posted transactions are **never physically deleted**; corrections use linked reversing entries | TRG, CON | `trg_financial_transaction_immutable` rejects `UPDATE`/`DELETE`; the app role has no `DELETE` grant; `transaction_reversal.original_transaction_id UNIQUE` makes a transaction reversible exactly once (DB-CON-04, G-02) |
 | BR-17 | Joint-account withdrawals must satisfy the stored mandate | SRV, FN, TRG | `joint_mandate.mandate_type` (`ANY_ONE` / `ALL_HOLDERS`) validated inside the withdrawal transaction (G-08) by `fn_check_withdrawal_mandate(account_id, signer_customer_ids)` (`database/routines/fn_check_withdrawal_mandate.sql`, I-4, P03-M03-T02), called by `sp_post_withdrawal` after the account lock. Stored and shape-checked by `0242`: `CHECK`s, `UNIQUE(account_id)`, `trg_joint_mandate_fit`; holder count/adult rule by `trg_validate_joint_mandate` |
-| BR-18 | Account closure requires zero balance and no active FD | SRV, SP, CON | Checked in the closure procedure against `current_balance = 0` and the absence of an `ACTIVE` FD |
+| BR-18 | Account closure requires zero balance and no active FD | SRV, SP, TRG | `sp_close_account` (migration 0441) locks the account `FOR UPDATE` and checks `status = 'ACTIVE'`, `current_balance = 0` and no `ACTIVE` FD; `trg_account_close_guard` (BEFORE UPDATE OF status, SECURITY DEFINER so `fixed_deposit` RLS cannot hide an FD) locks the account row and enforces the same balance and FD rule on any direct `UPDATE` to `CLOSED` (it waits for an in-flight FD insert); `POST /api/accounts/{id}/close` calls the procedure (BRANCH_MANAGER) |
 | BR-I1 | A repeated request with the same idempotency key must not create a second financial effect | CON, SRV | Partial unique index on `transaction(idempotency_key)` (G-04, FR-DEP-04); withdrawal 0363 serializes per key, locks account and binds replay to the original actor/account/channel/amount/narration/canonical signer set; matching replay returns the original row without another debit |
 | BR-I2 | Withdrawal limits: LKR 100,000 single, LKR 200,000 daily per account, unless a manager approves | SRV, SP | Values in `system_parameter`; daily total computed inside the `sp_post_withdrawal` locked transaction (SRS §7.1) |
 | BR-I3 | A repeated account-opening request (same `Idempotency-Key`) never opens a second account or credits a second initial deposit | CON, SRV | `account_opening_request` `UNIQUE (user_id, idempotency_key)` written in the opening transaction (migration 0244); per-key advisory lock; replay returns the original result (FR-DEP-04 pattern for accounts) |
@@ -175,12 +176,22 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 
 ### RPT-01 database aggregation contract (0520, ADR-0020)
 
+**Runtime follow-up (0521, ADR-0022):** Current stored active report roles are
+validated in both service and SQL. Manager branch predicates use immutable posting
+branch before the roster outer join. Net = deposits + interest − withdrawals +
+linked withdrawal reversals − linked deposit/interest reversals. Missing/invalid
+original links make net unresolved, never an assumed credit. Counts and NUMERIC
+sums stay exact strings, including page and full-filter totals. REPEATABLE READ
+materialization and REPORT_ACCESSED audit commit together; CSV then streams its
+private snapshot spool. NULL-agent exclusions are disclosed separately. Legacy
+global transaction RLS remains an owner integration gap, not a report grant.
+
 Counts/values use captured `transaction.agent_id` and `transaction.branch_id`, never
 current membership or inferred attribution. Include all agent profiles regardless
 of current role/status; report request authorization is a separate I-7 responsibility.
 Retain exact timestamps, bigint counts and unbounded NUMERIC sums. Positive amounts
-remain grouped by type, with REVERSAL separate; signed net presentation awaits M4's
-reversal contract and T02. Selected-range zero rows require the eligible roster's
+remain grouped by type, with REVERSAL separate; the 0521 readers above implement
+signed net from valid original links. Selected-range zero rows require the eligible roster's
 LEFT JOIN to already-filtered facts, not a WHERE date filter after the outer join.
 The owner-only invoker/barrier view exposes no live runtime report by itself.
 

@@ -33,17 +33,14 @@ Since M4 has merged the withdrawal and reversal stored procedures, I am **FULLY 
 - I fully built the `fn_calculate_fd_interest` math function.
 - I fully built the `sp_open_fixed_deposit` procedure and tested it automatically.
 
-### 🔴 Who I am blocked by:
-I am blocked by **Member 3 (M3)** and **Member 4 (M4)**.
-- M3 needs to complete **`P04-M03-T01`** (Eligibility Check - `I-6`). M3 officially owns the business rule that dictates if an account is allowed to open an FD. I temporarily hardcoded this rule myself so I wouldn't be stuck.
-- M3 needs to complete **`P04-M03-T02` & `P04-M03-T03`** (API & UI). They must build the frontend so users can actually click a button to trigger my procedure.
-- M4 needs to complete their **Ledger Routine (`I-5`)**. Currently, my procedure deducts money using a raw `UPDATE account SET current_balance...` query. It is supposed to route through M4's ledger.
+### 🟢 Blockers resolved!
+I am completely unblocked and finished with `P04-M05-T02`.
+- M3 completed **`P04-M03-T01`** (Eligibility Check - `I-6`). I have successfully integrated `fn_check_account_fd_eligible` and removed my hardcoded rules.
+- (M3's UI and API tasks `P04-M03-T02` & `P04-M03-T03` are not blocking my database procedure).
+- M4 completed their ledger integration path and I successfully updated `sp_open_fixed_deposit` to insert a direct `WITHDRAWAL` transaction into the ledger and log an audit event, completely fulfilling the requirement.
 
-### 🛠️ What I need to do once they finish:
-Once M3 and M4 finish their tasks, I need to:
-1. Re-open `sp_open_fixed_deposit.sql`.
-2. Delete my raw `UPDATE account...` logic and replace it with a call to M4's official ledger function.
-3. Ensure my locking logic aligns with M3's official `I-6` eligibility rules.
+### 🛠️ What I need to do next:
+Nothing for this part! Task `P04-M05-T02` is officially **100% DONE** and all tests are passing.
 
 ---
 
@@ -74,9 +71,9 @@ Next up: I need to begin Task 5 (`feat/p04-m05-fd-pages`) and build the frontend
 **My Task IDs:** `P05-M05-T01`, `P05-M05-T02`, `P05-M05-T03`, `P05-M05-T04`
 
 ### 🟢 How much I finished:
-**0% Implemented (Currently 50% Unblocked, 50% Blocked).**
-- **Task 1 & 2 (Database Views):** I can do this right now. It is strictly SQL views relying on Phase 4 tables which are already merged in `dev`.
-- **Task 3 & 4 (APIs and Analysis):** I cannot start these at all yet.
+**75% Implemented (Tasks 1, 2, & 3 are DONE, Task 4 is Blocked/Pending).**
+- **Task 1 & 2 (Database Views):** 100% completed. `vw_rpt03_active_fds` and `vw_rpt04_interest_distribution` are created.
+- **Task 3 (APIs and Analysis):** 100% completed. APIs are built using M1's `I-7` framework helper functions.
 
 ### 🟢 Blockers resolved!
 - M1 successfully merged **`P05-M01-T01` (Report Framework - `I-7`)** and CSV utilities!
@@ -84,8 +81,5 @@ Next up: I need to begin Task 5 (`feat/p04-m05-fd-pages`) and build the frontend
 - The **Rest of the Team** is still building their reports (M2 just submitted the view for RPT-01).
 
 ### 🛠️ What I need to do NOW:
-I am **FULLY UNBLOCKED** to start Phase 5 Tasks 1, 2, and 3.
-1. Create a new branch `feat/p05-m05-rpt03-view`.
-2. Write the SQL views for Task 1 and Task 2.
-3. Build the APIs for Task 3 using M1's `I-7` framework helper functions.
-4. Wait for the rest of the team to finish their reports before executing the `EXPLAIN ANALYZE` performance checks for Task 4.
+I am **BLOCKED** on Phase 5 Task 4.
+1. Wait for the rest of the team to finish their reports before executing the `EXPLAIN ANALYZE` performance checks for Task 4.

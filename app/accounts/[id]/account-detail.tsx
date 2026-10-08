@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AccountDetail as Detail } from "@/services/account-service";
 import { accountRequest, csrfToken } from "../account-client";
+import { AccountFixedDeposits } from "./account-fixed-deposits";
 import { authoritySummary, displayDate, displayMoney, holderAuthority, transactionTypeLabel } from "../account-format";
 import type { HolderChoice } from "../new/account-opening-model";
 import { CustomerPicker } from "../new/customer-picker";
@@ -13,7 +14,7 @@ const NOTICES: Record<string, string> = {
   existing: "This account was already opened by an earlier submission. Nothing was changed.",
 };
 
-export function AccountDetail({ id, canAddHolder, canBrowse, notice }: { id: string; canAddHolder: boolean; canBrowse: boolean; notice?: string }) {
+export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice }: { id: string; canAddHolder: boolean; canBrowse: boolean; canOpenFd: boolean; notice?: string }) {
   const [account, setAccount] = useState<Detail | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -88,6 +89,8 @@ export function AccountDetail({ id, canAddHolder, canBrowse, notice }: { id: str
       </tbody></table></div>
       {account.holders.length < account.holderCount && <p className="muted mt-4">You can see {account.holders.length} of {account.holderCount} holders.</p>}
     </section>
+
+    <AccountFixedDeposits accountId={account.accountId} accountStatus={account.status} fixedDeposits={account.fixedDeposits} canOpenFd={canOpenFd} />
 
     {canAddHolder && <section className="card mt-6" aria-labelledby="add-holder-title"><h2 id="add-holder-title">Add a joint holder</h2>
       {!canAdd ? <p className="muted">{account.status !== "ACTIVE" ? "Holders can only be added to an active account." : account.maxHolders <= 1 ? "This is a single-holder plan." : `This account already has the maximum of ${account.maxHolders} holders.`}</p> : <>

@@ -84,3 +84,30 @@ export function eligibilitySummary(plan: {
     : `${plan.minHolders}–${plan.maxHolders} holders`;
   return [age, holders, plan.requiresAllAdult ? "all adult" : null].filter((part): part is string => part !== null).join(", ");
 }
+
+/**
+ * What the fixed-deposit panel says and offers for one account; text only, so it holds no ids or amounts.
+ * `fixedDeposits` is null when the list could not be read: nothing is claimed about closing or opening then.
+ */
+export function fixedDepositPanel(input: {
+  accountStatus: string; fixedDeposits: readonly { status: string }[] | null; canOpenFd: boolean;
+}): { unavailable: boolean; activeCount: number; closureBlocked: boolean; closureNote: string | null; canOpen: boolean; openNote: string | null } {
+  if (input.fixedDeposits === null) {
+    return { unavailable: true, activeCount: 0, closureBlocked: false, closureNote: null, canOpen: false,
+      openNote: "Fixed deposit details are unavailable right now, so a new deposit cannot be opened from this page." };
+  }
+  const activeCount = input.fixedDeposits.filter(fd => fd.status === "ACTIVE").length;
+  const closureBlocked = activeCount > 0;
+  const active = input.accountStatus === "ACTIVE";
+  // One ACTIVE fixed deposit per account (ADR-0011); the database enforces it, this only explains it.
+  const canOpen = input.canOpenFd && active && !closureBlocked;
+  let openNote: string | null = null;
+  if (!canOpen) {
+    if (!active) openNote = "A fixed deposit can only be opened from an active account.";
+    else if (closureBlocked) openNote = "This account already has an active fixed deposit. A new one can be opened after it matures or is closed.";
+  }
+  return {
+    unavailable: false, activeCount, closureBlocked, canOpen, openNote,
+    closureNote: closureBlocked ? "This account has an active fixed deposit, so it cannot be closed until the deposit matures or is closed." : null,
+  };
+}

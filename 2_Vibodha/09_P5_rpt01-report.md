@@ -1,108 +1,73 @@
 # Phase 5 — RPT-01 Agent-Wise Transaction Report
 
-**Task IDs:** `P05-M02-T01`, `P05-M02-T02`
-**T01 branch:** `feat/p05-m02-rpt01-view`
-**Migration:** `0520_p05_m02_rpt01_view.sql`
-**Status:** T01 local REVIEW (663 tests /62 suites combined verification); T02 TODO, pending I-7/CSV/access auditing
-**Dependencies:** T01 needs merged P03-M02-T01. T02 needs T01 and M1's I-7.
+**Task IDs:** P05-M02-T01, P05-M02-T02
+**T01:** DONE, migration0520 merged in PR #67 at4095b38.
+**T02 branch:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+**T02 migration:** 0521_p05_m02_rpt01_runtime.sql
+**T02 status:** local REVIEW; relevant verification passes, integration review/user publication pending.
 
-Vibodha authorized a database-only early start on 2026-10-08 (ADR-0020).
-General Phase 5 entry remains pending. Existing report UI is outside this T01 task;
-no API, CSV exporter, audit helper or screen integration is delivered by T01.
+Vibodha approved the scoped T02 start and necessary shared M1 repairs in ADR-0022.
+I-7 was restored by PR #69. General Phase5 entry remains pending. M1 retains shared
+framework ownership; see the integration handoff for explicit cross-member changes.
 
-## T01 — `vw_rpt01_agent_transactions`
+## Database contract
 
-The authoritative definition lives in migration 0520. Each row groups by agent,
-captured posting branch, type and exact `transaction_date`, retaining timestamps
-for arbitrary range filtering before final totals. The result includes current
-profile metadata (`agent_id`, `employee_no`, `agent_name`, `agent_status`,
-`agent_branch_id`, `agent_branch_name`) and posting facts (`branch_id`, `branch_name`,
-`transaction_type`, `transaction_date`, bigint `transaction_count`, unbounded NUMERIC
-`total_value`). Return money/count strings from the future API.
+Merged0520 stays unchanged/private. Its invoker/barrier view retains exact posting
+branch/type/timestamp facts and current profile metadata for all attribution identities.
+New0521 adds fn_rpt01_scope, fn_rpt01_rows and fn_rpt01_exclusions. Stored active
+actor/role/context and active manager profile/branch are checked in SQL. PUBLIC
+EXECUTE is revoked; mims_app receives only fixed aggregate-reader execution.
+Narrow definer readers pin search_path and qualify relations. Broader raw transaction
+RLS remains a recorded M1/M4 gap; this task does not change writer visibility.
 
-Every `agent` attribution profile is retained, including inactive and manager staff
-profiles (ADR-0006). Current role changes do not erase history. NULL ledger agent
-attribution is excluded; NULL posting branches remain bankwide facts and must not
-be inferred from current membership. REVERSAL stays a separate positive amount
-category; this task does not invent signed net movement.
+Date/branch/optional-agent predicates select facts before the roster outer join.
+Inclusive Colombo dates use half-open timestamp bounds. Inactive/manager profiles,
+transferred historical identities and range-specific zeros are preserved. Bankwide
+NULL posting branches remain NULL; no attribution is inferred from current membership.
 
-The view's LEFT JOIN uses COUNT(transaction_id) and COALESCE(SUM(amount), 0.00),
-so profiles with no attributed history have an undated zero row. Agents with
-history outside a selected range need the consumer's roster outer join below.
-An all-time aggregate cannot accept a later date filter; WHERE date filtering after
-an outer join also removes zero rows. The old `posted_at` / `idx_transaction_agent_posted`
-examples are superseded by `transaction_date` / `ix_transaction_agent_date` (0320).
+Counts and unbounded NUMERIC sums remain strings. Rows pivot deposits, withdrawals,
+interest and unsigned reversals. Net = deposits + interest − withdrawals + linked
+withdrawal reversals − linked deposit/interest reversals. Valid original links match
+account/amount/type; absent/invalid links produce NULL detail net / UNRESOLVED totals.
+NULL-agent exclusions cover selected dates/branch independently of the agent filter.
 
-The view is SECURITY INVOKER + SECURITY BARRIER and owner-only. M1/T02 must establish
-current-caller authorization, underlying RLS, scoped SQL, grants and access auditing
-before runtime SELECT is enabled. Existing transaction table access alone does not
-make the new view a safe runtime report.
+## API, screen and CSV
 
-## Selected-range SQL contract for T02
+GET /api/reports/agent-transactions serves ADMIN, CENTRAL_OPS, AUDITOR and current
+own-branch BRANCH_MANAGER. Strict filters: from/to, branchId/agentId UUIDs,
+format=json|csv, page1–1000000, pageSize1–100, sort employeeNo|agentName|netTotal,
+direction asc|desc. Repeated/unknown keys fail400; foreign manager scope fails403.
+Active stored identity is revalidated inside the service transaction.
 
-This owner-executed shape is covered by `tests/db/rpt01-view.test.mjs`. `$1` is an
-optional agent ID, `$2`/`$3` are inclusive validated Colombo dates and `$4` is the
-**server-authorized** effective branch ID (NULL only for an authorized bankwide
-request). Date and branch predicates select facts before the roster outer join.
-A branch roster includes current members plus transferred identities with matching
-posting-branch history in the selected range. For branch reports, display the
-requested posting branch, not another branch's current roster metadata.
+Preparation materializes rows and SQL page/grand totals in REPEATABLE READ, audits
+REPORT_ACCESSED on the same executor, then commits. JSON details paginate; CSV
+exports all matching rows from a private temporary spool written in batches100.
+Network streaming follows commit, respects backpressure and cleans up on completion,
+cancellation/error. Audit failure rolls back preparation and deletes the spool.
+CSV metadata/notes/details/subtotals/grand totals have aligned explicit columns,
+quoted CRLF and formula protection while signed decimal strings stay exact.
 
-```sql
-WITH filtered AS (
-    SELECT agent_id, transaction_type, transaction_count, total_value
-    FROM vw_rpt01_agent_transactions
-    WHERE ($1::uuid IS NULL OR agent_id = $1)
-      AND transaction_date >= ($2::date::timestamp AT TIME ZONE 'Asia/Colombo')
-      AND transaction_date < (($3::date + 1)::timestamp AT TIME ZONE 'Asia/Colombo')
-      AND ($4::uuid IS NULL OR branch_id = $4)
-)
-SELECT a.agent_id, a.employee_no, a.full_name AS agent_name, f.transaction_type,
-       COALESCE(SUM(f.transaction_count), 0)::text AS transaction_count,
-       COALESCE(SUM(f.total_value), 0.00)::text AS total_value
-FROM agent AS a
-LEFT JOIN filtered AS f ON f.agent_id = a.agent_id
-WHERE ($1::uuid IS NULL OR a.agent_id = $1)
-  AND ($4::uuid IS NULL OR a.branch_id = $4
-       OR EXISTS (SELECT 1 FROM filtered AS history WHERE history.agent_id = a.agent_id))
-GROUP BY a.agent_id, a.employee_no, a.full_name, f.transaction_type
-ORDER BY a.employee_no, a.agent_id, f.transaction_type;
-```
+The live report page reuses I-7, named scoped selectors and Emerald UI tokens.
+Metadata shows applied period/scope/agent/order, generation time and requesting user.
+Details, page subtotal and full-filter grand total are distinct. Loading/zero/empty/
+error/retry states, pagination and actual API CSV download are implemented. Export
+uses applied filters despite draft selector changes; financial values use no JS arithmetic.
 
-Do not sum current-branch metadata as financial attribution or interpret NULL type
-on a zero row as a new ledger type. T02 may pivot the four type categories and add
-labelled subtotals/grand totals in SQL. Reversal-aware signed net requires M4's
-reversal contract. The report must disclose unattributed legacy/system rows rather
-than claiming these agent totals reconcile to *all* ledger rows.
+## Verification and acceptance
 
-EXPLAIN ANALYZE evidence for a selective agent/time view query is recorded in the
-T01 handoff and ignored `test-results/rpt01-view-explain.json`. No new index or
-planner forcing is used. T02/M5 must measure the final scoped/paginated/CSV query
-on representative data; a selective probe is not full report performance acceptance.
+72 relevant tests /7 suites pass (13 new runtime DB +15 new API +4 report-model
+cases and existing view/activity regressions), clean40-migration disposable rebuild,
+checksums/grants/seed checks, typecheck, lint and production build. Browser manager
+filter/zero/download/applied-filter/error/retry/mobile checks pass. The final SQL
+function measured6.826ms with20000 extra postings; underlying selective view probe
+uses ix_transaction_agent_date without planner forcing. Bankwide tuning stays with M5.
 
-## T02 — API, screen integration and CSV (pending)
+Full merged-tree suite:767 tests,729 pass,27 fail,11 cancelled,0 skipped. Legacy
+M1 session/branch/audit fixtures and M4 ambiguous withdrawal callers are documented
+in the handoff; no full-suite pass or general phase approval is claimed. Broader
+transaction RLS remains an integration gap. T02 stays REVIEW, not DONE.
 
-`GET /api/reports/agent-transactions` follows `docs/05_api-and-pages.md` Reports:
-
-- Roles: BRANCH_MANAGER own branch, CENTRAL_OPS, AUDITOR, ADMIN.
-- Validated filters: dates, branchId, agentId, format=json|csv, page and pageSize;
-  sort identifiers come from a server allow-list.
-- Revalidate current stored identity and enforce the server's effective branch in
-  SQL. Reject out-of-scope branch requests with 403; do not filter fetched rows.
-- Success includes rows, subtotals, grandTotal, filters, generatedAt and requestedBy.
-- JSON and streamed CSV share the same filtered query/snapshot and exact totals.
-- Use M1's I-7 CSV and report-access audit helpers; do not duplicate the framework.
-- Integrate the existing screen after checking the shared framework handoff.
-- Add API tests for authorization, date filters, JSON/CSV parity and access audits.
-- Measure the final query and reconcile attributed totals/unattributed exclusions.
-
-## Acceptance by task
-
-T01: timestamp/type/posting-branch view, exact totals, tested filtered-range zeros,
-transfer/NULL/inactive-profile regressions, denied runtime grant, measured selective
-index use, clean rebuild/full tests/typecheck/lint/build, updated docs and handoff.
-T01 is REVIEW after local verification, pending user publication and teammate review.
-
-T02: authorized API, page integration, metadata/subtotals/grand totals, reversal-aware
-net, matching streamed CSV and audited access, API tests and final-query performance.
-T02 remains TODO until T01 is merged and I-7/CSV/access auditing are published.
+/review, /imprint and /remember recorded; all five overviews reviewed. No assistant
+publication at implementation closeout. The user subsequently authorized several
+local commits; push/PR/merge and teammate integration review remain pending.
+See ../.agent/handoffs/p05-m02-rpt01-api-ui.md and ADR-0022.

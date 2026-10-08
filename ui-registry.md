@@ -173,6 +173,24 @@ the approved token set.
 Each entry, once built, must record: purpose · file path · props · variants · states
 (default / hover / focus / disabled / loading / error) · spacing · where it is used.
 
+### Live customer activity report
+
+File: `app/reports/customer-activity/customer-activity-report.tsx`
+Last updated: 8 Oct 2026 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Background and border | `card`, `table-wrap`, `data-table`; `--surface`, `--border` |
+| Radius and shadow | Existing card and input styles; no new values |
+| Text | `page-title`, `eyebrow`, `page-description`, `muted` |
+| Spacing | `space-y-6`, `form-grid`, `mt-6`, `gap-3` |
+| Actions | `btn btn-primary` for Apply; `btn btn-secondary` for CSV and paging |
+| States | Loading status, explicit empty row, safe alert with retry, disabled paging |
+| Money | `amount` cells; exact decimal strings formatted for display only |
+
+The filter card and paged table remain within the existing authenticated report
+layout. A joint-holder attribution note accompanies the displayed totals.
+
 ### MIMS workflow surfaces
 
 File: `components/mims/workflow-screen.tsx`, `app/globals.css`
@@ -314,3 +332,43 @@ File: app/customers/[id]/customer-fixed-deposits.tsx · Updated 2026-10-08 · /i
 
 Embedded only after an authorized customer profile. No opening action or invented
 financial data; product rates come from FD snapshots. Existing profile patterns retained.
+### Account fixed-deposits panel
+
+Files: `app/accounts/[id]/account-fixed-deposits.tsx` (presentational component, used by `account-detail.tsx`), text rules in
+`app/accounts/account-format.ts` (`fixedDepositPanel`) · Updated 2026-10-08 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Surface | `card mt-6 min-w-0` after the Holders card, same as the customer FD panel |
+| Heading / body | `h2` (like Holders), `muted` explanatory line; `muted` for the "cannot open" note |
+| Table | `table-wrap mt-4` + `data-table`; `sr-only` caption; `scope="col"` headers and a `scope="row"` product cell; same seven columns as the customer panel minus the account column |
+| Values | `displayMoney` (`amount whitespace-nowrap`), `displayRate` for the opening-rate snapshot, `displayDate` (`whitespace-nowrap`), `status-pill` |
+| Closure note | plain `role="status"` paragraph above the table when an ACTIVE FD exists (no new colour; it informs, it is not an error) |
+| Action | `btn btn-primary mt-4` link "Open a fixed deposit" to `/fixed-deposits/new?accountId=…`; shown only when the role may open FDs, the account is ACTIVE and no ACTIVE FD exists |
+| States | `role="status"` empty text ("No fixed deposits on this account."); an unreadable list shows `role="status"` "Fixed deposits could not be loaded. The rest of this account is shown." (never the empty text) and offers no action; data arrives with the account detail, so the page's existing loading and error/Retry states cover the rest |
+
+No new class, token, radius or shadow. Read-only: no write action on a deposit. The link target is M5's page.
+
+## RPT-01 live report and typed I-7 primitives — 2026-10-08
+
+Files: app/reports/agent-transactions/rpt01-screen.tsx; components/report/*.tsx.
+Captured through /imprint after the user-approved framework integration.
+
+| Property | Pattern |
+|---|---|
+| Panels / headings | card; page-header, page-title, eyebrow |
+| Labels / inputs | field, input; associated labels; disabled fieldset during load |
+| Actions | btn btn-primary for Apply; btn btn-secondary for export, retry and pagination |
+| Table | table-wrap, data-table; scoped row/column headers and descriptive caption |
+| Money / counts | text-right tabular-nums; exact decimal-string LKR formatting |
+| Metadata / notes | text-sm text-[var(--text-muted)], flex-wrap gap-4, space-y-2 |
+| Error / loading | card with role=alert and var(--danger); role=status for progress |
+| Spacing | space-y-6 between report sections; space-y-4 inside panels |
+
+Use explicit typed column definitions and totals matched by column key. Distinguish
+page subtotal from full-filter grand total even for empty details. Display applied
+dates/scope/agent/order with Colombo generation time and requester. Named scoped
+selectors precede Apply; CSV export uses applied filters. Preserve exact cents
+without Number conversion; unresolved net is text, not a fabricated zero. Keep
+wide tables inside table-wrap;375px QA confirmed no document horizontal overflow.
+ReportShell's code/endpoint/named metadata are optional for other report owners.
