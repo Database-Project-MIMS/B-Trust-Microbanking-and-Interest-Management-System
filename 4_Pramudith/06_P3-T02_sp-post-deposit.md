@@ -1,6 +1,6 @@
 # 🟡 Phase 3 — Task 02: `sp_post_deposit`
 **Task ID:** `P03-M04-T02` · **Branch:** `feat/p03-m04-sp-post-deposit`
-**File:** `database/routines/sp_post_deposit.sql` · **Status:** TODO
+**File:** `database/routines/sp_post_deposit.sql` · **Status:** DONE
 **Depends on:** T01 (reference/idempotency indexes)
 **Story Points:** ~6 · **Layer:** Database only
 
@@ -167,9 +167,9 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] Deposit locks the account row before deciding, and re-validates status inside the
+- [x] Deposit locks the account row before deciding, and re-validates status inside the
       lock
-- [ ] A repeated `idempotency_key` returns the original result with **no** second credit
-- [ ] `balance_after` and `account.current_balance` always agree after a successful post
-- [ ] A rejected deposit (inactive account) writes no ledger row
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] A repeated `idempotency_key` returns the original result with **no** second credit
+- [x] `balance_after` and `account.current_balance` always agree after a successful post
+- [x] A rejected deposit (inactive account) writes no ledger row
+- [x] `npm run db:rebuild` succeeds from empty

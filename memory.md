@@ -1,74 +1,79 @@
-# Memory — P03-M02-T01 transaction attribution
+# Memory — RPT-01 view and authorized M4 withdrawal correction
 
-## Latest continuation — PR #49 conflict resolution, 2026-10-08
+**Updated:** 2026-10-08 · /remember save
+**Branch:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
 
-User committed T01 (HEAD 67b1817) and opened PR #49. A local --no-commit merge of
-dev 2208986 is now prepared and must be completed by the user, then pushed. The
-tracker preserves merged M5 seed DONE and M2 attribution REVIEW; overall 56 TODO,
-4 REVIEW, 37 DONE. No conflicts remain in Git's index. Fresh combined verification
-passes a clean 24-migration rebuild and all 501 tests/45 suites. Development DB
-preserved. No assistant commit/push/PR creation/completed merge.
-Evidence: .agent/handoffs/p03-m02-t01-pr49-conflict-resolution.md. Incoming seed
-targets (15/10/2) differ from the still-unchecked Phase 2 exit targets (18/22/3);
-owner reconciliation is recorded in open-questions.md. No phase exit is approved.
-The older session/publication notes below are historical, superseded by this entry.
+## Latest conflict resolution
 
-**Updated:** 2026-10-08 · /remember save (non-sensitive continuation state)
-**Branch:** feat/p03-m02-agent-attribution-activity · HEAD d8d1be2 contains dev a4a6b9f
+PR #67 is open. Resolved docs/09_task-tracker.md against dev d466866 without
+discarding either side's task statuses. All 97 task IDs remain unique; summaries
+now record 34 TODO /2 REVIEW /61 DONE. M1's I-7/CSV/access auditing is published
+through PR #65. RPT-01 and corrective M4 withdrawal remain REVIEW until PR #67
+integration; T02 awaits T01 integration and start authorization. M4 reversal/API
+tasks are already DONE in dev. General phase gates remain pending.
 
-## Current session
+Pending integration remains uncommitted and unstaged for the user. Documentation
+checks passed; the 663-test evidence below is historical and was not rerun on this
+combined tree. See .agent/handoffs/p05-m02-pr67-conflict-resolution.md.
 
-T01 is implemented and verified locally, REVIEW pending the user's PR and M4 review.
-Migration 0320 adds nullable agent/branch attribution with restrictive FKs and reporting
-indexes. Existing history is untouched; future M4/M3 posting producers must populate
-trusted snapshots. T02's daily activity API is a separate TODO task.
+The implementation and verification notes below describe the pre-integration tree.
 
-ADR-0016 records user authorization for G-07 and T01's early start only. General Phase 3
-entry, Phase 2 exit and OQ-12/OQ-14 are not approved. Do not infer wider authorization.
-Handoff/review: .agent/handoffs/p03-m02-transaction-attribution.md.
+## What was built
 
-501 tests in 45 suites pass (15 new attribution tests), zero failures/skips; isolated
-24-migration rebuild/checksum verification, TypeScript/lint/build pass. The new negative
-test helper must defer operations until after its savepoint is established.
-No development DB migration/reset or assistant commit/push/PR/merge. User publishes.
+P05-M02-T01: new 0520 owner-only invoker/barrier vw_rpt01_agent_transactions,
+12 SQL regressions and corrected date/branch/zero-row consumer contract. Exact
+posting timestamps and captured branches remain available before final aggregation;
+current roster metadata is separate. Counts/values stay bigint/NUMERIC strings.
+Inactive/manager/role-changed attribution profiles retain history; NULL attribution
+is not backfilled. T02 API/CSV/screen integration remains pending I-7.
 
-## Next session
+Shared verification exposed defects in merged M4 withdrawal 0362. The user explicitly
+allowed changing/creating M4 work and requested its documentation updates. ADR-0021
+reopened P03-M04-T03; new M4 migration 0363 fixes audit schema/calls, real limit keys,
+current actor/scope, exact input values, calendar/Colombo-day limits, trusted attribution,
+I-4 array signers and serialized payload-bound retries. Legacy single-customer calls
+remain supported. Rewritten guarded withdrawal tests have 21 cases. M4 ownership
+remains unchanged. No merged migration or table shape was changed.
 
-Review the uncommitted diff and handoff; the user applies 0320 through the migration
-runner and obtains M4 review. Work on T02 only when separately authorized and ready.
+## Decisions and integration boundaries
 
----
+ADR-0020 records only M2's database early start; ADR-0021 records the authorized M4
+repair. General phase entry remains pending. sp_try_post_withdrawal rolls back inner
+financial work on a known rejection, records one outer audit and returns a code;
+T05 must commit that audit-only result through withTransaction, then map its safe
+error outside the transaction. Unexpected errors abort everything. T05 must obtain
+trusted signer evidence; customers cannot claim another holder signed. No API/UI,
+shared auth or seed work was added. Runtime RPT-01 SELECT remains revoked until
+M1/T02 establish report authorization/RLS/grants, CSV and access auditing.
 
-## Historical memory (retained; earlier status/publication notes are superseded)
+## Current state
 
-# Memory — P02-M02-T05 customer API and screens
+Full final guarded disposable verification PASS: 663 tests /62 suites, zero failures/
+skips, no exclusions; clean 34-migration rebuild/checksums, typecheck/lint/production
+build. Earlier failed and supplementary excluded-file runs are historical and
+superseded. RPT-01 selective plan uses ix_transaction_agent_date with no planner
+forcing (20,000 extra synthetic postings; 0.240 ms execution). Final report/CSV
+performance remains future T02/M5 acceptance.
 
-**Updated:** 2026-10-07 · /remember save (non-sensitive continuation state)
-**Branch:** feat/p02-m02-customer-api-ui · base dev 25fc264
+P04-M02-T02 is DONE through merged PR #62 (48f4185), its stale REVIEW reconciled.
+P05-M02-T01 and corrective P03-M04-T03 are local REVIEW pending user publication/
+teammate review; neither is marked DONE with unmerged changes. M2 and M4 task cards,
+overviews/member state and shared tracker/schema/rules/contracts/inventory/phase docs
+are updated. All five overview tables reviewed. Tracker: 46 TODO /2 REVIEW /49 DONE
+(97). /review three layers PASS; no UI change so /imprint not applicable.
 
-## Completed
+Normal development database untouched; verification clusters cleaned up. Changes
+unstaged/uncommitted. No assistant commit, push, PR creation or merge. User retains
+publication control. Handoffs: .agent/handoffs/p05-m02-rpt01-view.md and
+.agent/handoffs/p03-m04-withdrawal-contract-repair.md. Ignored final evidence:
+test-results/rpt01-withdrawal-final-verification.log and rpt01-view-explain.json.
 
-Customer registration/search/profile routes and live screens; M2 migration 0223 child
-SELECT/INSERT RLS; shared RLS context and one sanitized customer-trigger audit.
-M3 holder relation is merged and used directly. M2 T01–T05 technically DONE locally.
-365 tests in 35 suites, no failures/skips; clean isolated 19-migration rebuild,
-TypeScript/lint/build; synthetic browser workflow and duplicate/mobile checks pass.
-Handoff/review: .agent/handoffs/p02-m02-t05-customer-api-ui.md. ADR-0015 records integration.
-UI patterns saved to ui-registry.md.
+## Next session starts with
 
-## Decisions and remaining work
-
-Retain existing AGENT/BRANCH_MANAGER mutation roles and server-side identity masking.
-No upload/verification route, login provisioning or reassignment in T05.
-M1 retains security review of 0223 and its broader route task. Pre-existing internal
-verifier role lock/scoped UPDATE gap must be resolved before exposure.
-P2: 10 DONE / 1 READY / 5 TODO; account opening/mandate/APIs/UI/full seeds incomplete.
-Phase 2 entry approved 2026-10-05; no Phase 2 exit or Phase 3 entry approval.
-
-## Next session
-
-Review the uncommitted diff and handoff. The user controls commit/push/PR/merge;
-the assistant must not publish. Normal development database was not reset or migrated.
-Apply new migrations through the existing migration runner when using this branch.
-Historical PR #35/#36 conflict histories stay in dated handoffs; current dev includes
-PR #35, registration PR #38, holder PR #37 and security PR #40.
+Inspect user publication/merge state; a combined PR must list P05-M02-T01 and
+P03-M04-T03 and migrations 0520/0363. Never publish automatically. Reconcile local
+REVIEW only after actual user integration/review evidence. M2 T02 waits for T01
+integration and its own start authorization; I-7/CSV/access auditing is now available.
+M4 T04 reversal and T05 API tasks are DONE in dev; inspect their use of the corrected
+withdrawal contract during the next feature's review. Apply new
+migrations through the normal owner workflow before using them in the development DB.

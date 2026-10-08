@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { CustomerProfile as Profile } from "@/services/customer-service";
 import { customerRequest, displayDate, displayMoney } from "../customer-client";
+import { CustomerFixedDepositsPanel } from "./customer-fixed-deposits";
 
 export function CustomerProfile({ id, canSearch }: { id: string; canSearch: boolean }) {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -28,6 +29,7 @@ export function CustomerProfile({ id, canSearch }: { id: string; canSearch: bool
       </tbody></table></div></section>
       <section className="card mt-6"><h2>Documents</h2>{profile.documents.map(doc => <p key={doc.docId}>{doc.docType} · {doc.verifiedBy ? `Verified ${displayDate(doc.verifiedDate)}` : "Unverified"} · Uploaded {displayDate(doc.uploadedDate)}</p>)}{!profile.documents.length && <p>No documents recorded.</p>}</section>
       <section className="card mt-6"><h2>Savings accounts</h2>{profile.accounts === null ? <p>Account information is unavailable.</p> : profile.accounts.length ? <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Account</th><th>Status</th><th>Balance</th></tr></thead><tbody>{profile.accounts.map(account => <tr key={account.accountId}><td><Link href={`/accounts/${account.accountId}`}>{account.accountNumber}</Link></td><td>{account.status}</td><td className="amount">{displayMoney(account.currentBalance)}</td></tr>)}</tbody></table></div> : <p>No linked accounts.</p>}</section>
+      <CustomerFixedDepositsPanel key={profile.customer.customerId} customerId={profile.customer.customerId} />
     </>}
   </>;
 }

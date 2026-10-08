@@ -31,10 +31,10 @@ structure and contradicts nothing — a member may implement it directly.
 | ID | Finding | Severity | Approval |
 |---|---|---|---|
 | G-01 | One FD *ever* per account vs one *active* FD | HIGH | **YES — blocking** |
-| G-02 | No reversal support in the ledger | HIGH | YES |
+| G-02 | No reversal support in the ledger | HIGH | **YES — resolved; implemented in `0363`** |
 | G-03 | No central interest-run tracking | HIGH | YES |
-| G-04 | No idempotency key on transactions | HIGH | YES (account opening has its own record, `account_opening_request`, migration 0244) |
-| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
+| G-04 | No idempotency key on transactions | HIGH | **YES — resolved; implemented in `0360`** (and `0244` for accounts) |
+| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — resolved (ADR-0010); implemented in `0360`** |
 | G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transaction agent/branch attribution — schema implemented in 0320; posting integration remains | HIGH | User-authorized T01, ADR-0016; M4/team review retained |
 | G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved; implemented in `0241`/`0242`** |
@@ -178,7 +178,7 @@ The posting routine catches SQLSTATE `23505` on this index and returns the origi
 **Database impact** — One nullable column, one partial unique index. Nullable because
 seeded and system-generated interest credits do not carry a client key.
 
-**Approval needed — YES.**
+**Approval needed — YES — resolved.** Implemented in `0360_p03_m04_transaction_reference_idempotency.sql` (and `0244` for accounts).
 
 ---
 
@@ -214,7 +214,7 @@ both BR-10 and Assumption 4's intent.
 **Database impact** — Either one `UNIQUE` constraint (recommended), or one `UNIQUE`
 constraint plus one nullable grouping column and a fifth transaction type.
 
-**Approval needed — YES, blocking.** Tracked as **OQ-08**.
+**Approval needed — YES — resolved.** Resolved by [ADR-0010](../.agent/decisions/ADR-0010-transfers-with-transfer-group.md) (OQ-08). Implemented in `0360_p03_m04_transaction_reference_idempotency.sql`.
 
 ---
 
@@ -256,6 +256,12 @@ the actual ledger column (the SRS/card's `posted_at` name is stale). Existing ro
 are preserved with NULL attribution. Future posting producers must capture trusted
 values inside their transaction; this schema task does not complete that integration.
 No general Phase 3 entry or OQ-12/OQ-14 approval is inferred.
+
+**Read-side follow-up — T02, 2026-10-08:** ADR-0017 authorizes the separate early
+start for the live daily activity API/page. Exact SQL aggregates use the T01 indexes
+and immutable attribution; manager scope requires both current target branch and
+posting branch. NULL attribution is excluded, not backfilled or derived. Producer
+integration remains with M4/M3; this does not complete the Phase 5 RPT-01 report.
 
 **Current ERD design** — `transaction` has `initiated_by_user_id` and `channel_id` only.
 
@@ -710,3 +716,46 @@ No ERD table is removed. Every proposal is additive except G-01 (constraint form
 
 Findings marked **Approval needed: NO** (G-10, G-17, G-18, G-19) may be implemented as part
 of their owning member's Phase 1/2 task without further discussion.
+
+## P04-M02-T01 read-side binding (2026-10-08)
+
+The task card's illustrative fd.opened_date differs from the merged 0480 start_date;
+use start_date. M2's reserved 0420 precedes M5's 0480 in clean migration order. ADR-0018
+resolves binding through an owner-only installer and the existing post-migration views
+stage, preserving both immutable numbering blocks. Customer FD reads require runtime
+column SELECT plus SELECT-only RLS because 0480 supplied neither; new 0420 owns this
+additive read contract with M1/M5 handoff. No write/opening dependency is declared DONE.
+
+## P04-M02-T02 context consistency (2026-10-08)
+
+0420 scopes rows using trusted context; its bankwide role clause alone could return
+FD rows if context identity was missing or the stored role/branch had changed. T01's
+service already revalidated these values. ADR-0019 extends that backstop to direct
+SQL using a restrictive SELECT-only stored-actor guard in new 0421. No ERD/table
+shape change or M1 context-helper rewrite. Cross-owner policy review is in the M1/M5
+handoff. The user authorized T02's scoped start; general phase gates remain pending.
+
+## P05-M02-T01 report illustration corrections (2026-10-08)
+
+The task card's COUNT(*) on a LEFT JOIN counted an empty agent as one. Its all-time
+aggregation discarded the timestamp needed for a selected range, and `posted_at` /
+`idx_transaction_agent_posted` do not exist: the merged names are `transaction_date`
+and `ix_transaction_agent_date`. Grouping by current agent branch would also relabel
+history after a transfer. ADR-0020 resolves these as a timestamp/type/posting-branch
+aggregate view with COUNT(transaction_id), exact NUMERIC sums and a tested filtered
+roster outer-join contract. No ERD/table change or index is added. Include every
+agent-table attribution profile, preserving inactive/promoted staff history. Runtime
+report scope and signed net/reversal presentation remain T02/M1/M4 responsibilities.
+
+## P03-M04-T03 merged routine correction (2026-10-08, ADR-0021)
+
+The merged 0362 used non-existent audit `after_value` (actor_type exists), PERFORM on
+a procedure and wrong SINGLE_WITHDRAWAL_LIMIT/DAILY_WITHDRAWAL_LIMIT parameter names.
+Its test expected an audit to survive an exception/rollback in the same transaction.
+Vibodha authorized M4 corrective work and documentation; new 0363 uses new_values,
+CALL and the actual WITHDRAWAL_SINGLE_LIMIT/WITHDRAWAL_DAILY_LIMIT keys. An audited
+attempt returns a known rejection code after rolling back inner financial work,
+allowing the outer audit to commit before the future service maps an error. Array
+signers support the published I-4 ALL_HOLDERS function. No ERD/table change or edit
+to merged 0362. Per-account limits follow BR-I2/SRS §7.1; the old parameter description
+saying per-customer does not redefine that rule. All arithmetic remains exact SQL.

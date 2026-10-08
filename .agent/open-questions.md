@@ -5,9 +5,41 @@ blocks so nobody discovers the dependency by surprise.
 
 ## Blocking (must resolve before the phase noted can _finish_)
 
-_(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)_
+### Account opening blocked: no document verification path — 2026-10-08 (raised by M3, owner M2)
+
+`sp_open_savings_account` and `sp_add_account_holder` require every holder to have a verified document
+(`DOCUMENTS_NOT_VERIFIED`, ERD Assumption 3). Registration only inserts unverified documents and the RLS policy
+`customer_document_insert_scope` forbids verified rows, and no endpoint or page sets `verified_by`/`verified_date`.
+Result: an app-registered customer can never be opened an account through the UI (found in the 2026-10-08 browser pass).
+Needed: a scoped verification endpoint and UI (and the role lock narrowing already noted in `current-state.md`), or
+seed data with verified documents so the demo works. Blocks the Phase 2 exit demonstration. Not an M3 file change.
+
+### Seeded branch managers cannot hold a session — 2026-10-08 (raised by M3, owner M1/M5)
+
+Seed users `bm_colombo`, `bm_kandy`, `bm_galle` have no `agent` row. `validateSession` (`lib/auth/session.ts`) requires an
+ACTIVE `agent` row for AGENT and BRANCH_MANAGER, so login returns 200 and then every page redirects to `/sign-in`
+(also `branchId` is null in the login response). The account wizard and customer registration are meant for
+BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch managers get `agent` rows (seed and
+`assertBranchProfile` expectations) or a different branch link, and fix the seed or the session query. Not an M3 file change.
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
+
+### Agent activity task-card branch/date shorthand — resolved 2026-10-08
+
+The T02 card's current `agent.branch_id` filter alone could expose a transferred
+agent's previous branch amounts. Its timestamp BETWEEN shorthand also omits the
+final day's activity when supplied plain dates. ADR-0017 keeps the prescribed
+current-agent branch gate and adds an immutable posting-branch filter for managers;
+inclusive Asia/Colombo days use half-open timestamp bounds. The task card and API
+contract are updated together. No schema change or general phase approval.
+
+### Seeded branch-manager profiles missing — 2026-10-08
+
+Clean rebuild supplies bm_colombo/bm_kandy/bm_galle logins but no required active
+agent branch-staff profiles (ADR-0006). Sign-in succeeds then session validation
+fails closed. M5/M1 handoff: handoffs/p03-m02-activity-seed-manager-profile.md.
+T02 browser fixtures add the missing profile only in the disposable database;
+no steward-owned seed or another member's task status is changed here.
 
 ### Incoming Phase 2 seed targets versus phase exit — 2026-10-08
 
@@ -239,3 +271,48 @@ the user, Member 3): a separate insert-only table `account_opening_request` (mig
 `UNIQUE (user_id, idempotency_key)` with a request hash and `account_id`, written in the same
 transaction as the account. No other member's table or file was changed. Holder additions use a new
 routine `sp_add_account_holder` (0245) so the verified-document rule lives in the database.
+
+## P04-M02-T01 scoped early start and read-policy coordination — 2026-10-08
+
+Vibodha explicitly requested implementation after the incomplete opening dependency
+and phase gate were explained. ADR-0018 authorizes the read-side task only. 0480 is
+merged; M5 notes still describe P04-M05-T02 as partial. No general Phase 4 entry or
+OQ-13/OQ-14 approval is inferred. M2 uses disposable synthetic FD rows, not the partial
+opening routine. M1/M5 review the new SELECT-only FD RLS/column grants in 0420; no
+owner source files/write policies are changed. The numbering/start_date discrepancies
+are resolved in ADR-0018 and docs17; broader opening/interest integration stays pending.
+
+## P04-M02-T02 scoped access completion — 2026-10-08
+
+T01 is merged (PR #60, dev e9291dc); its REVIEW label was stale. After the remaining
+phase gate was explained, Vibodha said “do it now”, authorizing T02's read-side scope
+only (ADR-0019). New 0421 ANDs a current stored-actor guard with 0420 FD SELECT scope.
+M1/M5 review the additive restrictive policy; no ownership shift, write access or
+owner source changes. General phase gates/OQ-13/OQ-14 stay pending. M2's route/service/
+view inventory is covered; future M5/M3 FD/report read paths need their owner review.
+
+## P05-M02-T01 scoped start and report SQL corrections — 2026-10-08
+
+P04-M02-T02 is merged through PR #62 (dev 48f4185); its local REVIEW wording is
+historical. Vibodha's “do it” authorizes P05-M02-T01 only (ADR-0020), with merged
+P03-M02-T01 satisfied. General Phase 5 entry is not approved. The task card's
+COUNT/date/index/current-branch examples are resolved in ADR-0020 and docs17;
+0520 creates an owner-only invoker/barrier aggregate view and no ERD/table change.
+T02 stays pending M1's I-7/CSV/access audit and runtime security integration.
+M4 retains posting attribution and reversal-direction ownership; NULL attribution
+is not backfilled and no signed net is guessed. All profiles in agent are reporting
+identities, including the manager subtype, preserving inactive/role-change history.
+
+## P03-M04-T03 corrective authorization and audit boundary — resolved 2026-10-08
+
+Vibodha explicitly allowed changing/creating M4 work and requested its documentation
+updates after shared withdrawal tests failed. ADR-0021 reopens T03 and retains M4
+ownership. New 0363 replaces broken after_value/procedure-call/parameter-key behavior
+without editing merged 0362 or changing tables. The audited array-signers attempt
+rolls back inner financial work for known rejections, writes the outer audit and
+returns a code; the future service commits that result, then maps an error outside
+withTransaction. Actor/scope, I-4 ALL_HOLDERS, calendar/Colombo-day limits and replay
+are verified. Full 663 tests /62 suites, 34-migration rebuild/checksums and type/lint/
+build PASS, no exclusions. Earlier blocker resolved. T03 and M2 T01 remain local
+REVIEW until user publication. T04 reversal/T05 API and I-7 work remain separate;
+general phase approvals are not inferred. M1 audit/runtime review is in the handoff.

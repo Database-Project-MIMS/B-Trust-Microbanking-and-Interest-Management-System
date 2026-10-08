@@ -5,7 +5,8 @@ import {
   keyFor, makePrimary, removeHolder, reviewProblems, selectPlan,
 } from "../../app/accounts/new/account-opening-model.ts";
 import {
-  displayDate, displayMoney, displayRate, eligibilitySummary, mandateSummary,
+  authoritySummary, displayDate, displayMoney, displayRate, eligibilitySummary, holderAuthority, mandateSummary,
+  transactionTypeLabel,
 } from "../../app/accounts/account-format.ts";
 
 const adult = { planId: "p-adult", planName: "Adult", interestRate: "0.1000", minBalance: "1000.00", description: null,
@@ -46,6 +47,45 @@ describe("P02-M03-T06: account display helpers", () => {
     assert.equal(eligibilitySummary(adult), "Age 18–59, all adult");
     assert.equal(eligibilitySummary(joint), "No age limit, 2–4 holders, all adult");
     assert.equal(eligibilitySummary({ ...adult, minAgeYears: null, maxAgeYears: 12, requiresAllAdult: false }), "Up to age 12");
+  });
+});
+
+describe("P03-M03-T03: balance panel and holder authority text", () => {
+  const mandate = (mandateType, requiredSignatories, state = "EFFECTIVE") => ({ mandateType, requiredSignatories, state });
+  test("a sole holder may withdraw alone; several holders without a mandate are blocked", () => {
+    assert.deepEqual(authoritySummary({ holderCount: 1, mandate: null }),
+      { text: "Sole holder. The holder may withdraw alone.", blocked: false, stateLabel: null });
+    const orphan = authoritySummary({ holderCount: 2, mandate: null });
+    assert.equal(orphan.blocked, true); assert.match(orphan.text, /valid operating mandate/);
+  });
+  test("an effective mandate states who must sign", () => {
+    const any = authoritySummary({ holderCount: 3, mandate: mandate("ANY_ONE", 1) });
+    assert.deepEqual({ blocked: any.blocked, label: any.stateLabel, text: any.text },
+      { blocked: false, label: "Effective", text: "Any one holder may authorise a withdrawal." });
+    const all = authoritySummary({ holderCount: 3, mandate: mandate("ALL_HOLDERS", 3) });
+    assert.equal(all.text, "All 3 holders must authorise a withdrawal."); assert.equal(all.blocked, false);
+  });
+  test("a future or expired mandate blocks withdrawals and says why", () => {
+    const future = authoritySummary({ holderCount: 2, mandate: mandate("ANY_ONE", 1, "NOT_YET_EFFECTIVE") });
+    assert.equal(future.blocked, true); assert.equal(future.stateLabel, "Not yet effective"); assert.match(future.text, /not yet in effect/);
+    const expired = authoritySummary({ holderCount: 2, mandate: mandate("ALL_HOLDERS", 2, "EXPIRED") });
+    assert.equal(expired.blocked, true); assert.equal(expired.stateLabel, "Expired"); assert.match(expired.text, /expired/);
+  });
+  test("holder authority follows the mandate type", () => {
+    assert.equal(holderAuthority(null, 1), "Can authorise alone");
+    assert.equal(holderAuthority(null, 2), "No mandate");
+    assert.equal(holderAuthority({ mandateType: "ANY_ONE" }, 2), "Can authorise alone");
+    assert.equal(holderAuthority({ mandateType: "ALL_HOLDERS" }, 2), "Must co-sign");
+  });
+  test("ledger types have plain labels and unknown ones fall back safely", () => {
+    assert.equal(transactionTypeLabel("DEPOSIT"), "Deposit");
+    assert.equal(transactionTypeLabel("INTEREST_CREDIT"), "Interest credit");
+    assert.equal(transactionTypeLabel("SOMETHING_NEW"), "Transaction");
+  });
+  test("the available amount is shown as text without float rounding", () => {
+    assert.equal(displayMoney("4000.00"), "LKR 4,000.00");
+    assert.equal(displayMoney("0.00"), "LKR 0.00");
+    assert.equal(displayMoney("9007199254740993.10"), "LKR 9,007,199,254,740,993.10");
   });
 });
 

@@ -64,6 +64,7 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `GET /api/agents` | List ordinary agents | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | Scoped by branch; joins `role` and returns `role_name = 'AGENT'` only |
 | `POST /api/agents` | Create ordinary agent + linked user | ADMIN, BRANCH_MANAGER | **One transaction**: `app_user` with server-assigned `AGENT` role + `agent` + audit; the request cannot choose its role |
 | `PATCH /api/agents/{id}` | Update / deactivate / transfer an ordinary agent | ADMIN, BRANCH_MANAGER | Restricted to `role_name = 'AGENT'`; transfer is effective-dated so history stays attributable (FR-ORG-04) |
+| `GET /api/agents/{id}/activity` | Daily/range counts and amounts by type | ADMIN, CENTRAL_OPS, BRANCH_MANAGER (own branch), AGENT (self) | Live T02; manager totals also filter the captured posting branch |
 
 ### Branch API contract
 
@@ -96,6 +97,41 @@ admin identity workflow and must atomically receive its required `agent` profile
 - Branch and agent inserts/updates are audited by database triggers in the caller
   transaction. A failed agent profile insert rolls back the linked `app_user` and all
   audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
+
+### Agent daily activity — P03-M02-T02
+
+`GET /api/agents/{id}/activity?from=YYYY-MM-DD&to=YYYY-MM-DD` accepts only these
+two optional, non-repeated query keys. Real calendar dates and UUIDs are validated.
+Both omitted dates default to today in Asia/Colombo; one supplied date selects that
+single day. Reversed ranges are rejected. Both dates are inclusive: parameterized
+SQL uses Colombo midnight through, but excluding, midnight after `to`, so the indexed
+`transaction_date` remains uncast and the connection timezone cannot change totals.
+
+Success: `{ data: { agentId, from, to, timeZone: "Asia/Colombo", scope,
+agent: { fullName, employeeNo, branchCode, branchName },
+byType: [{ type, count, total }] } }`. `count` is an integer number; `total` is an exact
+decimal string produced by PostgreSQL SUM, never JavaScript money arithmetic.
+Types are the recorded DEPOSIT/WITHDRAWAL/INTEREST_CREDIT/REVERSAL values, ordered by
+type; an empty period returns `byType: []`. Totals do not represent net balances.
+
+`getAgentActivity` revalidates the stored active caller role/profile and uses a
+read-only REPEATABLE READ transaction with transaction-local RLS identity. ADMIN and
+CENTRAL_OPS have bankwide access; AGENT only itself, across its attributed history.
+BRANCH_MANAGER must target a current own-branch ordinary agent and only receives
+rows with `transaction.branch_id = caller.branchId`. NULL branch attribution is
+excluded for managers; NULL agent attribution is excluded for everyone. A transfer
+cannot expose old-branch amounts to the new manager. Inactive ordinary agents remain
+reportable to authorized managers/bankwide users; inactive callers lose access.
+AUDITOR/CUSTOMER are denied. No identifiers or branch scope are accepted from the query.
+Malformed inputs return 400; absent/expired/revoked sessions 401; role/self/branch
+violations 403; unknown/non-ordinary targets 404. Success uses `private, no-store`.
+
+Live `/agents/{id}/activity` provides date filters, a Today action, loading, empty,
+safe error and retry states. Agent names in `/agents` link to their activity; AGENT
+has a My daily activity link in `/customers`. No prototype records or posting action.
+Migration 0320 is reused; this task adds no migration. M4/M3 producer adoption is
+still needed for previously unattributed postings; no historical backfill is inferred.
+[Decision and review](../.agent/handoffs/p03-m02-agent-daily-activity.md).
 
 ### `POST /api/customers`
 **Implemented in P02-M02-T05:** session-authenticated, role/branch scoped and CSRF-protected.
@@ -198,7 +234,7 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `GET /api/accounts/{id}`
 - **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
-- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Success** `200 { data: { ...summary, minBalance, minHolders, maxHolders, availableToWithdraw, lastTransaction: { transactionType, amount, transactionDate, referenceNumber } | null, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo, state: "EFFECTIVE"|"NOT_YET_EFFECTIVE"|"EXPIRED" } | null } }`. `availableToWithdraw` is `max(0, currentBalance − minBalance)` computed in SQL (string, `NUMERIC(15,2)`); `lastTransaction` is the newest ledger row (no user ids) or `null`; `mandate.state` compares the effective dates with the Asia/Colombo calendar date (P03-M03-T03). A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
 - **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
 
 ### `POST /api/accounts/{id}/holders`
@@ -233,10 +269,10 @@ T05 route/runtime/screen integration and security handoff:
 - **Headers** `Idempotency-Key` (**required**)
 - **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, narration? }`
 - **Validation** requester is an authorised holder; account active; business hours; single and daily limits
-- **SQL routine** `CALL sp_post_withdrawal(...)` — `FOR UPDATE`, then re-validate status, mandate, limits and post-withdrawal minimum **inside** the transaction
+- **SQL routine** Future service uses `CALL sp_try_post_withdrawal(...)` (0363), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
 - **Success** `201 { data: { transactionId, referenceNumber, amount, balanceAfter } }`
 - **Errors** `409 INSUFFICIENT_FUNDS` · `409 BELOW_MINIMUM_BALANCE` · `409 MANDATE_NOT_SATISFIED` · `409 LIMIT_EXCEEDED` · `409 ACCOUNT_NOT_ACTIVE`
-- **Note** A rejection writes an audit event and **no ledger row** (FR-WD-05).
+- **Note** A known financial rejection returns `p_rejection_code` and writes one audit event with **no ledger row** (FR-WD-05). Commit the audit-only result through withTransaction, then map the allow-listed error outside the transaction. An exception inside that transaction would roll back its audit too. Unexpected errors roll back every effect. T05 API/CSRF/service/signer-evidence integration remains planned; no live withdrawal route is added by this correction.
 - **Page** `/transactions/withdraw`
 
 ### `POST /api/transactions/{id}/reverse`
@@ -297,6 +333,14 @@ T05 route/runtime/screen integration and security handoff:
 
 ## Reports — framework M1, each report by its owner
 
+**RPT-01 database delivery (2026-10-08):** P05-M02-T01 provides owner-only
+`vw_rpt01_agent_transactions` (0520), retaining exact posting timestamps and branches.
+P05-M02-T02 remains pending I-7/CSV/access auditing; the endpoint below is still a
+planned contract. Runtime authorization/RLS/grants must be established before SELECT
+is enabled. The [SQL consumer contract](../2_Vibodha/09_P5_rpt01-report.md) applies
+date/branch filters before a roster outer join, preserving range-specific zero rows
+and transferred historical attribution. M2 has not added a route or altered the UI.
+
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·
 `customer-activity` (RPT-05).
@@ -328,6 +372,7 @@ T05 route/runtime/screen integration and security handoff:
 | `/admin/health` | `GET /api/health` | ADMIN, CENTRAL_OPS | M4 |
 | `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
 | `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
+| `/agents/{id}/activity` | `GET /api/agents/{id}/activity` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER (own branch), AGENT (self) | M2 (live T02) |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
 | `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; no nav link yet — shell is M1's) |
 | `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
@@ -364,3 +409,36 @@ deactivation. Deactivation preserves the record and its history.
    stack traces (NFR-SEC-05).
 5. Money in JSON is a **string** (`"1500.00"`), never a JavaScript number.
 6. Money-moving endpoints require `Idempotency-Key` and are CSRF-protected.
+
+## Customer fixed deposits — M2 (P04-M02-T01)
+
+GET /api/customers/{id}/fixed-deposits lists all ACTIVE/MATURED/CLOSED FDs linked
+through the customer's account_holder rows. Roles: AGENT, BRANCH_MANAGER, CENTRAL_OPS,
+AUDITOR, CUSTOMER; ADMIN is outside this customer-profile contract. No query parameters.
+Success: { data: { customerId, fixedDeposits: [{ fdId, accountId, accountNumber,
+fdPlanId, planName, principalAmount, interestRateAtOpening, startDate, maturityDate,
+nextInterestDate, status }] } }. Money/rates are exact decimal strings; dates are
+YYYY-MM-DD. Sort: startDate descending, fdId ascending. Empty list is a valid 200.
+No co-holder name, identity, branch or document data is returned.
+
+Stored active user/role/profile/branch are revalidated in one read-only REPEATABLE READ
+transaction; local RLS context and SQL predicates enforce scope. AGENT: currently
+assigned customer and both customer/account in its branch. Manager: both branches
+match. CENTRAL_OPS/AUDITOR: bankwide. CUSTOMER: optional-login-linked self. Unknown
+and out-of-scope customers use identical 404 NOT_FOUND; invalid UUID/any query→400,
+invalid session→401, unsupported role/stale service actor→403; unexpected errors→safe500.
+Response Cache-Control: private, no-store. This GET requires no CSRF or idempotency key.
+
+The existing /customers/{id} profile embeds a Fixed Deposits panel with exact principal
+and snapshot-rate formatting, dates/status, loading, empty and retry states. It is
+independently loaded after an authorized profile; superseded reads are aborted.
+No account/FD opening action is added. M5 opening remains a separate integration
+dependency; ADR-0018 authorizes this read-side early start using disposable FD fixtures.
+
+P04-M02-T02 completes the M2 customer FD access review (ADR-0019). The endpoint/DTO,
+UI and allowed roles are unchanged. 0421 adds a restrictive stored-actor check below
+the invoker view, complementing the service's existing identity/SQL scope checks.
+Live session reads follow role, branch, assignment and self-link changes on subsequent
+requests; session revocation/inactive identity fails closed. COMMIT/ROLLBACK clears
+local context on borrowed connections. No JavaScript filtering or broadened FD API.
+M5's global FD/report interfaces and M3's account panel retain their own ownership.

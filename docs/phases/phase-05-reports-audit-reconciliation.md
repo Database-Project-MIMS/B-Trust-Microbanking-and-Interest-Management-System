@@ -1,11 +1,24 @@
 # Phase 05 — Reports, Audit & Reconciliation
 
-**Status:** TODO · **Tasks:** 15 · **Effort:** 51 points · **Est.** ~1 week
+**Status:** General entry pending; M2 T01 local REVIEW under scoped ADR-0020 · **Tasks:** 15 · **Effort:** 51 points · **Est.** ~1 week
 
 ## Entry criteria
 
 - [ ] Phase 4 exit criteria met
 - [ ] Seed data complete, so report totals are meaningful
+
+**M2 scoped early start (2026-10-08):** Vibodha authorized P05-M02-T01's database
+view only (ADR-0020), after merged attribution P03-M02-T01 and FD scope PR #62.
+This does not approve the entry criteria above. T02 remains pending I-7/CSV/access
+auditing. 0520 provides exact unsigned type totals with timestamps and captured
+posting branches; range-specific zeros use a filtered roster outer join. Runtime
+grants and signed net/reversal presentation remain future report integration work.
+
+T01 and the separately user-authorized M4 withdrawal correction (0363, ADR-0021)
+pass 663 tests /62 suites, clean 34-migration rebuild/checksums, typecheck/lint/build
+with no exclusions. View index probe uses ix_transaction_agent_date; final report
+performance/CSV/access auditing remain T02/I-7 work. Both local tasks await user
+publication. [Handoff](../../.agent/handoffs/p05-m02-rpt01-view.md).
 
 ## Tasks by member
 

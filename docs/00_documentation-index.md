@@ -8,7 +8,31 @@ for the local working tree. [Approval and evidence](../.agent/checkpoints/phase-
 M2 Phase 2 tasks are implemented and PR #41 is merged. On 2026-10-08 Vibodha
 authorized a scoped early start for P03-M02-T01 and its G-07 schema;
 [ADR-0016](../.agent/decisions/ADR-0016-transaction-attribution.md) records the exception.
-Phase 2 exit and general Phase 3 entry remain pending. The user controls publication.
+M2 Phase 3 T01/T02 are merged through PR #49/#53. The user also authorized the
+P04-M02-T01 read-side start against merged M5 0480;
+[ADR-0018](../.agent/decisions/ADR-0018-customer-fd-listing.md) records its scope.
+Customer FD view/API/profile panel is merged through PR #60 (dev e9291dc). Vibodha
+authorized scoped P04-M02-T02 implementation in
+[ADR-0019](../.agent/decisions/ADR-0019-customer-fd-branch-scope.md); broader FD paths
+remain with their owners. M5 opening remains partial. Phase 2/3 exit and
+general Phase 3/4/5 entry remain pending. The user controls publication.
+
+P04-M02-T02 is DONE through merged PR #62 (dev 48f4185): current stored-actor FD guard
+(0421), 630 tests /60 suites and clean isolated rebuild/type/lint/build evidence.
+[Handoff](../.agent/handoffs/p04-m02-fd-branch-scope.md).
+
+Vibodha authorized the database-only P05-M02-T01 early start in
+[ADR-0020](../.agent/decisions/ADR-0020-rpt01-view.md). Its timestamp/type/posting-branch
+view is verified locally, REVIEW; T02 API/CSV/screen integration remains pending M1's I-7,
+CSV helper and report-access auditing. This does not approve general phase entry.
+
+The user explicitly authorized M4 withdrawal correction and documentation in
+[ADR-0021](../.agent/decisions/ADR-0021-withdrawal-contract-repair.md). New 0363 repairs
+the merged audit/mandate/limit/retry contract without changing 0362. Both M2 T01 and
+M4 T03 pass **663 tests /62 suites**, a clean **34-migration** rebuild/checksums,
+typecheck/lint/build, with no exclusions; local REVIEW awaits user publication.
+[M2 handoff](../.agent/handoffs/p05-m02-rpt01-view.md) ·
+[M4 handoff](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 
 ## If you are new, read in this order
 
@@ -58,7 +82,7 @@ If you find a contradiction, do not resolve it silently — record it in
 | 06 | `06_seed-data-spec.md` | Sample data targets and determinism | M5 |
 | 07 | **`07_business-rules.md`** | Every rule and its enforcement point | M3 |
 | 08 | `08_workload-division.md` | Slices, effort, contribution matrix, ownership | lead |
-| 09 | **`09_task-tracker.md`** | All 96 tasks with IDs, dependencies, status | all |
+| 09 | **`09_task-tracker.md`** | All 97 tasks with IDs, dependencies, status | all |
 | 10 | `10_local-setup.md` | Clone to running system | M4 |
 | 11 | `11_ui-rules.md` | UI conventions; points to `ui-registry.md` | M1 |
 | 12 | `12_testing-and-acceptance.md` | Acceptance-to-test matrix | M5 |

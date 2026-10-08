@@ -258,3 +258,59 @@ Last updated: 7 Oct 2026 · /imprint
 - Deposit/withdraw buttons, the statement link and the FD panel are intentionally absent until
   Phases 3 and 4. The SavingsPlanClient previously used classes that do not exist in this theme
   (`tag`, `btn-ghost`, `text-on-surface`, `font-headline`); it now uses only the classes above.
+
+### Agent daily activity
+
+Files: `app/agents/[id]/activity/page.tsx`, `agent-activity-screen.tsx` in that folder;
+directory links in `components/organization/organization-table.tsx`, self link in
+`app/customers/page.tsx`. Updated 8 Oct 2026 · /imprint.
+
+| Property | Existing class / token |
+|---|---|
+| Purpose / props | Live agent activity; agentId, initial Colombo today, server-selected backHref |
+| Surface / hierarchy | Existing AppShell; page-header, eyebrow, page-title, page-description; card and section-heading |
+| Filters / actions | Visible required labels with field/input, native date controls, two-col; btn-primary Show activity, btn-secondary Today/Retry |
+| Spacing | space-y-6 between sections, shared card padding, mt-6 and flex gap-3 button row |
+| Context | Current branch label, applied inclusive dates; workflow-notice explains attribution, scope and type totals |
+| Results | table-wrap/data-table, caption and column/row headers; tabular-nums count, amount using existing displayMoney string formatter |
+| States | role=status loading/empty; role=alert safe error and Retry; disabled date controls/actions while loading; superseded reads aborted |
+| Responsive | Date fields stack under 640px; table scrolls within the card; verified narrow page has no document overflow |
+| Focus / color | Existing global focus ring and primary/danger/text-muted tokens; no new color, radius or shadow |
+
+Today recomputes the Colombo date on click. Applied dates remain beside the result,
+and new period loads hide stale totals. No sum across transaction types or account
+balance is displayed. Browser QA covers populated/filtered/empty/denied/self views;
+screenshots are local ignored test evidence, described in the T02 handoff.
+
+### Account balance and authority panel
+
+Files: `app/accounts/[id]/account-detail.tsx`, helpers in `app/accounts/account-format.ts`
+(`authoritySummary`, `holderAuthority`, `transactionTypeLabel`). Updated 8 Oct 2026 · /imprint.
+
+| Property | Existing class / token |
+|---|---|
+| Surface | `detail-grid` of `card`s; balance uses `card balance-card` with a `dl` for Available to withdraw and Last transaction |
+| Status | `status-pill` for mandate state (Effective / Not yet effective / Expired); `card` with `role=status` for a non-ACTIVE account notice |
+| Blocked text | `text-[var(--danger)]` on the authority sentence when withdrawals are blocked; no new color |
+| Table | existing `table-wrap`/`data-table`; Authority column between Role and Joined |
+| Money | strings through `displayMoney`; Available is "—" when the account is not ACTIVE |
+
+No new class, token, radius or shadow.
+
+### Customer fixed-deposits panel
+
+File: app/customers/[id]/customer-fixed-deposits.tsx · Updated 2026-10-08 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Surface, border, radius, shadow | card, inherited Emerald --surface/--border and existing 18px card radius/shadow |
+| Heading/body | section-heading; page-description; inherited text tokens |
+| Spacing | mt-6 between profile cards; mt-4 before content/actions |
+| Retry | btn btn-secondary, type=button, inherited focus/hover states |
+| Data | table-wrap/data-table; caption and scope column/row headers; amount and status-pill |
+| Exact values | existing string displayMoney; opening-rate percent uses digit shifting with no floating-point arithmetic |
+| States | role=status loading/empty; role=alert error and Retry fixed deposits; abort superseded reads |
+| Responsive | min-w-0 card; table-wrap horizontal overflow; nowrap amounts/calendar dates |
+
+Embedded only after an authorized customer profile. No opening action or invented
+financial data; product rates come from FD snapshots. Existing profile patterns retained.

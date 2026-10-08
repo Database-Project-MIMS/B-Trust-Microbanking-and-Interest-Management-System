@@ -123,8 +123,8 @@ Review and test that M2's `/api/customers` and M3's `/api/accounts` routes:
 ---
 
 ## Acceptance Criteria (All 3 tasks)
-- [ ] RLS prevents cross-branch reads when the app layer is bypassed
-- [ ] Customer and account creation generate audit events
-- [ ] Sensitive data is masked in audit logs
-- [ ] Branch scope is applied in SQL, never as post-fetch filtering
-- [ ] Cross-branch access denied even with URL tampering
+- [x] RLS prevents cross-branch reads when the app layer is bypassed
+- [x] Customer and account creation generate audit events
+- [x] Sensitive data is masked in audit logs
+- [x] Branch scope is applied in SQL, never as post-fetch filtering
+- [x] Cross-branch access denied even with URL tampering

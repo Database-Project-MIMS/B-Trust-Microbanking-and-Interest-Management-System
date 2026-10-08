@@ -43,7 +43,7 @@ Anything still likely to change, so the dependent member doesn't build on sand.
 |---|---|---|---|
 | I-1 | M1 | all | `requireUser()`, `requireRole()`, `branchScope()` |
 | I-2 | M4 | all | `withTransaction()`, SQLSTATE → domain error mapping |
-| I-4 | M3 | M4 | plan-minimum check callable from the withdrawal path |
+| I-4 | M3 | M4 | plan-minimum check callable from the withdrawal path — **published** (`fn_check_plan_minimum`, [handoff](i-4-fn-check-plan-minimum.md)); mandate check follows in P03-M03-T02 |
 | I-5 | M4 | M5 | posting `INTEREST_CREDIT` through the ledger routine |
 | I-6 | M3 | M5 | account-side FD eligibility read under lock |
 | I-7 | M1 | M2, M3, M4, M5 | report framework (filters, scope, metadata) |

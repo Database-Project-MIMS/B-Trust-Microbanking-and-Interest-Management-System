@@ -15,8 +15,8 @@ export interface AuditEventParams {
   userId: string | null;
   actorType: 'USER' | 'SYSTEM';
   entityType: string;
-  entityId: string;
-  action: 'INSERT' | 'UPDATE' | 'DELETE';
+  entityId: string | null;
+  action: 'INSERT' | 'UPDATE' | 'DELETE' | 'INTEREST_RUN_INITIATED' | 'INTEREST_RUN_COMPLETED' | 'INTEREST_RUN_FAILED' | 'INTEREST_PAYOUT_EXCEPTION' | 'TRANSACTION_REVERSED' | 'REPORT_ACCESSED' | 'DEPOSIT' | 'WITHDRAWAL' | 'REVERSAL' | 'REJECTED_WITHDRAWAL' | 'INTEREST_CREDIT';
   oldValues?: Record<string, unknown>;
   newValues?: Record<string, unknown>;
   ipAddress?: string;
@@ -40,4 +40,122 @@ export async function writeAuditEvent(params: AuditEventParams, executor: Execut
       ipAddress ?? null,
     ]
   );
+}
+
+// ─── Financial Audit Helpers ──────────────────────────────────────────────────
+
+/** Audit a successful deposit (FR-AUD-01). */
+export async function auditDeposit(params: {
+  userId: string;
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'DEPOSIT',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+/** Audit a successful withdrawal (FR-AUD-01). */
+export async function auditWithdrawal(params: {
+  userId: string;
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'WITHDRAWAL',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+/** Audit a rejected withdrawal — no ledger row is created (FR-WD-05, BR-L1). */
+export async function auditRejectedWithdrawal(params: {
+  userId: string;
+  accountId: string;
+  amount: string;
+  reason: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'account',
+    entityId: params.accountId,
+    action: 'REJECTED_WITHDRAWAL',
+    newValues: {
+      account_id: params.accountId,
+      attempted_amount: params.amount,
+      rejection_reason: params.reason,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+/** Audit a transaction reversal (FR-AUD-01). */
+export async function auditReversal(params: {
+  userId: string;
+  reversalTransactionId: string;
+  originalTransactionId: string;
+  reason: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: params.userId,
+    actorType: 'USER',
+    entityType: 'transaction',
+    entityId: params.reversalTransactionId,
+    action: 'REVERSAL',
+    newValues: {
+      original_transaction_id: params.originalTransactionId,
+      reason: params.reason,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
+}
+
+/** Audit an interest credit */
+export async function auditInterestCredit(params: {
+  accountId: string;
+  transactionId: string;
+  amount: string;
+  balanceAfter: string;
+  ipAddress?: string;
+}, executor: Executor): Promise<void> {
+  await writeAuditEvent({
+    userId: null,
+    actorType: 'SYSTEM',
+    entityType: 'transaction',
+    entityId: params.transactionId,
+    action: 'INTEREST_CREDIT',
+    newValues: {
+      account_id: params.accountId,
+      amount: params.amount,
+      balance_after: params.balanceAfter,
+    },
+    ipAddress: params.ipAddress,
+  }, executor);
 }

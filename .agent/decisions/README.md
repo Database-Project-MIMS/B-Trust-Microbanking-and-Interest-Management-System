@@ -33,3 +33,9 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0014](ADR-0014-customer-service-numbering-and-scope.md) | Customer numbering, scoped registration and masked reads; renumbered from conflicting 0013 | M2 implementation decision within authorized T04; team review pending |
 | [ADR-0015](ADR-0015-customer-api-runtime-integration.md) | Customer route/screens, child scope and shared RLS/audit integration | M2 implementation decision within authorized T05; M1 security review retained |
 | [ADR-0016](ADR-0016-transaction-attribution.md) | G-07 transaction snapshots and scoped early start for P03-M02-T01 | User-authorized M2 implementation; M4/team review retained |
+| [ADR-0017](ADR-0017-agent-daily-activity.md) | Agent daily activity dates, snapshot branch scope and scoped T02 start | User-authorized M2 implementation; M1/M4 integration review retained |
+
+| [ADR-0018](ADR-0018-customer-fd-listing.md) | Customer FD view/API/profile listing and scoped P04-M02-T01 early start | User-authorized M2 implementation; M1/M5 read-policy review retained |
+| [ADR-0019](ADR-0019-customer-fd-branch-scope.md) | Current-actor FD RLS backstop and scoped P04-M02-T02 start | User-authorized M2 implementation; M1/M5 policy review retained |
+| [ADR-0020](ADR-0020-rpt01-view.md) | RPT-01 timestamp/type/posting-branch view and scoped P05-M02-T01 start | User-authorized M2 database-only implementation; I-7/T02 pending |
+| [ADR-0021](ADR-0021-withdrawal-contract-repair.md) | Authorized M4 withdrawal correction, array signers and audited rejection boundary | User-authorized cross-member repair; M4 ownership retained |

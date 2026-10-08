@@ -22,6 +22,7 @@ database are what make the rule true.
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 | BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
+| BR-O7 | Agent activity respects both current access and immutable posting-branch history | SRV + SQL | T02 revalidates active caller role/profile; AGENT is self-only, manager targets current own-branch ordinary agents and filters `transaction.branch_id` in SQL; ADMIN/CENTRAL_OPS are bankwide. NULL agent attribution is excluded; managers also exclude NULL branch attribution. Inclusive Asia/Colombo dates use half-open timestamp bounds. Counts/SUM are calculated in PostgreSQL; no net balance inferred. ADR-0017. |
 | BR-O6 | Branch and agent master-data changes are audited atomically without storing passwords or identity numbers | TRG | `trg_audit_branch`, `trg_audit_agent` and the linked `app_user` trigger write through the sanitized `fn_audit_master_changes()` function in the caller transaction |
 
 ## Products and eligibility
@@ -57,15 +58,15 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-08 | Deposits and withdrawals only through authorised users, during configured business hours | SRV, CON | Role check in `requireRole()`; hours read from `system_parameter` / `business_calendar`, re-checked inside `sp_post_deposit` / `sp_post_withdrawal` (G-15); the initial deposit of `sp_open_savings_account` is checked with `fn_is_business_hour` (`OUTSIDE_BUSINESS_HOURS`) |
-| BR-09 | **Overdrafts are never allowed**; withdrawals must preserve the plan minimum | UI, SRV, SP, CON | `SELECT … FOR UPDATE` on the account row, then `fn_check_plan_minimum` inside the transaction; last line of defence is `CHECK (current_balance >= 0)` (G-18) |
+| BR-09 | **Overdrafts are never allowed**; withdrawals must preserve the plan minimum | UI, SRV, SP, CON | `SELECT … FOR UPDATE` on the account row, then `fn_check_plan_minimum(account_id, current_balance - amount)` (`database/routines/fn_check_plan_minimum.sql`, I-4) called by `sp_post_withdrawal` inside the transaction; last line of defence is `CHECK (current_balance >= 0)` (G-18) |
 | BR-10 | Every transaction has a unique reference, timestamp, type, amount, account and responsible user | CON | `transaction.reference_number UNIQUE NOT NULL` (G-05); `NOT NULL` on type, amount, account, initiator; `amount` uses the `positive_money` domain |
 | BR-16 | Posted transactions are **never physically deleted**; corrections use linked reversing entries | TRG, CON | `trg_financial_transaction_immutable` rejects `UPDATE`/`DELETE`; the app role has no `DELETE` grant; `transaction_reversal.original_transaction_id UNIQUE` makes a transaction reversible exactly once (DB-CON-04, G-02) |
-| BR-17 | Joint-account withdrawals must satisfy the stored mandate | SRV, FN, TRG | `joint_mandate.mandate_type` (`ANY_ONE` / `ALL_HOLDERS`) validated inside the withdrawal transaction (G-08). Stored and shape-checked by `0242`: `CHECK`s, `UNIQUE(account_id)`, `trg_joint_mandate_fit`; holder count/adult rule by `trg_validate_joint_mandate` |
+| BR-17 | Joint-account withdrawals must satisfy the stored mandate | SRV, FN, TRG | `joint_mandate.mandate_type` (`ANY_ONE` / `ALL_HOLDERS`) validated inside the withdrawal transaction (G-08) by `fn_check_withdrawal_mandate(account_id, signer_customer_ids)` (`database/routines/fn_check_withdrawal_mandate.sql`, I-4, P03-M03-T02), called by `sp_post_withdrawal` after the account lock. Stored and shape-checked by `0242`: `CHECK`s, `UNIQUE(account_id)`, `trg_joint_mandate_fit`; holder count/adult rule by `trg_validate_joint_mandate` |
 | BR-18 | Account closure requires zero balance and no active FD | SRV, SP, CON | Checked in the closure procedure against `current_balance = 0` and the absence of an `ACTIVE` FD |
-| BR-I1 | A repeated request with the same idempotency key must not create a second financial effect | CON, SRV | Partial unique index on `transaction(idempotency_key)`; the routine catches `23505` and returns the original row (G-04, FR-DEP-04) |
-| BR-I2 | Withdrawal limits: LKR 100,000 single, LKR 200,000 daily per account, unless a manager approves | SRV, SP | Values in `system_parameter`; daily total computed inside the locked transaction (SRS §7.1) |
+| BR-I1 | A repeated request with the same idempotency key must not create a second financial effect | CON, SRV | Partial unique index on `transaction(idempotency_key)` (G-04, FR-DEP-04); withdrawal 0363 serializes per key, locks account and binds replay to the original actor/account/channel/amount/narration/canonical signer set; matching replay returns the original row without another debit |
+| BR-I2 | Withdrawal limits: LKR 100,000 single, LKR 200,000 daily per account, unless a manager approves | SRV, SP | Values in `system_parameter`; daily total computed inside the `sp_post_withdrawal` locked transaction (SRS §7.1) |
 | BR-I3 | A repeated account-opening request (same `Idempotency-Key`) never opens a second account or credits a second initial deposit | CON, SRV | `account_opening_request` `UNIQUE (user_id, idempotency_key)` written in the opening transaction (migration 0244); per-key advisory lock; replay returns the original result (FR-DEP-04 pattern for accounts) |
-| BR-L1 | A rejected withdrawal creates **no ledger row** but is still recorded | SRV | Audit event only; no `transaction` insert (FR-WD-05) |
+| BR-L1 | A rejected withdrawal creates **no ledger row** but is still recorded | SRV, SP | `sp_try_post_withdrawal` (0363) rolls back inner financial work for known business rejections, CALLs `sp_write_rejection_audit` in the outer transaction and returns a code. Service commits that audit-only result, then maps a safe error outside withTransaction (FR-WD-05). Legacy throwing calls roll back their audit with the caller transaction. |
 
 **Ledger attribution (G-07, P03-M02-T01):** migration 0320 adds nullable reporting
 agent/posting-branch FKs with ON DELETE RESTRICT. The existing immutability trigger
@@ -73,6 +74,17 @@ protects both fields after insert, preserving history when an agent transfers br
 Legacy/system/unattributed values may be NULL. The future posting producer must capture
 authorized attribution in its transaction; FKs do not enforce branch authorization or
 attribution completeness. Existing M3 opening deposits still omit these values.
+
+**Withdrawal correction (0363, ADR-0021):** an authenticated AGENT uses its stored
+profile as attribution; manager/admin are not inferred as reporting agents. Posting
+branch comes from verified staff scope, or the locked account for an authorized
+bankwide/admin or linked customer operation. No NULL legacy row is backfilled.
+Amounts are positive finite exact cents; active channel, stored actor/context and
+branch/assignment/self scope are checked before posting. Customer self-service cannot
+claim another holder's signature. The future T05 service must validate signer evidence.
+Calendar/hours use fn_is_business_hour; limits use WITHDRAWAL_SINGLE_LIMIT and
+WITHDRAWAL_DAILY_LIMIT per account, with Asia/Colombo half-open day bounds. Validation,
+configuration and unexpected SQL errors abort rather than becoming business rejections.
 
 ### Why `FOR UPDATE` and not just a `CHECK`
 
@@ -161,6 +173,17 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 | Report pagination size | SRV | Presentation concern (REP-COM-05) |
 | Session inactivity and absolute timeout | SRV + SQL + `user_session.expires_at` | Creation uses configured limits in SQL inside the caller transaction; validation refreshes inactivity without exceeding the absolute deadline, rejecting expired/revoked sessions. Browser cookie expires at the absolute limit |
 
+### RPT-01 database aggregation contract (0520, ADR-0020)
+
+Counts/values use captured `transaction.agent_id` and `transaction.branch_id`, never
+current membership or inferred attribution. Include all agent profiles regardless
+of current role/status; report request authorization is a separate I-7 responsibility.
+Retain exact timestamps, bigint counts and unbounded NUMERIC sums. Positive amounts
+remain grouped by type, with REVERSAL separate; signed net presentation awaits M4's
+reversal contract and T02. Selected-range zero rows require the eligible roster's
+LEFT JOIN to already-filtered facts, not a WHERE date filter after the outer join.
+The owner-only invoker/barrier view exposes no live runtime report by itself.
+
 ---
 
 ## Traceability
@@ -177,3 +200,25 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 **Unresolved:** BR-12's exact form depends on **OQ-01**. Whether savings accounts accrue
 interest at all (**OQ-04**) would add rules BR-14a/BR-15a — see `17_erd-gap-analysis.md`
 G-12.
+
+## Customer FD read scope (P04-M02-T01)
+
+FD principal and opening rate are read from fixed_deposit, never recomputed from the
+current product rate (BR-19). A customer receives only FDs linked through actual
+account_holder membership, including matured/closed history; joint-account listing
+does not reveal another holder's profile. Both customer and account branch must
+match branch staff, and AGENT also needs the current customer assignment. CUSTOMER
+requires the optional app_user_id self link; CENTRAL_OPS/AUDITOR read bankwide.
+Enforcement: migration0420 caller-security view and SELECT FD RLS; service revalidated
+actor/local RLS context/parameterized WHERE; route role/session checks. No read changes
+FD rows, account balance, ledger or audit. Future FD opening ledger/audit correctness
+remains M5/M4's financial boundary, outside this read task.
+
+P04-M02-T02 /0421 adds an ANDed restrictive SELECT actor guard: current active
+stored identity/role and current active branch staff profile must agree with trusted
+transaction context. Missing identity/branch, inactive user/role/profile/branch and
+stale/forged context fail closed for direct FD/view SQL reads. Existing row scope
+still checks both branches, current assignment and the optional self link. Bankwide
+readers retain bankwide scope even with a historical inactive staff profile. This
+does not authenticate database context setters; live server session checks remain
+mandatory. General Phase 4 gate is unchanged; ADR-0019 authorizes this task only.
