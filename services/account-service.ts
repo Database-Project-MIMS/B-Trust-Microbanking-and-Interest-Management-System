@@ -30,8 +30,12 @@ export interface AccountSummary {
 export interface AccountSearchResult { accounts: AccountSummary[]; total: number; page: number; pageSize: number }
 export interface AccountDetail extends AccountSummary {
   minBalance: string; minHolders: number; maxHolders: number;
+  /** Balance above the plan minimum, never negative; computed in SQL. */
+  availableToWithdraw: string;
+  lastTransaction: { transactionType: string; amount: string; transactionDate: string; referenceNumber: string } | null;
   holders: { accountHolderId: string; customerId: string; customerNumber: string; fullName: string; holderType: string; joinedDate: string }[];
-  mandate: { mandateType: string; requiredSignatories: number; effectiveFrom: string; effectiveTo: string | null } | null;
+  mandate: { mandateType: string; requiredSignatories: number; effectiveFrom: string; effectiveTo: string | null;
+    state: "EFFECTIVE" | "NOT_YET_EFFECTIVE" | "EXPIRED" } | null;
 }
 
 // An AGENT sees only accounts held by a customer actively assigned to them (as the customer API does);
@@ -218,8 +222,9 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
   return withTransaction(async tx => {
     const scope = await resolveScope(tx, authenticated, DETAIL_ROLES);
     // A CUSTOMER sees only accounts they hold, an AGENT only accounts of assigned customers, staff only their branch.
-    const result = await tx.query<SummaryRow & { min_balance: string; min_holders: number; max_holders: number }>(
-      `SELECT ${SUMMARY_COLUMNS}, sp.min_balance::text AS min_balance, sp.min_holders, sp.max_holders
+    const result = await tx.query<SummaryRow & { min_balance: string; min_holders: number; max_holders: number; available_to_withdraw: string }>(
+      `SELECT ${SUMMARY_COLUMNS}, sp.min_balance::text AS min_balance, sp.min_holders, sp.max_holders,
+              GREATEST(a.current_balance - sp.min_balance, 0)::numeric(15,2)::text AS available_to_withdraw
          FROM account a JOIN savings_plan sp ON sp.plan_id = a.plan_id
         WHERE a.account_id = $1 AND ($2::uuid IS NULL OR a.branch_id = $2)
           AND ${assignedTo("$3", "$4")}
@@ -234,16 +239,27 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
       `SELECT h.account_holder_id, c.customer_id, c.customer_number, c.full_name, h.holder_type, h.joined_date::text
          FROM account_holder h JOIN customer c ON c.customer_id = h.customer_id
         WHERE h.account_id = $1 ORDER BY h.holder_type DESC, h.joined_date, c.customer_number`, [accountId]);
-    const mandate = await tx.query<{ mandate_type: string; required_signatories: number; effective_from: string; effective_to: string | null }>(
-      `SELECT mandate_type, required_signatories, effective_from::text, effective_to::text
+    // The state uses the bank's calendar date (Asia/Colombo), the same rule as fn_withdrawal_mandate_verdict.
+    const mandate = await tx.query<{ mandate_type: string; required_signatories: number; effective_from: string; effective_to: string | null; state: "EFFECTIVE" | "NOT_YET_EFFECTIVE" | "EXPIRED" }>(
+      `SELECT mandate_type, required_signatories, effective_from::text, effective_to::text,
+              CASE WHEN effective_from > (now() AT TIME ZONE 'Asia/Colombo')::date THEN 'NOT_YET_EFFECTIVE'
+                   WHEN effective_to < (now() AT TIME ZONE 'Asia/Colombo')::date THEN 'EXPIRED'
+                   ELSE 'EFFECTIVE' END AS state
          FROM joint_mandate WHERE account_id = $1`, [accountId]);
     const row = mandate.rows[0];
+    const last = await tx.query<{ transaction_type: string; amount: string; transaction_date: string; reference_number: string }>(
+      `SELECT transaction_type, amount::text, to_char(transaction_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS transaction_date, reference_number
+         FROM transaction WHERE account_id = $1 ORDER BY transaction_date DESC, transaction_id DESC LIMIT 1`, [accountId]);
+    const latest = last.rows[0];
     return { ...mapSummary(account), minBalance: account.min_balance,
       minHolders: account.min_holders, maxHolders: account.max_holders,
+      availableToWithdraw: account.available_to_withdraw,
+      lastTransaction: latest ? { transactionType: latest.transaction_type, amount: latest.amount,
+        transactionDate: latest.transaction_date, referenceNumber: latest.reference_number } : null,
       holders: holders.rows.map(holder => ({ accountHolderId: holder.account_holder_id, customerId: holder.customer_id,
         customerNumber: holder.customer_number, fullName: holder.full_name, holderType: holder.holder_type, joinedDate: holder.joined_date })),
       mandate: row ? { mandateType: row.mandate_type, requiredSignatories: row.required_signatories,
-        effectiveFrom: row.effective_from, effectiveTo: row.effective_to } : null };
+        effectiveFrom: row.effective_from, effectiveTo: row.effective_to, state: row.state } : null };
   }, { isolationLevel: "REPEATABLE READ" });
 }
 
