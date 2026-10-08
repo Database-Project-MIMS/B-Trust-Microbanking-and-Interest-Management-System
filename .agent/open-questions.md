@@ -54,6 +54,16 @@ whose holders are all in another branch would show a manager no FDs (display onl
 parameter. (3) `database/seed/_load-order.txt` lists `14_fixed_deposits.sql` (and `15_interest_runs.sql`) but neither file exists, so there is
 no FD demo data. (4) No browser pass was run for the panel; its rendered markup is covered by `tests/e2e/account-fixed-deposits-panel.test.mjs`, but the visual layout (narrow width) was not looked at. Handoff: `handoffs/p04-m03-t03-fd-panel.md`.
 
+### RPT-02 view: balance_after gaps, ordering ties, doc mismatch — 2026-10-08 (raised by M3, task P05-M03-T01)
+
+(1) `sp_open_savings_account` (0243) wrote the opening-deposit ledger row without `balance_after`; the immutable ledger means rows
+made before 0541 stay NULL. 0541 fixes new rows; the RPT-02 view derives the old ones. (2) Postings made inside one DB transaction can
+share a timestamp (`sp_post_deposit` stamps `now()`, `sp_post_withdrawal` stamps `clock_timestamp()`); the seed posts ~120 in one `DO`
+block, so seeded accounts may have tied or out-of-order timestamps and a "first/last row in range" pick can be wrong there. Owner: M4/M5
+(seed) if T02 shows it matters; a sequence column on `transaction` would be the clean fix. (3) `docs/04` lists `transaction.balance_after`
+as `NOT NULL`; the column added by 0361 is nullable. (4) The task card's SQL used `posted_at` and `status` columns that do not exist.
+Handoff: `handoffs/p05-m03-t01-rpt02-view.md`.
+
 ### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
 
 The P04-M03-T01 card prescribes `fn_check_account_fd_eligible(account_id) → boolean` (status only; caller locks and
