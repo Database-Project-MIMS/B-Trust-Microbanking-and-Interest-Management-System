@@ -271,8 +271,8 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) | DB | P04-M05-T02 |
 | P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) | DB + BE | P04-M03-T01 |
 | P04-M03-T03 | 3 | FD panel on the account detail page | FE | P04-M05-T03 |
-| P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 |
-| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 |
+| P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 | DONE |
+| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 | DONE |
 | P04-M05-T01 | 5 | `fixed_deposit` schema: partial unique active index (G-01), `maturity_date` (G-23), `interest_rate_at_opening` (G-11) | DB | **OQ-01** |
 | P04-M05-T02 | 5 | `sp_open_fixed_deposit` — eligibility, debit principal, create FD, atomic | DB | P04-M05-T01, **I-6** |
 | P04-M05-T03 | 5 | `fn_calculate_fd_interest` — exact `principal × rate × 30 / 365`, rounded to 2dp | DB | P04-M05-T01 |
