@@ -91,17 +91,28 @@ describe("Phase 4: Fixed Deposit Constraints and SP", () => {
     });
 
     describe("Task 2: sp_open_fixed_deposit", () => {
+        let userId;
+        let channelId;
+
+        before(async () => {
+            const userRes = await client.query("SELECT user_id FROM app_user WHERE status = 'ACTIVE' LIMIT 1");
+            userId = userRes.rows[0].user_id;
+
+            const channelRes = await client.query("SELECT channel_id FROM transaction_channel WHERE status = 'ACTIVE' LIMIT 1");
+            channelId = channelRes.rows[0].channel_id;
+        });
+
         test("1. Open FD with insufficient balance throws exception", async () => {
             const tryAmount = 9000000; // Unreasonably high
             await assert.rejects(
-                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, NULL, NULL)`, [activeAccountId, fdPlanId, tryAmount]),
+                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, $4, $5)`, [activeAccountId, fdPlanId, tryAmount, userId, channelId]),
                 (err) => err.message.includes("Insufficient balance")
             );
         });
         
         test("2. Open FD on INACTIVE account throws exception", async () => {
             await assert.rejects(
-                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, NULL, NULL)`, [inactiveAccountId, fdPlanId, 10000]),
+                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, $4, $5)`, [inactiveAccountId, fdPlanId, 10000, userId, channelId]),
                 (err) => err.message.includes("Account is not active")
             );
         });
@@ -110,7 +121,7 @@ describe("Phase 4: Fixed Deposit Constraints and SP", () => {
             const accBefore = await client.query("SELECT current_balance FROM account WHERE account_id = $1", [activeAccountId]);
             const balBefore = Number(accBefore.rows[0].current_balance);
 
-            const res = await client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, NULL, NULL) as fd_id`, [activeAccountId, fdPlanId, 50000]);
+            const res = await client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, $4, $5) as fd_id`, [activeAccountId, fdPlanId, 50000, userId, channelId]);
             const fdId = res.rows[0].fd_id;
             assert.ok(fdId);
 
@@ -127,7 +138,7 @@ describe("Phase 4: Fixed Deposit Constraints and SP", () => {
 
         test("4. Open second ACTIVE FD on same account -> 23505", async () => {
             await assert.rejects(
-                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, NULL, NULL)`, [activeAccountId, fdPlanId, 10000]),
+                client.query(`SELECT sp_open_fixed_deposit($1, $2, $3, $4, $5)`, [activeAccountId, fdPlanId, 10000, userId, channelId]),
                 (err) => err.code === '23505'
             );
         });
