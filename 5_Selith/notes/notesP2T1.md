@@ -219,3 +219,11 @@ I noticed that `npm run db:seed-check` was missing from `package.json`, so I add
 
 ### Why I Did It
 Verification is crucial to confirm that all `INSERT` statements are correctly ordered to prevent foreign key violations, and that the idempotent design successfully ignores duplicates on repeated runs without errors. Fixing `package.json` ensures future developers won't hit the missing script error when following the instructions.
+
+---
+
+## A Note on the `scratch` Folder
+### What is it and what do we do inside it?
+In the simplest sense, the `scratch` folder is a temporary 'sandbox' or rough-draft area used by me (your AI assistant). When I need to write complex scripts, format large SQL statements, or prepare multiple files at once, I write them into the `scratch` folder first. 
+
+I do this so that I can safely generate and test files without accidentally breaking your real project files. Once I am completely sure the scripts in the `scratch` folder are correct, I run them to safely move the changes into the real codebase and make the Git commits. It's essentially my digital workbench!
