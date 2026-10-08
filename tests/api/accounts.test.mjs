@@ -200,6 +200,58 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     assert.ok(!('nicPassportNo' in account.holders[0]));
   });
 
+  test('detail reports the amount available above the plan minimum and the last transaction', async () => {
+    const empty = (await openOk(individual(await makeCustomer()))).accountId;
+    const none = (await (await detail(empty)).json()).data;
+    assert.deepEqual({ available: none.availableToWithdraw, last: none.lastTransaction, mandate: none.mandate }, { available: '0.00', last: null, mandate: null });
+
+    const funded = (await openOk(individual(await makeCustomer(), { initialDeposit: '2500.50' }))).accountId;
+    const account = (await (await detail(funded)).json()).data;
+    assert.equal(account.minBalance, '1000.00'); assert.equal(account.availableToWithdraw, '1500.50');
+    assert.equal(account.lastTransaction.transactionType, 'DEPOSIT'); assert.equal(account.lastTransaction.amount, '2500.50');
+    assert.match(account.lastTransaction.referenceNumber, /\S/); assert.ok(!Number.isNaN(Date.parse(account.lastTransaction.transactionDate)));
+    assert.deepEqual(Object.keys(account.lastTransaction).sort(), ['amount', 'referenceNumber', 'transactionDate', 'transactionType']);
+
+    // At the minimum nothing is available; a balance below it (not reachable through the app) never goes negative.
+    const atMinimum = (await openOk(individual(await makeCustomer(), { initialDeposit: '1000.00' }))).accountId;
+    assert.equal((await (await detail(atMinimum)).json()).data.availableToWithdraw, '0.00');
+    await client.query('UPDATE account SET current_balance = 400.00 WHERE account_id = $1', [atMinimum]);
+    assert.equal((await (await detail(atMinimum)).json()).data.availableToWithdraw, '0.00');
+  });
+
+  test('detail shows the newest ledger row when there are several', async () => {
+    const { accountId } = await openOk(individual(await makeCustomer(), { initialDeposit: '1500.00' }));
+    await client.query(
+      `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount, transaction_date, balance_after)
+       SELECT $1, $2, channel_id, 'TEST-T03-LATEST', 'DEPOSIT', 25.25, now() + interval '1 minute', 1525.25 FROM transaction_channel LIMIT 1`,
+      [accountId, fixture.managerId]);
+    const account = (await (await detail(accountId)).json()).data;
+    assert.equal(account.lastTransaction.referenceNumber, 'TEST-T03-LATEST'); assert.equal(account.lastTransaction.amount, '25.25');
+  });
+
+  test('detail reports whether the stored mandate is currently effective', async () => {
+    const { accountId } = await openOk(joint([await makeCustomer(), await makeCustomer()]));
+    const state = async () => (await (await detail(accountId)).json()).data.mandate.state;
+    assert.equal(await state(), 'EFFECTIVE');
+    await client.query(`UPDATE joint_mandate SET effective_from = ${today} + 1 WHERE account_id = $1`, [accountId]);
+    assert.equal(await state(), 'NOT_YET_EFFECTIVE');
+    await client.query(`UPDATE joint_mandate SET effective_from = ${today} - 10, effective_to = ${today} - 1 WHERE account_id = $1`, [accountId]);
+    assert.equal(await state(), 'EXPIRED');
+    await client.query(`UPDATE joint_mandate SET effective_to = ${today} WHERE account_id = $1`, [accountId]);
+    assert.equal(await state(), 'EFFECTIVE');
+  });
+
+  test('the new detail fields respect scope and leak no internals', async () => {
+    const customerId = await makeCustomer({ login: fixture.customerLoginId });
+    const { accountId } = await openOk(individual(customerId, { initialDeposit: '3000.00' }));
+    const own = (await (await detail(accountId, tokens.customerLogin)).json()).data;
+    assert.equal(own.availableToWithdraw, '2000.00'); assert.equal(own.lastTransaction.amount, '3000.00');
+    const text = JSON.stringify(own.lastTransaction);
+    assert.ok(!UUID_TEXT.test(text), 'no ids in the last transaction');
+    await failsSafely(await detail(accountId, tokens.otherManager), 404, 'NOT_FOUND');
+    await failsSafely(await detail(accountId, tokens.otherAgent), 404, 'NOT_FOUND');
+  });
+
   test('database rule failures map to specific safe errors with no writes', async () => {
     const [adult, adult2, minor, unverified] = [await makeCustomer(), await makeCustomer(),
       await makeCustomer({ dob: '2018-01-01' }), await makeCustomer({ verified: false })];
