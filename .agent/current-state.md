@@ -46,7 +46,7 @@ implementation/status changed. Other members retain ownership of their stale lab
 Vibodha explicitly authorized T02 after the general phase restriction was explained;
 ADR-0017 extends the scoped early-start exception. No Phase 2 exit/general Phase 3
 entry, OQ-12/OQ-14 or unrelated task approval is recorded. Historical Phase 2 entry
-approval remains valid. Overall tracker: 51 TODO / 1 REVIEW / 45 DONE (97 tasks).
+approval remains valid. Overall tracker: 50 TODO / 1 REVIEW / 46 DONE (97 tasks).
 
 M4/M3 still need to populate trusted attribution inside posting transactions;
 existing opening deposits remain unattributed. M1 owns future transaction RLS;
@@ -106,3 +106,12 @@ account numbers (5 `sp-open-savings-account` tests failed on a seeded DB). Full 
 `seed-validation` ("transaction: expected >= 100, got 93") — M5's seed-set-4 target, not part of this change. Typecheck, lint, build clean. M4's `sp_post_withdrawal` (P03-M04-T03) now has both checks it needs.
 **Open for M4:** `docs/05` withdrawal body has only `onBehalfOfCustomerId`; `ALL_HOLDERS` accounts need a multi-signer
 field. [Handoff](handoffs/i-4-fn-check-withdrawal-mandate.md).
+
+## M3 update — P03-M03-T03 (2026-10-08)
+
+P03-M03-T03 DONE (early, at the user's direction; same scoped basis as T01/T02): `GET /api/accounts/{id}` adds
+`availableToWithdraw` (SQL, `numeric(15,2)`), `lastTransaction` and `mandate.state` (Asia/Colombo date); `/accounts/{id}`
+shows the available amount, last transaction, who can authorise withdrawals and a non-ACTIVE notice, plus an Authority
+column. No migration. Full isolated suite 580/580 (incl. seed-validation, so its earlier dev-DB failure was dev-data only),
+typecheck, lint, build clean. **Browser pass not yet run.** M3's Phase 3 tasks are all DONE.
+[Handoff](handoffs/p03-m03-t03-balance-panel.md).

@@ -142,3 +142,6 @@ PR #35, registration PR #38, holder PR #37 and security PR #40.
 
 ## 2026-10-08 — M3 P03-M03-T02 (saved)
 `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` + `fn_withdrawal_mandate_verdict` (reason codes) in `database/routines/fn_check_withdrawal_mandate.sql`; 16/16 tests. No-mandate rule uses actual holder count, not plan `max_holders`; dates in Asia/Colombo. Migration `0246` makes `fn_next_account_number` skip seeded numbers. Open for M4: withdrawal API needs a multi-signer field for ALL_HOLDERS (handoff i-4-fn-check-withdrawal-mandate.md). Remaining full-suite failure: seed-validation transaction count 93<100 (M5). Next: P03-M03-T03 balance panel.
+
+## 2026-10-08 — M3 P03-M03-T03 (saved)
+Account detail now returns `availableToWithdraw` (use `::numeric(15,2)::text` — GREATEST drops scale), `lastTransaction`, `mandate.state`; page shows balance/authority panel. 580/580 isolated tests. Browser pass pending. M3 Phase 3 complete.
