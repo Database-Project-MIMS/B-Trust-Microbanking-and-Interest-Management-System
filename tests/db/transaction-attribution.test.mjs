@@ -214,6 +214,8 @@ describe('P03-M02-T01: transaction attribution', () => {
 
   test('0320 upgrades a populated immutable ledger without rewriting legacy rows', async () => {
     // Recreate the pre-0320 shape only within this disposable, rolled-back scenario.
+    // The later RPT-01 view depends on these columns; rollback restores it as well.
+    await client.query('DROP VIEW IF EXISTS vw_rpt01_agent_transactions');
     await client.query('ALTER TABLE transaction DROP COLUMN agent_id, DROP COLUMN branch_id');
     const row = (await client.query(
       `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id,
