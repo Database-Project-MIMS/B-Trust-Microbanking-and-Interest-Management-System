@@ -24,7 +24,7 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~05~~ | ~~[sp_open_savings_account](05_P2-T04_sp-open-savings-account.md)~~ | ~~P2~~ | ~~T04~~ | ~~Atomic account opening: account + holders + mandate + optional deposit~~ | ~~~6~~ |
 | ~~06~~ | ~~[Accounts API](06_P2-T05-T06_accounts-api-ui.md)~~ | ~~P2~~ | ~~T05–T06~~ | ~~`/api/accounts/**`~~ | ~~~9~~ |
 | ~~07~~ | ~~[fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md)~~ | ~~P3~~ | ~~T01~~ | ~~Post-withdrawal minimum-balance rule — **publishes I-4**~~ | ~~~3~~ |
-| 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | Joint-mandate check callable from withdrawal path; balance/authority endpoint | ~5 |
+| 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | ~~Joint-mandate check callable from withdrawal path~~ (T02 done); balance/authority endpoint (T03 open) | ~5 |
 | 09 | [FD Eligibility & Closure](09_P4_fd-eligibility-closure-panel.md) | P4 | T01–T03 | Account-side FD eligibility (**I-6**), closure rule (BR-18) | ~7 |
 | 10 | [RPT-02 Account Summary Report](10_P5_rpt02-report.md) | P5 | T01–T02 | Account-wise summary view, API, CSV | ~7 |
 | 11 | [Concurrency & Constraint Tests](11_P6_concurrency-constraint-tests.md) | P6 | T01–T02 | Parallel-withdrawal overspend tests (AC-06); full constraint suite | ~5 |
