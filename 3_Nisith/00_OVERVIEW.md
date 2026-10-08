@@ -12,7 +12,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 ## 🗺️ Work Order Summary
 
 **Reconciled 2026-10-07:** Phase 1 T01–T03, Phase 2 T01–T06 and Phase 3 T01 (`fn_check_plan_minimum`, I-4) are DONE. T06 (account screens) is merged into dev; its browser pass is partial (happy path blocked by missing document verification, see `.agent/open-questions.md`).
-P03-M03-T02/T03 and P04-M03-T01/T02/T03 (I-6, account closure and the FD panel, early start) are DONE as of 2026-10-08.
+P03-M03-T02/T03 and P04-M03-T01/T02/T03 (I-6, account closure and the FD panel) and P05-M03-T01/T02 (RPT-02), all early starts, are DONE as of 2026-10-08.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.
 
@@ -27,7 +27,7 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~07~~ | ~~[fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md)~~ | ~~P3~~ | ~~T01~~ | ~~Post-withdrawal minimum-balance rule — **publishes I-4**~~ | ~~~3~~ |
 | 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | ~~Joint-mandate check callable from withdrawal path; balance/authority panel~~ (T02, T03 done) | ~5 |
 | ~~09~~ | ~~[FD Eligibility & Closure](09_P4_fd-eligibility-closure-panel.md)~~ | ~~P4~~ | ~~T01–T03~~ | ~~Account-side FD eligibility (**I-6**), closure rule (BR-18, backend only), FD panel~~ | ~~~7~~ |
-| 10 | [RPT-02 Account Summary Report](10_P5_rpt02-report.md) | P5 | T01–T02 | ~~Account-wise summary view~~ (T01 done), API, CSV | ~7 |
+| ~~10~~ | ~~[RPT-02 Account Summary Report](10_P5_rpt02-report.md)~~ | ~~P5~~ | ~~T01–T02~~ | ~~Account-wise summary view, API, CSV, page~~ | ~~~7~~ |
 | 11 | [Concurrency & Constraint Tests](11_P6_concurrency-constraint-tests.md) | P6 | T01–T02 | Parallel-withdrawal overspend tests (AC-06); full constraint suite | ~5 |
 
 ---
