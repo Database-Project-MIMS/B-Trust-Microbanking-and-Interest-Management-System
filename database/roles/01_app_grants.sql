@@ -38,3 +38,6 @@ GRANT SELECT, INSERT         ON business_calendar TO mims_app;
 GRANT SELECT, INSERT         ON audit_log TO mims_app;
 -- Health reads only the migration inventory after server session/role checks.
 GRANT SELECT ON schema_migration TO mims_app;
+
+-- Grants for Member 4 (Pramudith) - Posting routines (P03-M04-T02)
+GRANT EXECUTE ON PROCEDURE sp_post_deposit(uuid, numeric, uuid, uuid, varchar, varchar, uuid, varchar, numeric, timestamptz) TO mims_app;

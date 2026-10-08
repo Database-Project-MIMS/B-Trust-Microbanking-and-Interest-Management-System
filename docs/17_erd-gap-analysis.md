@@ -33,8 +33,8 @@ structure and contradicts nothing — a member may implement it directly.
 | G-01 | One FD *ever* per account vs one *active* FD | HIGH | **YES — blocking** |
 | G-02 | No reversal support in the ledger | HIGH | YES |
 | G-03 | No central interest-run tracking | HIGH | YES |
-| G-04 | No idempotency key on transactions | HIGH | YES (account opening has its own record, `account_opening_request`, migration 0244) |
-| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
+| G-04 | No idempotency key on transactions | HIGH | **YES — resolved; implemented in `0360`** (and `0244` for accounts) |
+| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — resolved (ADR-0010); implemented in `0360`** |
 | G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
 | G-07 | Transaction agent/branch attribution — schema implemented in 0320; posting integration remains | HIGH | User-authorized T01, ADR-0016; M4/team review retained |
 | G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved; implemented in `0241`/`0242`** |
@@ -178,7 +178,7 @@ The posting routine catches SQLSTATE `23505` on this index and returns the origi
 **Database impact** — One nullable column, one partial unique index. Nullable because
 seeded and system-generated interest credits do not carry a client key.
 
-**Approval needed — YES.**
+**Approval needed — YES — resolved.** Implemented in `0360_p03_m04_transaction_reference_idempotency.sql` (and `0244` for accounts).
 
 ---
 
@@ -214,7 +214,7 @@ both BR-10 and Assumption 4's intent.
 **Database impact** — Either one `UNIQUE` constraint (recommended), or one `UNIQUE`
 constraint plus one nullable grouping column and a fifth transaction type.
 
-**Approval needed — YES, blocking.** Tracked as **OQ-08**.
+**Approval needed — YES — resolved.** Resolved by [ADR-0010](../.agent/decisions/ADR-0010-transfers-with-transfer-group.md) (OQ-08). Implemented in `0360_p03_m04_transaction_reference_idempotency.sql`.
 
 ---
 

@@ -1,8 +1,8 @@
 # Current State
 
 **Updated:** 2026-10-08 · **Owner:** M2
-**Checkout:** feat/p03-m02-agent-daily-activity · base HEAD db6ff4e
-**Work:** P03-M02-T02 implemented, verified locally; REVIEW for the user's PR
+**Checkout:** feat/p03-m02-agent-daily-activity · HEAD d2901b7 · incoming dev af07af8
+**Work:** P03-M02-T02 REVIEW in open PR #53; local dev conflicts resolved; pending user merge commit
 
 ## Delivered work
 
@@ -22,7 +22,7 @@ backfill, ledger/account mutation or producer change is inferred.
 
 ## Verification and review
 
-Final verify:phase1 PASS: 529 tests / 48 suites, zero failures/skips; clean isolated
+Original T02 delivery verify:phase1 PASS: 529 tests / 48 suites, zero failures/skips; clean isolated
 24-migration rebuild and checksum verification; TypeScript, lint and production build.
 28 T02 cases (API 19, DB-backed service 7, pure calendar 2) cover real mims_app/session
 reads, exact huge sums, local midnight microseconds, final-day bounds, alternate DB
@@ -46,7 +46,7 @@ implementation/status changed. Other members retain ownership of their stale lab
 Vibodha explicitly authorized T02 after the general phase restriction was explained;
 ADR-0017 extends the scoped early-start exception. No Phase 2 exit/general Phase 3
 entry, OQ-12/OQ-14 or unrelated task approval is recorded. Historical Phase 2 entry
-approval remains valid. Overall tracker: 55 TODO / 4 REVIEW / 38 DONE (97 tasks).
+approval remains valid. Overall tracker: 52 TODO / 1 REVIEW / 44 DONE (97 tasks).
 
 M4/M3 still need to populate trusted attribution inside posting transactions;
 existing opening deposits remain unattributed. M1 owns future transaction RLS;
@@ -59,5 +59,38 @@ M5/M1 handoff: handoffs/p03-m02-activity-seed-manager-profile.md. No steward-own
 seed, authentication code or another member's status was altered. Existing Phase 2
 seed-versus-exit targets also remain an owner reconciliation item in open-questions.md.
 
-User controls commit, push, PR creation and merge. All task changes are unstaged and
-uncommitted; the assistant performed no publication or completed merge.
+## M3 update (2026-10-08)
+
+P02-M03-T03–T06 are DONE and merged into dev (PRs #42/#45/#46/#47): `0242` joint mandate,
+`0243` `sp_open_savings_account`, `0244`/`0245` accounts APIs and `sp_add_account_holder`,
+and the account screens plus real plans page. A partial browser pass found no defects; the
+successful opening and `/accounts/{id}` pages were untested because no verified document
+can exist yet. Handoffs: `handoffs/p02-m03-t03-joint-mandate.md`, `…t04-…`, `…t05-…`, `…t06-…`.
+
+P03-M03-T01 DONE (early, at its user's direction; ADR-0016 remains M2-T01 only): `database/routines/fn_check_plan_minimum.sql`
+publishes I-4, `fn_check_plan_minimum(account_id, resulting_balance)`; `tests/db/fn-check-plan-minimum.test.mjs`
+11/11 in one rolled-back transaction; `/review` findings resolved. No migration (routine file, like
+`fn_check_plan_eligibility`). M4's `sp_post_withdrawal` is unblocked on the minimum check; the mandate
+check is P03-M03-T02. [Handoff](handoffs/i-4-fn-check-plan-minimum.md).
+
+Open coordination raised by M3 (recheck after the PR #48 seeds):
+1. **Document verification is not exposed (M2).** `customer_document.verified_*` can only be set outside the
+   app, so `DOCUMENTS_NOT_VERIFIED` can never clear for app-registered customers. See `open-questions.md`.
+2. **Seeded branch managers cannot sign in (M1/M5).** `bm_*` users had no `agent` row while `validateSession`
+   requires an ACTIVE agent row for BRANCH_MANAGER. Confirm whether PR #48 changed this. See `open-questions.md`.
+
+## PR #53 conflict resolution (2026-10-08)
+
+Prepared origin/dev af07af8 with --no-commit --no-ff against feature HEAD d2901b7.
+Preserved T02 implementation/review evidence and M3/M4 merged statuses, corrected
+summary counts from task rows, and retained all general phase gates. M4 T01/T02
+are DONE through dev (0360/0361, PR #52); the new deposit producer still omits
+agent_id/branch_id, so the activity attribution follow-up remains necessary.
+Combined verification PASS: 554 tests /49 suites, zero failures/skips;
+clean isolated 26-migration rebuild and checksum checks; TypeScript, lint and
+production build PASS. The normal development database was preserved.
+Log: test-results/p03-activity-pr53-conflict-verification.log (ignored).
+
+The user already committed/pushed T02 and opened PR #53. This assistant session
+performs only local resolution and staging; no commit, push, PR creation or
+completed merge. The pending merge commit and subsequent push remain with the user.
