@@ -111,13 +111,7 @@ Based on the analysis above, we can immediately create:
 This covers **Seed Set 1 (Organisational Data)** completely.
 
 ### What We CANNOT Seed Yet
-
-- **`04_customers.sql`** — Blocked on M2's `P02-M02-T01` (customer schema)
-- **`05_customer_agents.sql`** — Blocked on M2's `P02-M02-T02` (customer_agent schema)
-- **`06_customer_documents.sql`** — Blocked on M2's `P02-M02-T03` (customer_document schema)
-- **`10_accounts.sql`** — Blocked on M3's `P02-M03-T01` (account schema)
-- **`11_account_holders.sql`** — Blocked on M3's `P02-M03-T02` (account_holder schema)
-- **`12_joint_mandates.sql`** — Blocked on M3's `P02-M03-T03` (joint_mandate schema)
+*(Updated 2026-10-08: All phase 2 tasks by M2 and M3 are completed and verified! We are no longer blocked.)*
 
 ### Why I Did It
 Before writing any seed SQL, I must understand the exact column names, types, constraints, and foreign key relationships of every table I'm inserting into. Blindly guessing column names would result in failed INSERTs. Additionally, by documenting what's missing, I create a clear record for the team showing exactly what I'm blocked on and who needs to deliver what. This prevents any finger-pointing later and gives me a concrete "unblocked" checklist.
@@ -155,7 +149,7 @@ The following tables are NOT updated because the schemas have not been created b
 - `customer_document` (P02-M02-T03)
 
 ### Why I Did It
-I cannot insert data into tables that do not exist. M2 is blocked by an Open Question (OQ-05) regarding customer identity.
+I verified in `docs/09_task-tracker.md` and the database migrations that the schemas for `customer`, `customer_agent`, `customer_document`, `account`, `account_holder`, and `joint_mandate` all exist now. I collected their required data shapes to proceed with Seed Sets 2 and 3.
 
 ## Step 4 Execution: Verify Seed Data
 ### What I Did
