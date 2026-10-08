@@ -560,4 +560,74 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     const response = await close('not-a-uuid');
     assert.equal(response.status, 400);
   });
+
+  // ------------------------------------------------------------------ fixed-deposit panel data (P04-M03-T03)
+
+  // start offset in days before today; the maturity and next-interest dates follow the opening date.
+  async function addFixedDepositOn(accountId, status, daysAgo, principal) {
+    await client.query(
+      `INSERT INTO fixed_deposit (account_id, fd_plan_id, principal_amount, interest_rate_at_opening, start_date, maturity_date, next_interest_date, status)
+       SELECT $1, fd_plan_id, $4::numeric, 0.1400, CURRENT_DATE - $3::int, CURRENT_DATE - $3::int + 365, CURRENT_DATE - $3::int + 30, $2
+         FROM fd_plan ORDER BY tenure_months LIMIT 1`,
+      [accountId, status, daysAgo, principal]);
+  }
+  const FD_KEYS = ['fdId', 'fdPlanId', 'interestRateAtOpening', 'maturityDate', 'nextInterestDate', 'planName', 'principalAmount', 'startDate', 'status'];
+  const fixedDepositsOf = async (id, token = tokens.manager) => (await (await detail(id, token)).json()).data.fixedDeposits;
+
+  test('the account detail lists no fixed deposits for a new account', async () => {
+    const accountId = await openZeroBalance();
+    assert.deepEqual(await fixedDepositsOf(accountId), []);
+  });
+
+  test('fixed deposits come back newest first with exact strings, every status and no internal ids', async () => {
+    const accountId = await openZeroBalance();
+    await addFixedDepositOn(accountId, 'MATURED', 400, '1000.00');
+    await addFixedDepositOn(accountId, 'ACTIVE', 10, '2500.50');
+    await addFixedDepositOn(accountId, 'CLOSED', 200, '750.25');
+    const deposits = await fixedDepositsOf(accountId);
+    assert.deepEqual(deposits.map(fd => [fd.status, fd.principalAmount]), [['ACTIVE', '2500.50'], ['CLOSED', '750.25'], ['MATURED', '1000.00']]);
+    for (const fd of deposits) {
+      assert.deepEqual(Object.keys(fd).sort(), FD_KEYS);
+      assert.equal(fd.interestRateAtOpening, '0.1400');
+      assert.equal(typeof fd.planName, 'string');
+      for (const key of ['startDate', 'maturityDate', 'nextInterestDate']) assert.match(fd[key], /^\d{4}-\d{2}-\d{2}$/);
+    }
+    // The only ids are the FD's own and its plan's; no account, customer, user or branch id is added.
+    const own = new Set(deposits.flatMap(fd => [fd.fdId, fd.fdPlanId]));
+    for (const found of JSON.stringify(deposits).match(new RegExp(UUID_TEXT.source, 'gi')) ?? []) assert.ok(own.has(found), `unexpected id ${found}`);
+  });
+
+  test('every role that may see the account sees its fixed deposits, others get the uniform 404 with no FD data', async () => {
+    const customerId = await makeCustomer({ login: fixture.customerLoginId });
+    const { accountId } = await openOk(individual(customerId));
+    await addFixedDepositOn(accountId, 'ACTIVE', 5, '5000.00');
+    const expected = (await fixedDepositsOf(accountId)).map(fd => fd.fdId);
+    assert.equal(expected.length, 1);
+    for (const token of [tokens.manager, tokens.agent, tokens.centralOps, tokens.auditor, tokens.customerLogin]) {
+      assert.deepEqual((await fixedDepositsOf(accountId, token)).map(fd => fd.fdId), expected);
+    }
+    for (const token of [tokens.otherManager, tokens.otherAgent, tokens.secondAgent]) {
+      const body = await failsSafely(await detail(accountId, token), 404, 'NOT_FOUND');
+      assert.equal(body.data, undefined);
+      assert.ok(!JSON.stringify(body).includes('principalAmount'));
+    }
+  });
+
+  test('if the fixed-deposit list cannot be read the account is still returned, with null and no false empty list', async () => {
+    const accountId = await openZeroBalance();
+    await addFixedDepositOn(accountId, 'ACTIVE', 3, '1500.00');
+    // Disposable database only: take away one column privilege, then give it back.
+    await client.query('REVOKE SELECT (status) ON fixed_deposit FROM mims_app');
+    let degraded;
+    try { degraded = await detail(accountId); }
+    finally { await client.query('GRANT SELECT (status) ON fixed_deposit TO mims_app'); }
+    assert.equal(degraded.status, 200);
+    const data = (await degraded.json()).data;
+    assert.equal(data.fixedDeposits, null);
+    assert.equal(data.status, 'ACTIVE'); assert.equal(data.currentBalance, '0.00'); assert.equal(data.holders.length, 1);
+    assert.ok(!SQL_TEXT.test(JSON.stringify(data)), 'no database detail in the body');
+    // Restored: the same account lists its deposit again, so the failure left nothing behind.
+    assert.equal((await fixedDepositsOf(accountId)).length, 1);
+  });
 });
+
