@@ -105,9 +105,16 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `vw_ledger_reconciliation` | M4 | Asserts `current_balance` = signed ledger sum = last `balance_after` | reconciliation | L11 consistency |
 | `vw_interest_run_summary` | M5 | Run counts, totals and exceptions | audit | L05 |
 | `vw_customer_account_holdings` | M2 | Customers with their accounts, including joint | RPT-05 | L05 outer joins |
+| `vw_customer_fd_summary` (implemented 0420) | M2 | Customer→holder→account→FD/product; all statuses, exact snapshot values, caller RLS | customer profile | L05 joins, L07 privileges, L11 read snapshot |
 
-Views are read-only, carry no scope filter of their own, and are always queried with the
-branch-scope predicate applied by the calling service (REP-COM-02).
+Reporting views are queried with branch-scope predicates in the calling service
+(REP-COM-02). The implemented customer FD listing view additionally enforces caller
+RLS/assignment/self scope at the database boundary (ADR-0018).
+
+`fn_install_customer_fd_summary()` is an owner-only SECURITY INVOKER bootstrap in
+0420, revoked from PUBLIC/mims_app. It idempotently binds the view and SELECT-only FD
+policy/column grants after 0480 through database/views/customer-fd-summary.sql.
+No financial routine or new index is introduced. M1/M5 handoff records this boundary.
 
 ## Indexes
 

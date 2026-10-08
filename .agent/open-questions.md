@@ -271,3 +271,13 @@ the user, Member 3): a separate insert-only table `account_opening_request` (mig
 `UNIQUE (user_id, idempotency_key)` with a request hash and `account_id`, written in the same
 transaction as the account. No other member's table or file was changed. Holder additions use a new
 routine `sp_add_account_holder` (0245) so the verified-document rule lives in the database.
+
+## P04-M02-T01 scoped early start and read-policy coordination — 2026-10-08
+
+Vibodha explicitly requested implementation after the incomplete opening dependency
+and phase gate were explained. ADR-0018 authorizes the read-side task only. 0480 is
+merged; M5 notes still describe P04-M05-T02 as partial. No general Phase 4 entry or
+OQ-13/OQ-14 approval is inferred. M2 uses disposable synthetic FD rows, not the partial
+opening routine. M1/M5 review the new SELECT-only FD RLS/column grants in 0420; no
+owner source files/write policies are changed. The numbering/start_date discrepancies
+are resolved in ADR-0018 and docs17; broader opening/interest integration stays pending.

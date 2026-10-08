@@ -296,3 +296,21 @@ Files: `app/accounts/[id]/account-detail.tsx`, helpers in `app/accounts/account-
 | Money | strings through `displayMoney`; Available is "—" when the account is not ACTIVE |
 
 No new class, token, radius or shadow.
+
+### Customer fixed-deposits panel
+
+File: app/customers/[id]/customer-fixed-deposits.tsx · Updated 2026-10-08 · /imprint
+
+| Property | Existing pattern |
+|---|---|
+| Surface, border, radius, shadow | card, inherited Emerald --surface/--border and existing 18px card radius/shadow |
+| Heading/body | section-heading; page-description; inherited text tokens |
+| Spacing | mt-6 between profile cards; mt-4 before content/actions |
+| Retry | btn btn-secondary, type=button, inherited focus/hover states |
+| Data | table-wrap/data-table; caption and scope column/row headers; amount and status-pill |
+| Exact values | existing string displayMoney; opening-rate percent uses digit shifting with no floating-point arithmetic |
+| States | role=status loading/empty; role=alert error and Retry fixed deposits; abort superseded reads |
+| Responsive | min-w-0 card; table-wrap horizontal overflow; nowrap amounts/calendar dates |
+
+Embedded only after an authorized customer profile. No opening action or invented
+financial data; product rates come from FD snapshots. Existing profile patterns retained.

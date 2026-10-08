@@ -21,7 +21,7 @@ T05 is merged through PR #41; user controls publication.
 **2026-10-08:** T01 is DONE, merged through PR #49 (dev c2bce7c). T02 is implemented
 on feat/p03-m02-agent-daily-activity under the extended scoped start in ADR-0017:
 live activity API/page, exact SQL totals, inclusive Colombo dates and transfer-safe
-branch scope. T02 is local REVIEW pending user publication/integration review.
+branch scope. T02 is DONE, merged through PR #53 (dev 6583463).
 529 tests / 48 suites, clean 24-migration rebuild, TypeScript/lint/build and browser
 QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 [Handoff and review](../.agent/handoffs/p03-m02-agent-daily-activity.md).
@@ -34,8 +34,8 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
 | ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
 | ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
-| ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ implemented, REVIEW | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
-| 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | T01–T02 | FD linkage view, customer FD listing, branch-scoped FD access | ~5 |
+| ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
+| 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | ~~T01~~ local REVIEW; T02 TODO | FD view, scoped listing API and profile panel verified under ADR-0018; user publication/review pending | ~5 |
 | 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
 | 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
 
@@ -145,3 +145,12 @@ policies both depend on your `customer` table. Suggested approach:
    0520–0539 (P5), 0620–0639 (P6)** — never collide with others
 8. **Never edit a merged migration** — write a new one
 9. **Don't modify files owned by another member** — write a handoff instead
+
+## Current scoped start — 2026-10-08
+
+P04-M02-T01 is implemented and verified on feat/p04-m02-customer-fd-linkage under
+ADR-0018. M5's merged 0480 table supplies the read-side schema; M5 opening remains
+partial. 612 tests /57 suites, clean isolated 29-migration rebuild/checksums,
+typecheck/lint/build and populated/empty/error/retry/mobile browser checks pass.
+Local REVIEW awaits user publication/review. No general phase gate is approved
+and P04-M02-T02 is not marked complete. See the FD listing handoff.

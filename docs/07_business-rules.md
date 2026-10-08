@@ -178,3 +178,16 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 **Unresolved:** BR-12's exact form depends on **OQ-01**. Whether savings accounts accrue
 interest at all (**OQ-04**) would add rules BR-14a/BR-15a — see `17_erd-gap-analysis.md`
 G-12.
+
+## Customer FD read scope (P04-M02-T01)
+
+FD principal and opening rate are read from fixed_deposit, never recomputed from the
+current product rate (BR-19). A customer receives only FDs linked through actual
+account_holder membership, including matured/closed history; joint-account listing
+does not reveal another holder's profile. Both customer and account branch must
+match branch staff, and AGENT also needs the current customer assignment. CUSTOMER
+requires the optional app_user_id self link; CENTRAL_OPS/AUDITOR read bankwide.
+Enforcement: migration0420 caller-security view and SELECT FD RLS; service revalidated
+actor/local RLS context/parameterized WHERE; route role/session checks. No read changes
+FD rows, account balance, ledger or audit. Future FD opening ledger/audit correctness
+remains M5/M4's financial boundary, outside this read task.

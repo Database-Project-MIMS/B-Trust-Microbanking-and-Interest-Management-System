@@ -628,3 +628,22 @@ each denormalised value is reconciled against its source in Phase 5.
 | **2NF** | Intersection rows have surrogate PKs. `account_holder` has composite uniqueness; `customer_agent` uses partial customer uniqueness for current assignments and permits repeated historical assignments. Each row's attributes depend on its key. |
 | **3NF** | Plan rates, minimum balances, branch details and FD product terms are stored once and referenced by FK. No transitive dependency — e.g. `account` stores `plan_id`, never a copy of `interest_rate`. |
 | **Documented exceptions** | D-1, D-2, D-3 above. Each is a controlled, reconciled denormalisation, not an oversight. |
+
+## Customer FD listing view (P04-M02-T01, ADR-0018)
+
+Migration 0420 defines owner-only fn_install_customer_fd_summary; the post-migration
+views stage binds vw_customer_fd_summary after 0480 on a clean rebuild. On an existing
+FD schema the migration binds immediately. The view joins customer → account_holder
+→ account → fixed_deposit → fd_plan; unique holder membership means one row per
+(customer_id, fd_id), including a separate relation for each joint-account holder.
+It exposes customer/account branch IDs, account ID/number, FD ID/product name,
+principal, stored opening rate, start_date, maturity_date, next_interest_date and
+status. The task card's opened_date example is superseded by the actual start_date.
+
+PostgreSQL security_invoker/security_barrier retain caller RLS. 0420 also enables
+SELECT-only FD RLS through scoped accounts/customer holders and grants only the
+listed FD columns and view SELECT to mims_app. Unset context sees no rows; AGENT
+needs a current customer assignment plus matching customer/account branch, manager
+needs both branches, CUSTOMER sees self, CENTRAL_OPS/AUDITOR read bankwide.
+No FD write grant/policy, ledger change, opening change or seed is introduced.
+M1/M5 security integration handoff: ../.agent/handoffs/p04-m02-customer-fd-listing.md.

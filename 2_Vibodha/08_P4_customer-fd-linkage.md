@@ -1,6 +1,6 @@
 # 🟠 Phase 4 — Tasks 01–02: Customer↔FD Linkage & Branch-Scoped FD Access
 **Task IDs:** `P04-M02-T01`, `P04-M02-T02` · **Branch:** `feat/p04-m02-customer-fd-linkage`
-**Migration:** `0420_p04_m02_customer_fd_view.sql` · **Status:** TODO
+**Migration:** `0420_p04_m02_customer_fd_view.sql` · **Status:** T01 local REVIEW (ADR-0018); T02 TODO
 **Depends on:** `P04-M05-T02` (`sp_open_fixed_deposit`, M5)
 **Story Points:** ~3 + ~2 = ~5 · **Layer:** Database + Backend + Frontend
 
@@ -29,7 +29,7 @@ SELECT
     fp.plan_name,
     fd.principal_amount,
     fd.interest_rate_at_opening,
-    fd.opened_date,
+    fd.start_date,
     fd.maturity_date,
     fd.status
 FROM customer c
@@ -108,9 +108,30 @@ npm run typecheck && npm test
 ---
 
 ## Acceptance Criteria
-- [ ] View joins correctly against M3's and M5's final schemas (verify column names
+- [x] View joins correctly against M3's and M5's final schemas (verify column names
       before merging, not from this file's example)
-- [ ] Branch scope enforced in SQL, not filtered in JavaScript
-- [ ] FD panel renders on the existing customer profile page
-- [ ] `npm run db:rebuild` succeeds from empty
-- [ ] `npm run typecheck && npm test` pass
+- [x] Branch scope enforced in SQL, not filtered in JavaScript
+- [x] FD panel renders on the existing customer profile page
+- [x] `npm run db:rebuild` succeeds from empty (disposable 29-migration rebuild)
+- [x] Typecheck and full test suite pass (612 tests /57 suites)
+
+## Implementation contract — 2026-10-08
+
+Vibodha authorized T01's read-side start against the real 0480 schema; M5 T02
+is partial and remains an integration dependency. The view is caller-security
+(security_invoker/security_barrier); baseline branch/assignment/self restrictions
+are enforced in SQL and FD SELECT RLS. This is needed for safe T01 listing, and
+does not mark T02's broader FD access integration complete.
+
+0420 defines the owner-only view installer: bind immediately on an existing FD
+schema, or through database/views/customer-fd-summary.sql after 0480 on a clean
+rebuild. No merged migration/shared runner/auth/grant file is edited. No FD writes.
+Dates use actual start_date; money/rates are exact strings. API roles are the same
+as the profile, unknown/out-of-scope customer uniform404, no query parameters.
+Panel has loading/empty/error/retry states and internally scrolling history table.
+Checks and three-layer review: complete. Full verify:phase1 PASS: 612 tests /57
+suites, zero failures/skips, clean isolated 29-migration rebuild/checksums,
+typecheck/lint/production build. Browser verifies actual snapshot amounts/rates,
+all statuses, empty result, safe failure/retry and mobile internal scrolling.
+Local REVIEW awaits user commit/publication and teammate review; T02 remains TODO.
+See .agent/handoffs/p04-m02-customer-fd-listing.md for integration and review evidence.
