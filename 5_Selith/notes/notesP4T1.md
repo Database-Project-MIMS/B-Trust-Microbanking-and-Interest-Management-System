@@ -42,3 +42,7 @@
 - This partially fulfills `P04-M05-T02`. While we officially depend on M3 for the account eligibility check interface (`I-6`), it's a simple database logic check that we implemented ourselves to ensure we aren't waiting on them.
 - Using `FOR UPDATE` on the account row ensures we lock it against race conditions during the balance check (avoiding overdrafts).
 - Performing the balance deduction and FD creation inside the exact same atomic transaction guarantees we never orphan a fixed deposit or silently lose user funds.
+
+### Fix (Post-Commit)
+- **What:** Replaced hardcoded `numeric` types in the migration with the globally defined `positive_money` and `interest_rate` domains, and removed the manual `schema_migration` insert.
+- **Why:** The migration runner handles `schema_migration` tracking automatically based on the file checksum, and using the shared domains (defined in `0000_p00_shared_foundation.sql`) guarantees financial consistency across the entire database.

@@ -4,8 +4,8 @@ CREATE TABLE fixed_deposit (
     fd_id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id                uuid NOT NULL REFERENCES account(account_id) ON DELETE RESTRICT,
     fd_plan_id                uuid NOT NULL REFERENCES fd_plan(fd_plan_id) ON DELETE RESTRICT,
-    principal_amount          numeric(15,2) NOT NULL CHECK (principal_amount > 0),
-    interest_rate_at_opening  numeric(6,4) NOT NULL CHECK (interest_rate_at_opening > 0 AND interest_rate_at_opening <= 1),
+    principal_amount          positive_money NOT NULL,
+    interest_rate_at_opening  interest_rate NOT NULL,
     start_date                date NOT NULL,
     maturity_date             date NOT NULL,
     next_interest_date        date NOT NULL,
@@ -24,8 +24,5 @@ CREATE UNIQUE INDEX uq_one_active_fd_per_account
 -- FDs due for interest payout
 CREATE INDEX ix_fd_due_interest
     ON fixed_deposit(status, next_interest_date) WHERE status = 'ACTIVE';
-
-INSERT INTO schema_migration(version, name)
-VALUES (480, '0480_p04_m05_fixed_deposit');
 
 COMMIT;
