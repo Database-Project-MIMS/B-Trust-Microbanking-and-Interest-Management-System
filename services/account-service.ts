@@ -257,7 +257,7 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
     const row = mandate.rows[0];
     const last = await tx.query<{ transaction_type: string; amount: string; transaction_date: string; reference_number: string }>(
       `SELECT transaction_type, amount::text, to_char(transaction_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS transaction_date, reference_number
-         FROM transaction WHERE account_id = $1 ORDER BY transaction_date DESC, transaction_id DESC LIMIT 1`, [accountId]);
+         FROM transaction WHERE account_id = $1 ORDER BY ledger_seq DESC LIMIT 1`, [accountId]);
     const latest = last.rows[0];
     // A side read: if it fails the account is still returned, with `null` instead of a false "no deposits".
     // The savepoint keeps the surrounding transaction usable; a retryable conflict is not swallowed.
