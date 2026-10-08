@@ -36,3 +36,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0017](ADR-0017-agent-daily-activity.md) | Agent daily activity dates, snapshot branch scope and scoped T02 start | User-authorized M2 implementation; M1/M4 integration review retained |
 
 | [ADR-0018](ADR-0018-customer-fd-listing.md) | Customer FD view/API/profile listing and scoped P04-M02-T01 early start | User-authorized M2 implementation; M1/M5 read-policy review retained |
+| [ADR-0019](ADR-0019-customer-fd-branch-scope.md) | Current-actor FD RLS backstop and scoped P04-M02-T02 start | User-authorized M2 implementation; M1/M5 policy review retained |

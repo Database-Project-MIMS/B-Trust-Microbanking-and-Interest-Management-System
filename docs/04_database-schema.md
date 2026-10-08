@@ -647,3 +647,19 @@ needs a current customer assignment plus matching customer/account branch, manag
 needs both branches, CUSTOMER sees self, CENTRAL_OPS/AUDITOR read bankwide.
 No FD write grant/policy, ledger change, opening change or seed is introduced.
 M1/M5 security integration handoff: ../.agent/handoffs/p04-m02-customer-fd-listing.md.
+
+### Current FD read actor (P04-M02-T02, ADR-0019)
+
+0421 adds fn_customer_fd_actor_is_current(), STABLE SECURITY INVOKER with explicit
+runtime EXECUTE and no PUBLIC grant. An additive RESTRICTIVE SELECT-only policy
+requires active stored user/role matching transaction context; AGENT/BRANCH_MANAGER
+also need an active staff profile/branch matching the current branch claim. Missing
+identity, role escalation and stale branch context see no FD rows even via direct
+SELECT. Existing 0420 assignment/customer/account/self row scope remains authoritative.
+CENTRAL_OPS/AUDITOR and CUSTOMER do not inherit a retained staff profile's restrictions.
+
+Owner-only fn_install_customer_fd_scope_guard() follows 0420's late binder, invoked
+after the listing installer in the existing views file on a clean rebuild and directly
+on an existing FD schema. No merged migration, table column, write grant/policy or
+financial state changes. This checks trusted context consistency, not session tokens.
+M1/M5 policy review: ../.agent/handoffs/p04-m02-fd-branch-scope.md.
