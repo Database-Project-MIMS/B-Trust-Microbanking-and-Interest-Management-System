@@ -67,13 +67,13 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
                     SELECT COALESCE(
                       (SELECT v.balance_before FROM vw_rpt02_account_summary v, b
                         WHERE v.account_id = $1 AND v.transaction_id IS NOT NULL AND v.transaction_date >= b.lo
-                        ORDER BY v.transaction_date, v.transaction_id LIMIT 1),
+                        ORDER BY v.ledger_seq LIMIT 1),
                       (SELECT current_balance FROM account WHERE account_id = $1)) AS value)
              SELECT (SELECT value FROM opening)::text AS opening,
                     COALESCE(
                       (SELECT v.balance_after_effective FROM vw_rpt02_account_summary v, b
                         WHERE v.account_id = $1 AND v.transaction_id IS NOT NULL AND v.transaction_date < b.hi
-                        ORDER BY v.transaction_date DESC, v.transaction_id DESC LIMIT 1),
+                        ORDER BY v.ledger_seq DESC LIMIT 1),
                       (SELECT value FROM opening))::text AS closing,
                     COALESCE(SUM(v.effective_amount) FILTER (WHERE v.activity_type = 'DEPOSIT'), 0)::numeric(15,2)::text AS deposits,
                     COALESCE(SUM(v.effective_amount) FILTER (WHERE v.activity_type = 'WITHDRAWAL'), 0)::numeric(15,2)::text AS withdrawals,
@@ -130,7 +130,7 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
         );
         assert.deepEqual(cols.rows.map((r) => r.column_name), [
             "account_id", "account_number", "branch_id", "plan_id", "plan_name", "account_status", "current_balance", "opened_date",
-            "transaction_id", "transaction_type", "activity_type", "amount", "effective_amount", "balance_effect",
+            "transaction_id", "ledger_seq", "transaction_type", "activity_type", "amount", "effective_amount", "balance_effect",
             "transaction_date", "balance_after", "balance_after_effective", "balance_before",
         ]);
         const meta = await client.query("SELECT reloptions FROM pg_class WHERE relname = 'vw_rpt02_account_summary'");
@@ -144,7 +144,7 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
         const rows = (await client.query(
             `SELECT transaction_type, activity_type, amount::text, effective_amount::text, balance_effect::text,
                     balance_before::text, balance_after_effective::text
-               FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY transaction_date, transaction_id`, [a],
+               FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq`, [a],
         )).rows;
         assert.deepEqual(rows.map((r) => [r.transaction_type, r.activity_type, r.effective_amount, r.balance_effect, r.balance_before, r.balance_after_effective]), [
             ["DEPOSIT", "DEPOSIT", "1000.00", "1000.00", "0.00", "1000.00"],
@@ -202,7 +202,7 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
         await post(b, "WITHDRAWAL", "400.00", "600.00", 3);
         const rows = (await client.query(
             `SELECT balance_after::text AS stored, balance_after_effective::text AS effective, balance_before::text AS before
-               FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY transaction_date`, [b])).rows;
+               FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq`, [b])).rows;
         assert.deepEqual(rows, [
             { stored: null, effective: "700.00", before: "0.00" },
             { stored: "1000.00", effective: "1000.00", before: "700.00" },
@@ -295,12 +295,11 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
             "CALL sp_post_deposit($1::uuid, 250.00::numeric, $2::uuid, $3::uuid, NULL, 'test', NULL, NULL, NULL, NULL)",
             [opened.p_account_id, channelId, agent.agent_id],
         );
-        // Both postings run inside this one test transaction, so deposits share now() and their view order is
-        // not guaranteed (see the ordering note in 0540). The balances themselves are order-independent, so
-        // compare the chain sorted by the balance it ends at.
+        // Both postings run inside this one test transaction, so they share now(); ledger_seq (0542) still
+        // orders them as they were posted.
         const chain = (await client.query(
-            "SELECT balance_before::text AS before, balance_after_effective::text AS after FROM vw_rpt02_account_summary WHERE account_id = $1",
-            [opened.p_account_id])).rows.sort((x, y) => Number(x.after) - Number(y.after));
+            "SELECT balance_before::text AS before, balance_after_effective::text AS after FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq",
+            [opened.p_account_id])).rows;
         assert.deepEqual(chain, [{ before: "0.00", after: "1500.00" }, { before: "1500.00", after: "1750.00" }]);
     });
 
@@ -327,4 +326,61 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
         const rows = (await client.query("SELECT count(*)::int AS n FROM transaction WHERE account_id = $1", [empty.p_account_id])).rows[0].n;
         assert.equal(rows, 0, "no deposit, no ledger row");
     });
+
+    test("14. Ties: rows posted with the SAME timestamp keep their posting order (ledger_seq), so the balance chain holds", async () => {
+        const t = await openAccount("120.00");
+        await post(t, "DEPOSIT", "100.00", "100.00", 1);
+        await post(t, "DEPOSIT", "50.00", "150.00", 1);
+        await post(t, "WITHDRAWAL", "30.00", "120.00", 1);
+        const rows = (await client.query(
+            `SELECT balance_before::text AS before, balance_after_effective::text AS after, count(*) OVER (PARTITION BY transaction_date) AS tied
+               FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq`, [t])).rows;
+        assert.deepEqual(rows.map((r) => [r.before, r.after]), [["0.00", "100.00"], ["100.00", "150.00"], ["150.00", "120.00"]]);
+        assert.ok(rows.every((r) => Number(r.tied) === 3), "all three rows really do share one timestamp");
+        const r = await range(t, "2025-03-01", "2025-03-01");
+        assert.deepEqual(r, { opening: "0.00", closing: "120.00", deposits: "150.00", withdrawals: "30.00", interest: "0.00", net_effect: "120.00" });
+        assertIdentity(r);
+    });
+
+    test("15. Inversion: a row posted LATER but stamped EARLIER (deposit that waited for the account lock) is still last", async () => {
+        const t = await openAccount("250.00");
+        await post(t, "DEPOSIT", "100.00", "100.00", 5);   // posted first, stamped day 5
+        await post(t, "DEPOSIT", "150.00", "250.00", 4);   // posted second, stamped day 4 (transaction start time)
+        const r = await range(t, "2025-03-01", "2025-03-10");
+        assert.equal(r.closing, "250.00", "ordered by timestamp the last row would be the 100.00 one");
+        assert.equal(r.opening, "0.00");
+        assertIdentity(r);
+        const chain = (await client.query(
+            "SELECT balance_before::text AS before, balance_after_effective::text AS after FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq", [t])).rows;
+        assert.deepEqual(chain, [{ before: "0.00", after: "100.00" }, { before: "100.00", after: "250.00" }]);
+    });
+
+    test("16. One out-of-range ledger value cannot make the view fail (no numeric(15,2) overflow cast)", async () => {
+        const t = await openAccount("0.00");
+        await post(t, "DEPOSIT", "9999999999999.99", null, 1);   // legacy rows: balance_after NULL, running total derived
+        await post(t, "DEPOSIT", "9999999999999.99", null, 2);
+        const rows = (await client.query(
+            "SELECT balance_after_effective::text AS after, balance_before::text AS before FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq", [t])).rows;
+        assert.deepEqual(rows, [{ after: "9999999999999.99", before: "0.00" }, { after: "19999999999999.98", before: "9999999999999.99" }]);
+        // and the rest of the view is still readable
+        const total = await client.query("SELECT count(*)::int AS n FROM vw_rpt02_account_summary");
+        assert.ok(total.rows[0].n > 0);
+    });
+
+    test("17. The view has no window function and orders by ledger_seq (so a filter on one account never walks the whole ledger)", async () => {
+        const def = (await client.query("SELECT pg_get_viewdef('vw_rpt02_account_summary'::regclass, true) AS def")).rows[0].def;
+        assert.doesNotMatch(def, /\bOVER\b/i, "no window function over the ledger");
+        assert.doesNotMatch(def, /numeric\(15, ?2\)/i, "no overflow-prone cast");
+        assert.match(def, /ledger_seq/);
+    });
+
+    test("18. Legacy running totals use ledger_seq: a NULL row in the middle is derived from the rows before it, in posting order", async () => {
+        const t = await openAccount("900.00");
+        await post(t, "DEPOSIT", "600.00", null, 3);        // legacy opening deposit, posted first but stamped LATER
+        await post(t, "DEPOSIT", "300.00", "900.00", 2);    // posted second, stamped earlier
+        const rows = (await client.query(
+            "SELECT balance_after_effective::text AS after, balance_before::text AS before FROM vw_rpt02_account_summary WHERE account_id = $1 ORDER BY ledger_seq", [t])).rows;
+        assert.deepEqual(rows, [{ after: "600.00", before: "0.00" }, { after: "900.00", before: "600.00" }]);
+    });
 });
+

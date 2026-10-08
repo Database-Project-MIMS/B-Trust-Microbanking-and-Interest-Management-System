@@ -629,5 +629,25 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     // Restored: the same account lists its deposit again, so the failure left nothing behind.
     assert.equal((await fixedDepositsOf(accountId)).length, 1);
   });
+
+  test('the last transaction is the last POSTED one, even when timestamps tie or the later row is stamped earlier (ledger_seq)', async () => {
+    const accountId = await openZeroBalance();
+    const insert = (type, amount, date) => client.query(
+      `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount, transaction_date, balance_after)
+       SELECT $1, $2, channel_id, $3, $4, $5::numeric, $6::timestamptz, $5::numeric FROM transaction_channel LIMIT 1`,
+      [accountId, fixture.managerId, `LAST-${randomUUID().slice(0, 10)}`, type, amount, date]);
+    // posted first, stamped LATER; posted second, stamped EARLIER (a deposit that waited for the account lock)
+    await insert('DEPOSIT', '100.00', '2025-03-05T10:00:00+05:30');
+    await insert('DEPOSIT', '250.00', '2025-03-04T10:00:00+05:30');
+    assert.equal((await (await detail(accountId)).json()).data.lastTransaction.amount, '250.00');
+    // identical timestamps: still the one posted last
+    const tied = await openZeroBalance();
+    const insertTied = (amount) => client.query(
+      `INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount, transaction_date, balance_after)
+       SELECT $1, $2, channel_id, $3, 'DEPOSIT', $4::numeric, '2025-03-01T10:00:00+05:30', $4::numeric FROM transaction_channel LIMIT 1`,
+      [tied, fixture.managerId, `TIED-${randomUUID().slice(0, 10)}`, amount]);
+    await insertTied('10.00'); await insertTied('20.00'); await insertTied('30.00');
+    assert.equal((await (await detail(tied)).json()).data.lastTransaction.amount, '30.00');
+  });
 });
 

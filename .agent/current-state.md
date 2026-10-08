@@ -309,3 +309,12 @@ P05-M03-T01 DONE as an early start at the user's direction (no general Phase 5 e
 (a clean export of the committed HEAD fails 29). `tsc --noEmit` and `eslint .` clean. T02 (service, API, CSV, page) not started.
 [Handoff](handoffs/p05-m03-t01-rpt02-view.md).
 
+## M3 update — RPT-02 view hardening and ledger order (2026-10-08)
+
+Review of P05-M03-T01 found the view's ordering wrong on the seeded ledger. Fixed at the user's direction (ADR-0023, gap G-24):
+`0542_p05_m03_transaction_ledger_seq.sql` adds `transaction.ledger_seq` (posting order per account, M4's table, additive, handoff
+`handoffs/p05-m03-ledger-seq-for-m4.md`) and `0543_p05_m03_rpt02_view_v2.sql` replaces the view (ordered by `ledger_seq`, no overflow
+cast, no whole-ledger window). On the pure seed: balance-chain breaks 86 → 0, last-row mismatches 6 → 0. `tests/db/rpt02-view.test.mjs` 18/18,
+`tests/db/transaction-ledger-seq.test.mjs` 7/7. Full isolated suite 865 tests / 837 pass / 28 fail: the failures that already occur on dev.
+`tsc --noEmit` and `eslint .` clean. Open for other owners: seed dates are all one day (M5); M4 to review the new column.
+
