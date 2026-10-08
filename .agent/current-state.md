@@ -1,6 +1,23 @@
 # Current State
 
 **Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
+**Work:** PR #67 task-tracker conflict resolved locally; user commit/push/merge pending.
+
+Preserved incoming Member 1 Phase 3/4/5 and Member 4 reversal/API DONE statuses,
+M2's merged FD tasks, and REVIEW for RPT-01 / corrective withdrawal in PR #67.
+Recounted all 97 task IDs: **34 TODO /2 REVIEW /61 DONE**. I-7/CSV/report auditing
+is published by PR #65; M2 T02 still awaits T01 integration and start authorization.
+General phase gates remain pending. Files are left unstaged; no assistant commit,
+push or completed merge. The 663-test result below predates this dev integration;
+this conflict fix checks documentation consistency, not the combined code suite.
+[Conflict resolution handoff](handoffs/p05-m02-pr67-conflict-resolution.md).
+
+---
+
+## Historical RPT-01 and withdrawal verification before integration
+
+**Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-view · base dev/HEAD 48f4185
 **Work:** P05-M02-T01 and user-authorized P03-M04-T03 correction verified locally, REVIEW; T02/I-7 pending
 
@@ -200,8 +217,7 @@ column. No migration. Full isolated suite 580/580 (incl. seed-validation, so its
 typecheck, lint, build clean. **Browser pass not yet run.** M3's Phase 3 tasks are all DONE.
 [Handoff](handoffs/p03-m03-t03-balance-panel.md).
 
-<<<<<<< HEAD
-## Current M2 work — customer FD listing (2026-10-08)
+## Historical M2 work — customer FD listing (2026-10-08; subsequently merged PR #60)
 
 Vibodha requested implementation after the partial M5 opening dependency and
 general Phase 4 gate were explained. ADR-0018 authorizes T01's read-side only.
@@ -214,9 +230,8 @@ is not reset or migrated. M1/M5 security coordination is in the outgoing handoff
 All five overview tables reviewed; only M2 status/work is updated. Other member
 rows, partial opening routine, auth, shared grants, seeds and merged migrations
 are unchanged. User retains commit/push/PR/merge control; no assistant publication.
-=======
+
 ## M1 update (2026-10-08)
 
 P02-M01-T03 (Branch-scope enforcement on routes) has been verified and marked as DONE.
 Scope is correctly applied within the SQL queries by M2 (customers) and M3 (accounts), and tests confirm that URL tampering and spoofing attempts correctly yield 403 or 404, matching the acceptance criteria. No new code was needed, just verification.
->>>>>>> 7faf714 (phase 7)
