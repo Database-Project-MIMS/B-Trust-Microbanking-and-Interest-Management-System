@@ -1,4 +1,24 @@
-# Member 2 — customer FD listing
+# Member 2 — customer FD scope
+
+**Updated:** 2026-10-08 · **Branch:** feat/p04-m02-fd-branch-scope · HEAD e9291dc
+
+P04-M02-T01 DONE through merged PR #60. T02 verified locally, REVIEW under the user's
+scoped start in ADR-0019. 0421 adds a stable invoker current-actor guard ANDed with
+existing FD SELECT scope; the existing views binder installs it after all migrations.
+No merged migration, shared auth/grants/seed/financial writer or UI/API shape changes.
+Full verification PASS: 630 tests /60 suites, zero failures/skips, clean isolated
+31-migration rebuild/checksums, typecheck/lint/build. 14 new DB10/API4 cases cover
+context spoofing/inactive/stale identity, branch/role/self-link changes and cleanup.
+Initial branch test failure passed isolated and full reruns; recorded in handoff.
+/review and /remember complete; T01 browser/imprint retained because UI unchanged.
+M1/M5 policy review and user publication pending; general phase gates/lecturer
+questions unchanged. Normal database preserved. All five overviews reviewed, only
+M2 updated. Handoff: ../handoffs/p04-m02-fd-branch-scope.md. No staging, commit,
+push, PR creation or merge by assistant.
+
+---
+
+## Historical T01 delivery (subsequently merged PR #60)
 
 **Updated:** 2026-10-08 · **Branch:** feat/p04-m02-customer-fd-linkage
 

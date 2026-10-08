@@ -191,3 +191,12 @@ Enforcement: migration0420 caller-security view and SELECT FD RLS; service reval
 actor/local RLS context/parameterized WHERE; route role/session checks. No read changes
 FD rows, account balance, ledger or audit. Future FD opening ledger/audit correctness
 remains M5/M4's financial boundary, outside this read task.
+
+P04-M02-T02 /0421 adds an ANDed restrictive SELECT actor guard: current active
+stored identity/role and current active branch staff profile must agree with trusted
+transaction context. Missing identity/branch, inactive user/role/profile/branch and
+stale/forged context fail closed for direct FD/view SQL reads. Existing row scope
+still checks both branches, current assignment and the optional self link. Bankwide
+readers retain bankwide scope even with a historical inactive staff profile. This
+does not authenticate database context setters; live server session checks remain
+mandatory. General Phase 4 gate is unchanged; ADR-0019 authorizes this task only.

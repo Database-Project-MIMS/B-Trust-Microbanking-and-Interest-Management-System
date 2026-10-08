@@ -426,3 +426,11 @@ and snapshot-rate formatting, dates/status, loading, empty and retry states. It 
 independently loaded after an authorized profile; superseded reads are aborted.
 No account/FD opening action is added. M5 opening remains a separate integration
 dependency; ADR-0018 authorizes this read-side early start using disposable FD fixtures.
+
+P04-M02-T02 completes the M2 customer FD access review (ADR-0019). The endpoint/DTO,
+UI and allowed roles are unchanged. 0421 adds a restrictive stored-actor check below
+the invoker view, complementing the service's existing identity/SQL scope checks.
+Live session reads follow role, branch, assignment and self-link changes on subsequent
+requests; session revocation/inactive identity fails closed. COMMIT/ROLLBACK clears
+local context on borrowed connections. No JavaScript filtering or broadened FD API.
+M5's global FD/report interfaces and M3's account panel retain their own ownership.

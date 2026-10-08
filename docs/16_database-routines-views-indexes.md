@@ -116,6 +116,13 @@ RLS/assignment/self scope at the database boundary (ADR-0018).
 policy/column grants after 0480 through database/views/customer-fd-summary.sql.
 No financial routine or new index is introduced. M1/M5 handoff records this boundary.
 
+P04-M02-T02 adds `fn_customer_fd_actor_is_current()` (0421), STABLE SECURITY INVOKER
+boolean checking active stored identity/role/profile/branch against transaction
+context. `fn_install_customer_fd_scope_guard()` is an owner-only invoker bootstrap
+for the additive RESTRICTIVE SELECT policy, invoked after 0420 by the same views
+binder. Missing/stale context fails closed; current row scope remains ANDed. No
+financial routine, view columns or index changes. ADR-0019; M1/M5 scope handoff.
+
 ## Indexes
 
 Every index states the query it serves. **No index is created without a query that needs

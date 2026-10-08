@@ -725,3 +725,12 @@ resolves binding through an owner-only installer and the existing post-migration
 stage, preserving both immutable numbering blocks. Customer FD reads require runtime
 column SELECT plus SELECT-only RLS because 0480 supplied neither; new 0420 owns this
 additive read contract with M1/M5 handoff. No write/opening dependency is declared DONE.
+
+## P04-M02-T02 context consistency (2026-10-08)
+
+0420 scopes rows using trusted context; its bankwide role clause alone could return
+FD rows if context identity was missing or the stored role/branch had changed. T01's
+service already revalidated these values. ADR-0019 extends that backstop to direct
+SQL using a restrictive SELECT-only stored-actor guard in new 0421. No ERD/table
+shape change or M1 context-helper rewrite. Cross-owner policy review is in the M1/M5
+handoff. The user authorized T02's scoped start; general phase gates remain pending.
