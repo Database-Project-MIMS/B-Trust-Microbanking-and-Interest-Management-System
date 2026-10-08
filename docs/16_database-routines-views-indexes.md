@@ -33,7 +33,9 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `sp_open_savings_account` | M3 | Validate plan, agent/branch, payload, holders (locked), eligibility, verified documents, mandate and deposit (incl. business hours); then write account, holders (one statement), mandate and optional initial deposit. Migration 0243, `SECURITY INVOKER`. Errors: see below | The caller's — never commits; all or nothing | FR-ACC-01…04, BR-02, BR-07, BR-08 | L08 procedures, L11 atomicity |
 | `sp_add_account_holder` | M3 | Add one JOINT holder to an ACTIVE account: lock the account, require an active customer with a verified document; the 0242 trigger enforces count/adult rules and syncs an `ALL_HOLDERS` mandate. Migration 0245, `SECURITY INVOKER`. Errors (`P0001`, named constraint): `ACCOUNT_NOT_FOUND`, `ACCOUNT_NOT_ACTIVE`, `HOLDER_NOT_FOUND`, `DOCUMENTS_NOT_VERIFIED`, `ACTOR_MISMATCH`; `23505` duplicate holder | The caller's — never commits | FR-ACC-02/04, BR-02, BR-07 | L08 procedures, L11 locking |
 | `sp_post_deposit` | M4 | Lock account, insert ledger, update balance and `balance_after`, audit, return reference. Migration 0361, standalone routine file `database/routines/sp_post_deposit.sql`. Errors: see below | One, `FOR UPDATE` | FR-DEP-01…05, BR-08, BR-10, BR-I1 | L08, L11 ACID |
-| `sp_post_withdrawal` | M4 | Re-validate status, mandate, hours, limits and minimum **after** the lock; then debit | One, `FOR UPDATE` | FR-WD-01…05, BR-09, NFR-SAFE-01/02 | L11 isolation, locking |
+| `sp_post_withdrawal` (corrected 0363) | M4 | Invoker core: current actor/scope, serialized payload-bound replay, then locked status/calendar/mandate/Colombo limits/minimum, attributed ledger/balance/success audit. Array signers plus legacy single-customer overload | Caller-owned; account `FOR UPDATE`, per-key advisory lock; never commits | FR-WD-01…05, BR-09/17/I1/I2 | L11 isolation, locking |
+| `sp_try_post_withdrawal` (0363) | M4 | Array-signers audited entry; known rejection rolls back inner financial work, writes outer audit and returns `p_rejection_code` | Caller commits audit-only result, then maps error outside withTransaction | FR-WD-05, BR-L1 | L11 subtransactions/atomicity |
+| `sp_write_rejection_audit` (corrected 0363) | M4 | CALL writes protected WITHDRAWAL_REJECTED in existing audit_log.new_values | Caller-owned outer transaction; never commits | FR-WD-05, BR-L1 | L11 atomicity |
 | `sp_reverse_transaction` | M4 | Insert a linked compensating entry; never modify the original | One, `FOR UPDATE` | FR-TXN-03, BR-16, DB-CON-04 | L08, L11 |
 | `sp_open_fixed_deposit` | M5 | Check eligibility under lock, debit principal through the ledger, create the FD with maturity and rate snapshot | One | FR-FD-01…04, BR-11, BR-19 | L08, L11 |
 | `sp_run_interest_cycle` | M5 | Create the run, select due FDs with locking, process **each FD in its own transaction**, reconcile totals | **One per FD**, not per run | FR-INT-01…05, NFR-SAFE-03 | L08, L11 idempotency |
@@ -41,7 +43,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 
 **`sp_post_deposit` errors** (all `P0001`, named `CONSTRAINT` for mapping): `ACCOUNT_ID_REQUIRED` (`ck_deposit_account_id`), `INVALID_DEPOSIT_AMOUNT` (`ck_deposit_amount_positive`), `USER_ID_REQUIRED` (`ck_deposit_user_id`), `CHANNEL_REQUIRED` (`ck_deposit_channel_required`), `CHANNEL_UNAVAILABLE` (`ck_deposit_channel_active`), `ACCOUNT_NOT_FOUND` (`ck_deposit_account_exists`), `ACCOUNT_NOT_ACTIVE` (`ck_deposit_account_active`), `OUTSIDE_BUSINESS_HOURS` (`ck_deposit_business_hours`). Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising or modifying balance.
 
-**`sp_post_withdrawal` errors** (all `P0001`, raised natively by the procedure): `ACCOUNT_NOT_FOUND`, `ACCOUNT_NOT_ACTIVE`, `OUTSIDE_BUSINESS_HOURS`, `MANDATE_NOT_SATISFIED`, `LIMIT_EXCEEDED`, `INSUFFICIENT_FUNDS`, `BELOW_MINIMUM_BALANCE`. It uses `sp_write_rejection_audit` to atomically log failures. Idempotent requests with a repeated `idempotency_key` return the existing transaction record without raising.
+**Withdrawal correction (0363 / ADR-0021):** core `P0001` errors include `WITHDRAWAL_ID_REQUIRED`, `INVALID_WITHDRAWAL_AMOUNT`, `INVALID_IDEMPOTENCY_KEY`, `INVALID_WITHDRAWAL_NARRATION`, `WITHDRAWAL_NOT_AUTHORIZED`, `ACCOUNT_NOT_FOUND`, `CHANNEL_UNAVAILABLE`, `WITHDRAWAL_CONFIGURATION_INVALID`, `IDEMPOTENCY_KEY_REUSED`, plus the six known financial rejection codes: `ACCOUNT_NOT_ACTIVE`, `OUTSIDE_BUSINESS_HOURS`, `MANDATE_NOT_SATISFIED`, `LIMIT_EXCEEDED`, `INSUFFICIENT_FUNDS`, `BELOW_MINIMUM_BALANCE`. The audited attempt catches only these six, rolls back inner financial effects, CALLs the helper and returns a rejection code with NULL financial outputs. Commit that audit-only result before safe error mapping outside withTransaction. Unexpected errors abort everything. Matching key/payload returns the original result without another effect; altered actor/account/channel/amount/narration/canonical signers cannot reuse a key. All procedures are SECURITY INVOKER with no PUBLIC EXECUTE. The future T05 service validates signer evidence; customer self-service cannot claim another holder signed. [Handoff](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
 
 **`sp_open_savings_account` errors** (all `P0001`, message starts with the code, named `CONSTRAINT` for mapping; services must never forward the message): `PLAN_NOT_FOUND`, `AGENT_NOT_ELIGIBLE`, `ACTOR_MISMATCH` (service bug → 500), `INVALID_HOLDER_COUNT`, `INVALID_HOLDERS_PAYLOAD`, `HOLDER_NOT_FOUND`, `MISSING_PRIMARY_HOLDER`, `PLAN_ELIGIBILITY_FAILED`, `DOCUMENTS_NOT_VERIFIED`, `MANDATE_REQUIRED`, `MANDATE_NOT_ALLOWED`, `INVALID_MANDATE_TYPE`, `INVALID_MANDATE_SIGNATORIES`, `INVALID_DEPOSIT_AMOUNT`, `BELOW_MINIMUM_BALANCE`, `OUTSIDE_BUSINESS_HOURS`, `CHANNEL_REQUIRED`, `CHANNEL_NOT_FOUND`; plus 0242 `UNDERAGE_HOLDER` and `23505` for a duplicate holder. Locks taken: plan `FOR SHARE`, holder customers `FOR SHARE` (id order), then the 0242 account lock.
 
@@ -103,7 +105,7 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 |---|---|---|---|---|
 | `vw_account_balance` | M3 | Account with plan, branch, holders and balance | RPT-02 | L05 joins |
 | `vw_transaction_detail` | M4 | Ledger joined to account, agent, branch, channel and reversal status | several | L05 |
-| `vw_agent_transaction_totals` | M2 | **RPT-01** — counts and values per agent by type | RPT-01 | L05 aggregation, `GROUP BY` |
+| `vw_rpt01_agent_transactions` (implemented 0520; supersedes planned `vw_agent_transaction_totals` name) | M2 | **RPT-01** — exact counts/unsigned values per agent, posting branch, type and timestamp; range filters precede final totals | RPT-01, FR-REP-02 | L05 outer joins, aggregation, `GROUP BY`; L10 agent/date index |
 | `vw_account_transaction_summary` | M3 | **RPT-02** — opening/closing balance, counts and totals by type | RPT-02 | L13 window functions |
 | `vw_active_fd_schedule` | M5 | **RPT-03** — active FDs with next payout and maturity | RPT-03 | L05 |
 | `vw_monthly_interest_distribution` | M5 | **RPT-04** — distributions per cycle per account type, with subtotals | RPT-04 | **L13 `ROLLUP` / `GROUPING SETS`** |
@@ -128,6 +130,15 @@ context. `fn_install_customer_fd_scope_guard()` is an owner-only invoker bootstr
 for the additive RESTRICTIVE SELECT policy, invoked after 0420 by the same views
 binder. Missing/stale context fails closed; current row scope remains ANDed. No
 financial routine, view columns or index changes. ADR-0019; M1/M5 scope handoff.
+
+RPT-01 migration 0520 uses COUNT(transaction_id) and unbounded NUMERIC SUM at
+posting timestamp/type/branch grain. It includes zero rows for profiles without
+attributed history; selected-range zeros require the filtered-facts roster outer
+join documented in M2's task card. No current-role/status filter erases history.
+The SECURITY INVOKER/BARRIER view has no PUBLIC/mims_app grant until I-7/T02
+establish report scope, runtime RLS/grants and access auditing. Reuse existing
+`ix_transaction_agent_date`; a selective view query's measured plan is recorded in
+the T01 handoff. This does not establish full report performance acceptance.
 
 ## Indexes
 

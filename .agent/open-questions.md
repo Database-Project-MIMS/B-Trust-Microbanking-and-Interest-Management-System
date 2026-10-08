@@ -290,3 +290,29 @@ only (ADR-0019). New 0421 ANDs a current stored-actor guard with 0420 FD SELECT 
 M1/M5 review the additive restrictive policy; no ownership shift, write access or
 owner source changes. General phase gates/OQ-13/OQ-14 stay pending. M2's route/service/
 view inventory is covered; future M5/M3 FD/report read paths need their owner review.
+
+## P05-M02-T01 scoped start and report SQL corrections — 2026-10-08
+
+P04-M02-T02 is merged through PR #62 (dev 48f4185); its local REVIEW wording is
+historical. Vibodha's “do it” authorizes P05-M02-T01 only (ADR-0020), with merged
+P03-M02-T01 satisfied. General Phase 5 entry is not approved. The task card's
+COUNT/date/index/current-branch examples are resolved in ADR-0020 and docs17;
+0520 creates an owner-only invoker/barrier aggregate view and no ERD/table change.
+T02 stays pending M1's I-7/CSV/access audit and runtime security integration.
+M4 retains posting attribution and reversal-direction ownership; NULL attribution
+is not backfilled and no signed net is guessed. All profiles in agent are reporting
+identities, including the manager subtype, preserving inactive/role-change history.
+
+## P03-M04-T03 corrective authorization and audit boundary — resolved 2026-10-08
+
+Vibodha explicitly allowed changing/creating M4 work and requested its documentation
+updates after shared withdrawal tests failed. ADR-0021 reopens T03 and retains M4
+ownership. New 0363 replaces broken after_value/procedure-call/parameter-key behavior
+without editing merged 0362 or changing tables. The audited array-signers attempt
+rolls back inner financial work for known rejections, writes the outer audit and
+returns a code; the future service commits that result, then maps an error outside
+withTransaction. Actor/scope, I-4 ALL_HOLDERS, calendar/Colombo-day limits and replay
+are verified. Full 663 tests /62 suites, 34-migration rebuild/checksums and type/lint/
+build PASS, no exclusions. Earlier blocker resolved. T03 and M2 T01 remain local
+REVIEW until user publication. T04 reversal/T05 API and I-7 work remain separate;
+general phase approvals are not inferred. M1 audit/runtime review is in the handoff.

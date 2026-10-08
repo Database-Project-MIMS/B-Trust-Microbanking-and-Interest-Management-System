@@ -1,234 +1,63 @@
-# Memory — P04-M02-T02 customer FD scope
+# Memory — RPT-01 view and authorized M4 withdrawal correction
 
 **Updated:** 2026-10-08 · /remember save
-**Branch:** feat/p04-m02-fd-branch-scope · HEAD/base dev e9291dc
+**Branch:** feat/p05-m02-rpt01-view · HEAD/base dev 48f4185
 
-T01 merged PR #60; its stale REVIEW labels reconciled to DONE. User said “do it now”
-after general phase gate was explained, authorizing T02 only (ADR-0019). T02 is now
-implemented/verified locally, REVIEW pending user publication and M1/M5 policy review.
+## What was built
 
-T01 already scoped the endpoint/service/view correctly. T02 closes the direct SQL
-context gap with new0421: STABLE SECURITY INVOKER fn_customer_fd_actor_is_current()
-requires matching active stored user/role, plus active matching staff branch for
-AGENT/BRANCH_MANAGER. Bankwide/customer roles ignore historical staff profiles.
-An additive restrictive SELECT-only FD policy ANDs this with the existing 0420
-row predicates. It validates trusted context consistency, not session authentication.
-Owner-only fn_install_customer_fd_scope_guard() binds on an existing FD schema;
-the existing M2 views binder invokes it after0420 on clean post-migration builds.
-No merged migrations or other-owner auth/grant/seed/financial source changes.
-No new route, DTO/UI changes or runtime write grants/policies.
+P05-M02-T01: new 0520 owner-only invoker/barrier vw_rpt01_agent_transactions,
+12 SQL regressions and corrected date/branch/zero-row consumer contract. Exact
+posting timestamps and captured branches remain available before final aggregation;
+current roster metadata is separate. Counts/values stay bigint/NUMERIC strings.
+Inactive/manager/role-changed attribution profiles retain history; NULL attribution
+is not backfilled. T02 API/CSV/screen integration remains pending I-7.
 
-Full verify:phase1 PASS: 630 tests /60 suites, zero failures/skips; clean isolated
-31-migration rebuild/checksums, typecheck/lint/production build. 14 new DB10/API4
-cases cover role-only/missing/forged/inactive/stale SQL context, assignments/both
-branches/self links, live-session branch/role/self changes, COMMIT/ROLLBACK cleanup,
-installer denial and unchanged financial state. Initial branch test-file failure
-without diagnostics did not reproduce: unchanged 4/4 isolated and630/630 repeat
-combined passed. Recorded, no production workaround. Ignored logs:
-test-results/fd-branch-scope-verification-final.log and fd-scope-branch-debug.log.
+Shared verification exposed defects in merged M4 withdrawal 0362. The user explicitly
+allowed changing/creating M4 work and requested its documentation updates. ADR-0021
+reopened P03-M04-T03; new M4 migration 0363 fixes audit schema/calls, real limit keys,
+current actor/scope, exact input values, calendar/Colombo-day limits, trusted attribution,
+I-4 array signers and serialized payload-bound retries. Legacy single-customer calls
+remain supported. Rewritten guarded withdrawal tests have 21 cases. M4 ownership
+remains unchanged. No merged migration or table shape was changed.
 
-/review three layers complete; no new /imprint/browser needed for unchanged UI.
-T01's browser evidence retained. Normal development database not migrated/reset;
-verification clusters cleaned up. Handoff: .agent/handoffs/p04-m02-fd-branch-scope.md.
-M5/M3 global FD/report/account paths retain owner integration responsibility;
-general phase gates/OQ-13/OQ-14 pending. All five overview tables reviewed, only M2
-updated. Tracker: 48 TODO /1 REVIEW /48 DONE (97). User owns staging/commit/push/PR/
-merge; assistant published nothing. Apply0421 through ordinary owner migration/
-binder workflow before using this guard in the normal development database.
+## Decisions and integration boundaries
 
----
+ADR-0020 records only M2's database early start; ADR-0021 records the authorized M4
+repair. General phase entry remains pending. sp_try_post_withdrawal rolls back inner
+financial work on a known rejection, records one outer audit and returns a code;
+T05 must commit that audit-only result through withTransaction, then map its safe
+error outside the transaction. Unexpected errors abort everything. T05 must obtain
+trusted signer evidence; customers cannot claim another holder signed. No API/UI,
+shared auth or seed work was added. Runtime RPT-01 SELECT remains revoked until
+M1/T02 establish report authorization/RLS/grants, CSV and access auditing.
 
-## Historical P04-M02-T01 delivery (subsequently merged PR #60)
+## Current state
 
-**Updated:** 2026-10-08 · /remember save
-**Branch:** feat/p04-m02-customer-fd-linkage · HEAD c5fed03
+Full final guarded disposable verification PASS: 663 tests /62 suites, zero failures/
+skips, no exclusions; clean 34-migration rebuild/checksums, typecheck/lint/production
+build. Earlier failed and supplementary excluded-file runs are historical and
+superseded. RPT-01 selective plan uses ix_transaction_agent_date with no planner
+forcing (20,000 extra synthetic postings; 0.240 ms execution). Final report/CSV
+performance remains future T02/M5 acceptance.
 
-Vibodha authorized T01 after the partial M5 opening dependency and general phase
-gate were explained. ADR-0018 records this read-side exception only. M2 Phase 3
-T02 is DONE through merged PR #53 (dev 6583463); current FD listing is implemented
-and verified locally, REVIEW pending user publication and teammate review.
+P04-M02-T02 is DONE through merged PR #62 (48f4185), its stale REVIEW reconciled.
+P05-M02-T01 and corrective P03-M04-T03 are local REVIEW pending user publication/
+teammate review; neither is marked DONE with unmerged changes. M2 and M4 task cards,
+overviews/member state and shared tracker/schema/rules/contracts/inventory/phase docs
+are updated. All five overview tables reviewed. Tracker: 46 TODO /2 REVIEW /49 DONE
+(97). /review three layers PASS; no UI change so /imprint not applicable.
 
-New 0420 owner-only `fn_install_customer_fd_summary()` enables SELECT-only FD RLS,
-column grants and the invoker/barrier customer→holder→account→FD/product view.
-Because 0420 precedes merged M5 0480, database/views/customer-fd-summary.sql binds
-in the existing post-migration views stage on clean builds; upgrade migration binds
-immediately when fixed_deposit exists. No merged migration or shared runner changes.
+Normal development database untouched; verification clusters cleaned up. Changes
+unstaged/uncommitted. No assistant commit, push, PR creation or merge. User retains
+publication control. Handoffs: .agent/handoffs/p05-m02-rpt01-view.md and
+.agent/handoffs/p03-m04-withdrawal-contract-repair.md. Ignored final evidence:
+test-results/rpt01-withdrawal-final-verification.log and rpt01-view-explain.json.
 
-GET /api/customers/{id}/fixed-deposits revalidates active stored role/staff branch
-inside a read-only REPEATABLE READ transaction, sets local RLS context and scopes
-in SQL. AGENT current assignment + both branches, manager both branches,
-CENTRAL_OPS/AUDITOR bankwide, CUSTOMER login-linked self; ADMIN excluded. Uniform404
-for unknown/out-of-scope, query parameters rejected, private/no-store response.
-DTO preserves exact amount/rate strings and dates; all statuses, deterministic
-newest opening order, joint FD once per customer, no other-holder identity.
-Existing profile mounts a separate loading/empty/error/retry/scrollable FD panel.
+## Next session starts with
 
-Full verify:phase1 PASS: **612 tests /57 suites**, zero failures/skips, clean isolated
-**29-migration** rebuild/checksum checks, typecheck/lint/production build. 20 new
-API13/DB7 cases verify scope, sessions, identity changes, joint access, exact values,
-snapshot persistence, runtime privilege denial and unchanged financial state.
-Browser PASS: populated/all statuses/exact rate, empty, safe failure with profile
-intact, retry recovery and 375px internal scroll without page overflow. No console
-errors; existing shell GSAP/slow-query warnings retained as minor owner observations.
-Ignored evidence: test-results/customer-fd-listing-verification.log,
-customer-fd-desktop.png, customer-fd-panel.png. Temporary preview/cluster cleaned up;
-normal development database was not migrated/reset. Apply0420 + view binder there
-through the ordinary migration/rebuild workflow before using the new endpoint.
-
-/review three layers PASS, /imprint recorded in ui-registry, /remember saved here.
-Handoff: .agent/handoffs/p04-m02-customer-fd-listing.md for M1/M5 additive SELECT
-policy review and M3 integration. M5 opening remains partial, T02/general phase
-gates/OQ-13/OQ-14 pending. No financial routine, another member's status, seed,
-auth, shared grant source or merged migration edited. All five overview tables
-reviewed; M2 updated. Tracker: 49 TODO /1 REVIEW /47 DONE (97).
-User retains commit/push/PR/merge control; no staging or assistant publication.
-
----
-
-## Historical PR #53 conflict resolution
-
-**Updated:** 2026-10-08 · /remember save
-**Branch:** feat/p03-m02-agent-daily-activity · HEAD d2901b7
-
-User committed/pushed T02 and opened PR #53 against dev. Prepared local
-origin/dev af07af8 merge with --no-commit --no-ff; resolved current-state/tracker
-by preserving T02 REVIEW and incoming M3/M4 DONE statuses. Counts reconciled:
-52 TODO /1 REVIEW /44 DONE (97). General phase gates remain pending.
-Combined verification PASS: 554 tests /49 suites, zero failures/skips;
-clean isolated 26-migration rebuild and checksum checks; TypeScript, lint and
-production build PASS. The normal development database was preserved.
-Log: test-results/p03-activity-pr53-conflict-verification.log (ignored).
-Handoff: .agent/handoffs/p03-m02-t02-pr53-conflict-resolution.md.
-User controls the pending merge commit, push and PR merge; no assistant publication.
-
----
-
-## Previous delivery (historical)
-
-# Memory — P03-M02-T02 agent daily activity
-
-**Updated:** 2026-10-08 · /remember save
-**Branch:** feat/p03-m02-agent-daily-activity · base HEAD db6ff4e
-
-## Current continuation
-
-User (M2/Vibodha) explicitly authorized T02 implementation after its general phase
-restriction was explained. ADR-0017 extends the earlier T01 scoped start. No Phase 2
-exit/general Phase 3 entry or OQ-12/OQ-14 approval. T01 is DONE, PR #49 merged into
-dev c2bce7c. T02 is implemented/verified, local REVIEW for user publication and review.
-
-Live GET /api/agents/{id}/activity and /agents/{id}/activity; manager/bankwide directory
-links and AGENT My daily activity from Customers. Inclusive Colombo dates, Today,
-exact SQL COUNT/SUM decimal-string amounts; no net balance or missing attribution
-inference. Read-only REPEATABLE READ transaction revalidates stored active role/profile,
-sets RLS context and enforces self/branch predicates in SQL. Manager requires current
-target branch AND captured posting branch, preventing transferred-history leakage.
-Bankwide users may retain a staff profile without losing bankwide access. No new DDL;
-0320 is reused. Normal development DB preserved; M4/M3 producer adoption and M1 RLS
-remain integration follow-up, with NULL attribution excluded.
-
-Final verify:phase1 passes 529 tests / 48 suites, zero failures/skips, clean isolated
-24-migration rebuild/checksums, TypeScript/lint/build. 28 new cases (API19/DB7/date2).
-Browser manager/self access, populated/filter/empty/Today/error/retry and mobile
-internal-scroll/no-page-overflow checks pass; no console errors. Temporary preview
-and cluster cleaned up. Local ignored evidence: test-results/agent-daily-activity-verification.log,
-t02-activity-desktop.png, t02-activity-mobile.png. /review findings fixed; /imprint saved.
-Handoff: .agent/handoffs/p03-m02-agent-daily-activity.md.
-
-Seeded bm_colombo/bm_kandy/bm_galle lack required active agent profiles (ADR-0006),
-so their logins return to sign-in after session validation fails closed. Disposable
-browser fixtures supplied one synthetic manager profile; seed/auth code unchanged.
-M5/M1 handoff: .agent/handoffs/p03-m02-activity-seed-manager-profile.md. Phase 2 seed
-versus exit target mismatch remains recorded. Other members' stale labels need owner
-reconciliation; only M2 rows/overview changed. Overall 55 TODO /4 REVIEW /38 DONE.
-
-User prohibits assistant commits, pushes, PR creation and completed merges. Nothing
-staged/published here; leave changes for user. Do not start another phase/task from
-this delivery without checking its tracker/dependencies and phase authorization.
-The records below are historical; this current continuation supersedes old PR49
-merge/conflict notes and T02 TODO labels. No secrets or real customer data saved.
-
----
-
-## Historical sessions (preserved)
-
-# Memory — P03-M02-T01 transaction attribution
-
-## Latest continuation — PR #49 conflict resolution, 2026-10-08
-
-User committed T01 (HEAD 67b1817) and opened PR #49. A local --no-commit merge of
-dev 2208986 is now prepared and must be completed by the user, then pushed. The
-tracker preserves merged M5 seed DONE and M2 attribution REVIEW; overall 56 TODO,
-4 REVIEW, 37 DONE. No conflicts remain in Git's index. Fresh combined verification
-passes a clean 24-migration rebuild and all 501 tests/45 suites. Development DB
-preserved. No assistant commit/push/PR creation/completed merge.
-Evidence: .agent/handoffs/p03-m02-t01-pr49-conflict-resolution.md. Incoming seed
-targets (15/10/2) differ from the still-unchecked Phase 2 exit targets (18/22/3);
-owner reconciliation is recorded in open-questions.md. No phase exit is approved.
-The older session/publication notes below are historical, superseded by this entry.
-
-**Updated:** 2026-10-08 · /remember save (non-sensitive continuation state)
-**Branch:** feat/p03-m02-agent-attribution-activity · HEAD d8d1be2 contains dev a4a6b9f
-
-## Current session
-
-T01 is implemented and verified locally, REVIEW pending the user's PR and M4 review.
-Migration 0320 adds nullable agent/branch attribution with restrictive FKs and reporting
-indexes. Existing history is untouched; future M4/M3 posting producers must populate
-trusted snapshots. T02's daily activity API is a separate TODO task.
-
-ADR-0016 records user authorization for G-07 and T01's early start only. General Phase 3
-entry, Phase 2 exit and OQ-12/OQ-14 are not approved. Do not infer wider authorization.
-Handoff/review: .agent/handoffs/p03-m02-transaction-attribution.md.
-
-501 tests in 45 suites pass (15 new attribution tests), zero failures/skips; isolated
-24-migration rebuild/checksum verification, TypeScript/lint/build pass. The new negative
-test helper must defer operations until after its savepoint is established.
-No development DB migration/reset or assistant commit/push/PR/merge. User publishes.
-
-## Next session
-
-Review the uncommitted diff and handoff; the user applies 0320 through the migration
-runner and obtains M4 review. Work on T02 only when separately authorized and ready.
-
----
-
-## Historical memory (retained; earlier status/publication notes are superseded)
-
-# Memory — P02-M02-T05 customer API and screens
-
-**Updated:** 2026-10-07 · /remember save (non-sensitive continuation state)
-**Branch:** feat/p02-m02-customer-api-ui · base dev 25fc264
-
-## Completed
-
-Customer registration/search/profile routes and live screens; M2 migration 0223 child
-SELECT/INSERT RLS; shared RLS context and one sanitized customer-trigger audit.
-M3 holder relation is merged and used directly. M2 T01–T05 technically DONE locally.
-365 tests in 35 suites, no failures/skips; clean isolated 19-migration rebuild,
-TypeScript/lint/build; synthetic browser workflow and duplicate/mobile checks pass.
-Handoff/review: .agent/handoffs/p02-m02-t05-customer-api-ui.md. ADR-0015 records integration.
-UI patterns saved to ui-registry.md.
-
-## Decisions and remaining work
-
-Retain existing AGENT/BRANCH_MANAGER mutation roles and server-side identity masking.
-No upload/verification route, login provisioning or reassignment in T05.
-M1 retains security review of 0223 and its broader route task. Pre-existing internal
-verifier role lock/scoped UPDATE gap must be resolved before exposure.
-P2: 10 DONE / 1 READY / 5 TODO; account opening/mandate/APIs/UI/full seeds incomplete.
-Phase 2 entry approved 2026-10-05; no Phase 2 exit or Phase 3 entry approval.
-
-## Next session
-
-Review the uncommitted diff and handoff. The user controls commit/push/PR/merge;
-the assistant must not publish. Normal development database was not reset or migrated.
-Apply new migrations through the existing migration runner when using this branch.
-Historical PR #35/#36 conflict histories stay in dated handoffs; current dev includes
-PR #35, registration PR #38, holder PR #37 and security PR #40.
-
-## 2026-10-08 — M3 P03-M03-T02 (saved)
-`fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` + `fn_withdrawal_mandate_verdict` (reason codes) in `database/routines/fn_check_withdrawal_mandate.sql`; 16/16 tests. No-mandate rule uses actual holder count, not plan `max_holders`; dates in Asia/Colombo. Migration `0246` makes `fn_next_account_number` skip seeded numbers. Open for M4: withdrawal API needs a multi-signer field for ALL_HOLDERS (handoff i-4-fn-check-withdrawal-mandate.md). Remaining full-suite failure: seed-validation transaction count 93<100 (M5). Next: P03-M03-T03 balance panel.
-
-## 2026-10-08 — M3 P03-M03-T03 (saved)
-Account detail now returns `availableToWithdraw` (use `::numeric(15,2)::text` — GREATEST drops scale), `lastTransaction`, `mandate.state`; page shows balance/authority panel. 580/580 isolated tests. Browser pass pending. M3 Phase 3 complete.
+Inspect user publication/merge state; a combined PR must list P05-M02-T01 and
+P03-M04-T03 and migrations 0520/0363. Never publish automatically. Reconcile local
+REVIEW only after actual user publication/review evidence. M2 T02 waits for M1's
+I-7/CSV/access auditing and T01 integration. M4's next feature is T04 reversal,
+followed by T05 service/API/CSRF/signer integration, with their own gates. Apply new
+migrations through the normal owner workflow before using them in the development DB.

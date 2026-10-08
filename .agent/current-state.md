@@ -1,10 +1,41 @@
 # Current State
 
+**Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-view · base dev/HEAD 48f4185
+**Work:** P05-M02-T01 and user-authorized P03-M04-T03 correction verified locally, REVIEW; T02/I-7 pending
+
+0520 implements the owner-only invoker/barrier RPT-01 view, with exact totals by
+agent/posting branch/type/timestamp and a tested range-specific roster outer join.
+The user subsequently authorized M4 correction and its documents (ADR-0021). New
+0363 preserves merged 0362, repairs audits/real limits, validates actor/scope, captures
+trusted attribution, supports I-4 array signers and safe serialized replay. Its audited
+attempt rolls back inner financial work and returns a rejection code with one outer
+audit; the future service commits the audit-only result before mapping an error.
+
+Final full verification PASS: **663 tests /62 suites**, zero failures/skips, no
+exclusions, clean isolated **34-migration** rebuild/checksums, typecheck/lint/production
+build. RPT-01 12 and withdrawal 21 SQL cases cover negative/precision/scope/timezone/
+concurrent/rollback contracts. Index probe uses ix_transaction_agent_date without
+planner forcing. Prior failed/supplementary runs are superseded by the corrected full
+run; fixture/diagnostic handoff retained. /review three layers and /remember complete.
+No UI changed, so /imprint is not applicable. All five overview tables reviewed;
+M2 and explicitly authorized M4 docs updated. Tracker: **46 TODO /2 REVIEW /49 DONE (97)**.
+No normal development database change; disposable clusters cleaned up. PR #62 merged
+P04-M02-T02; its REVIEW notes below are historical. General phase approvals remain
+pending. M2 T02 waits for I-7/CSV/access auditing; future M4 T04/T05 remain separate.
+Changes unstaged/uncommitted on HEAD 48f4185. User owns commit/push/PR/merge.
+[RPT-01 handoff](handoffs/p05-m02-rpt01-view.md) ·
+[M4 correction](handoffs/p03-m04-withdrawal-contract-repair.md).
+
+---
+
+## Historical customer FD scope delivery (subsequently merged PR #62)
+
 **Updated:** 2026-10-08 · **Owner:** M2 (current FD scope work supersedes historical checkout notes)
 **Checkout:** feat/p04-m02-fd-branch-scope · base dev e9291dc
 **Work:** P04-M02-T02 verified locally, REVIEW under ADR-0019; T01 DONE through PR #60
 
-## Current customer FD scope delivery
+## Customer FD scope implementation evidence
 
 Migration 0421 adds a stable SECURITY INVOKER stored-actor check and additive
 RESTRICTIVE SELECT-only FD policy. Direct base/view reads require current active

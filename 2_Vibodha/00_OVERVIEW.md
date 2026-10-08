@@ -35,8 +35,8 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
 | ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
-| ~~08~~ | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | ~~T01~~ DONE (PR #60); ~~T02~~ local REVIEW | FD listing merged; direct-read actor guard verified under ADR-0019, user publication/policy review pending | ~5 |
-| 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
+| ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
+| 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | ~~T01~~ local REVIEW; T02 TODO | 0520 view verified; authorized M4 0363 repair also verified (663 tests /62 suites); API/CSV waits for I-7 | ~7 |
 | 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
 
 ---
