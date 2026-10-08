@@ -65,3 +65,14 @@ fails on the constraint rather than relying on a procedural check that a crash c
 | Interest computed in JavaScript | The function is PL/pgSQL with `NUMERIC`; tests assert exact values |
 | Rounding drift across many payouts | Round once, at the end, in the database (SRS §7.1) |
 | M5 overloaded in this phase (18 pts) | M3 and M4 own the account-side and ledger-side halves |
+
+## Scoped M2 read-side start — 2026-10-08
+
+Vibodha authorized P04-M02-T01 early after the incomplete M5-T02 dependency and
+general gate were explained (ADR-0018). 0480 supplies the merged FD schema; disposable
+fixtures validate customer linkage without money-moving opening calls. Implementation
+is verified locally, REVIEW on feat/p04-m02-customer-fd-linkage: 612 tests /57 suites,
+clean 29-migration rebuild/checksums, typecheck/lint/build and browser checks pass.
+User publication and teammate review remain. This does not approve Phase 3 exit,
+general Phase 4 entry, OQ-13/OQ-14, or M5/M3 completion. T02's broader FD integration
+remains TODO; baseline SQL/RLS scope is required for the T01 listing itself.

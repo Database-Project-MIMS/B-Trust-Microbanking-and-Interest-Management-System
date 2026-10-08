@@ -4,7 +4,7 @@
 **Branch:** `feat/p03-m04-<slug>` (AGENTS.md §12).
 
 **Statuses:** `TODO` (not ready) · `READY` (dependencies met, start now) · `IN_PROGRESS` ·
-`BLOCKED` (say why) · `REVIEW` (PR open) · `DONE`.
+`BLOCKED` (say why) · `REVIEW` (PR open, or verified locally awaiting user publication as annotated) · `DONE`.
 
 **Update rules:** you update **only your own rows**. Change status in the same PR as the
 work. A task is `DONE` only when every item in the AGENTS.md §16 Definition of Done is
@@ -29,11 +29,11 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 1 | 0 | 0 | 0 | 0 | 15 |
-| P3 | 14 | 9 | 0 | 0 | 0 | 1 | 4 |
-| P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
+| P3 | 14 | 7 | 0 | 0 | 0 | 0 | 7 |
+| P4 | 14 | 13 | 0 | 0 | 0 | 1 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **52** | **0** | **0** | **0** | **1** | **44** |
+| **All** | **97** | **49** | **0** | **0** | **0** | **1** | **47** |
 
 ---
 
@@ -209,7 +209,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (7 TODO, 1 REVIEW, 6 DONE)
+## Phase 3 — Financial Transactions (7 TODO, 7 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -220,12 +220,12 @@ This does not approve Phase 2 exit, general Phase 3 entry, or OQ-12/OQ-14.
 T01 is merged through PR #49 (dev c2bce7c). Vibodha subsequently authorized an
 early start for P03-M02-T02 (ADR-0017); its dependency is satisfied. This extends
 the scoped exception to T02 only. T02 is published in PR #53 against dev;
-integration review and user merge remain.
+PR #53 is merged into dev at 6583463; stale REVIEW wording is superseded.
 
 T01's 0320 migration and 15 attribution tests are verified locally: clean
 24-migration rebuild, 501 tests in 45 suites, TypeScript/lint/build all pass.
 [Handoff and review](../.agent/handoffs/p03-m02-transaction-attribution.md).
-T02 REVIEW records open PR #53; it does not claim integration or phase approval.
+T02 is DONE through merged PR #53; this does not approve general phase entry.
 
 T02 is implemented and verified on feat/p03-m02-agent-daily-activity: live scoped
 GET/page, exact SQL type totals and inclusive Colombo dates. Final isolated checks
@@ -246,7 +246,7 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
 | P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
 | P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | DONE (merged PR #49, dev c2bce7c) |
-| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | REVIEW (open PR #53; verified locally; integration review and user merge pending) |
+| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | DONE (merged PR #53, dev 6583463) |
 | P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
 | P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path — `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` in `database/routines/fn_check_withdrawal_mandate.sql`, `tests/db/fn-check-withdrawal-mandate.test.mjs` 16/16 (+ `fn_withdrawal_mandate_verdict`; migration `0246` makes `fn_next_account_number` skip seeded numbers); handoff [i-4 mandate](../.agent/handoffs/i-4-fn-check-withdrawal-mandate.md) | DB | P02-M03-T03 | DONE |
 | P03-M03-T03 | 3 | Account balance panel and holder authority display — `GET /api/accounts/{id}` gains `availableToWithdraw`, `lastTransaction`, `mandate.state`; `/accounts/{id}` shows available amount, last transaction, who can authorise withdrawals and a status notice; `tests/e2e/accounts-ui-model.test.mjs` +6, `tests/api/accounts.test.mjs` +4; full isolated suite 580/580; handoff [t03](../.agent/handoffs/p03-m03-t03-balance-panel.md) | FE | P03-M04-T02 | DONE |
@@ -257,16 +257,16 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | TODO |
 | P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | TODO |
 
-## Phase 4 — Fixed Deposits & Interest (14 tasks, TODO)
+## Phase 4 — Fixed Deposits & Interest (13 TODO, 1 local REVIEW; general entry pending)
 
 **Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
 OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
 | P04-M01-T01 | 1 | Worker authentication for interest runs; run authorization and audit | BE + tests | P04-M05-T04 |
 | P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 |
-| P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing page | DB + FE | P04-M05-T02 |
+| P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing API/profile panel | DB + BE + FE | P04-M05-T02 (partial); read-side exception ADR-0018 | REVIEW (verified locally; user publication/review pending) |
 | P04-M02-T02 | 2 | Branch-scoped FD access | BE + tests | P04-M02-T01 |
 | P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) | DB | P04-M05-T02 |
 | P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) | DB + BE | P04-M03-T01 |

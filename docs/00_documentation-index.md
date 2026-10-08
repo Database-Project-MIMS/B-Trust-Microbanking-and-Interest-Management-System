@@ -8,7 +8,12 @@ for the local working tree. [Approval and evidence](../.agent/checkpoints/phase-
 M2 Phase 2 tasks are implemented and PR #41 is merged. On 2026-10-08 Vibodha
 authorized a scoped early start for P03-M02-T01 and its G-07 schema;
 [ADR-0016](../.agent/decisions/ADR-0016-transaction-attribution.md) records the exception.
-Phase 2 exit and general Phase 3 entry remain pending. The user controls publication.
+M2 Phase 3 T01/T02 are merged through PR #49/#53. The user also authorized the
+P04-M02-T01 read-side start against merged M5 0480;
+[ADR-0018](../.agent/decisions/ADR-0018-customer-fd-listing.md) records its scope.
+Customer FD view/API/profile panel is verified locally, REVIEW pending user
+publication and teammate review. M5 opening remains partial. Phase 2/3 exit and
+general Phase 3/4 entry remain pending. The user controls publication.
 
 ## If you are new, read in this order
 

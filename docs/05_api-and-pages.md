@@ -401,3 +401,28 @@ deactivation. Deactivation preserves the record and its history.
    stack traces (NFR-SEC-05).
 5. Money in JSON is a **string** (`"1500.00"`), never a JavaScript number.
 6. Money-moving endpoints require `Idempotency-Key` and are CSRF-protected.
+
+## Customer fixed deposits — M2 (P04-M02-T01)
+
+GET /api/customers/{id}/fixed-deposits lists all ACTIVE/MATURED/CLOSED FDs linked
+through the customer's account_holder rows. Roles: AGENT, BRANCH_MANAGER, CENTRAL_OPS,
+AUDITOR, CUSTOMER; ADMIN is outside this customer-profile contract. No query parameters.
+Success: { data: { customerId, fixedDeposits: [{ fdId, accountId, accountNumber,
+fdPlanId, planName, principalAmount, interestRateAtOpening, startDate, maturityDate,
+nextInterestDate, status }] } }. Money/rates are exact decimal strings; dates are
+YYYY-MM-DD. Sort: startDate descending, fdId ascending. Empty list is a valid 200.
+No co-holder name, identity, branch or document data is returned.
+
+Stored active user/role/profile/branch are revalidated in one read-only REPEATABLE READ
+transaction; local RLS context and SQL predicates enforce scope. AGENT: currently
+assigned customer and both customer/account in its branch. Manager: both branches
+match. CENTRAL_OPS/AUDITOR: bankwide. CUSTOMER: optional-login-linked self. Unknown
+and out-of-scope customers use identical 404 NOT_FOUND; invalid UUID/any query→400,
+invalid session→401, unsupported role/stale service actor→403; unexpected errors→safe500.
+Response Cache-Control: private, no-store. This GET requires no CSRF or idempotency key.
+
+The existing /customers/{id} profile embeds a Fixed Deposits panel with exact principal
+and snapshot-rate formatting, dates/status, loading, empty and retry states. It is
+independently loaded after an authorized profile; superseded reads are aborted.
+No account/FD opening action is added. M5 opening remains a separate integration
+dependency; ADR-0018 authorizes this read-side early start using disposable FD fixtures.

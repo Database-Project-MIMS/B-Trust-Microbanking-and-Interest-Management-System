@@ -716,3 +716,12 @@ No ERD table is removed. Every proposal is additive except G-01 (constraint form
 
 Findings marked **Approval needed: NO** (G-10, G-17, G-18, G-19) may be implemented as part
 of their owning member's Phase 1/2 task without further discussion.
+
+## P04-M02-T01 read-side binding (2026-10-08)
+
+The task card's illustrative fd.opened_date differs from the merged 0480 start_date;
+use start_date. M2's reserved 0420 precedes M5's 0480 in clean migration order. ADR-0018
+resolves binding through an owner-only installer and the existing post-migration views
+stage, preserving both immutable numbering blocks. Customer FD reads require runtime
+column SELECT plus SELECT-only RLS because 0480 supplied neither; new 0420 owns this
+additive read contract with M1/M5 handoff. No write/opening dependency is declared DONE.

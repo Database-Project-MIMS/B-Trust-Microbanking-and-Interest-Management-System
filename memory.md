@@ -1,4 +1,51 @@
-# Memory - PR #53 conflict resolution
+# Memory — P04-M02-T01 customer FD listing
+
+**Updated:** 2026-10-08 · /remember save
+**Branch:** feat/p04-m02-customer-fd-linkage · HEAD c5fed03
+
+Vibodha authorized T01 after the partial M5 opening dependency and general phase
+gate were explained. ADR-0018 records this read-side exception only. M2 Phase 3
+T02 is DONE through merged PR #53 (dev 6583463); current FD listing is implemented
+and verified locally, REVIEW pending user publication and teammate review.
+
+New 0420 owner-only `fn_install_customer_fd_summary()` enables SELECT-only FD RLS,
+column grants and the invoker/barrier customer→holder→account→FD/product view.
+Because 0420 precedes merged M5 0480, database/views/customer-fd-summary.sql binds
+in the existing post-migration views stage on clean builds; upgrade migration binds
+immediately when fixed_deposit exists. No merged migration or shared runner changes.
+
+GET /api/customers/{id}/fixed-deposits revalidates active stored role/staff branch
+inside a read-only REPEATABLE READ transaction, sets local RLS context and scopes
+in SQL. AGENT current assignment + both branches, manager both branches,
+CENTRAL_OPS/AUDITOR bankwide, CUSTOMER login-linked self; ADMIN excluded. Uniform404
+for unknown/out-of-scope, query parameters rejected, private/no-store response.
+DTO preserves exact amount/rate strings and dates; all statuses, deterministic
+newest opening order, joint FD once per customer, no other-holder identity.
+Existing profile mounts a separate loading/empty/error/retry/scrollable FD panel.
+
+Full verify:phase1 PASS: **612 tests /57 suites**, zero failures/skips, clean isolated
+**29-migration** rebuild/checksum checks, typecheck/lint/production build. 20 new
+API13/DB7 cases verify scope, sessions, identity changes, joint access, exact values,
+snapshot persistence, runtime privilege denial and unchanged financial state.
+Browser PASS: populated/all statuses/exact rate, empty, safe failure with profile
+intact, retry recovery and 375px internal scroll without page overflow. No console
+errors; existing shell GSAP/slow-query warnings retained as minor owner observations.
+Ignored evidence: test-results/customer-fd-listing-verification.log,
+customer-fd-desktop.png, customer-fd-panel.png. Temporary preview/cluster cleaned up;
+normal development database was not migrated/reset. Apply0420 + view binder there
+through the ordinary migration/rebuild workflow before using the new endpoint.
+
+/review three layers PASS, /imprint recorded in ui-registry, /remember saved here.
+Handoff: .agent/handoffs/p04-m02-customer-fd-listing.md for M1/M5 additive SELECT
+policy review and M3 integration. M5 opening remains partial, T02/general phase
+gates/OQ-13/OQ-14 pending. No financial routine, another member's status, seed,
+auth, shared grant source or merged migration edited. All five overview tables
+reviewed; M2 updated. Tracker: 49 TODO /1 REVIEW /47 DONE (97).
+User retains commit/push/PR/merge control; no staging or assistant publication.
+
+---
+
+## Historical PR #53 conflict resolution
 
 **Updated:** 2026-10-08 · /remember save
 **Branch:** feat/p03-m02-agent-daily-activity · HEAD d2901b7

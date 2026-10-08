@@ -1,8 +1,34 @@
 # Current State
 
-**Updated:** 2026-10-08 · **Owner:** M2 (M3 section below is the latest)
-**Checkout:** dev · PR #53 merged (6583463)
-**Work:** P03-M02-T02 merged; P03-M03-T02 DONE locally, uncommitted (see M3 update)
+**Updated:** 2026-10-08 · **Owner:** M2 (current FD listing work below supersedes historical checkout notes)
+**Checkout:** feat/p04-m02-customer-fd-linkage · base dev c5fed03
+**Work:** P04-M02-T01 verified locally, REVIEW under ADR-0018; M2 Phase 3 complete through merged PR #53
+
+## Current customer FD listing delivery
+
+Caller-security `vw_customer_fd_summary`, authenticated
+`GET /api/customers/{id}/fixed-deposits` and the customer profile's Fixed Deposits
+panel are implemented. M2 migration 0420 binds after merged M5 0480 in the existing
+views stage; existing schemas bind during migration. SQL enforces assignment,
+customer/account branch and login-linked self scope; selective FD SELECT grants/RLS
+add no write access. Exact amount/rate strings, all statuses and opening snapshots.
+
+Verification PASS: **612 tests /57 suites**, zero failures/skips, clean isolated
+**29-migration** rebuild/checksums, typecheck/lint/production build. Browser populated,
+empty, safe error/retry and 375px internal table scrolling pass; no console errors.
+Existing shell animation/slow-query warnings recorded in the handoff. /review,
+/imprint and /remember complete. All five overview tables reviewed; only M2's
+status/work changed. Tracker: **49 TODO /1 REVIEW /47 DONE (97)**.
+
+ADR-0018 records the user's read-side early start, not a general phase approval.
+M5 opening is partial; T02 and OQ-13/OQ-14 remain pending. M1/M5 review the additive
+FD read policy through the [handoff](handoffs/p04-m02-customer-fd-listing.md).
+Normal development database preserved; disposable preview/cluster cleaned up.
+Changes unstaged/uncommitted on HEAD c5fed03; user controls commit/push/PR/merge.
+
+---
+
+## Historical Phase 3 delivery and integration notes
 
 ## Delivered work
 
@@ -115,3 +141,17 @@ shows the available amount, last transaction, who can authorise withdrawals and 
 column. No migration. Full isolated suite 580/580 (incl. seed-validation, so its earlier dev-DB failure was dev-data only),
 typecheck, lint, build clean. **Browser pass not yet run.** M3's Phase 3 tasks are all DONE.
 [Handoff](handoffs/p03-m03-t03-balance-panel.md).
+
+## Current M2 work — customer FD listing (2026-10-08)
+
+Vibodha requested implementation after the partial M5 opening dependency and
+general Phase 4 gate were explained. ADR-0018 authorizes T01's read-side only.
+View/API/profile panel implemented; baseline assignment/branch/self SQL scope,
+caller-RLS view and SELECT-only FD policy/column grants; no financial writes.
+0420 owner-only installer binds after 0480 in the existing rebuild view step.
+Full isolated verification (612 tests /57 suites, 29 migrations) and browser QA pass.
+Local REVIEW awaits user publication and teammate review. The normal database
+is not reset or migrated. M1/M5 security coordination is in the outgoing handoff.
+All five overview tables reviewed; only M2 status/work is updated. Other member
+rows, partial opening routine, auth, shared grants, seeds and merged migrations
+are unchanged. User retains commit/push/PR/merge control; no assistant publication.

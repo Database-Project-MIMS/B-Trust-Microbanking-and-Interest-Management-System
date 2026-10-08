@@ -7,6 +7,7 @@ import { BusinessRuleError, DatabaseError, NotAuthorizedError, NotFoundError,
 import { customerSearchSchema, registerCustomerSchema } from "@/lib/validation/customer";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
 import { setRlsContext } from "@/lib/db/rls-context";
+import type { CustomerFixedDeposit, CustomerFixedDeposits } from "@/types/customer-fixed-deposit";
 
 export type CustomerActor = Pick<AuthenticatedUser, "userId" | "roleName" | "branchId">;
 interface ActorScope { userId: string; roleName: string; branchId: string | null; today: string }
@@ -200,5 +201,54 @@ export async function getCustomerProfile(customerId: string, actor: CustomerActo
         agentName: row.full_name, assignedDate: row.assigned_date, endDate: row.end_date, isActive: row.is_active })),
       documents: documents.rows.map(row => ({ docId: row.doc_id, docType: row.doc_type, uploadedDate: row.uploaded_date,
         verifiedBy: row.verified_by, verifiedDate: row.verified_date })), accounts };
+  }, { isolationLevel: "REPEATABLE READ" });
+}
+
+/** Reads an authorized customer's FD snapshots in one read-only repeatable-read transaction. */
+export async function getCustomerFixedDeposits(customerId: string, actor: CustomerActor): Promise<CustomerFixedDeposits> {
+  const authenticated = validateActor(actor, PROFILE_ROLES);
+  if (!z.string().uuid().safeParse(customerId).success) throw new ValidationError("Customer ID must be a UUID.");
+  return withTransaction(async tx => {
+    await tx.query("SET TRANSACTION READ ONLY");
+    // A read snapshot needs no row locks; role has no runtime UPDATE privilege.
+    const identity = await tx.query<{ role_name: string; branch_id: string | null }>(
+      `SELECT r.role_name, CASE WHEN r.role_name IN ('AGENT', 'BRANCH_MANAGER') THEN a.branch_id END AS branch_id
+       FROM app_user u JOIN role r ON r.role_id = u.role_id
+       LEFT JOIN agent a ON a.agent_id = u.user_id AND a.status = 'ACTIVE'
+       LEFT JOIN branch b ON b.branch_id = a.branch_id AND b.status = 'ACTIVE'
+       WHERE u.user_id = $1 AND u.status = 'ACTIVE' AND r.status = 'ACTIVE'
+         AND (r.role_name NOT IN ('AGENT', 'BRANCH_MANAGER') OR b.branch_id IS NOT NULL)`,
+      [authenticated.userId],
+    );
+    const stored = identity.rows[0];
+    if (!stored || stored.role_name !== authenticated.roleName || !PROFILE_ROLES.includes(stored.role_name)
+      || (WRITE_ROLES.includes(stored.role_name) && stored.branch_id !== authenticated.branchId?.toLowerCase())) {
+      throw new NotAuthorizedError();
+    }
+    const scope = { userId: authenticated.userId.toLowerCase(), roleName: stored.role_name, branchId: stored.branch_id };
+    await setRlsContext(tx, scope);
+    const params = [scope.branchId, scope.roleName, scope.userId, customerId.toLowerCase()];
+    const visible = await tx.query<{ customer_id: string }>(
+      `SELECT c.customer_id FROM customer c WHERE ${SCOPE_SQL} AND c.customer_id = $4`, params,
+    );
+    if (!visible.rows[0]) throw new NotFoundError("Customer");
+    const rows = await tx.query<{
+      fd_id: string; account_id: string; account_number: string; fd_plan_id: string; plan_name: string;
+      principal_amount: string; interest_rate_at_opening: string; start_date: string;
+      maturity_date: string; next_interest_date: string; status: CustomerFixedDeposit["status"];
+    }>(
+      `SELECT v.fd_id, v.account_id, v.account_number, v.fd_plan_id, v.plan_name,
+              v.principal_amount::text, v.interest_rate_at_opening::text,
+              v.start_date::text, v.maturity_date::text, v.next_interest_date::text, v.status
+       FROM vw_customer_fd_summary v JOIN customer c ON c.customer_id = v.customer_id
+       WHERE ${SCOPE_SQL} AND c.customer_id = $4 AND ($1::uuid IS NULL OR v.account_branch_id = $1)
+       ORDER BY v.start_date DESC, v.fd_id`, params,
+    );
+    return { customerId: visible.rows[0].customer_id, fixedDeposits: rows.rows.map(row => ({
+      fdId: row.fd_id, accountId: row.account_id, accountNumber: row.account_number,
+      fdPlanId: row.fd_plan_id, planName: row.plan_name, principalAmount: row.principal_amount,
+      interestRateAtOpening: row.interest_rate_at_opening, startDate: row.start_date,
+      maturityDate: row.maturity_date, nextInterestDate: row.next_interest_date, status: row.status,
+    })) };
   }, { isolationLevel: "REPEATABLE READ" });
 }

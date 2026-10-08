@@ -1,3 +1,23 @@
+# Member 2 — customer FD listing
+
+**Updated:** 2026-10-08 · **Branch:** feat/p04-m02-customer-fd-linkage
+
+P04-M02-T01 verified locally, REVIEW under user-authorized ADR-0018. View/API/profile panel
+uses merged 0480; M5 opening remains partial. 0420 binds through the existing
+post-migration views step. Baseline SELECT-only FD RLS/grants handoff to M1/M5;
+no owner source files, opening routine or seed changes. Full verification PASS:
+612 tests /57 suites, clean isolated 29-migration rebuild/checksums, typecheck,
+lint and production build. Browser populated/empty/error/retry and mobile table
+checks pass; no console errors (existing shell animation/slow-query warnings).
+General phase gates and P04-M02-T02 remain pending. M2 T02 Phase 3 is DONE through
+merged PR #53. Handoff: ../handoffs/p04-m02-customer-fd-listing.md. /review and
+/imprint complete; /remember saved. User controls publication; changes unstaged,
+no assistant commit/push/PR/merge. Normal development database preserved.
+
+---
+
+## Historical sessions
+
 # Member 2 — current session
 
 **Updated:** 2026-10-08 · **Branch:** feat/p03-m02-agent-daily-activity
