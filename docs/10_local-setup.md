@@ -64,6 +64,12 @@ Fill in `.env` (never commit it — it is gitignored):
 **No `NEXT_PUBLIC_*` variable may contain a secret** — anything with that prefix is shipped
 to the browser.
 
+For production, provide `DATABASE_MIGRATION_URL` only to the migration job, never
+to the Next.js runtime. Set `APP_BASE_URL` to the public HTTPS origin and run
+`npm run verify:deployment` in the runtime environment before starting the app.
+The reverse proxy must terminate TLS and redirect HTTP to HTTPS; a successful
+local `npm run build` does not prove that the deployed site uses HTTPS.
+
 ## 4. Build the schema
 
 ```bash

@@ -2,6 +2,12 @@
 
 **Status:** TODO · **Tasks:** 13 · **Effort:** 40 points · **Est.** ~1 week
 
+**Scoped early work (2026-10-08):** The user's direct request started M1's
+security tasks only; it does not satisfy Phase 5 exit or approve general Phase 6
+entry. T04 is in progress with local configuration checks, but no live HTTPS
+deployment target or full green integration suite. T01/T02 still depend on
+Phase 5 completion.
+
 ## Entry criteria
 
 - [ ] Phase 5 exit criteria met

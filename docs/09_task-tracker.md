@@ -324,7 +324,7 @@ is historical and must not be substituted for current verification.
 | P06-M01-T01 | 1 | SQL-injection test suite against every endpoint | Tests | Phase 5 |
 | P06-M01-T02 | 1 | Authorization matrix tests: every role × every route | Tests | Phase 5 |
 | P06-M01-T03 | 1 | RLS verification: policies hold when the app layer is bypassed | DB + tests | P02-M01-T01 |
-| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — |
+| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — | IN_PROGRESS (config and 6 security tests pass; live HTTPS deployment and combined gates pending) |
 | P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests | P03-M05-T01 |
 | P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2 |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all |

@@ -69,8 +69,8 @@ try {
   console.log("Isolated PostgreSQL cluster ready. Existing mims_dev is preserved.");
   command(process.execPath, ["scripts/db-rebuild.mjs"], env);
   const requestedSuite = process.argv.find(arg => arg.startsWith("--suite="))?.slice(8);
-  if (requestedSuite && !["api", "db", "e2e"].includes(requestedSuite)) throw new Error("Unknown test suite.");
-  const tests = (requestedSuite ? [requestedSuite] : ["api", "db", "e2e"]).flatMap(folder =>
+  if (requestedSuite && !["api", "db", "e2e", "security"].includes(requestedSuite)) throw new Error("Unknown test suite.");
+  const tests = (requestedSuite ? [requestedSuite] : ["api", "db", "e2e", "security"]).flatMap(folder =>
     readdirSync(join("tests", folder)).filter(file => file.endsWith(".test.mjs")).map(file => join("tests", folder, file)));
   command(process.execPath, ["node_modules/tsx/dist/cli.mjs", "--conditions", "react-server", "--test", "--test-concurrency=1", ...tests], env);
   if (!process.argv.includes("--tests-only")) {
