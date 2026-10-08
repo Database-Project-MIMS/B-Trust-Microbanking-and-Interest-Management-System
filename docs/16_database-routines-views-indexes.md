@@ -138,10 +138,23 @@ RPT-01 migration 0520 uses COUNT(transaction_id) and unbounded NUMERIC SUM at
 posting timestamp/type/branch grain. It includes zero rows for profiles without
 attributed history; selected-range zeros require the filtered-facts roster outer
 join documented in M2's task card. No current-role/status filter erases history.
-The SECURITY INVOKER/BARRIER view has no PUBLIC/mims_app grant until I-7/T02
-establish report scope, runtime RLS/grants and access auditing. Reuse existing
+The SECURITY INVOKER/BARRIER view remains private. Migration0521 adds scoped
+execute-only readers and service-owned auditing under ADR-0022. Reuse existing
 `ix_transaction_agent_date`; a selective view query's measured plan is recorded in
-the T01 handoff. This does not establish full report performance acceptance.
+the T01 handoff. The final 0521 function probe with 20,000 extra postings took
+6.826 ms; its wrapper plan is a Function Scan, not proof that every internal
+bankwide query uses an index. M5 retains representative bankwide tuning/review.
+
+| Routine | Owner | Security / return | Enforcement | Course concepts |
+|---|---|---|---|---|
+| `fn_rpt01_scope(uuid)` | M2 | STABLE INVOKER; effective branch UUID | Current active stored report actor, manager profile/branch/context; rejects widened scope | L08, L11 access control |
+| `fn_rpt01_rows(date,date,uuid,uuid)` | M2 | STABLE DEFINER; fixed agent/posting-branch aggregates | Guarded dates/scope, filtered roster outer join, exact NUMERIC/counts, linked reversal direction and unresolved net | L05 joins/aggregation; L10 indexes; L11 least privilege |
+| `fn_rpt01_exclusions(date,date,uuid)` | M2 | STABLE DEFINER; bigint count + NUMERIC unsigned value | Same guard and branch/date predicates; NULL-agent disclosure independently of agent filter | L05 aggregate; L11 scope |
+
+All three pin search_path and revoke PUBLIC EXECUTE; mims_app receives EXECUTE.
+Relations are fully qualified and no dynamic SQL or raw ledger DTO is exposed.
+0520 stays unchanged/private. The live service materializes rows/totals and writes
+REPORT_ACCESSED in REPEATABLE READ, then streams CSV after commit.
 
 ## Indexes
 

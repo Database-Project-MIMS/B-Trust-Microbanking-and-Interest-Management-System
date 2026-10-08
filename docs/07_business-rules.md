@@ -175,12 +175,22 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 
 ### RPT-01 database aggregation contract (0520, ADR-0020)
 
+**Runtime follow-up (0521, ADR-0022):** Current stored active report roles are
+validated in both service and SQL. Manager branch predicates use immutable posting
+branch before the roster outer join. Net = deposits + interest − withdrawals +
+linked withdrawal reversals − linked deposit/interest reversals. Missing/invalid
+original links make net unresolved, never an assumed credit. Counts and NUMERIC
+sums stay exact strings, including page and full-filter totals. REPEATABLE READ
+materialization and REPORT_ACCESSED audit commit together; CSV then streams its
+private snapshot spool. NULL-agent exclusions are disclosed separately. Legacy
+global transaction RLS remains an owner integration gap, not a report grant.
+
 Counts/values use captured `transaction.agent_id` and `transaction.branch_id`, never
 current membership or inferred attribution. Include all agent profiles regardless
 of current role/status; report request authorization is a separate I-7 responsibility.
 Retain exact timestamps, bigint counts and unbounded NUMERIC sums. Positive amounts
-remain grouped by type, with REVERSAL separate; signed net presentation awaits M4's
-reversal contract and T02. Selected-range zero rows require the eligible roster's
+remain grouped by type, with REVERSAL separate; the 0521 readers above implement
+signed net from valid original links. Selected-range zero rows require the eligible roster's
 LEFT JOIN to already-filtered facts, not a WHERE date filter after the outer join.
 The owner-only invoker/barrier view exposes no live runtime report by itself.
 

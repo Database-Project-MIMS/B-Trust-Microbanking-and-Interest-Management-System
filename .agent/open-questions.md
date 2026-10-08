@@ -349,3 +349,20 @@ are verified. Full 663 tests /62 suites, 34-migration rebuild/checksums and type
 build PASS, no exclusions. Earlier blocker resolved. T03 and M2 T01 remain local
 REVIEW until user publication. T04 reversal/T05 API and I-7 work remain separate;
 general phase approvals are not inferred. M1 audit/runtime review is in the handoff.
+## RPT-01 runtime integration note (2026-10-08, ADR-0022)
+
+Inspection finds no transaction RLS policy in the integrated migrations. T02 keeps
+0520 private and exposes only fixed scoped aggregates through database-guarded
+routines. Operational transaction visibility/writers retain their existing contract.
+M1/M4 retain responsibility for the broader NFR-SEC-07 transaction RLS integration.
+The user approved M1 report-interface repairs for this task; ownership is unchanged.
+
+## Current full-suite integration failures (2026-10-08)
+
+T02's relevant report checks pass, but the full merged-tree run has 767 tests:
+729 pass, 27 fail, 11 cancelled. Legacy session fixtures use a token hash as the
+UUID session primary key (22P02); older branch fixtures omit district (23502);
+financial audit tests assume missing account fixtures/old event shapes; two older
+withdrawal callers hit ambiguous overloads (42725). These files are unchanged by
+T02. M1/M4 own their fixes; see p05-m02-rpt01-api-ui.md for exact files/evidence.
+This prevents claiming full integration acceptance or general phase approval.

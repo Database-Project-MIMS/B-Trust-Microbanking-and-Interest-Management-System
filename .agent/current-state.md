@@ -1,6 +1,30 @@
 # Current State
 
 **Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+**Work:** P05-M02-T02 implemented locally, REVIEW; user publication/integration review pending.
+
+The user explicitly approved T02 and M1 framework repairs (ADR-0022). T01 and
+corrective M4 withdrawal are DONE through PR #67; I-7 restored by PR #69 and
+M4 interest posting merged in PR #68. 0521 adds guarded aggregate-only readers;
+scoped API/page, exact totals, snapshot CSV/access audit and cleanup are delivered.
+
+Relevant72 tests /7 suites, clean40-migration disposable rebuild/checksums, typecheck,
+lint/build and browser checks pass. Full suite767:729 pass,27 fail,11 cancelled;
+legacy M1 fixtures/audit expectations and M4 withdrawal overload calls are recorded
+in the handoff. Broader raw transaction RLS is still M1/M4 integration work. Do not
+claim full-suite acceptance or mark T02 DONE. General phase gates remain pending.
+
+Tracker97 tasks:31 TODO /1 REVIEW /65 DONE; incoming M4 Phase4 DONE rows included
+in the recount. All five overview tables reviewed. /review, /imprint and /remember
+saved. Normal database preserved. The user subsequently authorized several local
+commits for this delivery. Push, PR creation and merge remain user-controlled.
+[Delivery and review](handoffs/p05-m02-rpt01-api-ui.md).
+
+---
+# Historical state before RPT-01 runtime delivery
+
+**Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
 **Work:** PR #67 task-tracker conflict resolved locally; user commit/push/merge pending.
 

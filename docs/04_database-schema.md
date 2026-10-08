@@ -706,9 +706,30 @@ The corrected consumer contract is in `../2_Vibodha/09_P5_rpt01-report.md` and i
 SQL regression tests. Do not filter an all-time outer join afterwards.
 
 The view has `security_invoker=true` and `security_barrier=true` and no SELECT grant
-to PUBLIC or mims_app. M1/I-7 must establish authorized SQL scope, underlying RLS,
-grants and report-access auditing before T02 enables access. This is a database-only
-delivery, not a live report API. No signed net/reversal direction is invented.
+to PUBLIC or mims_app. Runtime access is now through the guarded aggregate functions
+below; no direct view grant is introduced. The view itself retains unsigned type totals.
+
+## RPT-01 runtime integration (P05-M02-T02, ADR-0022)
+
+New M2 migration `0521_p05_m02_rpt01_runtime.sql` adds `fn_rpt01_scope(uuid)`,
+`fn_rpt01_rows(date,date,uuid,uuid)` and `fn_rpt01_exclusions(date,date,uuid)`.
+The guard checks current active stored user/role and, for managers, an active
+profile/branch matching transaction-local context. Managers cannot request another
+branch; ADMIN/CENTRAL_OPS/AUDITOR may request one branch or bankwide totals.
+The two SECURITY DEFINER readers pin search_path, fully qualify relations, revoke
+PUBLIC EXECUTE and expose fixed aggregate DTOs through mims_app EXECUTE only.
+
+Rows group by agent and captured posting branch, preserving inactive/transferred
+identities and range-specific roster zeros. They include exact counts and values
+for deposits, withdrawals, interest and reversals, reversal credits/debits,
+unresolved reversal count and net. A valid transaction_reversal link determines
+direction; an absent/invalid original link makes net NULL. Exclusions separately
+count/sum NULL-agent rows within dates/branch, independently of the agent filter.
+All aggregate counts/values become strings in the API; no money arithmetic uses JS.
+
+The 0520 view remains private. No new table, column, raw ledger grant or financial
+write is added. Global transaction RLS remains a separate M1/M4 integration gap;
+the execute-only report scope guard is the database backstop for this capability.
 
 ## Withdrawal corrective routine contract (P03-M04-T03, ADR-0021)
 
