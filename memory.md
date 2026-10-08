@@ -1,3 +1,33 @@
+# Memory — P03-M02-T01 transaction attribution
+
+**Updated:** 2026-10-08 · /remember save (non-sensitive continuation state)
+**Branch:** feat/p03-m02-agent-attribution-activity · HEAD d8d1be2 contains dev a4a6b9f
+
+## Current session
+
+T01 is implemented and verified locally, REVIEW pending the user's PR and M4 review.
+Migration 0320 adds nullable agent/branch attribution with restrictive FKs and reporting
+indexes. Existing history is untouched; future M4/M3 posting producers must populate
+trusted snapshots. T02's daily activity API is a separate TODO task.
+
+ADR-0016 records user authorization for G-07 and T01's early start only. General Phase 3
+entry, Phase 2 exit and OQ-12/OQ-14 are not approved. Do not infer wider authorization.
+Handoff/review: .agent/handoffs/p03-m02-transaction-attribution.md.
+
+501 tests in 45 suites pass (15 new attribution tests), zero failures/skips; isolated
+24-migration rebuild/checksum verification, TypeScript/lint/build pass. The new negative
+test helper must defer operations until after its savepoint is established.
+No development DB migration/reset or assistant commit/push/PR/merge. User publishes.
+
+## Next session
+
+Review the uncommitted diff and handoff; the user applies 0320 through the migration
+runner and obtains M4 review. Work on T02 only when separately authorized and ready.
+
+---
+
+## Historical memory (retained; earlier status/publication notes are superseded)
+
 # Memory — P02-M02-T05 customer API and screens
 
 **Updated:** 2026-10-07 · /remember save (non-sensitive continuation state)

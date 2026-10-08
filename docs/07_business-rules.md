@@ -67,6 +67,13 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 | BR-I3 | A repeated account-opening request (same `Idempotency-Key`) never opens a second account or credits a second initial deposit | CON, SRV | `account_opening_request` `UNIQUE (user_id, idempotency_key)` written in the opening transaction (migration 0244); per-key advisory lock; replay returns the original result (FR-DEP-04 pattern for accounts) |
 | BR-L1 | A rejected withdrawal creates **no ledger row** but is still recorded | SRV | Audit event only; no `transaction` insert (FR-WD-05) |
 
+**Ledger attribution (G-07, P03-M02-T01):** migration 0320 adds nullable reporting
+agent/posting-branch FKs with ON DELETE RESTRICT. The existing immutability trigger
+protects both fields after insert, preserving history when an agent transfers branches.
+Legacy/system/unattributed values may be NULL. The future posting producer must capture
+authorized attribution in its transaction; FKs do not enforce branch authorization or
+attribution completeness. Existing M3 opening deposits still omit these values.
+
 ### Why `FOR UPDATE` and not just a `CHECK`
 
 The `CHECK (current_balance >= 0)` alone cannot prevent two concurrent withdrawals from

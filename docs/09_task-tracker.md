@@ -29,11 +29,11 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 2 | 0 | 0 | 0 | 3 | 11 |
-| P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
+| P3 | 14 | 13 | 0 | 0 | 0 | 1 | 0 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **58** | **0** | **0** | **0** | 3 | **36** |
+| **All** | **97** | **57** | **0** | **0** | **0** | 4 | **36** |
 
 ---
 
@@ -210,27 +210,37 @@ user's PR; M3-T04 (`0243` account-opening routine) is DONE. M3-T05 (accounts and
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 3 joint accounts | DB | P02-M03-T04, P01-M05-T03 | TODO |
 
-## Phase 3 — Financial Transactions (14 tasks, TODO)
+## Phase 3 — Financial Transactions (13 TODO, 1 local REVIEW)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 |
-| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 |
-| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 |
-| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, **G-07** |
-| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01 |
-| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) | DB | P02-M03-T01 |
-| P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path | DB | P02-M03-T03 |
-| P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 |
-| P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** |
-| P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 |
-| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** |
-| P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 |
-| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** |
-| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 |
+**Scoped exception (2026-10-08):** Vibodha authorized P03-M02-T01 to start early
+and its prescribed G-07 schema (ADR-0016). M4 transaction schema is merged.
+This does not approve Phase 2 exit, general Phase 3 entry, or OQ-12/OQ-14.
+P03-M02-T02 remains TODO; user publication and M4 review are retained.
+
+T01's 0320 migration and 15 attribution tests are verified locally: clean
+24-migration rebuild, 501 tests in 45 suites, TypeScript/lint/build all pass.
+[Handoff and review](../.agent/handoffs/p03-m02-transaction-attribution.md).
+REVIEW below means ready for the user's PR; it does not claim publication.
+
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | TODO |
+| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
+| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
+| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | REVIEW (verified locally; user PR/M4 review pending) |
+| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01 | TODO |
+| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) | DB | P02-M03-T01 | TODO |
+| P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path | DB | P02-M03-T03 | TODO |
+| P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 | TODO |
+| P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** | TODO |
+| P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | TODO |
+| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** | TODO |
+| P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | TODO |
+| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | TODO |
+| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | TODO |
 
 ## Phase 4 — Fixed Deposits & Interest (14 tasks, TODO)
 

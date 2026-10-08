@@ -61,6 +61,20 @@ _(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)
 
 ## Resolved
 
+### P03-M02-T01 scoped early start and task-card reconciliation — 2026-10-08
+
+After being informed of the phase gate and G-07 decision, Vibodha instructed
+"so lets do them" and "do the task now". ADR-0016 records authorization for the
+prescribed nullable attribution schema and T01's early start only. Phase 2 exit,
+general Phase 3 entry and OQ-12/OQ-14 remain unresolved. M4's schema handoff already
+reserves these columns for M2; M4 review of the outgoing contract remains required.
+
+The task card used a nonexistent `posted_at` column and an obsolete
+`schema_migration(version, name)` insert. Implementation uses `transaction_date`
+and the runner's filename/checksum ledger, matching the actual merged schema.
+No existing migration or other member's posting routine is edited. NULL legacy
+attribution is preserved, and producer integration remains separately assigned.
+
 ### Documentation/status contradictions — 2026-10-05 closeout
 
 The user authorized resolving checks, reconciling statuses and recording approval.

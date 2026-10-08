@@ -5,7 +5,10 @@ what to read first.
 
 **Current gate (2026-10-05):** Phase 1 verified; Phase 2 entry approved by Vibodha
 for the local working tree. [Approval and evidence](../.agent/checkpoints/phase-01-checkpoint.md).
-P02-M02-T01 customer schema is READY; closeout repairs await user-controlled publication.
+M2 Phase 2 tasks are implemented and PR #41 is merged. On 2026-10-08 Vibodha
+authorized a scoped early start for P03-M02-T01 and its G-07 schema;
+[ADR-0016](../.agent/decisions/ADR-0016-transaction-attribution.md) records the exception.
+Phase 2 exit and general Phase 3 entry remain pending. The user controls publication.
 
 ## If you are new, read in this order
 
