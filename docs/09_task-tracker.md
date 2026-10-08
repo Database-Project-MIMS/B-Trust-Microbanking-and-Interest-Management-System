@@ -30,10 +30,10 @@ control; no assistant commit, push or completed merge is authorized. See the
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
 | P3 | 14 | 1 | 0 | 0 | 0 | 1 | 12 |
-| P4 | 14 | 10 | 0 | 0 | 0 | 0 | 4 |
+| P4 | 14 | 7 | 0 | 0 | 0 | 0 | 7 |
 | P5 | 15 | 10 | 0 | 0 | 0 | 1 | 4 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **34** | **0** | **0** | **0** | **2** | **61** |
+| **All** | **97** | **31** | **0** | **0** | **0** | **2** | **64** |
 
 ---
 
@@ -240,6 +240,9 @@ PR #53 conflict resolution against dev af07af8 passes 554 tests /49 suites, a cl
 (`fn_check_withdrawal_mandate`, I-4) and P03-M03-T03 (balance panel) were started at the user's direction and are DONE. ADR-0016 covers only P03-M02-T01, so this does not
 extend that exception; it likewise does not approve Phase 2 exit or general Phase 3 entry.
 
+**M3 Phase 4 early start (2026-10-08):** P04-M03-T01 (`fn_check_account_fd_eligible`, I-6) was started at the
+user's direction and is DONE. It does not approve general Phase 4 entry, Phase 3 exit, OQ-13 or OQ-14.
+
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
 | P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` — migration `0300` (`fn_get_parameter`, `fn_check_business_hours`, `fn_check_withdrawal_single_limit`, `fn_check_withdrawal_daily_limit`); `services/business-rules-service.ts` (`enforceBusinessHours`, `enforceWithdrawalLimits`, `getParameter`); `tests/db/business-hours-limits.test.mjs`; `tests/api/business-rules.test.mjs`; handoff [`p03-m01-t01`](../.agent/handoffs/p03-m01-t01-business-rules.md) | DB + BE + tests | P01-M01-T05 | DONE |
@@ -257,7 +260,7 @@ extend that exception; it likewise does not approve Phase 2 exit or general Phas
 | P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | DONE (branch `feat/p03-m04-transaction-apis`) |
 | P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | TODO |
 
-## Phase 4 — Fixed Deposits & Interest (10 TODO, 4 DONE; general entry pending)
+## Phase 4 — Fixed Deposits & Interest (7 TODO, 7 DONE; general entry pending)
 
 **Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
 OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
@@ -268,7 +271,7 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 | DONE |
 | P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing API/profile panel | DB + BE + FE | P04-M05-T02 (partial); read-side exception ADR-0018 | DONE (PR #60 merged into dev e9291dc) |
 | P04-M02-T02 | 2 | Branch-scoped FD access; current-actor RLS backstop and regression tests | DB + BE + tests | P04-M02-T01; scoped start ADR-0019 | DONE (PR #62 merged into dev 48f4185) |
-| P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) | DB | P04-M05-T02 |
+| P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) — `fn_check_account_fd_eligible(account_id)` (card contract) and `fn_fd_funding_verdict(account_id, principal)` in `database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql`, `tests/db/fn-check-account-fd-eligible.test.mjs` 20/20; handoff [i-6](../.agent/handoffs/i-6-fn-check-account-fd-eligible.md). The listed dependency on P04-M05-T02 is circular (I-6 flows M3 → M5) and was not needed to build it | DB | P04-M05-T02 (circular, see handoff) | DONE (early start at the user's direction; no phase approval) |
 | P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) | DB + BE | P04-M03-T01 |
 | P04-M03-T03 | 3 | FD panel on the account detail page | FE | P04-M05-T03 |
 | P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 | DONE |

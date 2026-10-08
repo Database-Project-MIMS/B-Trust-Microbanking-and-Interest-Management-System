@@ -24,6 +24,27 @@ BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch m
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
+### 27 failing tests on dev 93a82f8 — 2026-10-08 (found by M3, owners M1/M4/M5)
+
+A clean export of origin/dev (735 tests, 75 suites) fails 27 tests; the same 27 fail with M3's P04-M03-T01 change. Most are
+`invalid input syntax for type uuid: "<64 hex chars>"` (a session token id used where a UUID is expected) or
+`new row violates row-level security policy for table "customer"` in fixtures. Failing suites: `P05-M01-T04: Audit API`,
+`Cycle Config Service and Admin API`, `P03-M01-T03: Financial Audit Service Writers` and `…Event Helpers`,
+`P04-M01-T01: Interest Run Worker Authentication`, `P03-M01-T02: Manager-Only Reversal Authorization`,
+`P03-M04-T04: sp_reverse_transaction`, `P04-M04-T02: Transaction running balance is monotonic`. Each owner should re-check
+their suite against the merged schema/session code. (The earlier `sp_post_withdrawal` 42809 defect was repaired upstream by 0363.)
+
+### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
+
+The P04-M03-T01 card prescribes `fn_check_account_fd_eligible(account_id) → boolean` (status only; caller locks and
+compares the balance), while the tracker title says "ACTIVE, sufficient balance, read under lock". Both are delivered
+in migration `0440` (the card's prescribed file): the card function exactly, plus `fn_fd_funding_verdict(account_id, principal)` for a locked one-call check with reasons.
+The tracker's dependency of T01 on P04-M05-T02 is circular (I-6 flows M3 → M5) and was not needed.
+Open for M5/the team: (0) `fixed_deposit` RLS (0420/0421) hides FD rows from ADMIN contexts, so the `ACTIVE_FD_EXISTS` pre-check is best-effort and the unique index is the guard; also no write grant/policy on `fixed_deposit` for `mims_app` was found in the repo (not run-tested). (1) dev's `sp_open_fixed_deposit` inlines its own checks and does not call I-6, and it debits
+`account.current_balance` with a bare `UPDATE` (no `transaction` row, no audit), against AGENTS.md §5; the I-5 posting path
+is the intended route. (2) Should FD principal preserve the savings plan minimum (BR-09)? Not applied today; the card asks
+only for ACTIVE + sufficient balance. Handoff: `handoffs/i-6-fn-check-account-fd-eligible.md`.
+
 ### Agent activity task-card branch/date shorthand — resolved 2026-10-08
 
 The T02 card's current `agent.branch_id` filter alone could expose a transferred

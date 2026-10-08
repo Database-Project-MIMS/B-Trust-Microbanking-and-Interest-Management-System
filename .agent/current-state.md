@@ -132,7 +132,7 @@ ledger/balance/audit. Log: test-results/agent-daily-activity-verification.log (i
 
 Manual browser PASS: manager directory and agent self links, populated/historical/
 empty/Today views, cross-branch safe denial and retry; narrow viewport has no document
-overflow. No browser console errors. Screenshots are in ignored test-results/t02-activity-*.png.
+overflow. No browser console errors. Screenshots are in ignored test-results/t02-activity-\*.png.
 The temporary browser tab, preview server and PostgreSQL cluster were closed/cleaned up.
 The normal development database was not reset or migrated.
 
@@ -175,6 +175,7 @@ publishes I-4, `fn_check_plan_minimum(account_id, resulting_balance)`; `tests/db
 check is P03-M03-T02. [Handoff](handoffs/i-4-fn-check-plan-minimum.md).
 
 Open coordination raised by M3 (recheck after the PR #48 seeds):
+
 1. **Document verification is not exposed (M2).** `customer_document.verified_*` can only be set outside the
    app, so `DOCUMENTS_NOT_VERIFIED` can never clear for app-registered customers. See `open-questions.md`.
 2. **Seeded branch managers cannot sign in (M1/M5).** `bm_*` users had no `agent` row while `validateSession`
@@ -235,3 +236,15 @@ are unchanged. User retains commit/push/PR/merge control; no assistant publicati
 
 P02-M01-T03 (Branch-scope enforcement on routes) has been verified and marked as DONE.
 Scope is correctly applied within the SQL queries by M2 (customers) and M3 (accounts), and tests confirm that URL tampering and spoofing attempts correctly yield 403 or 404, matching the acceptance criteria. No new code was needed, just verification.
+
+## M3 update (2026-10-08, later)
+
+P03-M03-T02/T03 are DONE (merged / on dev). P04-M03-T01 DONE as an early start at the user's direction
+(no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval): I-6 published as
+`database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql` (`fn_check_account_fd_eligible`, `fn_fd_funding_verdict`),
+`tests/db/fn-check-account-fd-eligible.test.mjs` 20/20. Full isolated suite on the tree merged with dev 93a82f8: 755 tests /
+728 pass / 27 fail / 0 cancelled. A clean export of origin/dev fails the same 27 tests (735 tests, 11 more cancelled in M1's
+`business-rules` and `business-hours-limits`, which M3's fixture repairs fix), so none come from M3's change; they are listed in
+`open-questions.md`. The withdrawal defect M3 reported against merged `0362` was repaired upstream by 0363 (ADR-0021), and
+`sp-post-withdrawal.test.mjs` passes. Use the tracker header above for current task counts.
+[Handoff](handoffs/i-6-fn-check-account-fd-eligible.md). The unresolved merge-conflict markers from the "phase 7" merge were removed (both sections kept).
