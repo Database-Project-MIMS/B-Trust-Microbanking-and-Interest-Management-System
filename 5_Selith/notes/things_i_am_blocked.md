@@ -61,3 +61,22 @@ I am blocked by **Member 4 (M4)** and the **Team Leader / Lecturer**.
 
 ### 🛠️ What I need to do once they finish:
 Once M4 provides their official `sp_post_interest_credit`, I simply need to delete my temporary dummy function (`database/routines/sp_post_interest_credit.sql`). My code in `sp_run_interest_cycle` is already calling the exact function signature M4 is supposed to write, so it will seamlessly swap over! Once the Lecturer approves the open questions, I can legally push the `feat/p04-m05-interest-cycle` branch into `develop` and exit Phase 4.
+
+
+---
+
+## 4. Document `08_P5_reports-rpt03-rpt04.md` (Phase 5 Reports)
+**My Task IDs:** `P05-M05-T01`, `P05-M05-T02`, `P05-M05-T03`, `P05-M05-T04`
+
+### 🟢 How much I finished:
+**0% Implemented (Currently 50% Unblocked, 50% Blocked).**
+- **Task 1 & 2 (Database Views):** I can do this right now. It is strictly SQL views relying on Phase 4 tables which are already merged in `dev`.
+- **Task 3 & 4 (APIs and Analysis):** I cannot start these at all yet.
+
+### 🔴 Who I am blocked by:
+I am blocked by **Member 1 (M1)** and the **Rest of the Team**.
+- M1 needs to complete **`P05-M01-T01` (Report Framework - `I-7`)**. My Task 3 (building the report API) strictly relies on M1's `parseReportFilters` and `streamCsv` helper functions. Without them, I can't output the reports to the frontend UI.
+- The **Rest of the Team** needs to build their reports. My Task 4 requires me to run a massive `EXPLAIN ANALYZE` performance test across **all 5 reports** in the system. I cannot run this check until everyone else finishes their views.
+
+### 🛠️ What I need to do once they finish:
+I will start immediately by writing the SQL views for Task 1 and Task 2 on a new branch (`feat/p05-m05-rpt03-view`). Once those are reviewed and merged, I will pause. Once M1 finishes the `I-7` framework, I will build the APIs for Task 3. Once the entire team finishes Phase 5, I will execute the performance checks for Task 4 and exit Phase 5.
