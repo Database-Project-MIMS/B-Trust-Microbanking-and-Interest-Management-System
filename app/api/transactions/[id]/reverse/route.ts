@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser, requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
+import { reverseTransaction } from "@/services/transaction-service";
+import { DomainError } from "@/lib/db/errors";
 
 export const POST = withAuth(async (request: NextRequest, user) => {
   // Only BRANCH_MANAGER and ADMIN can reverse a transaction
@@ -12,7 +14,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
   const scope = branchScope(user);
   
   const parts = request.nextUrl.pathname.split("/");
-  const transactionId = parts[parts.length - 2];
+  const transactionId = parts[parts.length - 2] as string;
 
   let body;
   try {
@@ -31,11 +33,17 @@ export const POST = withAuth(async (request: NextRequest, user) => {
     );
   }
 
-  // TODO: Verify the transaction belongs to the user's branch (scope.branchId)
-  // Then call sp_reverse_transaction
-  
-  return NextResponse.json(
-    { error: { code: "NOT_IMPLEMENTED", message: "Reversal service is blocked on P03-M04-T04." } },
-    { status: 501 }
-  );
+  try {
+    const result = await reverseTransaction(transactionId, body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId });
+    return NextResponse.json({ data: result.data }, { status: 201 });
+  } catch (err) {
+    if (err instanceof DomainError) {
+      return NextResponse.json({ error: { code: err.code, message: err.message } }, { status: err.status });
+    }
+    console.error("Reversal error:", err);
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred." } },
+      { status: 500 }
+    );
+  }
 });
