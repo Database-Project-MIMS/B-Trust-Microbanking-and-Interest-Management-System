@@ -5,6 +5,9 @@
 -- ==========================================
 
 INSERT INTO app_user (user_id, role_id, username, password_hash, status) VALUES
+-- System User (Role: 0201-...07)
+('00000000-0000-0000-0401-000000000000', '00000000-0000-0000-0201-000000000007', 'system', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
+
 -- Admin (Role: 0201-...01)
 ('00000000-0000-0000-0401-000000000001', '00000000-0000-0000-0201-000000000001', 'admin', '$argon2id$v=19$m=65536,t=3,p=4$Z5a+h2s4eVTtZF8tPZEbUA$Nfh2GZOS1fZx5lJfoAuT+wIddcY9csiLu4q1I5Kz/1g', 'ACTIVE'),
 
