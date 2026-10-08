@@ -1,7 +1,7 @@
 # 🟡 Phase 3 — Task 01: Reference Number & Idempotency Indexes
 **Task ID:** `P03-M04-T01` · **Branch:** `feat/p03-m04-reference-idempotency-indexes`
-**Migration:** `0360_p03_m04_transaction_reference_idempotency.sql` · **Status:** TODO
-(gated on **OQ-08**)
+**Migration:** `0360_p03_m04_transaction_reference_idempotency.sql` · **Status:** DONE
+(resolved by **ADR-0010**)
 **Depends on:** **OQ-08** resolved (G-05)
 **Story Points:** ~4 · **Layer:** Database only
 
@@ -116,10 +116,10 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] OQ-08 resolved and recorded as an ADR before the migration is written
-- [ ] Migration applies to a clean DB without errors
-- [ ] `reference_number` is `UNIQUE NOT NULL`
-- [ ] `idempotency_key` partial unique index rejects a repeated key, allows repeated
+- [x] OQ-08 resolved and recorded as an ADR before the migration is written
+- [x] Migration applies to a clean DB without errors
+- [x] `reference_number` is `UNIQUE NOT NULL`
+- [x] `idempotency_key` partial unique index rejects a repeated key, allows repeated
       NULLs
-- [ ] `fn_next_transaction_reference()` never produces a duplicate under test
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] `fn_next_transaction_reference()` never produces a duplicate under test
+- [x] `npm run db:rebuild` succeeds from empty
