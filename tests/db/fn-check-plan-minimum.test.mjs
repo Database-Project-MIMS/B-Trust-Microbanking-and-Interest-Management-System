@@ -174,11 +174,11 @@ describe("P03-M03-T01: fn_check_plan_minimum (I-4)", () => {
             assert.equal((await verdicts(accounts.Adult)).rows[0].big, false);
 
             // No RLS context at all behaves the same way: false, never an error.
-            await scope("", "");
+            await client.query("SELECT set_config('app.current_user_id', NULL, true), set_config('app.current_branch_id', NULL, true), set_config('app.current_user_role', NULL, true)");
             assert.equal((await verdicts(accounts.Adult)).rows[0].big, false);
         } finally {
-            await client.query("RESET ROLE");
             await client.query("ROLLBACK TO SAVEPOINT as_app");
+            await client.query("RESET ROLE");
         }
     });
 
