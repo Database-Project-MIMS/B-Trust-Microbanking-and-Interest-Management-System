@@ -96,7 +96,7 @@ describe('P03-M01-T01: business-rules-service', () => {
     before(async () => {
       // Minimal account for limit tests
       const branch = await client.query(
-        "INSERT INTO branch (branch_name, branch_code, address, phone) VALUES ('BRTest','BRTST','1 St','0110000001') RETURNING branch_id"
+        "INSERT INTO branch (branch_name, branch_code, address, district, phone) VALUES ('BRTest','BRTST','1 St','Colombo','0110000001') RETURNING branch_id"
       );
       const branchId = branch.rows[0].branch_id;
       const role = await client.query("SELECT role_id FROM role WHERE role_name='AGENT' LIMIT 1");
@@ -106,13 +106,13 @@ describe('P03-M01-T01: business-rules-service', () => {
       );
       agentId = user.rows[0].user_id;
       await client.query(
-        "INSERT INTO agent (agent_id,branch_id,employee_no,full_name,nic_passport_no,email) VALUES ($1,$2,'EMP-BRT01','BR Test Agent','BRNIC01','brtest@example.test')",
+        "INSERT INTO agent (agent_id,branch_id,employee_no,full_name,nic_passport_no,email,date_of_birth,gender,phone,address,hired_date) VALUES ($1,$2,'EMP-BRT01','BR Test Agent','BRNIC01','brtest@example.test','1990-01-01','OTHER','0710000000','1 Test Agent Road','2025-01-01')",
         [agentId, branchId]
       );
       const plan = await client.query("SELECT plan_id FROM savings_plan WHERE plan_name='Adult' LIMIT 1");
       const acct = await client.query(
-        "INSERT INTO account (plan_id,branch_id,account_number,current_balance,opened_date) VALUES ($1,$2,'ACC-BRT-001',999999.00,CURRENT_DATE) RETURNING account_id",
-        [plan.rows[0].plan_id, branchId]
+        "INSERT INTO account (plan_id,branch_id,opened_by_agent_id,account_number,current_balance,opened_date) VALUES ($1,$2,$3,'ACC-BRT-001',999999.00,CURRENT_DATE) RETURNING account_id",
+        [plan.rows[0].plan_id, branchId, agentId]
       );
       accountId = acct.rows[0].account_id;
       const ch = await client.query("SELECT channel_id FROM transaction_channel WHERE channel_name='BRANCH_COUNTER' LIMIT 1");

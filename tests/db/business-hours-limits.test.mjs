@@ -182,7 +182,7 @@ describe('P03-M01-T01: business-hour and withdrawal-limit functions', () => {
     before(async () => {
       // Create a minimal account fixture for daily-limit tests
       const branch = await client.query(
-        "INSERT INTO branch (branch_name, branch_code, address, phone) VALUES ('BizRulesBranch', 'BRB01', '1 Test St', '0111000001') RETURNING branch_id"
+        "INSERT INTO branch (branch_name, branch_code, address, district, phone) VALUES ('BizRulesBranch', 'BRB01', '1 Test St', 'Colombo', '0111000001') RETURNING branch_id"
       );
       branchId = branch.rows[0].branch_id;
       const role = await client.query("SELECT role_id FROM role WHERE role_name = 'AGENT' LIMIT 1");
@@ -192,7 +192,7 @@ describe('P03-M01-T01: business-hour and withdrawal-limit functions', () => {
       );
       agentId = user.rows[0].user_id;
       await client.query(
-        "INSERT INTO agent (agent_id, branch_id, employee_no, full_name, nic_passport_no, email) VALUES ($1,$2,'EMP-BRL01','Limit Agent','LNIC001','limitagent@example.test')",
+        "INSERT INTO agent (agent_id, branch_id, employee_no, full_name, nic_passport_no, email, date_of_birth, gender, phone, address, hired_date) VALUES ($1,$2,'EMP-BRL01','Limit Agent','LNIC001','limitagent@example.test','1990-01-01','OTHER','0710000000','1 Test Agent Road','2025-01-01')",
         [agentId, branchId]
       );
       const plan = await client.query(
@@ -200,8 +200,8 @@ describe('P03-M01-T01: business-hour and withdrawal-limit functions', () => {
       );
       planId = plan.rows[0].plan_id;
       const acct = await client.query(
-        "INSERT INTO account (plan_id, branch_id, account_number, current_balance, opened_date) VALUES ($1,$2,'ACC-BRL-001',500000.00, CURRENT_DATE) RETURNING account_id",
-        [planId, branchId]
+        "INSERT INTO account (plan_id, branch_id, opened_by_agent_id, account_number, current_balance, opened_date) VALUES ($1,$2,$3,'ACC-BRL-001',500000.00, CURRENT_DATE) RETURNING account_id",
+        [planId, branchId, agentId]
       );
       accountId = acct.rows[0].account_id;
     });

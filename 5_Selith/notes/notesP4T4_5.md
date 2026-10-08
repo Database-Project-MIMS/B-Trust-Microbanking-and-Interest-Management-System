@@ -18,3 +18,10 @@ I created the massive `sp_run_interest_cycle` stored procedure. I also created a
 
 ### Why I Did It
 The interest cycle iterates over every active FD in the database. By wrapping each individual FD's payout in a `BEGIN...EXCEPTION` block, I ensured that if one single FD fails (e.g. account closed), it doesn't rollback the entire month's batch! The automated tests perfectly verified this independence and exactly simulated the 30-day date advancements.
+
+## Step 3: Integration with Official Ledger Routine
+### What I Did
+Once Member 4 completed their `sp_post_interest_credit` procedure (I-5), I deleted my temporary dummy function. I then integrated the actual signature into `sp_run_interest_cycle` using a proper `CALL` statement with `OUT` parameters. During testing, I discovered a bug in M4's routine: it used `now()` for generating reference numbers, which stays constant for the entire transaction, causing unique constraint violations across the batch. I created a fix migration (`0483_p04_m05_interest_credit_fix.sql`) switching `now()` to `clock_timestamp()` and appending a substring of the FD ID to guarantee absolute uniqueness.
+
+### Why I Did It
+This completely finalizes Task 4! The tests now pass seamlessly using the actual ledger integration, and the bug fix ensures idempotency and batch processing safety. Task 4 is marked `DONE`.

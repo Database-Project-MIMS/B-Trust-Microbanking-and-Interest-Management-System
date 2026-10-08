@@ -9,16 +9,16 @@
 ### 🟢 How much I finished:
 **100% Drafted.** I wrote a Python script that algorithmically generated all 100+ perfect, chronologically accurate transactions. They are written into `database/seed/13_transactions.sql`. However, to prevent breaking the build, they are currently wrapped inside a massive `/* ... */` SQL comment block.
 
-### 🔴 Who I am blocked by:
-I am blocked by **Member 4 (M4)**.
-- M4 needs to complete **`P03-M04-T01`** (`sp_post_deposit`) — *(Note: M4 just merged this into `dev`!)*
-- M4 needs to complete **`P03-M04-T02`** (`sp_post_withdrawal`)
-- M4 needs to complete **`P03-M04-T03`** (`sp_reverse_transaction`)
+### 🟢 Blockers resolved!
+All Member 4 blockers have been merged into `develop`:
+- M4 completed **`P03-M04-T01` & `P03-M04-T02`** (`sp_post_deposit`)
+- M4 completed **`P03-M04-T03`** (`sp_post_withdrawal`, contract repaired in PR #67)
+- M4 completed **`P03-M04-T04`** (`sp_reverse_transaction`)
 
-### 🛠️ What I need to do once they finish:
-Once M4 merges the withdrawal and reversal stored procedures into the `develop` branch, I simply need to:
-1. `git pull` their changes.
-2. Open `13_transactions.sql` and remove the `/* ... */` comments.
+### 🛠️ What I need to do NOW:
+Since M4 has merged the withdrawal and reversal stored procedures, I am **FULLY UNBLOCKED** to finish this.
+1. `git pull` their changes (Already done!).
+2. Open `database/seed/13_transactions.sql` and remove the `/* ... */` comments.
 3. Run `npm run db:rebuild` to prove the balances mathematically check out.
 4. Mark `P03-M05-T01` as `DONE` and push.
 
@@ -54,13 +54,18 @@ Once M3 and M4 finish their tasks, I need to:
 **50% Implemented (Task 4 is 100% complete, Task 5 is 0% complete).** 
 I have completely built the `interest_run` and `interest_payout` tables, the massive `sp_run_interest_cycle` stored procedure, and the automated tests. I also wrote a temporary dummy `sp_post_interest_credit` function to completely bypass Member 4's blockage so I could finish Task 4 without waiting for them.
 
-### 🔴 Who I am blocked by:
-I am blocked by **Member 4 (M4)** and the **Team Leader / Lecturer**.
-- M4 needs to complete their **`I-5` Ledger Routine** (`sp_post_interest_credit`). I am currently using a temporary dummy function in its place so we can keep making progress.
-- The **Team Leader / Lecturer** needs to resolve Open Questions **`OQ-13`** and **`OQ-14`**. The project contract (`AGENTS.md`) legally prevents us from officially merging Phase 4 into the `develop` branch until these architectural questions are answered.
+### 🟢 Blockers resolved!
+M4 completed their **`I-5` Ledger Routine** (`sp_post_interest_credit`) and it is now merged!
+The Open Questions `OQ-13` and `OQ-14` still require final approval from the Team Leader / Lecturer for general phase entry.
 
-### 🛠️ What I need to do once they finish:
-Once M4 provides their official `sp_post_interest_credit`, I simply need to delete my temporary dummy function (`database/routines/sp_post_interest_credit.sql`). My code in `sp_run_interest_cycle` is already calling the exact function signature M4 is supposed to write, so it will seamlessly swap over! Once the Lecturer approves the open questions, I can legally push the `feat/p04-m05-interest-cycle` branch into `develop` and exit Phase 4.
+### 🛠️ What I need to do NOW:
+Task 4 is now **100% DONE**.
+1. I deleted the dummy function.
+2. I properly integrated M4's function into my `sp_run_interest_cycle` using `CALL` and fixed a timestamp bug in their code.
+3. Tests passed!
+4. Once the Lecturer approves the open questions (OQ-13/OQ-14), I can officially merge `feat/p04-m05-interest-cycle` into `develop`.
+
+Next up: I need to begin Task 5 (`feat/p04-m05-fd-pages`) and build the frontend APIs and UI components!
 
 
 ---
@@ -73,10 +78,14 @@ Once M4 provides their official `sp_post_interest_credit`, I simply need to dele
 - **Task 1 & 2 (Database Views):** I can do this right now. It is strictly SQL views relying on Phase 4 tables which are already merged in `dev`.
 - **Task 3 & 4 (APIs and Analysis):** I cannot start these at all yet.
 
-### 🔴 Who I am blocked by:
-I am blocked by **Member 1 (M1)** and the **Rest of the Team**.
-- M1 needs to complete **`P05-M01-T01` (Report Framework - `I-7`)**. My Task 3 (building the report API) strictly relies on M1's `parseReportFilters` and `streamCsv` helper functions. Without them, I can't output the reports to the frontend UI.
-- The **Rest of the Team** needs to build their reports. My Task 4 requires me to run a massive `EXPLAIN ANALYZE` performance test across **all 5 reports** in the system. I cannot run this check until everyone else finishes their views.
+### 🟢 Blockers resolved!
+- M1 successfully merged **`P05-M01-T01` (Report Framework - `I-7`)** and CSV utilities!
+- I am officially **UNBLOCKED** from using `parseReportFilters` and `streamCsv`.
+- The **Rest of the Team** is still building their reports (M2 just submitted the view for RPT-01).
 
-### 🛠️ What I need to do once they finish:
-I will start immediately by writing the SQL views for Task 1 and Task 2 on a new branch (`feat/p05-m05-rpt03-view`). Once those are reviewed and merged, I will pause. Once M1 finishes the `I-7` framework, I will build the APIs for Task 3. Once the entire team finishes Phase 5, I will execute the performance checks for Task 4 and exit Phase 5.
+### 🛠️ What I need to do NOW:
+I am **FULLY UNBLOCKED** to start Phase 5 Tasks 1, 2, and 3.
+1. Create a new branch `feat/p05-m05-rpt03-view`.
+2. Write the SQL views for Task 1 and Task 2.
+3. Build the APIs for Task 3 using M1's `I-7` framework helper functions.
+4. Wait for the rest of the team to finish their reports before executing the `EXPLAIN ANALYZE` performance checks for Task 4.

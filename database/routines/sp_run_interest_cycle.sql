@@ -10,6 +10,8 @@ DECLARE
     v_total         numeric(15,2) := 0;
     v_exceptions    int := 0;
     v_txn_id        uuid;
+    v_reference_number varchar;
+    v_balance_after numeric(15,2);
 BEGIN
     -- 1. Create the run record (UNIQUE on cycle_date prevents duplicates)
     INSERT INTO interest_run (cycle_date, status, initiated_by)
@@ -33,8 +35,9 @@ BEGIN
 
             -- 4. Post the INTEREST_CREDIT through M4's ledger routine (I-5)
             --    This creates the transaction row and updates the balance
-            v_txn_id := sp_post_interest_credit(
-                v_fd.account_id, v_interest, v_run_id
+            CALL sp_post_interest_credit(
+                v_fd.account_id, v_interest, v_fd.fd_id, p_cycle_date,
+                v_txn_id, v_reference_number, v_balance_after
             );
 
             -- 5. Record the payout
