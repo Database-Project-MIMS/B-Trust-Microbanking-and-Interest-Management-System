@@ -46,3 +46,15 @@
 ### Fix (Post-Commit)
 - **What:** Replaced hardcoded `numeric` types in the migration with the globally defined `positive_money` and `interest_rate` domains, and removed the manual `schema_migration` insert.
 - **Why:** The migration runner handles `schema_migration` tracking automatically based on the file checksum, and using the shared domains (defined in `0000_p00_shared_foundation.sql`) guarantees financial consistency across the entire database.
+
+## Automated Tests (Definition of Done)
+### What I Did
+- Created a comprehensive test suite `tests/db/sp-open-fixed-deposit.test.mjs` using Node's native test runner (`node:test`).
+- Included 12 individual assertions across 3 suites covering every task requirement:
+  1. **Schema Constraints:** Verified unique index blocks duplicates (23505), verified `positive_money` constraint rejects zero principal, and verified date checks (maturity > start).
+  2. **Interest Function:** Translated all 5 manual math assertions into automated test queries.
+  3. **Procedure (sp_open_fixed_deposit):** Proved insufficient balance causes an exception (and doesn't deduct), verified inactive/frozen accounts are blocked, and successfully opened an FD on an active account and verified the balance deducted perfectly.
+
+### Why I Did It
+- The `AGENTS.md` explicitly requires passing automated tests for a task to meet the **Definition of Done**.
+- We ran it via `node --test` and every single constraint and business rule passed exactly as you engineered it.
