@@ -59,11 +59,13 @@ M4 completed their **`I-5` Ledger Routine** (`sp_post_interest_credit`) and it i
 The Open Questions `OQ-13` and `OQ-14` still require final approval from the Team Leader / Lecturer for general phase entry.
 
 ### 🛠️ What I need to do NOW:
-Since M4 provided their official `sp_post_interest_credit`, I am **FULLY UNBLOCKED** to finish Task 4.
-1. Delete my temporary dummy function (`database/routines/sp_post_interest_credit.sql`).
-2. Verify my code in `sp_run_interest_cycle` successfully calls M4's function (I can refer to the handoff `.agent/handoffs/i5-interest-credit-posting.md`).
-3. Re-run my tests.
-4. Once the Lecturer approves the open questions, I can legally push the `feat/p04-m05-interest-cycle` branch into `develop` and exit Phase 4.
+Task 4 is now **100% DONE**.
+1. I deleted the dummy function.
+2. I properly integrated M4's function into my `sp_run_interest_cycle` using `CALL` and fixed a timestamp bug in their code.
+3. Tests passed!
+4. Once the Lecturer approves the open questions (OQ-13/OQ-14), I can officially merge `feat/p04-m05-interest-cycle` into `develop`.
+
+Next up: I need to begin Task 5 (`feat/p04-m05-fd-pages`) and build the frontend APIs and UI components!
 
 
 ---

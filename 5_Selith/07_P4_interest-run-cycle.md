@@ -259,11 +259,11 @@ If you wrap the whole run in one transaction and FD #47 fails, FDs #1–46 are r
 ---
 
 ## Acceptance Criteria (Tasks 4 + 5)
-- [ ] `interest_run` with `UNIQUE(cycle_date)` prevents duplicate runs
-- [ ] `interest_payout` with `UNIQUE(fd_id, cycle_date)` prevents duplicate payouts
-- [ ] Interest credits post through M4's ledger routine as `INTEREST_CREDIT`
-- [ ] One failing FD does not roll back completed distributions
-- [ ] Run records `fd_count`, `total_interest`, `exception_count`
-- [ ] `next_interest_date` advances by 30 days per payout
+- [x] `interest_run` with `UNIQUE(cycle_date)` prevents duplicate runs
+- [x] `interest_payout` with `UNIQUE(fd_id, cycle_date)` prevents duplicate payouts
+- [x] Interest credits post through M4's ledger routine as `INTEREST_CREDIT`
+- [x] One failing FD does not roll back completed distributions
+- [x] Run records `fd_count`, `total_interest`, `exception_count`
+- [x] `next_interest_date` advances by 30 days per payout
 - [ ] FD opening page, FD listing, and interest run console are functional
 - [ ] Only CENTRAL_OPS and ADMIN can trigger interest runs
