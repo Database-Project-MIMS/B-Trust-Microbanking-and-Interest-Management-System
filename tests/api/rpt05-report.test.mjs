@@ -64,7 +64,7 @@ describe('P05-M04-T02: report API, scope, CSV and audit', () => {
     assert.equal(csvResponse.status, 200);
     const csv = await csvResponse.text();
     const totalLine = csv.trim().split('\n').at(-1);
-    assert.deepEqual(totalLine.split(',').slice(-4), [
+    assert.deepEqual(totalLine.split(',').slice(-4).map(value => JSON.parse(value)), [
       json.grandTotal.deposits, json.grandTotal.withdrawals,
       json.grandTotal.interest, json.grandTotal.net,
     ]);

@@ -106,7 +106,7 @@ describe('P03-M01-T03: Financial Audit Service Writers', () => {
       assert.equal(res.rows.length, 1);
       const row = res.rows[0];
       assert.equal(row.entity_type, 'account');
-      assert.equal(row.new_values.reason, "INSUFFICIENT_FUNDS");
+      assert.equal(row.new_values.rejection_reason, "INSUFFICIENT_FUNDS");
     } finally {
       await client.query('ROLLBACK');
     }
@@ -120,7 +120,7 @@ describe('P03-M01-T03: Financial Audit Service Writers', () => {
       
       await auditReversal({
         userId,
-        transactionId,
+        reversalTransactionId: transactionId,
         originalTransactionId,
         reason: "Teller error",
       }, client);
@@ -128,7 +128,7 @@ describe('P03-M01-T03: Financial Audit Service Writers', () => {
       const res = await client.query("SELECT * FROM audit_log WHERE entity_id = $1 AND action = 'REVERSAL'", [transactionId]);
       assert.equal(res.rows.length, 1);
       const row = res.rows[0];
-      assert.equal(row.entity_type, 'transaction_reversal');
+      assert.equal(row.entity_type, 'transaction');
       assert.equal(row.new_values.reason, "Teller error");
     } finally {
       await client.query('ROLLBACK');

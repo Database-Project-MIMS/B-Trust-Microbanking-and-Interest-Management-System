@@ -1,31 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { query, withTransaction, pool } from '../../lib/db/index.ts';
+import { pool, createFixture, requireDisposableDatabase } from '../helpers/customer-relations.mjs';
+import { randomUUID } from 'node:crypto';
 import { setRlsContext } from '../../lib/db/rls-context.ts';
 import {
   auditDeposit, auditWithdrawal, auditRejectedWithdrawal, auditReversal
 } from '../../services/audit-service.ts';
 
 test('P03-M01-T03: Financial Audit Event Helpers', async (t) => {
-  // Get a user and account for testing
-  const userRes = await query('SELECT user_id FROM app_user LIMIT 1');
-  const accountRes = await query('SELECT account_id FROM account LIMIT 1');
-
-  const userId = userRes[0].user_id;
-  const accountId = accountRes[0].account_id;
-  const fakeTransactionId = '00000000-0000-0000-0000-c0ffee000001';
-  const fakeReversalId = '00000000-0000-0000-0000-c0ffee000002';
-  const ipAddress = '127.0.0.1';
-
-  // Clean up any audit rows created by this test
-  const cleanup = async () => {
-    await query(
-      `DELETE FROM audit_log WHERE ip_address = $1 AND entity_type = 'transaction'
-         AND action IN ('DEPOSIT', 'WITHDRAWAL', 'REJECTED_WITHDRAWAL', 'REVERSAL')`,
-      [ipAddress]
-    );
-  };
-  await cleanup();
+  const client = await pool.connect();
+  await requireDisposableDatabase(client);
+  await client.query('BEGIN');
+  try {
+    await client.query("SELECT set_config('app.current_user_role', 'ADMIN', true)");
+    const fixture = await createFixture(client);
+    const userId = await fixture.staff('ADMIN');
+    await setRlsContext(client, { userId, branchId: null, roleName: 'ADMIN' });
+    const { rows: plans } = await client.query("SELECT plan_id FROM savings_plan WHERE plan_name='Adult'");
+    const { rows: accounts } = await client.query(
+      "INSERT INTO account (account_number, plan_id, branch_id, opened_by_agent_id, current_balance) VALUES ($1,$2,$3,$4,0) RETURNING account_id",
+      ['AUD-' + randomUUID(), plans[0].plan_id, fixture.branchId, fixture.agentId]);
+    const accountId = accounts[0].account_id;
+    const fakeTransactionId = randomUUID();
+    const fakeReversalId = randomUUID();
+    const ipAddress = '127.0.0.1';
+    const query = async (sql, params) => (await client.query(sql, params)).rows;
+    const withTransaction = async operation => operation(client);
 
   await t.test('Deposit creates DEPOSIT audit event with amount and balance_after', async () => {
     await withTransaction(async (tx) => {
@@ -69,8 +69,8 @@ test('P03-M01-T03: Financial Audit Event Helpers', async (t) => {
 
     // Audit log row must exist
     const auditRows = await query(
-      `SELECT action, new_values FROM audit_log WHERE action = 'REJECTED_WITHDRAWAL' AND ip_address = $1`,
-      [ipAddress]
+      `SELECT action, new_values FROM audit_log WHERE action = 'REJECTED_WITHDRAWAL' AND entity_id = $1`,
+      [accountId]
     );
     assert.ok(auditRows.length >= 1);
     assert.equal(auditRows[0].action, 'REJECTED_WITHDRAWAL');
@@ -96,6 +96,9 @@ test('P03-M01-T03: Financial Audit Event Helpers', async (t) => {
     assert.equal(rows[0].new_values.reason, 'Customer requested');
   });
 
-  await cleanup();
-  await pool.end();
+  } finally {
+    await client.query('ROLLBACK');
+    client.release();
+    await pool.end();
+  }
 });
