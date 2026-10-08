@@ -192,3 +192,18 @@ I extended `database/seed/_uuids.sql` with fixed UUID blocks for:
 
 ### Why I Did It
 By explicitly predefining UUIDs for these entities, I ensure deterministic seeding for `customer` and `account`. This guarantees that Phase 3 and Phase 4 can predictably reference these same entities when posting transactions and generating fixed deposits.
+
+## Step 3 Execution: Write the Seed Files
+### What I Did
+I created the seed scripts for Sets 2 and 3 using the UUIDs from step 2:
+- `04_customers.sql`: 15 mixed-age customers across 3 branches.
+- `05_customer_agents.sql`: Assigned all customers to active agents.
+- `06_customer_documents.sql`: Added a verified document (NIC or BIRTH_CERTIFICATE) for each.
+- `10_accounts.sql`: 10 accounts representing all 5 plans, generating branch-specific `account_number`s.
+- `11_account_holders.sql`: Linked primary and joint holders.
+- `12_joint_mandates.sql`: Created `ANY_ONE` and `ALL_HOLDERS` mandates for the 2 joint accounts.
+
+All files use `INSERT INTO ... ON CONFLICT DO NOTHING` to guarantee idempotency.
+
+### Why I Did It
+This finishes the assembly of Phase 2's required seed data natively via SQL scripts. Directly `INSERT`ing bypassing the application layer gives us complete control over UUIDs, letting the test suites deterministically expect certain accounts and balances in Phase 3 without messy discovery.
