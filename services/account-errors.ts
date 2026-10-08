@@ -9,8 +9,8 @@ export class AccountRuleError extends DomainError {
 
 interface Rule { code: string; message: string; status: number }
 
-// Named constraints raised by sp_open_savings_account (0243), sp_add_account_holder (0245) and
-// the holder/mandate triggers (0242). Messages are fixed text: the routine's own messages carry
+// Named constraints raised by sp_open_savings_account (0243), sp_add_account_holder (0245),
+// sp_close_account and its guard trigger (0441) and the holder/mandate triggers (0242). Messages are fixed text: the routine's own messages carry
 // ids and must never reach a client (NFR-SEC-05).
 const RULES: Readonly<Record<string, Rule>> = {
   ck_open_account_plan: { code: "PLAN_NOT_FOUND", message: "The savings plan does not exist or is not active.", status: 422 },
@@ -37,6 +37,13 @@ const RULES: Readonly<Record<string, Rule>> = {
   // A mismatch between the acting user and the session user is a service bug, not a client error.
   ck_open_account_actor: { code: "INTERNAL_ERROR", message: "An unexpected error occurred.", status: 500 },
   ck_add_holder_actor: { code: "INTERNAL_ERROR", message: "An unexpected error occurred.", status: 500 },
+  // sp_close_account (0441) and trg_account_close_guard (0441) share the two business-rule names.
+  ck_close_account_not_found: { code: "ACCOUNT_NOT_FOUND", message: "Account was not found.", status: 404 },
+  ck_close_account_already_closed: { code: "ACCOUNT_ALREADY_CLOSED", message: "The account is already closed.", status: 409 },
+  ck_close_account_not_active: { code: "ACCOUNT_NOT_ACTIVE", message: "Only an active account can be closed.", status: 409 },
+  ck_close_account_balance: { code: "BALANCE_NOT_ZERO", message: "An account can only be closed with a zero balance.", status: 409 },
+  ck_close_account_active_fd: { code: "ACTIVE_FD_EXISTS", message: "An account with an active fixed deposit cannot be closed.", status: 409 },
+  ck_close_account_actor: { code: "INTERNAL_ERROR", message: "An unexpected error occurred.", status: 500 },
   uq_account_holder_account_customer: { code: "DUPLICATE_HOLDER", message: "This customer already holds the account.", status: 409 },
 };
 
