@@ -177,7 +177,7 @@ describe('P05-M02-T01: RPT-01 SQL view and filtered aggregation contract', () =>
     const nodes = [];
     function visit(node) { nodes.push(node); for (const child of node.Plans ?? []) visit(child); }
     visit(plan[0].Plan);
-    assert.ok(nodes.some(node => node['Index Name'] === 'ix_transaction_agent_date'),
+    assert.ok(nodes.some(node => node['Index Name'] === 'ix_txn_agent_date'),
       'Selective agent/time view query should use the existing reporting index. See saved plan.');
     assert.ok(!nodes.some(node => node['Relation Name'] === 'transaction' && node['Node Type'] === 'Seq Scan'));
   });

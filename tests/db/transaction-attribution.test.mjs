@@ -93,13 +93,13 @@ describe('P03-M02-T01: transaction attribution', () => {
       `SELECT c.relname AS name, i.indisvalid AS valid, pg_get_indexdef(i.indexrelid) AS definition
        FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
        WHERE i.indrelid = 'public.transaction'::regclass
-         AND c.relname IN ('ix_transaction_agent_date', 'ix_transaction_branch_date')
+         AND c.relname IN ('ix_txn_agent_date', 'ix_transaction_branch_date')
        ORDER BY c.relname`,
     );
     assert.equal(rows.length, 2);
     assert.ok(rows.every(row => row.valid));
-    assert.match(rows[0].definition, /USING btree \(agent_id, transaction_date\)/);
-    assert.match(rows[1].definition, /USING btree \(branch_id, transaction_date\)/);
+    assert.match(rows[0].definition, /USING btree \(branch_id, transaction_date\)/);
+    assert.match(rows[1].definition, /USING btree \(agent_id, transaction_date\)/);
   });
 
   test('valid attribution is stored separately from the responsible login', async () => {
