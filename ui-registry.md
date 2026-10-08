@@ -225,3 +225,36 @@ on the server. Optional account links and empty states replace prototype values.
 Existing two-column forms collapse below 640px; tables scroll inside their containers.
 Browser checks cover live registration/search/profile, duplicate errors and a narrow
 viewport with no document overflow. No shared styling or shell component was changed.
+
+### Account opening, list, detail and savings plans
+
+Files: `app/accounts/account-list.tsx`, `app/accounts/new/account-opening.tsx`,
+`app/accounts/new/customer-picker.tsx`, `app/accounts/[id]/account-detail.tsx`,
+`app/plans/SavingsPlanClient.tsx`, display helpers in `app/accounts/account-format.ts`
+Last updated: 7 Oct 2026 · /imprint
+
+| Property | Class / existing token |
+|---|---|
+| Background / border | `card`, `input`, `table-wrap`; `--surface`, `--border`; balance uses the existing `balance-card` |
+| Radius / shadow | Existing card 18px, input/button 10px; no new radius or shadow |
+| Text | `page-title`, `eyebrow`, `section-heading`, `field`, `muted`; `--text`, `--text-muted`; danger text `text-[var(--danger)]` |
+| Spacing | `mt-6` between cards, 28px `form-grid`, 16px `form-section`/`two-col`, `flex gap-2/3` for button rows |
+| Actions / focus | `btn btn-primary` for the single main action, `btn btn-secondary` for the rest; existing focus ring |
+| States | `role="status"` loading and success, `role="alert"` errors with Retry, explicit empty table rows, buttons disabled while in flight, inputs preserved after a failure |
+| Tables / money | `data-table` in `table-wrap`, `status-pill` (text always present), `amount` for money; rates and money formatted from strings only |
+| Review step | Reuses `confirmation-card` with a `dl` summary before any financial action (NFR-USE-02) |
+| Dialog (plans edit) | Fixed overlay `bg-black/50`, `card` panel, `role="dialog"` + `aria-modal`, focus moves in on open and is **trapped** (Tab/Shift+Tab wrap), `Esc` closes and focus returns to the trigger; field errors appear beside the field with `role="alert"` and `aria-invalid` after the first save attempt |
+
+**Pattern notes**
+
+- Server `page.tsx` authorises with `requirePageRole`, loads reference data (plans) and passes it down;
+  client components fetch the T05 API through `account-client.ts` (`accountRequest` never throws on
+  HTTP errors and returns the API's safe message).
+- Logic lives in pure modules (`account-opening-model.ts`, `account-format.ts`) so it is unit-tested;
+  components stay thin. Money, deposits and rates are never parsed into numbers for arithmetic.
+- The wizard sends one `Idempotency-Key` per attempt and reuses it for an identical retry; a changed
+  form gets a new key. A `200` reply means "already opened".
+- Customer picking reuses the customer search API, so agents only see assigned customers.
+- Deposit/withdraw buttons, the statement link and the FD panel are intentionally absent until
+  Phases 3 and 4. The SavingsPlanClient previously used classes that do not exist in this theme
+  (`tag`, `btn-ghost`, `text-on-surface`, `font-headline`); it now uses only the classes above.

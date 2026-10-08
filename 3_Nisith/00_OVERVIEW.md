@@ -11,7 +11,7 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 
 ## 🗺️ Work Order Summary
 
-**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is DONE; the accounts and holders APIs (T05, `0244`/`0245`) are built and tested locally, in REVIEW pending `/review` and the PR; the UI (T06) remains pending.
+**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is DONE; the accounts and holders APIs (T05, `0244`/`0245`) are built and tested locally, in REVIEW pending `/review` and the PR; the account screens (T06) are built and tested locally, in REVIEW pending a manual browser pass and the PR.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.
 
