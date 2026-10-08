@@ -389,6 +389,8 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
 | `transaction_id` | uuid | **PK** |
 | `account_id` | uuid | **FK → account** |
 | `initiated_by_user_id` | uuid | **FK → user** |
+| `agent_id` | uuid NULL | **FK → agent**, ON DELETE RESTRICT; reporting snapshot (0320, G-07) |
+| `branch_id` | uuid NULL | **FK → branch**, ON DELETE RESTRICT; posting-branch snapshot (0320, G-07) |
 | `channel_id` | uuid | **FK → transaction_channel** |
 | `reference_number` | varchar(50) | Unique per BR-10 — **not marked UK in the ERD; G-05** |
 | `transaction_type` | varchar(50) | `DEPOSIT` / `WITHDRAWAL` / `INTEREST_CREDIT` / `REVERSAL` (FR-TXN-01) |
@@ -398,12 +400,22 @@ The ledger. Immutable once posted (FR-TXN-02, BR-16).
 | `created_at` | timestamptz | System insert time |
 
 - Delete: **never**. `RESTRICT` everywhere, and a trigger rejects `UPDATE`/`DELETE`.
-- Indexes: `(account_id, transaction_date DESC)` for statements; `reference_number`
-  unique (SRS §6.7).
+- Indexes: `(account_id, transaction_date DESC)` for statements;
+  `ix_transaction_agent_date (agent_id, transaction_date)` and
+  `ix_transaction_branch_date (branch_id, transaction_date)` for reporting (0320).
+  Reference-number uniqueness remains a separate G-05/M4 requirement.
 - Invariants: `amount > 0`; no row may be updated or deleted by an application role;
   every row has a reference, timestamp and type (BR-10).
-- Gaps: no agent/branch (**G-07**); no idempotency key (**G-04**); no `balance_after`
+- Gaps: no idempotency key (**G-04**); no `balance_after`
   (**G-14**); no reversal link (**G-02**); no `status` (**G-02**).
+
+**G-07 implementation:** M2 migration `0320_p03_m02_transaction_attribution.sql`
+adds nullable posting-time attribution under ADR-0016. Existing rows and omitted
+INSERT columns retain NULL values; there is no backfill or derived membership.
+Both fields are protected by the existing ledger immutability trigger. FKs ensure
+referential integrity, not authorization or required attribution. M4 posting routines
+and M3 opening-deposit producers still need to capture trusted attribution; existing
+opening deposits remain unattributed. M1 retains transaction RLS/scope ownership.
 
 ### `interest_payout`
 
@@ -464,8 +476,8 @@ corresponding open question is resolved and an ADR exists.**
 | Table | Column | Reason | Gap |
 |---|---|---|---|
 | `account` | `branch_id uuid NOT NULL FK` | Owning branch fixed at opening; RLS anchor (FR-ACC-01; approved ADR-0008) | G-06 |
-| `transaction` | `agent_id uuid NULL FK` | RPT-01 is agent-wise (FR-DEP-02) | G-07 |
-| `transaction` | `branch_id uuid NULL FK` | Branch attribution at posting time | G-07 |
+| `transaction` (0320 implemented) | `agent_id uuid NULL FK` | RPT-01 reporting agent captured at posting time; ADR-0016 | G-07 |
+| `transaction` (0320 implemented) | `branch_id uuid NULL FK` | Historical posting branch; ADR-0016 | G-07 |
 | `transaction` | `idempotency_key varchar(80) NULL` | FR-DEP-04, AC-06 | G-04 |
 | `transaction` | `balance_after money_amount NOT NULL` | FR-TXN-04 running-balance evidence | G-14 |
 | `transaction` | `status varchar(20)` | `POSTED` / `REVERSED` | G-02 |

@@ -129,8 +129,8 @@ it** — `EXPLAIN` evidence is collected in `P05-M05-T04`.
 | Index | Table | Serves |
 |---|---|---|
 | `ix_transaction_account_date` `(account_id, transaction_date DESC)` | `transaction` | Statements, RPT-02 |
-| `ix_transaction_agent_date` `(agent_id, transaction_date)` | `transaction` | **RPT-01** (§6.7) |
-| `ix_transaction_branch_date` `(branch_id, transaction_date)` | `transaction` | Branch reporting, RLS |
+| `ix_transaction_agent_date` B-tree `(agent_id, transaction_date)` | `transaction` | Implemented 0320, P03-M02-T01: agent equality + business-date range for **RPT-01** (§6.7) and agent FK lookup |
+| `ix_transaction_branch_date` B-tree `(branch_id, transaction_date)` | `transaction` | Implemented 0320: historical branch equality + business-date range and branch FK lookup; does not itself enforce scope/RLS |
 | `ix_transaction_type_date` `(transaction_type, transaction_date)` | `transaction` | RPT-04, filters |
 | `ix_fd_status_next_interest` `(status, next_interest_date)` | `fixed_deposit` | Selecting FDs due for interest (§6.7) |
 | `ix_audit_actor_time` `(user_id, logged_at DESC)` | `audit_log` | Security investigation (§6.7) |
