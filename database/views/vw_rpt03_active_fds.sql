@@ -33,3 +33,5 @@ GROUP BY fd.fd_id, fd.account_id, a.account_number, a.branch_id,
          b.branch_name, fd.fd_plan_id, fp.plan_name, fp.tenure_months,
          fd.principal_amount, fd.interest_rate_at_opening,
          fd.start_date, fd.maturity_date, fd.next_interest_date, fd.status;
+
+GRANT SELECT ON vw_rpt03_active_fds TO mims_app;
