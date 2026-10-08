@@ -69,6 +69,16 @@ check that `current_balance` equals the sum of the ledger will not hold on seed 
 (c) M4 should review the additive `ledger_seq` column on their table: `handoffs/p05-m03-ledger-seq-for-m4.md`.
 Handoff: `handoffs/p05-m03-t01-rpt02-view.md`.
 
+### RPT-02 report: scale, shared components, CSV behaviour — 2026-10-08 (raised by M3, task P05-M03-T02)
+
+(1) **Scale (NFR-PERF-04, P06-M04-T02):** a multi-account RPT-02 request reads the scoped accounts' ledger history (one branch page 65 ms, bank-wide
+176 ms at 40,000 ledger rows; a single account 0.3 ms via `ux_transaction_account_ledger_seq`) and runs the aggregate three times (totals, rows,
+page subtotal). Fine for the sample data (NFR-PERF-03), several seconds per query at a million rows; a single-pass query would cut it to one.
+(2) `components/report/**` (M1) got three optional props, `caption`, `emptyText`, `sortLabels` (defaults unchanged): `handoffs/p05-m03-report-shell-props-for-m1.md`.
+`ReportFilters` still labels its branch select "Posting branch". (3) RPT-05's CSV (`app/api/reports/customer-activity`, M4) exports only the current page,
+not every filtered row as REP-COM-04 and the shell's "Export CSV · all filtered rows" button promise; RPT-02 exports all rows. (4) No browser pass for the page.
+Handoff: `handoffs/p05-m03-t02-rpt02-report.md`.
+
 ### I-6 task card versus tracker, plan minimum, and M5's inlined opening checks — 2026-10-08 (raised by M3)
 
 The P04-M03-T01 card prescribes `fn_check_account_fd_eligible(account_id) → boolean` (status only; caller locks and
