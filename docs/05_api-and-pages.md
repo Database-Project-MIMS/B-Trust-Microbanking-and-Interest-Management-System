@@ -368,6 +368,25 @@ The page shows named scoped selectors, applied metadata, exact LKR values, expli
 zeros/empty/loading/error/retry states and pagination. Export uses applied filters.
 Other report endpoints below remain their owners' contracts.
 
+**RPT-02 live delivery (2026-10-08, P05-M03-T02):** `GET /api/reports/account-summary` and
+`/reports/account-summary` (built on the shared report shell). Allowed roles: BRANCH_MANAGER (own branch only),
+ADMIN, CENTRAL_OPS, AUDITOR. Strict query keys: `from`, `to` (real ordered inclusive Colombo dates; one implies a
+single day, absent defaults to today), `branchId`, `accountId`, `planId` (UUIDs), `status=ACTIVE|FROZEN|CLOSED`,
+`format=json|csv`, `page` (1–1,000,000), `pageSize` (1–100, default 25), `sort=accountNumber|openingBalance|
+closingBalance|netMovement`, `direction=asc|desc`. Unknown, repeated or malformed keys are `400 VALIDATION_FAILED`. A
+manager asking for another branch is `403`; a manager's `accountId` from another branch simply matches nothing.
+One row per account in scope (an account with no posting in the period is included): `accountId`, `accountNumber`,
+`branchId`, `branchName`, `planName`, `accountStatus`, `openingBalance`, `closingBalance`, `depositCount`,
+`depositTotal`, `withdrawalCount`, `withdrawalTotal`, `interestCount`, `interestTotal`, `reversalCount`, `netMovement`.
+Money and counts are exact strings. Opening is the balance before the first posting in the period and closing the
+balance after the last, both read from the ledger's stored running balance (`vw_rpt02_account_summary`, posting order
+`ledger_seq`); totals are net of reversals and `closing − opening = deposits − withdrawals + interest`. `{data}` holds
+`reportName`, `rows`, `subtotals` (current page, summed by the database), `grandTotal` (all filtered accounts),
+effective `filters`, `generatedAt`, `requestedBy`, `totalRows`, `page`, `pageSize`, `timeZone`, `notes`.
+CSV runs the same query and returns EVERY filtered account (not one page) with the same grand total; more than 50,000
+accounts is a `400` asking to narrow the filters. Rows, totals and the `REPORT_ACCESSED` audit row are produced in one
+REPEATABLE READ transaction; refused and invalid requests are not audited. Responses are private/no-store.
+
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·
 `customer-activity` (RPT-05).
@@ -426,7 +445,7 @@ deactivation. Deactivation preserves the record and its history.
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |
 | `/reports/agent-transactions` | RPT-01 | manager+, auditor | M2 |
-| `/reports/account-summary` | RPT-02 | manager+, auditor | M3 |
+| `/reports/account-summary` | RPT-02 (live, `GET /api/reports/account-summary`) | BRANCH_MANAGER (own branch), CENTRAL_OPS, AUDITOR, ADMIN | M3 |
 | `/reports/customer-activity` | RPT-05 | manager+, auditor | M4 |
 | `/reports/active-fds` | RPT-03 | manager+, auditor | M5 |
 | `/reports/interest-distribution` | RPT-04 | CENTRAL_OPS, auditor | M5 |

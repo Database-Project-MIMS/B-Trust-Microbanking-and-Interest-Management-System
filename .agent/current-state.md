@@ -318,3 +318,10 @@ cast, no whole-ledger window). On the pure seed: balance-chain breaks 86 → 0, 
 `tests/db/transaction-ledger-seq.test.mjs` 7/7. Full isolated suite 865 tests / 837 pass / 28 fail: the failures that already occur on dev.
 `tsc --noEmit` and `eslint .` clean. Open for other owners: seed dates are all one day (M5); M4 to review the new column.
 
+## M3 update — P05-M03-T02 (2026-10-08)
+
+P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 entry approval), tests only: `GET /api/reports/account-summary` (JSON and all-rows CSV,
+identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
+`tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
+already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).
+
