@@ -1,46 +1,20 @@
 # Member 2 — context
 
-Full slice description and copy-paste session prompt:
-`../../docs/member-prompts/member-2.md`
+**Updated:** 2026-10-07 · [slice](../../docs/member-prompts/member-2.md)
+**Branch:** feat/p02-m02-customer-api-ui · base dev 25fc264
 
-This file is the running log, updated by Member 2 via `/remember save` at the end of a
-session and read at the start of the next one.
+P02-M02-T05 technically DONE locally: authenticated customer API routes and live
+registration/search/profile screens. New M2 migration 0223 scopes child SELECT/INSERT;
+existing M1 RLS context/audit are reused, eliminating T04's duplicate INSERT audit.
+Real M3 account_holder links replace the future-table fixture.
+365 tests (35 suites), zero failures/skips, clean 19-migration rebuild, typecheck,
+lint/build; browser success/duplicate/search/profile and responsive checks pass.
+[Handoff and review](../handoffs/p02-m02-t05-customer-api-ui.md).
 
-## Current task
+M2 T01–T05 DONE; P2 has 10 DONE / 1 READY / 5 TODO. M1 retains broader route/security
+review; document verification is internal and still has a recorded runtime lock/grant
+gap. No file upload, reassignment or customer-login provisioning was added.
 
-**P01-M02-T03 — Branch and Agent APIs: IN_PROGRESS.** P01-M02-T01, P01-M02-T02 and I-1
-are complete and merged into `dev`. The six route handlers, service layer, validation and
-database-backed API tests are implemented on `feat/p01-m02-branch-agent-apis`.
-
-## Recent history
-
-- Created and applied the `branch` table migration with a unique branch code, shared
-  `record_status`, timestamps, and the shared `set_updated_at()` trigger.
-- Added `tests/db/branch-constraints.test.mjs`: 4/4 task tests pass.
-- Created and applied the agent subtype schema with unique employee/identity/email
-  constraints, active-branch integrity triggers, deletion restrictions and lookup index.
-- Added `tests/db/agent-constraints.test.mjs`: 9/9 task tests pass.
-- The developer approved ADR-0006: `AGENT` and `BRANCH_MANAGER` use the same `agent`
-  branch-staff profile; `role_name` controls permissions and `agent.branch_id` supplies
-  scope.
-- Reconciled the latest `main` and `dev` content, corrected authentication/session grants,
-  and isolated FD API fixtures. The full suite passes 56/56.
-- Added the approved least-privilege `mims_app` grants for `branch` and `agent`. The
-  organisation API suite passes 23/23 using the normal application connection.
-
-## Notes to self
-
-- The referenced-branch delete rule deferred from T01 is enforced and tested by the
-  `agent.branch_id` foreign key.
-- T03 agent-management endpoints manage ordinary `AGENT` users only; branch managers use
-  the same profile for scope but are excluded with a joined role filter.
-- Do not create branches, commit, push, or open a PR unless explicitly requested by the
-  developer.
-
-## Blocked on
-
-- Member 1 must publish the `audit_log` table/trigger contract. The runtime grants are
-  complete; see `../handoffs/p01-m02-t03-audit-and-grants.md`.
-- Cross-member test blockers are otherwise resolved; the remaining native-Windows
-  `db:create` setup issue is documented in
-  `../handoffs/p01-cross-member-test-blockers.md`.
+User controls commit/push/PR/merge. No assistant publication. Historical Phase 2 entry
+approval persists; next M2 Phase 3 task awaits phase exit/entry approval and its gates.
+Current work is uncommitted. /review and /imprint documented; no secrets persisted.

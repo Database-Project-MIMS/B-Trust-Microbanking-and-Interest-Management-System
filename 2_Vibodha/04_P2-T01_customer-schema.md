@@ -1,36 +1,35 @@
 # 🟢 Phase 2 — Task 01: Customer Schema
 **Task ID:** `P02-M02-T01` · **Branch:** `feat/p02-m02-customer-schema`
-**Migration:** `0220_p02_m02_customer.sql` · **Status:** TODO (gated)
-**Depends on:** **OQ-05** (G-20 customer identity decision), `P01-M02-T02` (`agent`)
+**Migration:** `0220_p02_m02_customer.sql` · **Status:** DONE — PR #34 merged into dev; retained in PR #36
+**Depends on:** ADR-0007 (G-20 resolved), `P01-M02-T02` (`agent`)
 **Story Points:** ~4 · **Layer:** Database only
 
 ---
 
-## ⚠️ Blocking Gate — Read First
+## ✅ Identity Decision — Approved
 
-`P02-M02-T01` **cannot start** until **OQ-05** is resolved. Check
-`.agent/open-questions.md` and `docs/17_erd-gap-analysis.md` (**G-20**) before writing
-any migration.
+OQ-05 was resolved on 2026-09-29 by ADR-0007. Customers are primarily agent-managed,
+so customer login is optional. Vibodha approved Phase 2 entry and explicitly requested
+this task. PR #34 is merged into dev at 2e338a6. PR #36's refreshed resolution
+retains that implementation and prepares integration after PR #35. See the
+[checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 
 The current ERD models `customer` as a subtype of `user` (`customer_id` is `PK,FK` into
 `app_user`), which forces every one of the 15+ seeded customers to have login
-credentials. **G-20** proposes instead making `customer_id` an **independent surrogate
-PK** with an optional `user_id uuid NULL UNIQUE FK → app_user`, so customer
+credentials. The approved G-20 change makes `customer_id` an **independent surrogate
+PK** with an optional `app_user_id uuid NULL UNIQUE FK → app_user`, so customer
 self-service login is possible later without being mandatory now.
-
-Two possible schemas follow from the two answers. **Do not guess — ask the team/lecturer
-and record the decision in an ADR (`.agent/decisions/`) before writing the migration.**
 
 ---
 
-## Table to Create (pending OQ-05)
+## Table to Create
 
-### `customer` — if self-service login is **not** required (G-20 proposal, likely path)
+### `customer` — independent identity with optional login (ADR-0007)
 
 | Column | Type | Constraints |
 |---|---|---|
 | `customer_id` | `uuid` DEFAULT `gen_random_uuid()` | **PK** — independent surrogate |
-| `user_id` | `uuid` | **NULL, UNIQUE, FK → app_user** — set only if self-service login is later enabled |
+| `app_user_id` | `uuid` | **NULL, UNIQUE, FK → app_user** — set only if self-service login is later enabled |
 | `branch_id` | `uuid` | **FK → branch, NOT NULL** — home branch (FR-CUS-02) |
 | `customer_number` | `varchar(30)` | **UNIQUE, NOT NULL** — FR-CUS-01 |
 | `nic_passport_no` | `varchar(50)` | **UNIQUE, NOT NULL** |
@@ -42,15 +41,9 @@ and record the decision in an ADR (`.agent/decisions/`) before writing the migra
 | `email` | `varchar(150)` | **UNIQUE, NOT NULL** |
 | `status` | `varchar(20)` | NOT NULL DEFAULT `'ACTIVE'`, `CHECK (status IN ('ACTIVE','INACTIVE'))` |
 | `created_at` | `timestamptz` | NOT NULL DEFAULT `now()` |
-| `updated_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | NOT NULL DEFAULT now(), maintained by shared trigger |
 
-### `customer` — if self-service login **is** required (subtype pattern, matches ERD as-is)
-
-Same as `agent` in T02: `customer_id uuid PRIMARY KEY REFERENCES app_user(user_id)`, plus
-the same columns minus `user_id`. Only use this shape if the team/lecturer confirms every
-customer needs a login.
-
-**Whichever shape is chosen, keep these invariants:**
+**Keep these invariants:**
 - **DELETE rule:** `RESTRICT` — referenced by `customer_agent`, `customer_document`,
   `account_holder` (Phase 2, M3).
 - **Indexes:** `nic_passport_no` UNIQUE (duplicate-identity detection, SRS §6.7);
@@ -63,17 +56,13 @@ customer needs a login.
 
 ## How to Implement
 
-### Step 1 — Resolve OQ-05
-1. Read `.agent/open-questions.md` entry for OQ-05 and `docs/17_erd-gap-analysis.md`
-   G-20 in full.
-2. Run `/architect` — this is exactly the kind of load-bearing decision it exists to
-   pin down before code.
-3. Write the decision to `.agent/decisions/` as an ADR. Update
-   `.agent/open-questions.md` to mark OQ-05 resolved.
+### Step 1 — Confirm the approved identity contract
+Read ADR-0007 and G-20. Use an independent `customer_id` and nullable unique
+`app_user_id`; do not restore the ERD subtype design.
 
 ### Step 2 — Write the Migration
-Create file: `database/migrations/0220_p02_m02_customer.sql`. Example assuming the
-independent-surrogate-PK path (most likely outcome per G-20's own recommendation):
+Create file: `database/migrations/0220_p02_m02_customer.sql` using the approved
+independent-surrogate-PK design:
 
 ```sql
 -- Migration 0220: Customer schema (M2)
@@ -83,7 +72,7 @@ BEGIN;
 
 CREATE TABLE customer (
     customer_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id           uuid UNIQUE REFERENCES app_user(user_id) ON DELETE RESTRICT,
+    app_user_id       uuid UNIQUE REFERENCES app_user(user_id) ON DELETE RESTRICT,
     branch_id         uuid NOT NULL REFERENCES branch(branch_id) ON DELETE RESTRICT,
     customer_number   varchar(30) NOT NULL UNIQUE,
     nic_passport_no   varchar(50) NOT NULL UNIQUE,
@@ -104,9 +93,7 @@ CREATE INDEX idx_customer_branch ON customer(branch_id);
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE INDEX idx_customer_full_name_trgm ON customer USING gin (full_name gin_trgm_ops);
 
--- Register migration
-INSERT INTO schema_migration(version, name)
-VALUES (220, '0220_p02_m02_customer');
+-- The runner records filename/checksum; do not insert version/name into the ledger.
 
 COMMIT;
 ```
@@ -126,10 +113,13 @@ Create file: `tests/db/customer-constraints.test.mjs`
 
 ### Step 4 — Run & Verify
 ```bash
-npm run db:rebuild
-npm run db:verify
-npm test
+npm run verify:customer-schema  # disposable rebuild, customer + organization tests, typecheck/lint
 ```
+
+This invokes db:rebuild only inside its own temporary cluster. The present checkout's
+legacy migration-runner test resets mims_dev and edits a real migration, so it is
+excluded. Normal development DB verification can use `npm run db:verify` after the
+additive migration. Do not run the legacy rebuild as an ordinary test against your data.
 
 ### Step 5 — Update Docs
 - Update `docs/04_database-schema.md` §B.4 — mark the identity decision as resolved,
@@ -142,11 +132,19 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] OQ-05 resolved and recorded as an ADR before the migration is written
-- [ ] Migration applies to a clean DB without errors
-- [ ] `nic_passport_no`, `email`, `customer_number` are each `UNIQUE NOT NULL`
-- [ ] Duplicate NIC raises `23505` (FR-CUS-04)
-- [ ] Trigram index exists on `full_name`
-- [ ] `date_of_birth` CHECK rejects future dates
-- [ ] Handoff written for M1 and M3
-- [ ] `npm run db:rebuild` succeeds from empty
+- [x] OQ-05 resolved and recorded as ADR-0007 before the migration is written
+- [x] Migration applies to a clean DB without errors
+- [x] `nic_passport_no`, `email`, `customer_number` are each `UNIQUE NOT NULL`
+- [x] Duplicate NIC raises `23505` (FR-CUS-04)
+- [x] Trigram index exists on `full_name`
+- [x] `date_of_birth` CHECK rejects future dates and today
+- [x] Handoff written for M1 and M3
+- [x] `npm run db:rebuild` succeeds from empty inside the disposable verification cluster
+
+Implemented source: [0220 migration](../database/migrations/0220_p02_m02_customer.sql).
+The example above is illustrative; the actual migration uses named constraints,
+`ix_customer_branch`/`ix_customer_full_name_trgm` and the shared timestamp trigger.
+Verification: `npm run verify:customer-schema` — 65 tests pass (27 customer), clean
+rebuild, typecheck and lint pass. Local 0220 application/verification also passes.
+Handoff: [customer schema](../.agent/handoffs/p02-m02-t01-customer-schema.md).
+No customer API/UI is part of T01. No commit, merge or PR was created.

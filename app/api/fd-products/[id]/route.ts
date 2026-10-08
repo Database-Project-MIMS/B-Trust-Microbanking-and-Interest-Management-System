@@ -18,8 +18,8 @@ export async function PATCH(
 
     // Validate interestRate if provided (must be a fraction between 0 and 1, exclusive of 0, inclusive of 1)
     if (interestRate !== undefined && interestRate !== null) {
-      const rateNum = parseFloat(interestRate);
-      if (isNaN(rateNum) || rateNum <= 0 || rateNum > 1) {
+      const rate = typeof interestRate === "string" ? interestRate : "";
+      if (!/^0\.(?=.*[1-9])\d{1,4}$|^1(?:\.0{1,4})?$/.test(rate)) {
         return NextResponse.json(
           { error: { code: "BAD_REQUEST", message: "Interest rate must be a fraction between 0 and 1 (e.g. 0.1300)." } },
           { status: 400 }

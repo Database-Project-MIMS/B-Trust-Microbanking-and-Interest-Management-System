@@ -19,7 +19,7 @@ Synthetic, development only. Loaded by `database/seed/01_roles_users.sql`.
 | `AGENT` | `agent.colombo1` | Customers, accounts, deposits, withdrawals |
 | `AGENT` | `agent.kandy1` | Cross-branch denial testing |
 | `AUDITOR` | `auditor` | Read-only reports and audit |
-| `CUSTOMER` | `cust.demo` | Self-service scope (subject to **OQ-05**) |
+| `CUSTOMER` | `cust.demo` | Optional self-service scope for a customer linked to `app_user` (ADR-0007) |
 
 Passwords are in the seed file header. **Never reuse them anywhere real.**
 
@@ -157,10 +157,18 @@ totals match the screen exactly (REP-COM-04).
 ## Reset for a clean demonstration
 
 ```bash
-npm run db:rebuild     # drop, migrate, routines, triggers, views, indexes, roles, seed
+npm run db:rebuild -- --reset  # explicit reset of configured mims_dev; synthetic data only
 npm run db:verify      # all checks must pass
 npm run dev
 ```
+
+`npm run verify:phase1` provisions a disposable local PostgreSQL cluster, rebuilds it,
+runs DB/API/workflow tests, typecheck, lint and the production build, then removes it.
+`npm test`, `npm run test:db` and `npm run test:api` use the same isolation for tests.
+No development data is erased. `npm run db:rebuild` expects an empty configured database;
+resetting an existing `mims_dev` or `mims_test_*` database requires an explicit `--reset`.
+Verification compares every migration filename and checksum, and fails on missing,
+pending or changed migrations.
 
 Deterministic, so report totals are identical every time you demonstrate. If `db:rebuild`
 fails, that is a defect — fix the migration, never patch the database by hand (SRS §6.8).

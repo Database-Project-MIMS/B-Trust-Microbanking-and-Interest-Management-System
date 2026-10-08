@@ -1,6 +1,8 @@
 # 04 — Database Schema
 
-**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 0 — documented, not yet built.
+**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 1 implemented and verified;
+Phase 2 entry approved 2026-10-05. Account and transaction schemas also exist (`0240`,
+`0260`); customer/holder/mandate and later financial features remain planned.
 
 This document has two clearly separated parts:
 
@@ -98,7 +100,8 @@ name is retained in diagrams.
 | `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
 | `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_branch_set_updated_at` |
 
-- Implemented by `0120_p01_m02_branch.sql`.
+- Implemented by `0120_p01_m02_branch.sql`; `0122_p01_m02_organization_audit.sql`
+  adds same-transaction, sanitized master-data auditing.
 - Delete: references use `ON DELETE RESTRICT`; the first such FK is added by the agent
   schema in P01-M02-T02. Deactivate referenced branches instead (FR-ORG-05).
 
@@ -124,7 +127,8 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
 | `created_at` | timestamptz | **NOT NULL**, defaults to `now()` |
 | `updated_at` | timestamptz | **NOT NULL**, maintained by `trg_agent_set_updated_at` |
 
-- Implemented by `0121_p01_m02_agent.sql`.
+- Implemented by `0121_p01_m02_agent.sql`; `0122_p01_m02_organization_audit.sql`
+  adds same-transaction, sanitized master-data auditing.
 - Delete: `RESTRICT`; future references from `account.opened_by_agent_id` and
   `customer_agent` also use `RESTRICT`.
 - Index: `ix_agent_branch_status (branch_id, status)` for branch-scoped active-agent lists.
@@ -135,9 +139,13 @@ managers (`role_name = 'BRANCH_MANAGER'`) use this profile; the role controls pe
   `agent.agent_id`; a missing profile fails closed with `403`, never bank-wide scope.
 - Agent-management lists and agent-specific reports join `role` and restrict
   `role_name = 'AGENT'` when branch managers must not appear as ordinary agents.
+- Branch, agent and linked `app_user` changes write before/after JSON to `audit_log` in
+  the caller transaction. `password_hash`, `nic_passport_no` and `token_hash` are
+  removed before audit persistence.
 
 ### `customer`
-Subtype of `user` in the current ERD. See **G-20** — this is contested.
+Subtype of `user` in the current ERD. G-20 is resolved by ADR-0007: migration 0220 implements
+the approved independent identity described in Part B.4 instead of this ERD key shape.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -156,6 +164,8 @@ Subtype of `user` in the current ERD. See **G-20** — this is contested.
   trigram index on `full_name` for search.
 - Invariants: `date_of_birth` in the past; identity masked from unauthorised roles
   (FR-CUS-04); ≥ 15 customers seeded (FR-CUS-05).
+- **Security:** RLS is enabled. Users with the `CUSTOMER` role can only see their own row. Staff users are restricted to their branch unless they have bank-wide roles (`ADMIN`, `CENTRAL_OPS`, `AUDITOR`).
+- **Audit:** Monitored by `trg_audit_customer` which records all `INSERT` and `UPDATE` operations, masking PII in the `audit_log`.
 
 ### `customer_agent`
 Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
@@ -169,8 +179,9 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `end_date` | date | NULL while current |
 | `is_active` | boolean | ERD says `tinyint`; PostgreSQL uses `boolean` |
 
-- Invariant: exactly one active row per customer (FR-CUS-02) — **unenforced in the ERD, see
-  G-10**.
+- Invariant: one current assignment (FR-CUS-02). Migration 0221's partial unique
+  index enforces **at most one** active row (G-10); registration/reassignment must
+  supply existence atomically. Exact implemented shape is below in B.4a.
 - Check: `end_date IS NULL OR end_date >= assigned_date`.
 
 ### `customer_document`
@@ -186,6 +197,7 @@ Effective-dated customer-to-agent assignment; preserves history (FR-CUS-03).
 | `verified_date` | timestamptz | |
 
 - Check: `(verified_by IS NULL) = (verified_date IS NULL)` — both set, or neither.
+- Implemented in 0222 with RESTRICT FKs and lifecycle timestamps; see B.4a.
 - ERD Assumption 3: documentation is required to open an account — enforced in
   `sp_open_savings_account`, not by a constraint.
 
@@ -233,6 +245,10 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 
 ### `transaction_channel`
 
+Implemented by immutable migration `0160_p01_m04_transaction_channel.sql`, verified
+at Phase 1 closeout. `channel_name` is NOT NULL/UNIQUE; status defaults to `ACTIVE`
+and is constrained to `ACTIVE`/`INACTIVE`; `created_at` is TIMESTAMPTZ NOT NULL.
+
 | Column | Type | Notes |
 |---|---|---|
 | `channel_id` | uuid | **PK** |
@@ -249,18 +265,25 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 |---|---|---|
 | `account_id` | uuid | **PK** |
 | `plan_id` | uuid | **FK → savings_plan** |
+| `branch_id` | uuid | **FK → branch**, NOT NULL — owning branch fixed at opening (G-06, ADR-0008) |
 | `opened_by_agent_id` | uuid | **FK → agent** |
-| `account_number` | varchar(50) | **UK** (SRS §6.7) |
+| `account_number` | varchar(50) | **UK** (SRS §6.7); generated by `fn_next_account_number` as `<BRANCH_CODE>-<8 digits>` |
 | `opened_date` | date | |
 | `status` | varchar(20) | `ACTIVE` / `FROZEN` / `CLOSED` |
-| `current_balance` | `money_amount` | Controlled balance — see G-18 |
+| `current_balance` | `money_amount` | NOT NULL DEFAULT 0, `CHECK (>= 0)` — controlled balance (G-18) |
+| `created_at` / `updated_at` | timestamptz | `updated_at` maintained by `trg_account_set_updated_at` |
 
 - Delete: `RESTRICT` — referenced by `transaction`, `account_holder`, `fixed_deposit`.
-- Indexes: `account_number` unique; `(plan_id)`; `(status)`.
+- Indexes: `account_number` unique; `(plan_id)`; `(branch_id, status)` (ADR-0008); `(status)`.
+- Rows are created only by `sp_open_savings_account` (0243), which writes the account, holders, mandate and optional initial deposit atomically.
+- Implemented in `0240_p02_m03_account.sql` (P02-M03-T01). `trg_account_prevent_branch_change` rejects any `UPDATE` of `branch_id` (SQLSTATE `23514`, `ck_account_branch_immutable`).
 - Invariants: balance never negative (NFR-SAFE-01); balance ≥ plan minimum after a
   withdrawal (NFR-SAFE-02); closing requires zero balance and no active FD (FR-ACC-05,
   BR-18).
-- Gaps: no `branch_id` (**G-06**); no non-negative `CHECK` (**G-18**).
+- **Security:** RLS is enabled. Users with the `CUSTOMER` role can only see accounts they hold. Staff users are restricted to accounts within their branch, unless they hold bank-wide roles (`ADMIN`, `CENTRAL_OPS`, `AUDITOR`).
+- **Audit:** Monitored by `trg_audit_account` which records all `INSERT` and `UPDATE` operations, masking any potential PII in the `audit_log`.
+- Approved changes: add immutable-at-opening `branch_id` (**G-06**, ADR-0008) and the
+  non-negative `CHECK` (**G-18**). See Part B.
 
 ### `account_holder`
 Intersection resolving the many-to-many between customers and accounts. This is what makes
@@ -271,12 +294,72 @@ joint accounts possible (SRS §6.3).
 | `account_holder_id` | uuid | **PK** |
 | `account_id` | uuid | **FK → account** |
 | `customer_id` | uuid | **FK → customer** |
-| `joined_date` | date | |
+| `holder_type` | varchar(20) | `PRIMARY` / `JOINT`, default `PRIMARY` (**G-08**, ADR-0009) |
+| `joined_date` | date | default `CURRENT_DATE` |
+| `created_at` | timestamptz | |
 | — | | **UK (account_id, customer_id)** |
 
 - The composite unique key prevents the same customer being added twice to one account.
-- Invariants: an individual account has exactly one holder; a joint account has 2–4 adult
-  holders (§4.4) — **unenforced in the ERD, see G-08**.
+- Delete: `RESTRICT` on both foreign keys.
+- Indexes: PK; `uq_account_holder_account_customer`; partial unique
+  `uq_account_holder_one_primary (account_id) WHERE holder_type = 'PRIMARY'`;
+  `ix_account_holder_customer (customer_id)`.
+- Implemented in `0241_p02_m03_account_holder.sql` (P02-M03-T02). An account has at most
+  one `PRIMARY` holder; additional holders are `JOINT`.
+- The cross-row rule — a joint account has 2–4 adult holders and a mandate — cannot be a
+  row `CHECK`. It is enforced by `trg_validate_joint_mandate` (P02-M03-T03, migration
+  `0242`) and `sp_open_savings_account` (P02-M03-T04), not by this table alone
+  (**G-08**, ADR-0009). The statement-level triggers (`AFTER INSERT` and `AFTER UPDATE`,
+  both calling `fn_check_account_holder_sets`) read `savings_plan.min_holders`,
+  `max_holders` and `requires_all_adult`, require exactly one `PRIMARY`, and reject a
+  holder under 18 when the plan requires adults. The checker first locks the account row
+  (`FOR NO KEY UPDATE`), so concurrent holder changes on one account are serialised. All
+  holders of an account must be inserted in **one multi-row `INSERT`** because the check
+  runs once per statement. Errors are `P0001` with a message prefix and a named
+  `CONSTRAINT`: `INVALID_HOLDER_COUNT` (`ck_account_holder_count`), `MISSING_PRIMARY_HOLDER`
+  (`ck_account_holder_one_primary`), `UNDERAGE_HOLDER` (`ck_account_holder_adult`).
+
+### `account_opening_request`
+
+| Column | Type | Notes |
+|---|---|---|
+| `request_id` | uuid | **PK** |
+| `user_id` | uuid | **FK → app_user** — the user who sent the key |
+| `idempotency_key` | varchar(80) | `CHECK` 8–80 chars `[A-Za-z0-9_-]` |
+| `request_hash` | char(64) | SHA-256 (hex) of the canonical request; detects a reused key with a different body |
+| `account_id` | uuid | **FK → account, UK** — the account this request opened |
+| `created_at` | timestamptz | |
+| — | | **UK (user_id, idempotency_key)** |
+
+- Implemented in `0244_p02_m03_account_opening_request.sql` (P02-M03-T05). Insert-only (`mims_app` has no `UPDATE`/`DELETE`); `RESTRICT` on both foreign keys.
+- Written in the same transaction as the account, so a failed open leaves no key. The service takes `pg_advisory_xact_lock` on (user, key) before reading, so concurrent requests with one key serialise; the unique constraint is the backstop. This is the account-opening counterpart of G-04's `transaction.idempotency_key`.
+
+### `joint_mandate`
+
+| Column | Type | Notes |
+|---|---|---|
+| `mandate_id` | uuid | **PK** |
+| `account_id` | uuid | **FK → account, UK** — one mandate per account |
+| `mandate_type` | varchar(20) | `ANY_ONE` / `ALL_HOLDERS` |
+| `required_signatories` | int | default 1; `CHECK` 1–4; `ANY_ONE` must be 1 |
+| `effective_from` | date | default `CURRENT_DATE` |
+| `effective_to` | date | nullable; `CHECK` not before `effective_from` |
+| `created_at` / `updated_at` | timestamptz | `updated_at` maintained by `set_updated_at` |
+
+- Implemented in `0242_p02_m03_joint_mandate.sql` (P02-M03-T03, **G-08**, ADR-0009).
+- Delete: `RESTRICT` on the account foreign key; `mims_app` has no `DELETE` grant.
+- `trg_joint_mandate_fit` (row-level, after insert/update): the account's plan must allow
+  more than one holder, signatories cannot exceed holders, and `ALL_HOLDERS` equals the
+  holder count at the time the mandate is stored. Constraint names:
+  `ck_joint_mandate_multi_holder_plan`, `ck_joint_mandate_signatories_fit`.
+- When holders are added or changed, the holder trigger sets an `ALL_HOLDERS` mandate's
+  `required_signatories` to the new holder count, so the stored mandate never goes stale.
+  `ANY_ONE` stays 1.
+- The trigger functions are `SECURITY DEFINER` (they must see every holder and customer
+  regardless of the caller's RLS scope) with `EXECUTE` revoked from `PUBLIC`.
+- "A joint account must have a mandate" cannot live in the holder trigger (holders are
+  inserted first); `sp_open_savings_account` (T04) writes holders then the mandate in one
+  transaction. Audit and RLS for this table are not yet bound (follow-up for M1).
 
 ### `fixed_deposit`
 
@@ -368,7 +451,7 @@ corresponding open question is resolved and an ADR exists.**
 |---|---|---|---|
 | `transaction_reversal` | Links an original transaction to its compensating entry; `UNIQUE(original_transaction_id)` enforces "reversible once" (DB-CON-04) | G-02 | M4 |
 | `interest_run` | One row per 30-day cycle. `UNIQUE(cycle_date)` prevents duplicate runs; stores counts, totals, exceptions (FR-INT-05) | G-03 | M5 |
-| `joint_mandate` | `ANY_ONE` / `ALL_HOLDERS` operating rule per joint account (FR-ACC-04, BR-17) | G-08 | M3 |
+| `joint_mandate` | `ANY_ONE` / `ALL_HOLDERS` operating rule per joint account (FR-ACC-04, BR-17; approved ADR-0009) | G-08 | M3 |
 | `system_parameter` | Business hours, withdrawal limits as data, not code (BR-08, §7.1) | G-15 | M1 |
 | `business_calendar` | Working days and open/close times | G-15 | M1 |
 | `user_session` | Server-side session records so sessions can be invalidated (FR-AUTH-04) | G-16 | M1 |
@@ -380,7 +463,7 @@ corresponding open question is resolved and an ADR exists.**
 
 | Table | Column | Reason | Gap |
 |---|---|---|---|
-| `account` | `branch_id uuid NOT NULL FK` | Owning branch fixed at opening; RLS anchor (FR-ACC-01) | G-06 |
+| `account` | `branch_id uuid NOT NULL FK` | Owning branch fixed at opening; RLS anchor (FR-ACC-01; approved ADR-0008) | G-06 |
 | `transaction` | `agent_id uuid NULL FK` | RPT-01 is agent-wise (FR-DEP-02) | G-07 |
 | `transaction` | `branch_id uuid NULL FK` | Branch attribution at posting time | G-07 |
 | `transaction` | `idempotency_key varchar(80) NULL` | FR-DEP-04, AC-06 | G-04 |
@@ -393,7 +476,7 @@ corresponding open question is resolved and an ADR exists.**
 | `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |
-| `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` | G-08 |
+| `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` (approved ADR-0009) | G-08 |
 | `audit_log` | `user_id` made NULL-able, `actor_type varchar(20)` | System-posted interest runs have no user | G-22 |
 
 ## B.3 Constraint changes
@@ -403,27 +486,122 @@ corresponding open question is resolved and an ADR exists.**
 | `fixed_deposit`: replace `UNIQUE(account_id)` with partial unique index `WHERE status='ACTIVE'` | One *active* FD, not one ever | G-01 | **Blocking** |
 | `transaction.reference_number` → `UNIQUE NOT NULL` | BR-10, FR-DEP-02 | G-05 | **Blocking** |
 | `account.current_balance` → `NOT NULL DEFAULT 0 CHECK (>= 0)` | NFR-SAFE-01 | G-18 | No |
-| Partial unique index on `customer_agent(customer_id) WHERE is_active` | FR-CUS-02 | G-10 | No |
+| Partial unique index on `customer_agent(customer_id) WHERE is_active` — implemented 0221; at most one active | FR-CUS-02 | G-10 | No |
 | `interest_payout`: `UNIQUE(fd_id, cycle_date)` | FR-INT-03, NFR-SAFE-03 | G-03 | Yes |
 | Apply `money_amount` / `positive_money` / `interest_rate` domains throughout | SRS §6.1 | G-19 | No |
 
-## B.4 Identity change (blocking)
+## B.4 Identity change (approved)
 
 `customer.customer_id` becomes an independent surrogate PK with an optional
-`user_id uuid NULL UNIQUE FK → app_user`, instead of `PK,FK`. Depends on TBD-02 / **OQ-05**
-(is customer self-service login required?). `agent` keeps the subtype pattern.
+`app_user_id uuid NULL UNIQUE FK → app_user`, instead of `PK,FK`. **Approved by ADR-0007**
+on 2026-09-29: customer login is optional and most customers are agent-managed. `agent`
+keeps the subtype pattern.
+
+### Approved customer schema — P02-M02-T01
+
+The approved task card specifies this physical shape, replacing only Part A's
+customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `customer_id` | uuid | PK, defaults to gen_random_uuid(); independent of login |
+| `app_user_id` | uuid | NULL, UNIQUE, FK to app_user(user_id), ON DELETE RESTRICT |
+| `branch_id` | uuid | NOT NULL, FK to branch, ON DELETE RESTRICT |
+| `customer_number` | varchar(30) | NOT NULL, UNIQUE; T04 assigns CUS- plus 24 uppercase random hex digits (ADR-0014) |
+| `nic_passport_no` | varchar(50) | NOT NULL, UNIQUE |
+| `full_name` | varchar(150) | NOT NULL |
+| `date_of_birth` | date | NOT NULL, CHECK before CURRENT_DATE |
+| `gender` | varchar(20) | NULL |
+| `phone` | varchar(20) | NULL |
+| `address` | varchar(255) | NULL |
+| `email` | varchar(150) | NOT NULL, UNIQUE |
+| `status` | varchar(20) | NOT NULL, default ACTIVE; CHECK ACTIVE/INACTIVE |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); shared set_updated_at trigger |
+
+Indexes: `ix_customer_branch` B-tree on branch_id and `ix_customer_full_name_trgm`
+GIN on full_name using gin_trgm_ops. Named constraints provide deterministic error
+mapping. SQL uniqueness is exact/case-sensitive; T04 registration normalizes identity
+to uppercase and email to lowercase, and read services mask identity for branch staff.
+Existing mixed-case rows are not rewritten by this task. Assignment/document FKs are
+implemented in 0221/0222; T04 inserts a minimal customer creation audit in its transaction.
+Holder FKs, generic audit triggers, RLS and runtime grants remain separately assigned.
+T04 adds no database objects or migration; see the registration handoff.
+
+Verified 2026-10-05: 27 customer constraints/search/rollback tests and 38 organization
+regressions pass. All 12 migrations rebuild from empty and local 0220 applies without
+reset. Complete contract: `.agent/handoffs/p02-m02-t01-customer-schema.md`.
+
+### B.4a Implemented customer relations — P02-M02-T02/T03
+
+`0221_p02_m02_customer_agent.sql`:
+
+| Column | Type | Constraints |
+|---|---|---|
+| `cust_agent_id` | uuid | PK, default gen_random_uuid() |
+| `customer_id` | uuid | NOT NULL, FK customer(customer_id), ON DELETE RESTRICT |
+| `agent_id` | uuid | NOT NULL, FK agent(agent_id), ON DELETE RESTRICT |
+| `assigned_date` | date | NOT NULL, default CURRENT_DATE |
+| `end_date` | date | NULL; CHECK NULL or >= assigned_date |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); set_updated_at trigger |
+
+`ux_customer_agent_one_active` is UNIQUE on customer_id WHERE is_active. It rejects
+competing active INSERT/UPDATEs, including concurrent transactions. It does not require
+an assignment to exist. Implemented T04 registration guarantees one at successful
+commit; future reassignment must preserve existence and keep closed rows. Direct
+owner SQL can still create an unassigned customer. B-tree indexes ix_customer_agent_customer/ix_customer_agent_agent
+serve full history, assigned-customer lists and FK checks.
+
+`0222_p02_m02_customer_document.sql`:
+
+| Column | Type | Constraints |
+|---|---|---|
+| `doc_id` | uuid | PK, default gen_random_uuid() |
+| `customer_id` | uuid | NOT NULL, FK customer(customer_id), ON DELETE RESTRICT |
+| `doc_type` | varchar(50) | NOT NULL |
+| `file_path` | varchar(500) | NOT NULL; metadata path only |
+| `uploaded_date` | timestamptz | NOT NULL, default now() |
+| `verified_by` | uuid | NULL, FK app_user(user_id), ON DELETE RESTRICT |
+| `verified_date` | timestamptz | NULL; paired with verified_by by CHECK |
+| `created_at` | timestamptz | NOT NULL, default now() |
+| `updated_at` | timestamptz | NOT NULL, default now(); set_updated_at trigger |
+
+`ck_customer_document_verification` requires both verification fields set or both
+NULL. ix_customer_document_customer supports profile/document-eligibility lookup.
+The database stores no binary content. M3 must enforce documentation eligibility at
+account opening. These tables add AGENTS.md-required timestamps beyond the abbreviated
+ERD; see docs/17 and the reconciliation note in .agent/open-questions.md.
+
+Server-only verifyDocument uses authenticated staff identity, branch/assignment predicates,
+row locks and a same-transaction minimal audit event. The original 0221/0222 migrations
+add no grants; verification is not exposed by T05 and still needs its runtime lock/grant integration.
+Verified 2026-10-05: 134 selected tests pass, all 14 migrations rebuild/reapply/verify,
+typecheck/lint pass. See the [relation handoff](../.agent/handoffs/p02-m02-t02-t03-customer-agent-document.md).
+
+**T05 runtime access — 0223_p02_m02_customer_child_access.sql (new, M2 block):**
+enables RLS and grants mims_app SELECT/INSERT on customer_agent/customer_document.
+SELECT requires a parent customer visible under M1's branch/bank-wide/optional-login
+scope helpers. INSERT requires branch staff and an in-branch parent; AGENT assignments
+must name the current user, and document verification fields must both be null.
+No child UPDATE/DELETE or role UPDATE is granted. Services impose stricter current
+assignment predicates on agent reads. M1's merged 0200/0201/0261 supply parent
+policies, helper functions and sanitized customer audit; T05 reuses these without
+changing merged migrations. See ADR-0015 and the M1 coordination handoff.
 
 ## B.5 Denormalisation register
 
-SRS §6.1 requires intentional denormalisation to be documented. Three entries:
+SRS §6.1 requires intentional denormalisation to be documented. Four entries:
 
 | # | Denormalised value | Derivable from | Why it is kept | Control |
 |---|---|---|---|---|
 | D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view asserts equality with the ledger |
 | D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view compares against the window-function result |
 | D-3 | `fixed_deposit.interest_rate_at_opening` | `fd_plan.interest_rate` | Rates are effective-dated (BR-19); reading through the plan would retroactively change historical payouts | `NOT NULL`; set once at opening; never updated |
+| D-4 | `account.branch_id` | Opening agent's branch at account creation | Branch ownership must not drift when an agent transfers; it is the RLS and historical-report anchor | `NOT NULL FK`; assigned from trusted branch scope at opening; never changed |
 
-All three remain **3NF-compliant by design intent**: the ledger stays authoritative and
+All four remain **3NF-compliant by design intent**: the ledger stays authoritative and
 each denormalised value is reconciled against its source in Phase 5.
 
 ## B.6 Normalisation position
@@ -431,6 +609,6 @@ each denormalised value is reconciled against its source in Phase 5.
 | Form | How the design satisfies it |
 |---|---|
 | **1NF** | All attributes atomic. Repeating holders, documents, transactions and payouts live in child tables — no arrays, no comma-separated fields. |
-| **2NF** | `account_holder` and `customer_agent` are intersection tables with surrogate PKs plus a composite `UNIQUE`; their non-key attributes (`joined_date`, `assigned_date`) depend on the whole key. |
+| **2NF** | Intersection rows have surrogate PKs. `account_holder` has composite uniqueness; `customer_agent` uses partial customer uniqueness for current assignments and permits repeated historical assignments. Each row's attributes depend on its key. |
 | **3NF** | Plan rates, minimum balances, branch details and FD product terms are stored once and referenced by FK. No transitive dependency — e.g. `account` stores `plan_id`, never a copy of `interest_rate`. |
 | **Documented exceptions** | D-1, D-2, D-3 above. Each is a controlled, reconciled denormalisation, not an oversight. |

@@ -1,7 +1,10 @@
 # 🔵 Phase 1 — Task 02: FD Product API & Admin Page
 **Task ID:** `P01-M05-T02` · **Branch:** `feat/p01-m05-fd-product-api`  
 **Status:** READY · **Depends on:** P01-M05-T01, **I-1** (M1's RBAC helpers)  
-**Story Points:** ~3 · **Layer:** Backend + Frontend
+**Story Points:** ~3 · **Layer:** Backend only
+
+> ⚡ **UI COMPLETE** — The FD product admin view is pre-built in `app/dashboard/**`.
+> Your job is to implement the **API routes and service layer** only. Do not rebuild any UI component.
 
 ---
 

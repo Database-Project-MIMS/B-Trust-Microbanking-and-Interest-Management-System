@@ -1,0 +1,602 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>B-Trust | Private Wealth &amp; Stewardship</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.6deg);
+  }
+}
+.animate-card-float {
+  animation: cardFloat 5.8s ease-in-out infinite;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.perspective-1200 {
+  perspective: 1200px;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-high": "#e6e8ef", "error": "#ba1a1a", "on-primary": "#ffffff", "primary-container": "#2e5c50", "on-primary-fixed-variant": "#204f43", "background": "#f9f9ff", "surface-tint": "#39675a", "on-tertiary": "#ffffff", "on-surface-variant": "#404945", "surface-container-lowest": "#ffffff", "surface": "#f9f9ff", "on-error-container": "#93000a", "on-secondary-container": "#75240e", "tertiary-fixed": "#d9e7d0", "tertiary-fixed-dim": "#bdcbb5", "secondary-container": "#fe8b6d", "on-tertiary-fixed-variant": "#3e4a39", "inverse-primary": "#a0d0c1", "on-secondary-fixed-variant": "#7e2b14", "tertiary-container": "#4b5746", "on-primary-container": "#a2d2c3", "inverse-surface": "#2e3036", "on-error": "#ffffff", "secondary": "#9e4229", "error-container": "#ffdad6", "secondary-fixed": "#ffdbd2", "on-primary-fixed": "#002019", "inverse-on-surface": "#eff0f8", "on-secondary-fixed": "#3c0800", "primary-fixed-dim": "#a0d0c1", "surface-container": "#ecedf5", "on-surface": "#191c21", "on-secondary": "#ffffff", "surface-container-highest": "#e1e2e9", "surface-dim": "#d8dae1", "on-tertiary-fixed": "#131e10", "on-background": "#191c21", "outline-variant": "#c0c8c4", "outline": "#707975", "primary-fixed": "#bceddd", "tertiary": "#344030", "surface-container-low": "#f2f3fb", "on-tertiary-container": "#beccb6", "secondary-fixed-dim": "#ffb4a1", "primary": "#144439", "surface-bright": "#f9f9ff", "surface-variant": "#e1e2e9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-md": "1.25rem", "space-sm": "0.75rem", "space-lg": "2.25rem", "margin-tablet": "2.5rem", "gutter": "1.5rem", "space-xl": "4rem", "margin-desktop": "5rem", "margin": "1.25rem", "gutter-desktop": "2.5rem", "space-xs": "0.375rem" }, "fontFamily": { "headline-md": [ "Newsreader" ], "display-xl": [ "Newsreader" ], "body-lg": [ "Manrope" ], "body-sm": [ "Manrope" ], "headline-lg-mobile": [ "Newsreader" ], "body-md": [ "Manrope" ], "headline-lg": [ "Newsreader" ], "label-caps": [ "Space Mono" ], "headline-sm": [ "Manrope" ], "display-xl-mobile": [ "Newsreader" ], "label-numeric": [ "Space Mono" ] }, "fontSize": { "headline-md": [ "2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "display-xl": [ "5.5rem", { "lineHeight": "5.75rem", "letterSpacing": "-0.03em", "fontWeight": "400" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.875rem", "letterSpacing": "0em", "fontWeight": "400" } ], "body-sm": [ "0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "headline-lg-mobile": [ "2rem", { "lineHeight": "2.375rem", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "body-md": [ "0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "label-caps": [ "0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0.08em", "fontWeight": "700" } ], "headline-sm": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "display-xl-mobile": [ "3rem", { "lineHeight": "3.25rem", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "label-numeric": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.02em", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl border-b border-surface-container/60 shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-20 max-w-[1360px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-sm shrink-0"><img src="https://lh3.googleusercontent.com/aida/AEtjO1VcV6ff6-Ynvpdf3XnS9vvj9fDEVtwHhqKnrialee9SkmO6OWI50QMokSd6vVO-n7MW--EET_DIRTsDTZp9vOSlYHbvsNYhABI-yNkOAJzkkj8a-TaUdnPL_llpdH9nYsYvHqF0SeaWdaDJmOyKcQ7hJbvR7pOrrgs7ZhzEWAa9GXk9EIgVXvq-OONBRz4bDqTvpZbLe7gX2mLIYIMtOhoUWe19dUhLsdGirQBqoX4pb5R933qyWcTADQ" alt="B-Trust Logo" class="h-9 w-auto object-contain"><div class="hidden xl:flex items-center gap-space-xs pl-space-sm border-l border-surface-container"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Operational • Central Bank Monitored</span></div></div><nav class="hidden lg:flex items-center gap-1 p-1 bg-surface-container-low rounded-full" data-active-classes="bg-primary text-on-primary font-medium shadow-sm"><a aria-current="page" class="px-3.5 py-1.5 rounded-full transition-all bg-primary text-on-primary font-medium text-body-sm shadow-sm" data-path="overview" href="#">Overview</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="liquidity" href="#">Liquidity</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="yield-vaults" href="#">Yield Vaults</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="payments" href="#">Payments</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="fx-desks" href="#">FX Desks</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="cards" href="#">Cards</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="insights" href="#">Insights</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="compliance" href="#">Compliance</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="concierge" href="#">Concierge</a><a class="px-3 py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" data-path="security" href="#">Security</a></nav><div class="flex items-center gap-space-sm shrink-0"><div class="flex items-center bg-surface-container-low p-0.5 rounded-full text-label-caps font-label-caps text-on-surface-variant border border-surface-container"><span class="px-2.5 py-1 rounded-full bg-surface text-primary shadow-sm font-semibold">LKR</span><span class="px-2.5 py-1 rounded-full hover:text-on-surface transition-colors cursor-pointer">USD</span><span class="px-2.5 py-1 rounded-full hover:text-on-surface transition-colors cursor-pointer">EUR</span></div><button class="w-9 h-9 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container flex items-center justify-center shrink-0 transition-colors shadow-sm cursor-pointer" aria-label="User Account"><span class="material-symbols-outlined text-primary text-[20px]">person</span></button></div></div></header><main class="w-full pt-20 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<section class="relative w-full overflow-hidden">
+<div class="absolute -top-32 right-1/4 w-96 h-96 rounded-full bg-primary-fixed/20 blur-3xl pointer-events-none"></div>
+<div class="absolute top-48 left-12 w-80 h-80 rounded-full bg-secondary-fixed/25 blur-3xl pointer-events-none"></div>
+<div class="max-w-[1360px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop pt-space-md pb-space-lg flex flex-col gap-space-xl">
+<!-- Top Utility & Sanctuary Meta -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Stewardship Ledger</span>
+<span class="text-outline-variant font-label-caps text-label-caps">/</span>
+<span class="font-label-caps text-label-caps uppercase text-primary font-semibold">Horizon Audit 2025.Q2</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low text-on-surface font-label-numeric text-body-sm shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            Sync: Colombo Central Feed (0.42s)
+          </span>
+</div>
+</div>
+<!-- Hero Typographic Monolith -->
+<div class="flex flex-col items-center text-center relative z-10 max-w-4xl mx-auto">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-[0.2em] mb-space-xs">Consolidated Horizon</span>
+<div class="flex flex-col items-center gap-space-xs my-space-xs">
+<div class="flex items-baseline justify-center gap-space-xs flex-wrap">
+<span class="font-label-numeric text-body-lg text-on-surface-variant">LKR</span>
+<h1 class="font-display-xl text-display-xl tracking-tight text-on-surface select-none" id="net-worth-display">
+              48,290,140
+            </h1>
+</div>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-tertiary-fixed text-tertiary font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="">+14.2% ANNUALIZED GAIN</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">vs. prev quarter</span>
+</div>
+</div>
+<!-- Prominent Bespoke Action Duo -->
+<div class="flex items-center justify-center gap-space-md mt-space-lg flex-wrap">
+<button class="px-7 py-3.5 rounded-xl bg-primary text-on-primary font-body-md text-body-md hover:bg-primary-container transition-all active:scale-[0.985] shadow-md flex items-center gap-2 group" id="open-transfer-modal">
+<span class="">Initiate Transfer</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+<button class="px-7 py-3.5 rounded-xl bg-surface-container text-on-surface font-body-md text-body-md hover:bg-surface-container-high transition-all active:scale-[0.985] flex items-center gap-2" id="open-yield-sim">
+<span class="material-symbols-outlined text-[18px] text-primary">auto_graph</span>
+<span class="">Simulate Yield</span>
+</button>
+</div>
+</div>
+<!-- Spatial Interactive Grid: Fluid Float Canvas & Spatial Allocation Artifacts -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
+<!-- Interactive Liquid Treasury Vessel -->
+<div class="lg:col-span-8 rounded-xl bg-surface-container-low p-space-md md:p-space-lg relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[380px] group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-fixed/20 via-surface-container-low/40 to-secondary-fixed/15 opacity-70 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+<!-- Liquid Organic Wave Vector (Parametric float simulation) -->
+<div class="absolute -right-16 -bottom-16 w-96 h-96 pointer-events-none opacity-40 group-hover:scale-105 transition-transform duration-700">
+<svg class="w-full h-full text-primary fill-current" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,90,-16.3,87.6,-0.8C85.2,14.6,77.7,29.2,68.9,42.2C60.1,55.1,49.9,66.4,37.3,73.5C24.7,80.7,9.7,83.6,-4.8,81.9C-19.4,80.1,-33.5,73.7,-46.8,65.3C-60,57,-72.5,46.7,-79.8,33.2C-87.1,19.6,-89.2,2.8,-86.3,-13.2C-83.4,-29.2,-75.4,-44.4,-63.9,-54.6C-52.4,-64.7,-37.4,-69.8,-23.1,-75.4C-8.8,-80.9,4.7,-86.9,20.6,-85.4C36.4,-83.9,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)"></path>
+</svg>
+</div>
+<!-- Top Meta Row inside Card -->
+<div class="relative z-10 flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider">Treasury Float Equilibrium</span>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container font-label-numeric text-label-numeric text-on-surface-variant">Realtime Algorithmic Rebalance</span>
+</div>
+<!-- Mid Fluid Metric & Visual Indicator -->
+<div class="relative z-10 my-space-lg max-w-lg">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Autonomous Liquidity Dispersion</span>
+<div class="font-headline-lg text-headline-lg text-on-surface mt-space-xs mb-space-sm">
+              99.82<span class="text-primary">%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Multi-tiered reserves positioned across central clearinghouses with instantaneous intra-day settlement bandwidth.
+            </p>
+</div>
+<!-- Bottom Metric Strips -->
+<div class="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-space-md pt-space-md">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Velocity Ratio</span>
+<span class="font-label-numeric text-headline-sm text-primary">1.48x</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Stress Buffer</span>
+<span class="font-label-numeric text-headline-sm text-on-surface">32.4 Days</span>
+</div>
+<div class="flex flex-col col-span-2 sm:col-span-1">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Sovereign Hedging</span>
+<span class="font-label-numeric text-headline-sm text-tertiary">Optimal</span>
+</div>
+</div>
+</div>
+<!-- Interactive Minimal Credit Card 3D Component (Dribbble Inspired: Tig Manukyan Minimal Credit Card) -->
+<div class="lg:col-span-4 rounded-xl bg-surface-container-low p-space-md flex flex-col justify-between relative overflow-hidden shadow-sm">
+<div class="flex items-center justify-between z-10 mb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface tracking-wider">Titanium Prime Card</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface text-primary font-label-caps text-label-caps border border-outline-variant/30">Sector VII</span>
+</div>
+<!-- 3D Perspective Stage -->
+<div class="perspective-1200 w-full py-2 flex items-center justify-center relative cursor-pointer group/card" id="card-hero-stage">
+<div class="animate-card-float w-full max-w-[340px] transition-transform duration-100 ease-out" id="card-tilt-wrap">
+<!-- Physical Minimalist Card Vessel -->
+<div class="relative w-full aspect-[1.586/1] rounded-2xl bg-gradient-to-br from-[#12231e] via-[#0b1814] to-[#040907] p-5 shadow-[0_20px_45px_-10px_rgba(10,30,24,0.35),0_0_0_1px_rgba(160,208,193,0.18)] flex flex-col justify-between overflow-hidden text-surface">
+<!-- Dynamic Holographic / Specular Sheen Tracker -->
+<div class="absolute inset-0 pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 rounded-2xl" id="card-shine" style="background: radial-gradient(circle at 50% 50%, rgba(188,237,221,0.22) 0%, rgba(254,139,109,0.08) 35%, transparent 70%);"></div>
+<!-- Matte brushed micro texture lines -->
+<div class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.06)_50%,transparent_75%)] bg-[length:6px_6px]"></div>
+<!-- Top Row: B-Trust Minimal Monogram & Contactless Wave Glyph -->
+<div class="relative z-10 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-gradient-to-br from-primary-fixed/30 to-primary-container/40 border border-primary-fixed/30 flex items-center justify-center">
+<span class="font-headline-sm text-[12px] font-bold text-primary-fixed tracking-tighter">B</span>
+</div>
+<span class="font-label-caps text-[10px] tracking-[0.22em] text-primary-fixed uppercase font-semibold">B-Trust</span>
+</div>
+<div class="flex items-center gap-1.5 opacity-80">
+<span class="material-symbols-outlined text-[17px] text-primary-fixed rotate-90">contactless</span>
+<span class="font-label-caps text-[8px] uppercase tracking-widest text-primary-fixed/70">World Elite</span>
+</div>
+</div>
+<!-- Middle Element: EMV Microchip with Sleek Gold Sheen -->
+<div class="relative z-10 flex items-center gap-3 my-auto">
+<div class="w-11 h-8 rounded-md bg-gradient-to-br from-[#d4af37] via-[#f7e7a9] to-[#997920] p-0.5 shadow-sm border border-[#fff2b2]/40 relative overflow-hidden">
+<div class="w-full h-full border border-[#856514]/30 rounded-[3px] grid grid-cols-2 grid-rows-2">
+<div class="border-r border-b border-[#856514]/40"></div>
+<div class="border-b border-[#856514]/40"></div>
+<div class="border-r border-[#856514]/40"></div>
+<div></div>
+</div>
+</div>
+<span class="font-label-numeric text-[13px] tracking-[0.25em] text-primary-fixed/80 select-none">•••• 8831</span>
+</div>
+<!-- Bottom Card Information: Foil Name & Expiry -->
+<div class="relative z-10 flex items-end justify-between pt-1">
+<div>
+<span class="block font-label-caps text-[7px] text-primary-fixed-dim/60 uppercase tracking-[0.2em] leading-none mb-1">Cardholder</span>
+<span class="font-headline-sm text-[12px] text-[#f2f3fb] tracking-wider uppercase font-medium">H. V. DE SILVA</span>
+</div>
+<div class="text-right">
+<span class="block font-label-caps text-[7px] text-primary-fixed-dim/60 uppercase tracking-[0.2em] leading-none mb-1">Valid Thru</span>
+<span class="font-label-numeric text-[11px] text-[#eff0f8] tracking-widest">09/29</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Contextual Footer & Spatial Trigger -->
+<div class="flex items-center justify-between z-10 pt-space-xs border-t border-surface-container/60 mt-2">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Biometric Attestation</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Dual-Key Active</span>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface text-primary hover:bg-primary hover:text-on-primary transition-all font-body-sm text-body-sm shadow-sm active:scale-95 group/btn" id="open-card-modal">
+<span class="material-symbols-outlined text-[16px] group-hover/btn:rotate-45 transition-transform">view_in_ar</span>
+<span class="font-medium">Spatial View</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ultra-simplified Summary Trio with Airy Whitespace -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Summary 01: Available Liquidity -->
+<div class="p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Unrestricted</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mb-1">Available Liquidity</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">LKR</span>
+<span class="font-headline-md text-headline-md text-on-surface">12.45M</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Instant Settle</span>
+<span class="font-label-numeric text-body-sm text-primary">T+0 Available</span>
+</div>
+</div>
+<!-- Summary 02: Compounding Yield -->
+<div class="p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-[20px]">chart_data</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider font-semibold">MTD Compounding</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mb-1">Yield Accrual</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">LKR</span>
+<span class="font-headline-md text-headline-md text-on-surface">612.4K</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Blended APY</span>
+<span class="font-label-numeric text-body-sm text-on-surface">11.85%</span>
+</div>
+</div>
+<!-- Summary 03: Fixed Reserves -->
+<div class="p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Maturity 2026</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mb-1">Fixed Sovereign Reserves</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">LKR</span>
+<span class="font-headline-md text-headline-md text-on-surface">35.84M</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Sovereign Treasury</span>
+<span class="font-label-numeric text-body-sm text-on-surface-variant">AA- Rated</span>
+</div>
+</div>
+</div>
+<!-- Recent Stewardship Activity Ledger Preview -->
+<div class="rounded-xl bg-surface-container-low p-space-md md:p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+<div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Attested Transactions</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1">Recent Capital Flow</h2>
+</div>
+<a class="inline-flex items-center gap-1 font-body-sm text-body-sm text-primary hover:underline self-start sm:self-auto" data-path="liquidity" href="#">
+<span class="">Explore Global Ledger</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- Minimal 3-Item List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Activity Item 1 -->
+<div class="flex items-center justify-between p-space-sm hover:bg-surface rounded-lg transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim/40 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">north_east</span>
+</div>
+<div class="min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium truncate">Ceylon sovereign bond tranche coupon</p>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">Today, 09:42</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase">Credited</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0 pl-space-sm">
+<span class="font-headline-md text-headline-sm text-primary block">+ LKR 248,000</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Settled</span>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex items-center justify-between p-space-sm hover:bg-surface rounded-lg transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed/40 flex items-center justify-center shrink-0 text-secondary">
+<span class="material-symbols-outlined text-[20px]">sync_alt</span>
+</div>
+<div class="min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium truncate">Automated Liquidity Sweeper to Prime EUR</p>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">Yesterday, 16:15</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps uppercase">FX Desks</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0 pl-space-sm">
+<span class="font-headline-md text-headline-sm text-on-surface block">- LKR 1,500,000</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">€ 4,280.12</span>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex items-center justify-between p-space-sm hover:bg-surface rounded-lg transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium truncate">Centurion Black Concierge • London Clearing</p>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-numeric text-body-sm text-on-surface-variant">May 21, 21:04</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps uppercase">Discreet</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0 pl-space-sm">
+<span class="font-headline-md text-headline-sm text-on-surface block">- LKR 84,200</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Authorized</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Modal / Slide-out Simulator Container (Zero-dependency Vanilla JS) -->
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-inverse-surface/30 backdrop-blur-md p-margin" id="sim-dialog">
+<div class="bg-surface rounded-xl max-w-lg w-full p-space-lg shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+<div class="flex items-center justify-between pb-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Yield Simulator</span>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface" id="close-sim-dialog">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">
+        Project horizon compound earnings across multi-asset custody envelopes.
+      </p>
+<div class="mt-space-md flex flex-col gap-space-sm">
+<label class="font-label-caps text-label-caps uppercase text-on-surface-variant">Principal Capital (LKR)</label>
+<div class="bg-surface-container-low rounded-xl px-4 py-3 flex items-center justify-between">
+<span class="font-label-numeric text-body-md text-on-surface-variant">LKR</span>
+<input class="bg-transparent text-right font-headline-md text-headline-sm text-on-surface focus:outline-none w-full ml-2" id="sim-input" step="500000" type="number" value="10000000">
+</div>
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant font-label-numeric pt-2">
+<span class="">Projected 12M Return (+12.4%):</span>
+<span class="text-primary font-bold" id="sim-result">LKR 1,240,000</span>
+</div>
+</div>
+<div class="mt-space-lg flex justify-end gap-space-sm">
+<button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm hover:bg-primary-container transition-colors" id="confirm-sim">
+          Commit Allocation Scenario
+        </button>
+</div>
+</div>
+</div>
+<!-- Modal: Spatial 3D Card Inspection & Telemetry (Tig Manukyan Inspired Experience) -->
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-inverse-surface/60 backdrop-blur-xl p-4 sm:p-margin" id="card-modal">
+<div class="bg-surface border border-outline-variant/30 rounded-2xl max-w-xl w-full p-6 sm:p-space-lg shadow-2xl relative flex flex-col gap-5 overflow-hidden">
+<!-- Modal Header -->
+<div class="flex items-center justify-between pb-2 border-b border-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Spatial Card Vault</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-label-caps text-[10px]">Active • Hardware Paired</span>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface transition-colors" id="close-card-modal">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Spatial 3D Interactive Stage in Modal -->
+<div class="perspective-1200 w-full py-4 flex flex-col items-center justify-center select-none" id="modal-card-stage">
+<div class="w-full max-w-[380px] aspect-[1.586/1] relative cursor-pointer preserve-3d transition-transform duration-700 ease-out" id="modal-card-flipper">
+<!-- Front of Card -->
+<div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#142823] via-[#091813] to-[#040807] p-6 shadow-2xl border border-primary-fixed/20 flex flex-col justify-between backface-hidden overflow-hidden">
+<div class="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#a0d0c1_1px,transparent_1px)] [background-size:16px_16px]"></div>
+<div class="relative z-10 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-md bg-primary-fixed/20 border border-primary-fixed/40 flex items-center justify-center">
+<span class="font-headline-sm text-[13px] font-bold text-primary-fixed">B</span>
+</div>
+<div>
+<span class="font-label-caps text-[11px] tracking-[0.24em] text-primary-fixed uppercase font-semibold block">B-Trust</span>
+<span class="font-label-caps text-[8px] tracking-wider text-on-primary-container">Spatial Titanium</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-primary-fixed rotate-90 opacity-90">contactless</span>
+</div>
+<div class="relative z-10 flex items-center justify-between">
+<div class="w-12 h-9 rounded-md bg-gradient-to-br from-[#d4af37] via-[#f7e7a9] to-[#997920] p-0.5 shadow border border-[#fff2b2]/50">
+<div class="w-full h-full border border-[#856514]/30 rounded-[3px] grid grid-cols-2 grid-rows-2">
+<div class="border-r border-b border-[#856514]/40"></div>
+<div class="border-b border-[#856514]/40"></div>
+<div class="border-r border-[#856514]/40"></div>
+<div></div>
+</div>
+</div>
+<span class="font-label-numeric text-[16px] tracking-[0.28em] text-[#eff0f8] font-medium" id="card-number-label">4829 •••• •••• 8831</span>
+</div>
+<div class="relative z-10 flex items-end justify-between">
+<div>
+<span class="block font-label-caps text-[8px] text-primary-fixed-dim/70 uppercase tracking-[0.2em] mb-1">Steward Name</span>
+<span class="font-headline-sm text-[13px] text-[#f2f3fb] tracking-wider uppercase font-medium">H. V. DE SILVA</span>
+</div>
+<div class="text-right">
+<span class="block font-label-caps text-[8px] text-primary-fixed-dim/70 uppercase tracking-[0.2em] mb-1">Expires</span>
+<span class="font-label-numeric text-[12px] text-[#eff0f8]">09/29</span>
+</div>
+</div>
+</div>
+<!-- Back of Card -->
+<div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#0c1915] via-[#050b09] to-[#020504] py-6 shadow-2xl border border-primary-fixed/20 flex flex-col justify-between backface-hidden [transform:rotateY(180deg)] overflow-hidden">
+<div class="w-full h-10 bg-black/80 my-1"></div>
+<div class="px-6 flex items-center justify-between">
+<div class="bg-surface-container-high/90 h-8 px-4 rounded flex items-center justify-end w-3/4">
+<span class="font-label-numeric text-[12px] text-on-surface italic font-bold tracking-widest" id="cvv-display">CVV • 714</span>
+</div>
+<span class="font-label-caps text-[10px] text-primary-fixed/70 uppercase tracking-widest">Mastercard</span>
+</div>
+<div class="px-6 text-[9px] text-outline-variant font-label-numeric leading-tight">
+            Encrypted private key signature enclave ID: BT-LK-8831-SEC. Authorized signature only. Subject to B-Trust custodian charter.
+          </div>
+</div>
+</div>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-3 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">touch_app</span>
+        Click card or use button below to flip and inspect hardware security
+      </p>
+</div>
+<!-- Quick Telemetry & Controls Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-surface-container">
+<button class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col items-center text-center gap-1" id="flip-btn">
+<span class="material-symbols-outlined text-primary text-[20px]">flip</span>
+<span class="font-body-sm text-[11px] font-medium text-on-surface">Flip Card</span>
+</button>
+<button class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col items-center text-center gap-1 group" id="toggle-freeze-btn">
+<span class="material-symbols-outlined text-primary text-[20px]" id="freeze-icon">lock_open</span>
+<span class="font-body-sm text-[11px] font-medium text-on-surface" id="freeze-text">Freeze Card</span>
+</button>
+<button class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col items-center text-center gap-1" id="toggle-virtual-btn">
+<span class="material-symbols-outlined text-primary text-[20px]">vpn_key</span>
+<span class="font-body-sm text-[11px] font-medium text-on-surface">Reveal Details</span>
+</button>
+<div class="p-2.5 rounded-xl bg-surface-container-low flex flex-col items-center text-center gap-0.5">
+<span class="font-label-caps text-[9px] uppercase text-on-surface-variant">Daily Limit</span>
+<span class="font-label-numeric text-[12px] font-semibold text-primary">LKR 5.0M</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+    (function() {
+      // Interactive Simulator Toggle
+      const simModal = document.getElementById('sim-dialog');
+      const openSim = document.getElementById('open-yield-sim');
+      const closeSim = document.getElementById('close-sim-dialog');
+      const confirmSim = document.getElementById('confirm-sim');
+      const simInput = document.getElementById('sim-input');
+      const simResult = document.getElementById('sim-result');
+
+      function updateProjection() {
+        const val = parseFloat(simInput.value) || 0;
+        const yieldVal = Math.round(val * 0.124);
+        simResult.textContent = 'LKR ' + yieldVal.toLocaleString();
+      }
+
+      if (openSim && simModal) {
+        openSim.addEventListener('click', function() {
+          simModal.classList.remove('hidden');
+          simModal.classList.add('flex');
+        });
+      }
+
+      if (closeSim && simModal) {
+        closeSim.addEventListener('click', function() {
+          simModal.classList.add('hidden');
+          simModal.classList.remove('flex');
+        });
+      }
+
+      if (confirmSim && simModal) {
+        confirmSim.addEventListener('click', function() {
+          simModal.classList.add('hidden');
+          simModal.classList.remove('flex');
+        });
+      }
+
+      if (simInput) {
+        simInput.addEventListener('input', updateProjection);
+      }
+
+      // Quick Transfer Action Demo feedback
+      const transferBtn = document.getElementById('open-transfer-modal');
+      if (transferBtn) {
+        transferBtn.addEventListener('click', function() {
+          const originalText = transferBtn.innerHTML;
+          transferBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Allocating Bandwidth...</span>';
+          setTimeout(function() {
+            transferBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span><span>Bandwidth Ready</span>';
+            setTimeout(function() {
+              transferBtn.innerHTML = originalText;
+            }, 1800);
+          }, 800);
+        });
+      }
+
+      // Interactive 3D Card Tilt & Holographic Physics (Tig Manukyan reference)
+      const stage = document.getElementById('card-hero-stage');
+      const tiltWrap = document.getElementById('card-tilt-wrap');
+      const shine = document.getElementById('card-shine');
+
+      if (stage && tiltWrap) {
+        stage.addEventListener('mousemove', function(e) {
+          const rect = stage.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          
+          const rotateX = ((y - centerY) / centerY) * -14;
+          const rotateY = ((x - centerX) / centerX) * 16;
+
+          tiltWrap.classList.remove('animate-card-float');
+          tiltWrap.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03, 1.03, 1.03)`;
+
+          if (shine) {
+            const percentX = (x / rect.width) * 100;
+            const percentY = (y / rect.height) * 100;
+            shine.style.background = `radial-gradient(circle at ${percentX}% ${percentY}%, rgba(188,237,221,0.3) 0%, rgba(254,139,109,0.12) 30%, transparent 65%)`;
+          }
+        });
+
+        stage.addEventListener('mouseleave', function() {
+          tiltWrap.style.transform = '';
+          tiltWrap.classList.add('animate-card-float');
+        });
+      }
+
+      // Card Modal & Flip Interactions
+      const cardModal = document.getElementById('card-modal');
+      const openCardModal = document.getElementById('open-card-modal');
+      const closeCardModal = document.getElementById('close-card-modal');
+      const cardHeroStage = document.getElementById('card-hero-stage');
+      const flipper = document.getElementById('modal-card-flipper');
+      const flipBtn = document.getElementById('flip-btn');
+      const freezeBtn = document.getElementById('toggle-freeze-btn');
+      const freezeIcon = document.getElementById('freeze-icon');
+      const freezeText = document.getElementById('freeze-text');
+      const virtualBtn = document.getElementById('toggle-virtual-btn');
+      const cardNumberLabel = document.getElementById('card-number-label');
+      let isFlipped = false;
+      let isFrozen = false;
+      let isRevealed = false;
+
+      function openModal() {
+        if (cardModal) {
+          cardModal.classList.remove('hidden');
+          cardModal.classList.add('flex');
+        }
+      }
+
+      function closeModal() {
+        if (cardModal) {
+          cardModal.classList.add('hidden');
+          cardModal.classList.remove('flex');
+        }
+      }
+
+      function toggleFlip() {
+        if (!flipper) return;
+        isFlipped = !isFlipped;
+        flipper.style.transform = isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      }
+
+      if (openCardModal) openCardModal.addEventListener('click', openModal);
+      if (cardHeroStage) cardHeroStage.addEventListener('click', openModal);
+      if (closeCardModal) closeCardModal.addEventListener('click', closeModal);
+      if (flipper) flipper.addEventListener('click', toggleFlip);
+      if (flipBtn) flipBtn.addEventListener('click', toggleFlip);
+
+      // Freeze Toggle
+      if (freezeBtn) {
+        freezeBtn.addEventListener('click', function() {
+          isFrozen = !isFrozen;
+          freezeIcon.textContent = isFrozen ? 'lock' : 'lock_open';
+          freezeText.textContent = isFrozen ? 'Card Frozen' : 'Freeze Card';
+          freezeBtn.classList.toggle('text-secondary', isFrozen);
+        });
+      }
+
+      // Reveal Numbers
+      if (virtualBtn && cardNumberLabel) {
+        virtualBtn.addEventListener('click', function() {
+          isRevealed = !isRevealed;
+          cardNumberLabel.textContent = isRevealed ? '4829 9012 4478 8831' : '4829 •••• •••• 8831';
+          virtualBtn.querySelector('span:last-child').textContent = isRevealed ? 'Hide Details' : 'Reveal Details';
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-low mt-space-xl"><div class="max-w-[1360px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-lg flex flex-col md:flex-row items-center justify-between gap-gutter"><div class="flex flex-col items-center md:items-start gap-space-xs"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">B-Trust Financial Stewardship S.A.</span><span class="font-body-sm text-body-sm text-on-surface-variant">Regulated Private Custodian Institution • Member FDIC • CSSF Basel III Compliant</span></div><div class="flex items-center gap-space-md font-label-caps text-label-caps uppercase text-on-surface-variant"><a class="hover:text-on-surface transition-colors" data-path="compliance" href="#">Audits &amp; Solvency</a><a class="hover:text-on-surface transition-colors" data-path="security" href="#">Custody Protocol</a><span class="text-outline-variant">•</span><span class="">© 2025 B-Trust Spatial</span></div></div></footer>
+
+</body></html>

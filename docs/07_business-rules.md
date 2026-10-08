@@ -22,12 +22,25 @@ database are what make the rule true.
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 | BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
+| BR-O6 | Branch and agent master-data changes are audited atomically without storing passwords or identity numbers | TRG | `trg_audit_branch`, `trg_audit_agent` and the linked `app_user` trigger write through the sanitized `fn_audit_master_changes()` function in the caller transaction |
 
 ## Products and eligibility
 
+**Customer schema enforcement (P02-M02-T01, 0220):** customer_number,
+nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
+app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
+ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
+ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
+atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
+Registration accepts metadata-only, initially unverified documents (zero to twenty);
+M3 enforces required verified documentation at account opening (`sp_open_savings_account`, `DOCUMENTS_NOT_VERIFIED`, migration 0243). The service uppercases
+identity and lowercases email before the database UNIQUE checks. Audit contains only
+customer reference, branch, assigned agent and document count, in the same transaction.
+See schema Part B.4 and ADR-0014 for the implemented definition.
+
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; partial unique index on `customer_agent(customer_id) WHERE is_active` (G-10) |
+| BR-01 | Every customer is registered at a branch and has one current assigned agent | CON, IDX, SRV | `customer.branch_id NOT NULL FK`; 0221 partial unique index allows at most one active assignment (G-10). Implemented T04 registration supplies existence atomically; future reassignment must retain history/existence. Direct owner inserts are not an existence guarantee. |
 | BR-02 | A customer may own one or more savings accounts; ownership may be individual or joint | CON | `account_holder` intersection table with `UNIQUE(account_id, customer_id)` |
 | BR-03 | Children — 12%, no minimum balance | CON | `savings_plan` seeded row: `interest_rate = 0.1200`, `min_balance = 0` |
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
@@ -43,14 +56,15 @@ divide-by-100 (see `04_database-schema.md` §B.6).
 
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
-| BR-08 | Deposits and withdrawals only through authorised users, during configured business hours | SRV, CON | Role check in `requireRole()`; hours read from `system_parameter` / `business_calendar`, re-checked inside `sp_post_deposit` / `sp_post_withdrawal` (G-15) |
+| BR-08 | Deposits and withdrawals only through authorised users, during configured business hours | SRV, CON | Role check in `requireRole()`; hours read from `system_parameter` / `business_calendar`, re-checked inside `sp_post_deposit` / `sp_post_withdrawal` (G-15); the initial deposit of `sp_open_savings_account` is checked with `fn_is_business_hour` (`OUTSIDE_BUSINESS_HOURS`) |
 | BR-09 | **Overdrafts are never allowed**; withdrawals must preserve the plan minimum | UI, SRV, SP, CON | `SELECT … FOR UPDATE` on the account row, then `fn_check_plan_minimum` inside the transaction; last line of defence is `CHECK (current_balance >= 0)` (G-18) |
 | BR-10 | Every transaction has a unique reference, timestamp, type, amount, account and responsible user | CON | `transaction.reference_number UNIQUE NOT NULL` (G-05); `NOT NULL` on type, amount, account, initiator; `amount` uses the `positive_money` domain |
 | BR-16 | Posted transactions are **never physically deleted**; corrections use linked reversing entries | TRG, CON | `trg_financial_transaction_immutable` rejects `UPDATE`/`DELETE`; the app role has no `DELETE` grant; `transaction_reversal.original_transaction_id UNIQUE` makes a transaction reversible exactly once (DB-CON-04, G-02) |
-| BR-17 | Joint-account withdrawals must satisfy the stored mandate | SRV, FN, TRG | `joint_mandate.mandate_type` (`ANY_ONE` / `ALL_HOLDERS`) validated inside the withdrawal transaction (G-08) |
+| BR-17 | Joint-account withdrawals must satisfy the stored mandate | SRV, FN, TRG | `joint_mandate.mandate_type` (`ANY_ONE` / `ALL_HOLDERS`) validated inside the withdrawal transaction (G-08). Stored and shape-checked by `0242`: `CHECK`s, `UNIQUE(account_id)`, `trg_joint_mandate_fit`; holder count/adult rule by `trg_validate_joint_mandate` |
 | BR-18 | Account closure requires zero balance and no active FD | SRV, SP, CON | Checked in the closure procedure against `current_balance = 0` and the absence of an `ACTIVE` FD |
 | BR-I1 | A repeated request with the same idempotency key must not create a second financial effect | CON, SRV | Partial unique index on `transaction(idempotency_key)`; the routine catches `23505` and returns the original row (G-04, FR-DEP-04) |
 | BR-I2 | Withdrawal limits: LKR 100,000 single, LKR 200,000 daily per account, unless a manager approves | SRV, SP | Values in `system_parameter`; daily total computed inside the locked transaction (SRS §7.1) |
+| BR-I3 | A repeated account-opening request (same `Idempotency-Key`) never opens a second account or credits a second initial deposit | CON, SRV | `account_opening_request` `UNIQUE (user_id, idempotency_key)` written in the opening transaction (migration 0244); per-key advisory lock; replay returns the original result (FR-DEP-04 pattern for accounts) |
 | BR-L1 | A rejected withdrawal creates **no ledger row** but is still recorded | SRV | Audit event only; no `transaction` insert (FR-WD-05) |
 
 ### Why `FOR UPDATE` and not just a `CHECK`
@@ -98,6 +112,26 @@ the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
 
+P02-M02-T05 customer routes authenticate live sessions, enforce route roles and SQL
+branch/assignment/self scope, validate strict fields and verify CSRF for registration.
+The service rechecks stored actor state before setting transaction-local RLS context.
+Migration 0223 extends parent scope to customer assignment/document SELECT/INSERT;
+it permits only unverified document inserts and self-agent assignment for AGENT.
+The customer trigger writes one sanitized audit in the registration transaction,
+including rollback when a later document/assignment insert fails (ADR-0015).
+NIC/email masking is performed in response shaping, before data reaches the browser.
+
+P02-M02-T03 implements document verification in services/customer-document-service.ts:
+active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,
+branch scope in SQL, current assignment required for AGENT. The caller supplies the
+authenticated session user ID. One withTransaction locks authorization/customer/document
+rows, sets verified_by/verified_date together and inserts a minimal audit event using
+the same client. Paths/content/identity are excluded from audit JSON. Same-verifier
+retry retains timestamp/audit count; another verifier receives 409
+DOCUMENT_ALREADY_VERIFIED. Invalid UUIDs fail with 400; denied scope/role with 403;
+missing document with 404. M1's grants/RLS and future controller authentication/CSRF
+remain separate work. 0222's CHECK also rejects half-verification from direct SQL.
+
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-S1 | Authorization is checked on the server for every request | SRV | `requireRole()` in every route handler; hiding a nav item is not access control (FR-AUTH-02) |
@@ -105,7 +139,7 @@ the whole run in one transaction would violate FR-INT-04.
 | BR-S3 | Customers see only accounts they hold | SRV, CON | Join through `account_holder`; enforced by RLS (FR-TXN-05) |
 | BR-S4 | Passwords are stored only as salted adaptive hashes | SRV | argon2id; no endpoint ever returns `password_hash` |
 | BR-S5 | All SQL input values are parameterized | SRV | `$1, $2, …` only; dynamic identifiers via `allowListed()` (NFR-SEC-02) |
-| BR-S6 | Security-sensitive and financial actions produce audit events | TRG, SRV | `trg_audit_master_changes` plus explicit audit writes inside financial transactions (FR-AUD-01) |
+| BR-S6 | Security-sensitive and financial actions produce audit events | TRG, SRV | Sanitized `fn_audit_master_changes()` triggers cover master data; explicit audit writes remain inside financial transactions (FR-AUD-01) |
 | BR-S7 | Records referenced by ledger entries are never physically deleted | CON | `ON DELETE RESTRICT` on every FK into financial history (FR-ORG-05, DB-CON-02) |
 | BR-20 | Only synthetic data is used | Process | Seed data only; enforced by review, not by code |
 
@@ -118,7 +152,7 @@ the whole run in one transaction would violate FR-INT-04.
 | Field formatting, input masks, required-field highlighting | UI | Usability only; every one is re-validated server-side |
 | Password complexity policy | SRV | Policy, not data integrity; changes without a migration |
 | Report pagination size | SRV | Presentation concern (REP-COM-05) |
-| Session inactivity timeout | SRV + `user_session.expires_at` | Computed by the app; the database stores the expiry so sessions can be invalidated server-side |
+| Session inactivity and absolute timeout | SRV + SQL + `user_session.expires_at` | Creation uses configured limits in SQL inside the caller transaction; validation refreshes inactivity without exceeding the absolute deadline, rejecting expired/revoked sessions. Browser cookie expires at the absolute limit |
 
 ---
 

@@ -11,18 +11,22 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 
 ## 🗺️ Work Order Summary
 
+**Reconciled 2026-10-07:** Phase 1 T01–T03 and Phase 2 T01/T02 are DONE in the tracker and merged dev. Row 04 is nearly complete: joint-mandate T03 (`0242`) is built and tested locally, in REVIEW pending the PR (`/review` done) (row is struck through once it is DONE); account opening (T04, `0243`) is DONE; the accounts and holders APIs (T05, `0244`/`0245`) are built and tested locally, in REVIEW pending `/review` and the PR; the UI (T06) remains pending.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout is merged into dev; the user retains all publication control.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| 01 | [Savings Plan Schema](01_P1-T01_savings-plan-schema.md) | P1 | T01 | `savings_plan` + eligibility columns (G-13) | ~3 |
-| 02 | [Plan Eligibility Function](02_P1-T02_plan-eligibility-function.md) | P1 | T02 | `fn_check_plan_eligibility` — data-driven, not hardcoded | ~3 |
-| 03 | [Plan API & Admin Page](03_P1-T03_plan-api-admin-page.md) | P1 | T03 | `GET/PATCH /api/plans`, `app/plans/page.tsx` | ~3 |
-| 04 | [Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md) | P2 | T01–T03 | `account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08) | ~10 |
-| 05 | [sp_open_savings_account](05_P2-T04_sp-open-savings-account.md) | P2 | T04 | Atomic account opening: account + holders + mandate + optional deposit | ~6 |
-| 06 | [Accounts API & Opening Wizard](06_P2-T05-T06_accounts-api-ui.md) | P2 | T05–T06 | `/api/accounts/**`, opening wizard, detail & holder pages | ~9 |
+| ~~01~~ | ~~[Savings Plan Schema](01_P1-T01_savings-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`savings_plan` + eligibility columns (G-13)~~ | ~~~3~~ |
+| ~~02~~ | ~~[Plan Eligibility Function](02_P1-T02_plan-eligibility-function.md)~~ | ~~P1~~ | ~~T02~~ | ~~`fn_check_plan_eligibility` — data-driven, not hardcoded~~ | ~~~3~~ |
+| ~~03~~ | ~~[Plan API](03_P1-T03_plan-api-admin-page.md)~~ | ~~P1~~ | ~~T03~~ | ~~`GET/PATCH /api/plans` + `app/plans/page.tsx` (built full-scope; the "UI COMPLETE, backend only" note this file's own PR #16 update added was checked and did not hold — no plan UI existed anywhere in `app/dashboard/**`)~~ | ~~~3~~ |
+| 04 | [Account, Holder & Mandate Schema](04_P2-T01-T03_account-holder-mandate-schema.md) | P2 | ~~T01–T02~~, T03 | `account` (G-06, G-18), `account_holder`, `joint_mandate` + `trg_validate_joint_mandate` (G-08) | ~10 |
+| ~~05~~ | ~~[sp_open_savings_account](05_P2-T04_sp-open-savings-account.md)~~ | ~~P2~~ | ~~T04~~ | ~~Atomic account opening: account + holders + mandate + optional deposit~~ | ~~~6~~ |
+| 06 | [Accounts API](06_P2-T05-T06_accounts-api-ui.md) | P2 | T05–T06 | `/api/accounts/**` | ~9 |
 | 07 | [fn_check_plan_minimum](07_P3-T01_fn-check-plan-minimum.md) | P3 | T01 | Post-withdrawal minimum-balance rule — **publishes I-4** | ~3 |
-| 08 | [Mandate Validation & Balance Panel](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | Joint-mandate check callable from withdrawal path; balance/authority UI panel | ~5 |
-| 09 | [FD Eligibility, Closure & FD Panel](09_P4_fd-eligibility-closure-panel.md) | P4 | T01–T03 | Account-side FD eligibility (**I-6**), closure rule (BR-18), FD panel on account page | ~7 |
-| 10 | [RPT-02 Account Summary Report](10_P5_rpt02-report.md) | P5 | T01–T02 | Account-wise summary view, API, page, CSV | ~7 |
+| 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | Joint-mandate check callable from withdrawal path; balance/authority endpoint | ~5 |
+| 09 | [FD Eligibility & Closure](09_P4_fd-eligibility-closure-panel.md) | P4 | T01–T03 | Account-side FD eligibility (**I-6**), closure rule (BR-18) | ~7 |
+| 10 | [RPT-02 Account Summary Report](10_P5_rpt02-report.md) | P5 | T01–T02 | Account-wise summary view, API, CSV | ~7 |
 | 11 | [Concurrency & Constraint Tests](11_P6_concurrency-constraint-tests.md) | P6 | T01–T02 | Parallel-withdrawal overspend tests (AC-06); full constraint suite | ~5 |
 
 ---
@@ -64,9 +68,8 @@ You are a **producer** for three integration points — M4 and M5 cannot safely 
 their pieces until you publish a handoff in `.agent/handoffs/` for each. Do this
 *before* marking the publishing task `DONE`, not after.
 
-Blocking gates: **G-06** (account `branch_id`) and **G-08** (joint mandate) must be
-approved before Phase 2 starts (see `docs/phases/phase-02-customers-and-accounts.md`
-entry criteria).
+Approved gates: **G-06** (account `branch_id`, ADR-0008) and **G-08** (joint mandate,
+ADR-0009) were accepted on 1 Oct 2026. Phase 2 entry was approved on 2026-10-05. Holder work still waits for the customer table.
 
 ---
 
@@ -115,8 +118,7 @@ entry criteria).
 **Phase 2 is your heaviest phase (25 pts — 6 tasks), and it gates M4, M5 and both of
 your later reports.** Suggested approach:
 
-1. ✅ Confirm **G-06** and **G-08** are approved before writing anything — check
-   `.agent/open-questions.md`
+1. ✅ **G-06** and **G-08** are approved by ADR-0008 and ADR-0009
 2. ✅ Do T01 (`account` schema) first — needs M2's `branch` (T01 of their slice) and
    your own `savings_plan` from Phase 1
 3. ✅ Do T02 (`account_holder`) — needs M2's `customer` table (Phase 2, gated on OQ-05)

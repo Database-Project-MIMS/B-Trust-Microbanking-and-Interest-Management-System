@@ -1,63 +1,31 @@
-# Memory — MIMS
+# Memory — P02-M02-T05 customer API and screens
 
-> Maintained by the `/remember` skill. This is **current state**, not a log.
-> Overwrite stale content. Do not append endlessly.
-> `/remember save` at the end of a session · `/remember restore` at the start of the next.
+**Updated:** 2026-10-07 · /remember save (non-sensitive continuation state)
+**Branch:** feat/p02-m02-customer-api-ui · base dev 25fc264
 
-**Last updated:** Phase 0 initialization
-**Current phase:** Phase 0 — complete, awaiting approval to begin Phase 1
+## Completed
 
----
+Customer registration/search/profile routes and live screens; M2 migration 0223 child
+SELECT/INSERT RLS; shared RLS context and one sanitized customer-trigger audit.
+M3 holder relation is merged and used directly. M2 T01–T05 technically DONE locally.
+365 tests in 35 suites, no failures/skips; clean isolated 19-migration rebuild,
+TypeScript/lint/build; synthetic browser workflow and duplicate/mobile checks pass.
+Handoff/review: .agent/handoffs/p02-m02-t05-customer-api-ui.md. ADR-0015 records integration.
+UI patterns saved to ui-registry.md.
 
-## What was built
+## Decisions and remaining work
 
-Phase 0 only — planning, documentation and shared foundation. **No business features
-have been implemented.**
+Retain existing AGENT/BRANCH_MANAGER mutation roles and server-side identity masking.
+No upload/verification route, login provisioning or reassignment in T05.
+M1 retains security review of 0223 and its broader route task. Pre-existing internal
+verifier role lock/scoped UPDATE gap must be resolved before exposure.
+P2: 10 DONE / 1 READY / 5 TODO; account opening/mandate/APIs/UI/full seeds incomplete.
+Phase 2 entry approved 2026-10-05; no Phase 2 exit or Phase 3 entry approval.
 
-- Repository scaffolded: Next.js App Router + TypeScript structure, no business code
-- Agent skills installed from `JavaScript-Mastery-Pro/jsm-agent-skill` (MIT) into `.claude/skills/`
-- `AGENTS.md` development contract, thin `CLAUDE.md`, `ui-registry.md`, this file
-- `.agent/` project-state directory with per-member context and ownership map
-- `docs/` — 18 numbered documents, 7 phase documents, 5 member prompts
-- ERD gap analysis completed against the brief and SRS — 20 findings recorded
-- Shared database foundation: migration `0000` (extensions, `schema_migration`,
-  shared domains, `set_updated_at()` trigger function) and `lib/db` pool + `withTransaction`
+## Next session
 
-## Decisions made
-
-See `.agent/decisions/` for the full ADRs. The load-bearing ones:
-
-- **ADR-0001** PostgreSQL 16, `pg` driver, handwritten parameterized SQL. No ORM.
-- **ADR-0002** Vertical slices, not layer-based division. Every member owns DB + backend + frontend.
-- **ADR-0003** Money is `NUMERIC(15,2)`; rates are `NUMERIC(6,4)` fractions. Never floats.
-- **ADR-0004** `account.current_balance` is a documented denormalisation, protected by a
-  `CHECK (>= 0)`, row locking and the posting routines. The ledger remains authoritative.
-- **ADR-0005** Migration numbers are allocated in reserved per-phase, per-member blocks so
-  no two members can collide.
-
-## Problems solved
-
-- Migration-number collisions between five parallel members → reserved numeric blocks (ADR-0005).
-- Ambiguity between "one FD ever" (ERD unique key) and "one *active* FD" (SRS) → recorded
-  as gap **G-01**, escalated for human decision. Not silently changed.
-- job_pilot reference contains prohibited technologies → only its workflow pattern
-  (`AGENTS.md` / `CLAUDE.md` / `memory.md` / docs / skills) was adopted.
-
-## Current state
-
-- Nothing is running yet. `npm install` has not been executed; there is no database.
-- `database/migrations/` contains only the shared `0000` foundation migration.
-- No table from the ERD has been created yet — that begins in Phase 1.
-- All Phase 1 tasks are `READY`; all later phases are `TODO`.
-
-## Next session starts with
-
-1. Obtain approval for the Phase 0 checkpoint and the ERD gap decisions (G-01, G-05,
-   G-12, G-20 are blocking — see `.agent/open-questions.md`).
-2. Then Phase 1 tasks `P01-M01-T01` … `P01-M05-T03` can start in parallel.
-
-## Open questions
-
-Tracked in `.agent/open-questions.md`. Four are blocking for Phase 2+:
-OQ-01 (one active FD vs one FD ever), OQ-04 (savings-account interest in scope?),
-OQ-05 (customer login required?), OQ-08 (account-to-account transfers in scope?).
+Review the uncommitted diff and handoff. The user controls commit/push/PR/merge;
+the assistant must not publish. Normal development database was not reset or migrated.
+Apply new migrations through the existing migration runner when using this branch.
+Historical PR #35/#36 conflict histories stay in dated handoffs; current dev includes
+PR #35, registration PR #38, holder PR #37 and security PR #40.

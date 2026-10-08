@@ -21,7 +21,7 @@ export function verifyCsrf(request: NextRequest): void {
   const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
   const headerToken = request.headers.get(CSRF_HEADER_NAME);
 
-  if (!cookieToken || !headerToken) {
+  if (!cookieToken || !headerToken || !/^[0-9a-f]{64}$/i.test(cookieToken) || !/^[0-9a-f]{64}$/i.test(headerToken)) {
     throw NextResponse.json(
       { error: { code: "FORBIDDEN", message: "CSRF token missing." } },
       { status: 403 }

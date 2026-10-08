@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Keep production verification from overwriting the running dev server's bundles.
+  distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   // `pg` must never be bundled into a browser build. It is server-only.
   serverExternalPackages: ["pg", "argon2"],
   async headers() {

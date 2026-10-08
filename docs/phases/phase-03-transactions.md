@@ -8,7 +8,8 @@ concurrency**.
 ## Entry criteria
 
 - [ ] Phase 2 exit criteria met
-- [ ] **OQ-08 resolved** (G-05 — reference-number uniqueness and whether transfers exist)
+- [x] **OQ-08 resolved** by ADR-0010: unique references and linked transfer legs
+- [ ] OQ-12 transfer typing and OQ-14 lecturer scope acceptance resolved
 - [ ] G-04 (idempotency key), G-07 (agent/branch attribution), G-14 (`balance_after`) approved
 
 ## Tasks by member

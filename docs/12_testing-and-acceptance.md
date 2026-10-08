@@ -32,6 +32,14 @@ satisfied.
 
 ## Database constraint tests
 
+**Phase 1 evidence (2026-10-05):** `npm run verify:phase1` passes 184 tests with
+zero failures/skips, exact 11-migration verification, clean rebuild, typecheck, lint
+and production build. Test commands provision/remove a disposable local PostgreSQL
+cluster; migration mutation tests operate on copied fixtures. See the
+[approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+The matrix above includes planned later-phase coverage; passing Phase 1 does not
+claim financial operations, full RLS or full transactional seed targets are delivered.
+
 | Test | Asserts | Rule |
 |---|---|---|
 | Negative balance rejected | `UPDATE account SET current_balance = -1` raises `23514` | NFR-SAFE-01, G-18 |

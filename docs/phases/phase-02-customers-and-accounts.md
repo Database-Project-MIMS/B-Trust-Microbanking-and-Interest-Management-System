@@ -1,7 +1,23 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
-**Status:** TODO · **Tasks:** 16 · **Effort:** 47 points · **Est.** ~1 week
+**Status:** IN_PROGRESS — 10 DONE, 1 READY, 5 TODO · **Tasks:** 16 · **Effort:** 47 points
 
+Phase 2 entry was approved by Vibodha on 2026-10-05 in the
+[checkpoint](../../.agent/checkpoints/phase-01-checkpoint.md).
+No Phase 2 exit or Phase 3 entry approval has been recorded.
+
+**2026-10-07:** dev 25fc264 contains M2 T01–T04, M3 account/holder, M4 transaction,
+and M1 parent RLS/audit. M2 T05 is verified locally: session/CSRF-protected customer
+routes, live registration/search/profile, M2 child grants/RLS migration 0223 and shared
+audit integration. Full isolated verification passes 365 tests (35 suites), clean
+19-migration rebuild, TypeScript, lint and production build. Browser flow, duplicate
+errors and responsive layout pass. User controls publication.
+[T05 handoff](../../.agent/handoffs/p02-m02-t05-customer-api-ui.md).
+
+Earlier 134/181/328-test evidence and PR #35/#36 conflict histories remain in their
+dated handoffs; they do not describe the current holder/security availability.
+M1-T03 remains its owner's customer/account route review; M3-T03 is READY.
+Remaining account-opening/mandate/API/UI and seed work prevents phase exit.
 ## Goal
 
 Customers can be registered and assigned to agents; individual and joint accounts can be
@@ -9,11 +25,11 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Entry criteria
 
-- [ ] Phase 1 exit criteria met
-- [ ] **OQ-05 resolved** (G-20 — customer identity and whether customer login is required).
-      `P02-M02-T01` cannot start until this is decided, because it determines the primary
-      key of `customer`.
-- [ ] G-06 (account `branch_id`) and G-08 (joint mandate) approved
+- [x] Phase 1 exit criteria met and entry approved by Vibodha
+- [x] **OQ-05 resolved** (G-20, ADR-0007) — customers use an independent primary key
+      and may optionally link to an application login.
+- [x] G-06 approved by ADR-0008 — `account.branch_id` is stored at opening
+- [x] G-08 approved by ADR-0009 — joint accounts require 2–4 adult holders and a mandate
 
 ## Tasks by member
 
@@ -38,21 +54,21 @@ opened with eligibility and mandate rules enforced by the database.
 
 ## Exit criteria
 
-- [ ] A customer can be registered with documents and an agent assignment in one transaction
-- [ ] A duplicate NIC is rejected and leaves **no partial customer row**
-- [ ] Exactly one active agent assignment per customer is enforced
+- [x] A customer can be registered with documents and an agent assignment in one transaction
+- [x] A duplicate NIC is rejected and leaves **no partial customer row**
+- [x] Exactly one active agent assignment at registration commit is enforced; the partial index prevents competing active assignments
 - [ ] An individual account opens with plan eligibility checked from date of birth
 - [ ] A joint account opens with 2–4 adult holders and a stored mandate
 - [ ] 1-holder and 5-holder joint accounts are both rejected by the trigger
 - [ ] An opening amount below the plan minimum is rejected
-- [ ] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
-- [ ] Posted `transaction` rows reject `UPDATE` and `DELETE`
+- [x] RLS prevents cross-branch customer and account reads **when the app layer is bypassed**
+- [x] Posted `transaction` rows reject `UPDATE` and `DELETE`
 - [ ] Seed loads 18 customers, 22 accounts including 3 joint
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
-| OQ-05 unresolved delays M2 and M3 | Resolve during Phase 1; M2/M3 can build documents and plans work meanwhile |
+| Optional-login link is accidentally treated as mandatory | Test registration without `app_user_id`; keep the FK nullable and unique (ADR-0007) |
 | M3 and M4 both need `transaction` | M4 owns and delivers the table in this phase; M3 calls it |
 | Age boundary bugs (12 vs 13, 59 vs 60) | Seed includes customers at every boundary; tests assert each |

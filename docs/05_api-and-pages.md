@@ -2,6 +2,20 @@
 
 Endpoint contracts and the page-to-API map.
 
+## Database health — Member 4
+
+`GET /api/health` validates the real `mims_session` before querying health. Missing,
+forged, expired or revoked sessions receive `401` without database details. Any valid
+role receives `{ data: { status: 'ok' } }`; ADMIN/CENTRAL_OPS additionally receive
+`db: { connected, poolTotal, poolIdle, poolWaiting }`, numeric `migrationsApplied`,
+`lastMigration` and `uptimeSeconds`. Database failures return a safe `503` error envelope.
+The route calls `services/health-service.ts`; it contains no SQL.
+
+`/admin/health` checks ADMIN/CENTRAL_OPS on the server before loading data. `/admin/parameters`
+and its GET/PUT APIs are ADMIN-only; edits require a valid 64-character hex CSRF token.
+Invalid values return `400`, unknown parameter keys `404`, and the update plus trigger
+audit execute in one locked transaction.
+
 **Conventions** (AGENTS.md §9): success `{ data }`, failure `{ error: { code, message } }`.
 Every route authenticates and authorizes **on the server**. Money-moving `POST` endpoints
 require an `Idempotency-Key` header. All state-changing routes are CSRF-protected. Roles:
@@ -18,10 +32,13 @@ errors are listed below.
 ### `POST /api/auth/login`
 - **Purpose** Authenticate and create a server-side session (FR-AUTH-01).
 - **Roles** public
+- **CSRF protection** JSON requests only; a supplied Origin must match the request origin.
 - **Body** `{ username, password }`
 - **Validation** both present; username ≤ 100 chars
 - **SQL** select the user and role from `app_user`/`role`, and `LEFT JOIN agent ON agent.agent_id = app_user.user_id` to obtain `branchId`; on success `INSERT INTO user_session`; always `INSERT INTO login_attempt`
 - **Transaction** single transaction: session insert + attempt log + `last_login` update
+- **Session lifetime** The cookie expires at the configured absolute limit. The server
+  enforces and refreshes the configured inactivity deadline, capped by that absolute limit.
 - **Success** `200 { data: { user: { id, username, role, branchId } } }` + `Secure`/`HttpOnly`/`SameSite=Lax` cookie
 - **Errors** `401 INVALID_CREDENTIALS` — **identical message whether or not the username exists** (FR-AUTH-03); `429 TOO_MANY_ATTEMPTS`
 - **Page** `/sign-in`
@@ -76,49 +93,123 @@ admin identity workflow and must atomically receive its required `agent` profile
 - Duplicate employee number, identity, email and username return specific `409` codes.
   Cross-branch mutation returns `403`; missing rows return `404`. No agent `DELETE`
   handler exists.
-- Agent creation currently commits `app_user` + `agent` atomically. Audit insertion and
-  runtime `mims_app` grants are pending the Member 1 handoff recorded in
-  `.agent/handoffs/p01-m02-t03-audit-and-grants.md`.
+- Branch and agent inserts/updates are audited by database triggers in the caller
+  transaction. A failed agent profile insert rolls back the linked `app_user` and all
+  audit effects. Sensitive password/token/identity fields are excluded from audit JSON.
 
 ### `POST /api/customers`
+**Implemented in P02-M02-T05:** session-authenticated, role/branch scoped and CSRF-protected.
+
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER
 - **Body** `{ fullName, nicPassportNo, dateOfBirth, gender, phone, address, email, branchId, agentId, documents[] }`
 - **Validation** NIC/passport format; `dateOfBirth` in the past; email format; `branchId` within the caller's scope
-- **SQL / routine** one transaction: `INSERT customer` → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)` → `INSERT audit_log`
+- **SQL / routine** one transaction: `INSERT customer` (M1's trigger inserts one sanitized audit) → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)`
 - **Transaction** all four, atomic (§4.3: "Customer, documents, assignment and audit event are inserted in one database transaction")
 - **Success** `201 { data: { customerId, customerNumber } }`
-- **Errors** `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`
+- **Errors** `400` invalid JSON/strict fields; `401` invalid session; `403` role/branch/assignment/CSRF denied; `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`; safe `500` for unexpected failures
 - **Page** `/customers/new`
 
-| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; identity masked for unauthorised roles (FR-CUS-04); sort column via `allowListed()` |
+| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; NIC/email masked for branch staff (FR-CUS-04); fixed sort-column allow-list |
 | `GET /api/customers/{id}` | Profile with accounts and assignment history | as above; CUSTOMER for self only | RLS enforces self-access |
 
+Search query keys: `q`, `name`, `nicPassportNo`, `branchId`, `agentId`, `status`,
+`sortBy` (fullName/customerNumber/createdAt), `sortDirection` (asc/desc), `page` (1–100000)
+and `pageSize` (1–100, default 25). Numeric query strings are parsed by the controller;
+unknown/repeated keys and invalid identifiers return 400. Result: `{ data: { customers,
+total, page, pageSize } }`. Missing and inaccessible profiles both return 404.
+
+Live screens: `/customers` has scoped named branch/agent filters, sorting, pagination,
+loading/error/empty states and profile links. `/customers/new` uses the session branch,
+active agent options and zero to twenty document references, then navigates to the created
+profile. `/customers/{id}` shows identity, all assignment history, safe document verification
+metadata and real account-holder links. Registration does not upload files, verify documents
+or provision customer logins. Page guards mirror route roles; server checks remain authoritative.
+
 ---
+
+### Customer-document internal service (P02-M02-T03, implemented)
+
+`verifyDocument(docId, verifierUserId)` in services/customer-document-service.ts is
+server-only; no document verification endpoint is introduced in this schema task.
+Future controllers must authenticate/authorize, verify CSRF and pass the session's
+user ID as verifierUserId. Active AGENT/BRANCH_MANAGER staff can verify active
+customers in their own branch; an AGENT also needs the current customer assignment.
+The service rechecks these conditions in SQL and locks the relevant rows. Verification
+and minimal audit commit/rollback together. A same-verifier retry returns the original
+{ docId, customerId, verifiedBy, verifiedDate }; another verifier gets
+DOCUMENT_ALREADY_VERIFIED (409). UUID validation, forbidden and not-found use typed
+400/403/404 errors. No path/document content is returned. T05 adds scoped child SELECT/INSERT
+in 0223, but no UPDATE grant or verification endpoint. Review also
+found that this pre-existing verifier locks `role` with `FOR SHARE`, requiring a write
+privilege absent from the runtime role. Resolve that lock scope before exposing it;
+do not grant broad role-update access to work around the issue.
+
+### Customer registration/read services (P02-M02-T04, implemented)
+
+`services/customer-service.ts` exports `registerCustomer(input, actor)`,
+`searchCustomers(input, actor)` and `getCustomerProfile(customerId, actor)`.
+`actor` is authenticated `{ userId, roleName, branchId }` context, never body-selected.
+Services recheck current active user/role/staff/branch state. Registration permits
+AGENT self-assignment or a BRANCH_MANAGER selecting an active ordinary agent in its
+branch. Customer, zero to twenty unverified document metadata rows, exactly one active
+assignment and one sanitized customer-trigger audit commit together. Identity is uppercase;
+email lowercase; numbers follow ADR-0014. Typed duplicate errors map to 409 responses.
+
+Search accepts q/name/NIC/branch/agent/status, fixed sortBy/sortDirection, page and
+pageSize (maximum 100). Controllers parse numeric query strings. SQL predicates
+restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/AUDITOR
+are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
+Staff NIC/email are masked; documents omit paths. Profiles include all assignment
+history. The merged M3 account_holder relation supplies account links (empty array when
+none exist), with account branch scope and string balances. The null fallback is retained
+for incomplete schemas. Reads use repeatable-read transactions; `setRlsContext` supplies
+transaction-local user, role and branch from revalidated database state.
+
+T04's historical 181-test service evidence: [T04 handoff](../.agent/handoffs/p02-m02-t04-customer-registration.md).
+T05 route/runtime/screen integration and security handoff:
+[T05 handoff](../.agent/handoffs/p02-m02-t05-customer-api-ui.md).
 
 ## Plans and accounts — Member 3
 
 | Method & path | Purpose | Roles |
 |---|---|---|
 | `GET /api/plans` | Savings plans with rates, minimums, eligibility | any authenticated |
-| `PATCH /api/plans/{id}` | Update plan (effective-dated) | ADMIN, CENTRAL_OPS |
+| `PATCH /api/plans/{id}` | Update plan rate/minimum/description/status/eligibility (in-place, not effective-dated — unlike `fd_plan`, `savings_plan` has no `effective_from`/`effective_to`) | ADMIN, CENTRAL_OPS |
 | `GET /api/fd-products` | FD products (M5) | any authenticated |
 
 ### `POST /api/accounts`
 - **Purpose** Open an individual or joint savings account (FR-ACC-01…04).
-- **Roles** AGENT, BRANCH_MANAGER
-- **Body** `{ planId, branchId, holders: [{ customerId, holderType }], mandate?: { type, requiredSignatories }, initialDeposit? }`
-- **Validation** plan active; 1 holder for individual, 2–4 for joint; every holder's age satisfies the plan; joint requires a mandate; `initialDeposit ≥ plan.min_balance`
-- **SQL routine** `CALL sp_open_savings_account(...)`
-- **Transaction** account + holders + mandate + optional initial deposit ledger row + balance + audit — **all atomic**
-- **Success** `201 { data: { accountId, accountNumber, currentBalance } }`
-- **Errors** `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED`
+- **Roles** AGENT, BRANCH_MANAGER · CSRF required
+- **Headers** `Idempotency-Key` (**required**, 8–80 chars of `A–Z a–z 0–9 _ -`)
+- **Body** `{ planId, branchId, holders: [{ customerId, holderType: "PRIMARY"|"JOINT" }] (1–4, exactly one PRIMARY), mandate?: { type: "ANY_ONE"|"ALL_HOLDERS", requiredSignatories? }, initialDeposit?: "1500.50" }` — strict; `initialDeposit` is a **string** (a JSON number is rejected). `branchId` must equal the caller's branch (ADR-0008) or `403`. An AGENT may open only for customers actively assigned to them (otherwise `409 HOLDER_NOT_FOUND`, which also hides whether the customer exists). The deposit channel is chosen by the server (`BRANCH_COUNTER`), never by the client.
+- **Validation** plan active; holder count within the plan's range; primary applicant eligible by age; every holder active with a verified document; joint plans need a mandate; `initialDeposit ≥ plan.min_balance`, positive, two decimals, business hours only
+- **SQL routine** `CALL sp_open_savings_account(...)` (migration 0243); the service wraps it in one transaction and writes the `account_opening_request` row in the same transaction
+- **Transaction** account + holders + mandate + optional initial deposit ledger row + balance + audit + idempotency record — **all atomic**
+- **Idempotency** a repeated key from the same user with the same request returns **`200`** with the original `{ accountId, accountNumber, currentBalance }` and no second account or credit; the same key with a different request → `422 IDEMPOTENCY_KEY_REUSED`; a failed open stores no key
+- **Success** `201 { data: { accountId, accountNumber, currentBalance } }` (money as a string)
+- **Errors** `400 VALIDATION_FAILED` (body or header) · `401` · `403` (role, CSRF, other branch, `AGENT_NOT_ELIGIBLE`) · `409 PLAN_ELIGIBILITY_FAILED` · `409 BELOW_MINIMUM_BALANCE` · `409 INVALID_HOLDER_COUNT` · `409 MANDATE_REQUIRED` · `409 MANDATE_NOT_ALLOWED` · `409 INVALID_MANDATE_SIGNATORIES` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 UNDERAGE_HOLDER` · `409 OUTSIDE_BUSINESS_HOURS` (deposit only) · `409 CHANNEL_UNAVAILABLE` · `409 DUPLICATE_HOLDER` · `422 PLAN_NOT_FOUND` · `422 INVALID_MANDATE_TYPE` · `422 INVALID_DEPOSIT_AMOUNT` · `422 INVALID_HOLDERS_PAYLOAD` · `422 IDEMPOTENCY_KEY_REUSED`. The routine raises `P0001` with a named constraint; the service translates it inside the transaction (`services/account-errors.ts`) so no ids or SQL text reach the client; an actor mismatch is a service bug → `500`
 - **Page** `/accounts/new`
 
-| `GET /api/accounts` | List / search, scoped | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR |
-| `GET /api/accounts/{id}` | Detail: plan, holders, mandate, balance, FD | as above; CUSTOMER if a holder |
-| `POST /api/accounts/{id}/holders` | Add a joint holder and mandate | BRANCH_MANAGER |
-| `POST /api/accounts/{id}/close` | Close — requires zero balance and no active FD (BR-18) | BRANCH_MANAGER |
+### `GET /api/accounts`
+- **Roles** AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR. Branch roles are limited to their branch in the query and by RLS; an **AGENT sees only accounts with a holder actively assigned to them** (as in the customer API); a different `branchId` filter → `403`
+- **Query** `q` (account number, holder name or customer number), `status`, `planId`, `branchId`, `sortBy` (`accountNumber|openedDate|currentBalance|status`), `sortDirection`, `page`, `pageSize` (≤ 100); repeated or unknown parameters → `400`
+- **Success** `200 { data: { accounts: [{ accountId, accountNumber, status, currentBalance, openedDate, branchId, planId, planName, holderCount, primaryHolderName }], total, page, pageSize } }`
+
+### `GET /api/accounts/{id}`
+- **Roles** AGENT (assigned customers' accounts only), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR; CUSTOMER only if a holder
+- **Success** `200 { data: { ...summary, minBalance, holders: [{ accountHolderId, customerId, customerNumber, fullName, holderType, joinedDate }], mandate: { mandateType, requiredSignatories, effectiveFrom, effectiveTo } | null } }`. A CUSTOMER sees only their own holder entry (row-level security); `holderCount` still shows the true total. FD panel arrives in Phase 4.
+- **Errors** an account outside the caller's scope → uniform `404 NOT_FOUND`
+
+### `POST /api/accounts/{id}/holders`
+- **Purpose** Add a joint holder to an existing account (`CALL sp_add_account_holder`, migration 0245).
+- **Roles** BRANCH_MANAGER of the owning branch · CSRF required · **Body** `{ customerId }` (strict)
+- **Rules** account ACTIVE; customer active with a verified document; the 0242 trigger enforces holder count and adult holders and sets an `ALL_HOLDERS` mandate's signatories to the new holder count (changing a mandate's type is not supported)
+- **Success** `201 { data: { accountHolderId, holderCount, mandate: { mandateType, requiredSignatories } | null } }`
+- **Errors** `404` (account outside scope) · `409 ACCOUNT_NOT_ACTIVE` · `409 INVALID_HOLDER_COUNT` · `409 UNDERAGE_HOLDER` · `409 DOCUMENTS_NOT_VERIFIED` · `409 HOLDER_NOT_FOUND` · `409 DUPLICATE_HOLDER`
+
+### `POST /api/accounts/{id}/close`
+- **Roles** BRANCH_MANAGER · CSRF required · **Currently `501 NOT_IMPLEMENTED`** (stub). The rule (zero balance, no active FD, BR-18) is Phase 4 (`sp_close_account`).
 
 ---
 
@@ -234,8 +325,9 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/admin/users`, `/admin/roles` | `/api/admin/users` | ADMIN | M1 |
 | `/admin/parameters` | `/api/admin/parameters` | ADMIN | M1 |
 | `/admin/audit` | `GET /api/audit` | AUDITOR, ADMIN | M1 |
-| `/admin/health` | `GET /api/health` | ADMIN | M4 |
-| `/branches`, `/agents` | `/api/branches`, `/api/agents` | ADMIN, BRANCH_MANAGER | M2 |
+| `/admin/health` | `GET /api/health` | ADMIN, CENTRAL_OPS | M4 |
+| `/branches` | `/api/branches` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M2 |
+| `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
 | `/plans` | `GET /api/plans` | all | M3 |
 | `/accounts`, `/accounts/new`, `/accounts/{id}` | `/api/accounts` | AGENT, BRANCH_MANAGER | M3 |
@@ -244,6 +336,12 @@ admin identity workflow and must atomically receive its required `agent` profile
 | `/transactions/{id}` | `GET`, `POST .../reverse` | staff; manager to reverse | M4 |
 | `/accounts/{id}/statement` | `GET /api/accounts/{id}/transactions` | staff; CUSTOMER own | M4 |
 | `/reconciliation` | `GET /api/reports/reconciliation` | CENTRAL_OPS, AUDITOR | M4 |
+
+The branch and agent pages default to active records and offer an all-records filter.
+`ADMIN` can create and deactivate branches. `ADMIN` and `BRANCH_MANAGER` can create and
+deactivate ordinary agents; a manager's active-branch selector contains only their scoped
+branch. Every mutation sends the login-issued CSRF token and asks for confirmation before
+deactivation. Deactivation preserves the record and its history.
 | `/fd-products` | `/api/fd-products` | ADMIN, CENTRAL_OPS | M5 |
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |

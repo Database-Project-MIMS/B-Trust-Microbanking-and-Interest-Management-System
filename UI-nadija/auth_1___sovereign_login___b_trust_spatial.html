@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html lang="en" style=""><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Auth 1 - Sovereign Login — B-Trust Spatial</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-high": "#e6e8ef", "error": "#ba1a1a", "on-primary": "#ffffff", "primary-container": "#2e5c50", "on-primary-fixed-variant": "#204f43", "background": "#f9f9ff", "surface-tint": "#39675a", "on-tertiary": "#ffffff", "on-surface-variant": "#404945", "surface-container-lowest": "#ffffff", "surface": "#f9f9ff", "on-error-container": "#93000a", "on-secondary-container": "#75240e", "tertiary-fixed": "#d9e7d0", "tertiary-fixed-dim": "#bdcbb5", "secondary-container": "#fe8b6d", "on-tertiary-fixed-variant": "#3e4a39", "inverse-primary": "#a0d0c1", "on-secondary-fixed-variant": "#7e2b14", "tertiary-container": "#4b5746", "on-primary-container": "#a2d2c3", "inverse-surface": "#2e3036", "on-error": "#ffffff", "secondary": "#9e4229", "error-container": "#ffdad6", "secondary-fixed": "#ffdbd2", "on-primary-fixed": "#002019", "inverse-on-surface": "#eff0f8", "on-secondary-fixed": "#3c0800", "primary-fixed-dim": "#a0d0c1", "surface-container": "#ecedf5", "on-surface": "#191c21", "on-secondary": "#ffffff", "surface-container-highest": "#e1e2e9", "surface-dim": "#d8dae1", "on-tertiary-fixed": "#131e10", "on-background": "#191c21", "outline-variant": "#c0c8c4", "outline": "#707975", "primary-fixed": "#bceddd", "tertiary": "#344030", "surface-container-low": "#f2f3fb", "on-tertiary-container": "#beccb6", "secondary-fixed-dim": "#ffb4a1", "primary": "#144439", "surface-bright": "#f9f9ff", "surface-variant": "#e1e2e9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-md": "1.25rem", "space-sm": "0.75rem", "space-lg": "2.25rem", "margin-tablet": "2.5rem", "gutter": "1.5rem", "space-xl": "4rem", "margin-desktop": "5rem", "margin": "1.25rem", "gutter-desktop": "2.5rem", "space-xs": "0.375rem" }, "fontFamily": { "headline-md": [ "Newsreader" ], "display-xl": [ "Newsreader" ], "body-lg": [ "Manrope" ], "body-sm": [ "Manrope" ], "headline-lg-mobile": [ "Newsreader" ], "body-md": [ "Manrope" ], "headline-lg": [ "Newsreader" ], "label-caps": [ "Space Mono" ], "headline-sm": [ "Manrope" ], "display-xl-mobile": [ "Newsreader" ], "label-numeric": [ "Space Mono" ] }, "fontSize": { "headline-md": [ "2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "display-xl": [ "5.5rem", { "lineHeight": "5.75rem", "letterSpacing": "-0.03em", "fontWeight": "400" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.875rem", "letterSpacing": "0em", "fontWeight": "400" } ], "body-sm": [ "0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" } ], "headline-lg-mobile": [ "2rem", { "lineHeight": "2.375rem", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "body-md": [ "0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "label-caps": [ "0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0.08em", "fontWeight": "700" } ], "headline-sm": [ "1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "display-xl-mobile": [ "3rem", { "lineHeight": "3.25rem", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "label-numeric": [ "0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.02em", "fontWeight": "400" } ] } } } };</script><meta content="web_blank" name="shell-type"/></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed"><main class="w-full min-h-screen bg-surface flex items-center justify-center"><div class="flex flex-col w-full">
+<div class="relative w-full max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-20 py-8 lg:py-12 flex flex-col min-h-screen justify-between">
+<!-- Atmospheric Ambient Blooms (Contained) -->
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] bg-primary/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute bottom-12 right-1/4 w-[380px] h-[380px] bg-secondary-container/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Header Navigation Chrome -->
+<header class="w-full flex flex-col md:flex-row items-center justify-between gap-6 pb-8">
+<div class="flex items-center gap-6">
+<img alt="B-Trust Spatial Logo" class="h-9 w-auto object-contain brightness-95" src="https://lh3.googleusercontent.com/aida/AEtjO1WvBYVSBTSTgN2YknY_EQsK7ts6U2MctXziDO7oSV0ZslSRG-3wNpfROUatP2mneHXjNku3iJr188ddQXYCalDpfBNmHzo6ILAolbtRbALC0cINgWyG-3IDD4fdHagpLD3CxbIpw9pcn4czqKpMw0DF6tJjM5Xq-j9A76ma3QNaaLNgP2rMJUDNED9pllX7khx3bwpcJNMsP7kpqJ8CJL4xau5fT2WbZXGQJIDZlYSZYrkGJhqyCKP6yA"/>
+<div class="hidden sm:flex items-center gap-2 pl-4">
+</div>
+</div>
+<div class="flex items-center gap-4 text-body-sm font-body-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 group" href="#support">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-primary transition-colors">support_agent</span>
+<span>Concierge Support</span>
+</a>
+<span class="text-outline-variant font-label-numeric text-xs">/</span>
+<span class="text-label-caps font-label-caps text-outline tracking-widest text-[10px]">CH-ZURICH ENCLAVE 04</span>
+</div>
+</header>
+<!-- Main Authentication Sanctuary Container -->
+<section class="w-full flex flex-col items-center justify-center my-auto py-4">
+<div class="w-full max-w-[560px] bg-surface-container-lowest rounded-xl shadow-xl p-8 sm:p-12 transition-all relative">
+<!-- Enclave Decorative Radial Glow Indicator -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Enclave Identity Gateway</span>
+</div>
+<div class="font-label-numeric text-label-numeric text-[11px] text-outline">
+            SESSION // 0x9AF8...44C
+          </div>
+</div>
+<!-- Typography Masthead -->
+<div class="space-y-2 mb-8">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Sovereign Login</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Cryptographic enclave handshake for verified institutional node operators.
+          </p>
+</div>
+<!-- Main Form -->
+<form class="space-y-6" id="sovereignAuthForm" onsubmit="event.preventDefault(); triggerAuth();">
+<!-- Node / Email Well Input -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-body-sm text-body-sm text-on-surface font-semibold tracking-wide" for="corporateNodeId">
+                Registered Corporate Node / Email
+              </label>
+<span class="font-label-caps text-label-caps text-outline text-[10px]">PKI IDENTITY</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                hub
+              </span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-surface-container-low text-on-surface placeholder:text-outline/60 rounded-lg font-body-md text-body-md focus:bg-surface-container focus:outline-none transition-colors" id="corporateNodeId" placeholder="custody-node.sg@btrust-vault.ch or BTR-77291-LK" required="" type="text" value="custody-node.sg@btrust-vault.ch"/>
+</div>
+</div>
+<!-- Sovereign Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-body-sm text-body-sm text-on-surface font-semibold tracking-wide" for="sovereignPass">
+                Sovereign Password
+              </label>
+<span class="font-label-caps text-label-caps text-outline text-[10px]">ZERO-KNOWLEDGE PROOF</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                shield
+              </span>
+<input class="w-full pl-12 pr-12 py-3.5 bg-surface-container-low text-on-surface placeholder:text-outline/60 rounded-lg font-body-md text-body-md focus:bg-surface-container focus:outline-none tracking-wider transition-colors" id="sovereignPass" placeholder="Enter sovereign key phrase" required="" type="password" value="••••••••••••••••••••"/>
+<button aria-label="Toggle password visibility" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface p-1 transition-colors flex items-center justify-center" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="pwdEyeIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Session Binding Toggle Switch -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Remember Hardware Node</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs">Bind cryptographic enclave token to current hardware</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer select-none">
+<input checked="" class="sr-only peer" id="bindNodeToggle" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface-container-lowest after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Primary Submit Button -->
+<button class="w-full mt-2 py-4 px-6 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-body-md text-body-md font-medium flex items-center justify-center gap-3 transition-all duration-200 active:scale-[0.985] group" id="authBtn" type="submit">
+<span class="tracking-wide" id="btnLabel">Authenticate Sovereign Session</span>
+<span class="material-symbols-outlined text-[19px] transition-transform group-hover:translate-x-1" id="btnIcon">arrow_forward</span>
+</button>
+</form>
+<!-- Auxiliary Action Links -->
+<div class="flex items-center justify-between pt-5 pb-8 font-body-sm text-body-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors underline decoration-outline-variant underline-offset-4" href="#reset">
+            Forgot Password
+          </a>
+<a class="text-primary hover:text-primary-container transition-colors flex items-center gap-1 font-semibold" href="#onboarding">
+            Institutional Onboarding
+            <span class="material-symbols-outlined text-[15px]">open_in_new</span>
+</a>
+</div>
+<!-- Multi-method Attestation Matrix -->
+<div class="pt-6 border-none">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">
+              Multi-method attestation
+            </span>
+<span class="text-label-caps font-label-caps text-outline-variant text-[10px]">
+              HSM PROTOCOL 3.2
+            </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<!-- Method 1: FIDO2 -->
+<button class="w-full flex items-center gap-3 p-3.5 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg transition-colors group text-left" onclick="selectAttestation('FIDO2 Hardware Key')" type="button">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold truncate">FIDO2 / YubiKey</span>
+<span class="font-label-caps text-label-caps text-[10px] text-outline">U2F CTAP2</span>
+</div>
+</button>
+<!-- Method 2: Okta Enterprise SSO -->
+<button class="w-full flex items-center gap-3 p-3.5 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg transition-colors group text-left" onclick="selectAttestation('Okta Enterprise SSO')" type="button">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">cloud</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold truncate">Okta Enterprise SSO</span>
+<span class="font-label-caps text-label-caps text-[10px] text-outline">SAML 2.0 FEDERATED</span>
+</div>
+</button>
+<!-- Method 3: Ok-kina SSO -->
+<button class="w-full flex items-center gap-3 p-3.5 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg transition-colors group text-left" onclick="selectAttestation('Ok-kina SSO')" type="button">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">fingerprint</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold truncate">Ok-kina SSO</span>
+<span class="font-label-caps text-label-caps text-[10px] text-outline">DECENTRALIZED ID</span>
+</div>
+</button>
+<!-- Method 4: Hardware M130 Key -->
+<button class="w-full flex items-center gap-3 p-3.5 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg transition-colors group text-left" onclick="selectAttestation('Hardware M130 Key')" type="button">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">memory</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold truncate">Hardware M130 Key</span>
+<span class="font-label-caps text-label-caps text-[10px] text-outline">PHYSICAL VAULT LINK</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Telemetry Status Feedback Toast (Inline) -->
+<div class="hidden mt-4 p-3 bg-tertiary-fixed text-tertiary rounded-lg text-body-sm font-body-sm flex items-center gap-2 transition-all" id="statusToast">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span id="statusMessage">Initiating cryptographic verification handshake...</span>
+</div>
+</div>
+</section>
+<!-- Bottom Telemetry & Fiduciary Regulatory Ledger Footer -->
+<footer class="w-full pt-8 pb-4 space-y-6">
+<!-- Fiduciary Assurance Tags -->
+<div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant font-label-caps text-label-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          SHA-256 LEDGER SEALED
+        </div>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant font-label-caps text-label-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+          SWISS FINMA COMPLIANT // BASEL III FRAMEWORK
+        </div>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant font-label-caps text-label-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+          CBSL TIER-1 CUSTODY STATUS: OPERATIONAL
+        </div>
+</div>
+<!-- Regulatory Disclosures -->
+<div class="text-center max-w-3xl mx-auto space-y-2">
+<p class="font-body-sm text-body-sm text-outline text-xs leading-relaxed">
+          B-Trust (Switzerland) AG is a regulated entity authorized under the Swiss Financial Market Supervisory Authority (FINMA) for digital institutional custody and fiduciary asset segregation. Multi-jurisdictional clearing services in South Asia are held under Central Bank of Sri Lanka (CBSL) Tier-1 institutional custodial licensure guidelines. Access restricted strictly to pre-authorized node signatories.
+        </p>
+<p class="font-label-numeric text-label-numeric text-[11px] text-outline-variant">
+          NODE: NODE-CH-048 // RUNTIME: SE-2024.11-QUANTUM // SHA: 8f02ba94a48c12b7
+        </p>
+</div>
+</footer>
+</div>
+</div>
+<script>
+  function togglePasswordVisibility() {
+    const input = document.getElementById('sovereignPass');
+    const icon = document.getElementById('pwdEyeIcon');
+    if (!input || !icon) return;
+    
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  function triggerAuth() {
+    const btnLabel = document.getElementById('btnLabel');
+    const btnIcon = document.getElementById('btnIcon');
+    const toast = document.getElementById('statusToast');
+    const statusMsg = document.getElementById('statusMessage');
+
+    if (!btnLabel || !btnIcon || !toast) return;
+
+    btnLabel.textContent = 'Negotiating Enclave Handshake...';
+    btnIcon.textContent = 'sync';
+    btnIcon.classList.add('animate-spin');
+
+    toast.classList.remove('hidden');
+    statusMsg.textContent = 'Exchanging Kyber-1024 quantum-safe certificates with node SG-09...';
+
+    setTimeout(() => {
+      btnLabel.textContent = 'Enclave Session Authenticated';
+      btnIcon.textContent = 'check_circle';
+      btnIcon.classList.remove('animate-spin');
+      statusMsg.textContent = 'Identity attested. Decrypting sovereign vault partition...';
+    }, 1800);
+  }
+
+  function selectAttestation(method) {
+    const toast = document.getElementById('statusToast');
+    const statusMsg = document.getElementById('statusMessage');
+    if (!toast || !statusMsg) return;
+
+    toast.classList.remove('hidden');
+    statusMsg.textContent = `Awaiting hardware challenge response for ${method}...`;
+  }
+</script></main>
+</body></html>
