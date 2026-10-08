@@ -32,3 +32,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0013](ADR-0013-phase-one-closeout-verification.md) | Isolated verification, restricted health details and transaction-safe sessions | Accepted |
 | [ADR-0014](ADR-0014-customer-service-numbering-and-scope.md) | Customer numbering, scoped registration and masked reads; renumbered from conflicting 0013 | M2 implementation decision within authorized T04; team review pending |
 | [ADR-0015](ADR-0015-customer-api-runtime-integration.md) | Customer route/screens, child scope and shared RLS/audit integration | M2 implementation decision within authorized T05; M1 security review retained |
+| [ADR-0016](ADR-0016-transaction-attribution.md) | G-07 transaction snapshots and scoped early start for P03-M02-T01 | User-authorized M2 implementation; M4/team review retained |

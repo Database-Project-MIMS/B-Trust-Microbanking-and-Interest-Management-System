@@ -28,12 +28,12 @@ control; no assistant commit, push or completed merge is authorized. See the
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 2 | 0 | 0 | 0 | 0 | 14 |
-| P3 | 14 | 13 | 0 | 0 | 0 | 0 | 1 |
+| P2 | 16 | 1 | 0 | 0 | 0 | 0 | 15 |
+| P3 | 14 | 12 | 0 | 0 | 0 | 1 | 1 |
 | P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
 | P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
 | P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **97** | **57** | **0** | **0** | **0** | 0 | **40** |
+| **All** | **97** | **55** | **0** | **0** | **0** | 1 | **41** |
 
 ---
 
@@ -207,23 +207,35 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M03-T05 | 3 | Accounts and holders APIs — `POST/GET /api/accounts`, `GET /api/accounts/{id}`, `POST …/holders`, `POST …/close` (501 stub); migrations `0244` (idempotency table) and `0245` (`sp_add_account_holder`); `services/account-service.ts`; `tests/api/accounts.test.mjs` 23/23, DB tests 15; full isolated suite 464/464; typecheck, lint, build clean | BE + DB | P02-M03-T04, **I-1** | DONE (merged into dev) |
 | P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages — live `/accounts`, `/accounts/new` (review step, idempotent submit), `/accounts/{id}` (add holder), real `/plans`; pure-logic tests `tests/e2e/accounts-ui-model.test.mjs` 12/12 and `tests/e2e/plan-edit-ui-model.test.mjs` 10/10; `/review` important findings fixed (focus trap, NaN age guard, review-step error); full isolated suite 486/486; typecheck, lint, build clean; browser pass partial (happy path blocked by missing document verification) | FE | P02-M03-T05 | DONE (merged into dev) |
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
-| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 3 joint accounts | DB | P02-M03-T04, P01-M05-T03 | TODO |
+| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (14 tasks, 1 DONE)
+## Phase 3 — Financial Transactions (12 TODO, 1 REVIEW, 1 DONE)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
 
-**Progress (2026-10-08):** P03-M03-T01 is DONE (I-4 published, `fn_check_plan_minimum`); the user directed M3 to start Phase 3 work before a Phase 2 exit checkpoint file exists.
+**Scoped exception (2026-10-08):** Vibodha authorized P03-M02-T01 to start early
+and its prescribed G-07 schema (ADR-0016). M4 transaction schema is merged.
+This does not approve Phase 2 exit, general Phase 3 entry, or OQ-12/OQ-14.
+P03-M02-T02 remains TODO; user publication and M4 review are retained.
+
+T01's 0320 migration and 15 attribution tests are verified locally: clean
+24-migration rebuild, 501 tests in 45 suites, TypeScript/lint/build all pass.
+[Handoff and review](../.agent/handoffs/p03-m02-transaction-attribution.md).
+REVIEW below means ready for the user's PR; it does not claim publication.
+
+**M3 early start (2026-10-08):** P03-M03-T01 (`fn_check_plan_minimum`, I-4) was started
+at the user's direction and is DONE. ADR-0016 covers only P03-M02-T01, so this does not
+extend that exception; it likewise does not approve Phase 2 exit or general Phase 3 entry.
 
 | ID | M | Title | Layers | Depends on | Status |
 |---|---|---|---|---|---|
 | P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 | TODO |
 | P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 | TODO |
 | P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 | TODO |
-| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, **G-07** | TODO |
+| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | REVIEW (verified locally; user PR/M4 review pending) |
 | P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01 | TODO |
-| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; full isolated suite 497/497; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
+| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
 | P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path | DB | P02-M03-T03 | TODO |
 | P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 | TODO |
 | P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** | TODO |

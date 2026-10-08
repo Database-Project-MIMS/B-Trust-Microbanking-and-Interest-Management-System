@@ -5,12 +5,17 @@
 The most important phase for the grade. Everything here is about **ACID under
 concurrency**.
 
+**Scoped exception — 2026-10-08:** Vibodha authorized P03-M02-T01 to start early
+with the G-07 schema specified in ADR-0016. This database-only exception does not
+approve Phase 2 exit or general Phase 3 entry. Other tasks keep their existing gates.
+
 ## Entry criteria
 
 - [ ] Phase 2 exit criteria met
 - [x] **OQ-08 resolved** by ADR-0010: unique references and linked transfer legs
 - [ ] OQ-12 transfer typing and OQ-14 lecturer scope acceptance resolved
-- [ ] G-04 (idempotency key), G-07 (agent/branch attribution), G-14 (`balance_after`) approved
+- [x] G-07 schema authorized for P03-M02-T01 only (ADR-0016; M4/team review retained)
+- [ ] G-04 (idempotency key) and G-14 (`balance_after`) approved
 
 ## Tasks by member
 

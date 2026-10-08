@@ -1,3 +1,20 @@
+# Member 2 — current session
+
+**Updated:** 2026-10-08 · **Branch:** feat/p03-m02-agent-attribution-activity
+
+P03-M02-T01 implemented and verified locally (REVIEW). Migration 0320, nullable
+snapshot FKs and reporting indexes; 15 new regressions and full 501 tests/45 suites
+pass, clean 24-migration rebuild/checksums, TypeScript/lint/build pass. ADR-0016 records
+G-07 authorization and a scoped early start; no general Phase 3 approval. T02 is TODO.
+Handoff/review: ../handoffs/p03-m02-transaction-attribution.md. Future M4/M3 producers
+must populate attribution; existing opening deposits remain unattributed. M4 reviews.
+No assistant commit/push/PR/merge and no normal development DB migration/reset.
+All overview tables reviewed; only M2's new work is recorded. /imprint inapplicable.
+
+---
+
+## Historical session (retained; current status above supersedes publication notes)
+
 # Member 2 — context
 
 **Updated:** 2026-10-07 · [slice](../../docs/member-prompts/member-2.md)
