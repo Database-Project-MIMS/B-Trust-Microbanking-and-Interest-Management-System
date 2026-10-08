@@ -9,17 +9,19 @@ Setup first: `10_local-setup.md`.
 
 ## Demonstration credentials
 
-Synthetic, development only. Loaded by `database/seed/01_roles_users.sql`.
+Synthetic, development only. Loaded by `database/seed/02_users.sql`; branch staff
+profiles are in `03_agents.sql`. The CUSTOMER login is linked to Adult One in
+`04_customers.sql`. SYSTEM is the internal posting identity, not a staff demo login.
 
 | Role | Username | Demonstrates |
 |---|---|---|
 | `ADMIN` | `admin` | Users, roles, parameters, audit |
-| `CENTRAL_OPS` | `ops.central` | FD products, interest runs, bank-wide reports |
-| `BRANCH_MANAGER` | `mgr.colombo` | Branch scope, mandates, **reversals** |
-| `AGENT` | `agent.colombo1` | Customers, accounts, deposits, withdrawals |
-| `AGENT` | `agent.kandy1` | Cross-branch denial testing |
+| `CENTRAL_OPS` | `central_ops` | FD products, interest runs, bank-wide reports |
+| `BRANCH_MANAGER` | `bm_colombo` | Branch scope, mandates, **reversals** |
+| `AGENT` | `agent_c1` | Customers, accounts, deposits, withdrawals |
+| `AGENT` | `agent_k1` | Cross-branch denial testing |
 | `AUDITOR` | `auditor` | Read-only reports and audit |
-| `CUSTOMER` | `cust.demo` | Optional self-service scope for a customer linked to `app_user` (ADR-0007) |
+| `CUSTOMER` | `customer_adult_one` | Optional self-service scope linked to Adult One (ADR-0007) |
 
 Passwords are in the seed file header. **Never reuse them anywhere real.**
 
@@ -30,7 +32,7 @@ identical whether or not the username exists, and five failures throttle (FR-AUT
 
 ## Registering a customer
 
-1. Sign in as `agent.colombo1` → **Customers** → **Register customer**.
+1. Sign in as `agent_c1` → **Customers** → **Register customer**.
 2. Enter identity, date of birth, contact and address; attach a document type; the branch
    and agent default to yours.
 3. Submit. The customer, documents, agent assignment and audit event are inserted in
@@ -95,7 +97,7 @@ guaranteed by a partial unique index, not by application memory (FR-DEP-04, AC-0
 
 ## Reversal
 
-Sign in as `mgr.colombo` (agents cannot do this — try it and get `403`). Open a
+Sign in as `bm_colombo` (agents cannot do this — try it and get `403`). Open a
 transaction → **Reverse** → give a reason.
 
 The original row is **unchanged and still visible**; a linked compensating entry appears
@@ -116,7 +118,7 @@ enforced by a partial unique index (AC-08).
 
 ## Interest run
 
-Sign in as `ops.central` → **Interest Runs** → **Run cycle** with a cycle date.
+Sign in as `central_ops` → **Interest Runs** → **Run cycle** with a cycle date.
 
 The console reports FDs processed, total interest and exceptions. Each credit appears in
 its linked savings account as a **separate `INTEREST_CREDIT` transaction** (FR-INT-02).
@@ -140,7 +142,7 @@ Spot-check the arithmetic: LKR 100,000 at 14% → `100000 × 0.1400 × 30 / 365`
 | RPT-04 Monthly interest | Subtotals by account type, using `ROLLUP` |
 | RPT-05 Customer activity | Net = deposits − withdrawals + interest |
 
-**Worth demonstrating:** sign in as `mgr.colombo` and run RPT-01 — only Colombo rows
+**Worth demonstrating:** sign in as `bm_colombo` and run RPT-01 — only Colombo rows
 appear, because the branch predicate is in the SQL (REP-COM-02). Then confirm the CSV
 totals match the screen exactly (REP-COM-04).
 

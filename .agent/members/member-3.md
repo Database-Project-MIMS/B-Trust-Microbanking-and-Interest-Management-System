@@ -1,3 +1,15 @@
+# Authorized integration repair contribution — 2026-10-09
+
+Vibodha authorized M2 to fix the reported full-suite failures in other members'
+code. Original ownership and task assignments remain. Current full865/latest-dev
+overlay940 tests pass; focused186, rebuild/reseed/typecheck/lint pass. The
+[repair handoff](../handoffs/p06-m02-integration-failure-repairs.md) describes
+this member's contributions and review. Publication remains with the user.
+
+---
+
+## Historical owner context (retained)
+
 # Member 3 — context
 
 **Updated:** 2026-10-05, authorized Phase 1 closeout.
@@ -67,4 +79,3 @@ Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).
 - 2026-10-08: P04-M03-T02 done (early start at the user's direction; no phase approval) — backend only. `0441_p04_m03_sp_close_account.sql`: `sp_close_account` (FOR UPDATE, ACTIVE-only, zero balance, no ACTIVE FD, explicit CLOSE audit) and `trg_account_close_guard` (SECURITY DEFINER guard so a direct UPDATE or RLS-hidden FD cannot bypass BR-18); `closeAccount()` in `account-service.ts`; `POST /api/accounts/{id}/close` live (was 501). `tests/db/sp-close-account.test.mjs` 17/17, `tests/api/accounts.test.mjs` +6. Suite 777 tests / 750 pass / the same 27 inherited failures; tsc, eslint, next build clean. Corrections to the card: audit columns are old_values/new_values; the trigger audit row records the actor (0200), my plan had wrongly said SYSTEM. Handoff `.agent/handoffs/p04-m03-t02-account-closure.md`. Next: P04-M03-T03 (FD panel), `/review` of T02 first.
 
 - 2026-10-08: `/review` of P04-M03-T02 found 3 issues, all addressed: (1) the guard trigger now locks the account row `FOR UPDATE` before checking, so a direct UPDATE waits for an in-flight FD insert (a plain UPDATE's NO KEY UPDATE lock does not conflict with the FD foreign key's KEY SHARE); docs/handoff reworded to say exactly what is and is not covered (an FD inserted after the account is CLOSED by SQL that skips the procedure is M5's table; suggestion recorded); (2) concurrency evidence is now real: tests 15–17 race two connections with committed fixtures, and test 15 fails without the new lock (checked); (3) branch: see the commit plan — T02 belongs on its own branch. Suite 777 tests / 750 pass / the same 27 inherited failures.
-

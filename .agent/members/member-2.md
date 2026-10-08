@@ -1,3 +1,46 @@
+# Member 2 — current seed acceptance delivery
+
+## M2 P06-M02-T01 — seed acceptance completed locally (2026-10-09)
+
+**Checkout:** `p06-m02-seed-validation` · **Base:** dev 095ea9c
+**Integration tested:** exported dev 78aae1e (PR #87), with this delivery overlaid.
+**Status:** REVIEW; implementation and global AC-12 pass, user publication pending.
+
+Vibodha said “complete this” after the missing seed coverage was reported.
+ADR-0024 records the scoped start and authorized M5/M4 contributions; it was
+renumbered because latest dev already uses ADR-0023 for ledger ordering.
+M5 retains seed stewardship; M4 retains posting; M3 retains its eligibility tests.
+
+Twelve funded FDs (ten active/two matured), three real interest cycles/thirty
+payouts, 191 ledger postings, fourteen users/seven roles, manager staff profiles
+and a linked customer login are delivered. Every account reconciles to signed
+ledger entries, every payout matches its credit/formula/run total, and all
+active balances satisfy plan minimums. Reseeding preserves exact financial totals
+and custom posting configuration. Opening cash now has actual ledger entries.
+New 0620 makes full FD/cycle references unique; merged migrations are unchanged.
+
+Strict checker/loader, 39 seed cases, original checker compatibility, interest
+credit/FD-opening/assigned-agent fixture regressions, customer FD API tests,
+typecheck and lint pass. Current branch: 186 focused tests /15 suites and clean
+46-migration rebuild/checksums; full suite 865 tests /87 suites, all pass.
+Latest-dev overlay: matching focused proof and 51-migration rebuild/checksums;
+full suite 940 tests /95 suites, all pass. Zero failures, cancellations or skips.
+Vibodha explicitly authorized repairs in other members' code after the earlier
+29 failures were reported. Production session fixtures, RLS setup, stored-role
+selection, date boundaries, audit contracts, SQL overloads and CSV assertions
+are repaired. Audit/interest request routes now return safe role denials;
+interest session requests enforce CSRF and validate bodies before audit writes.
+Original ownership remains. See the integration failure repair handoff.
+
+The development DB is preserved. The user subsequently authorized a few local commits; no Git merge, push or PR is authorized.
+User integrates latest dev and handles remote publication. General Phase 6 and T02/T03 remain
+separate. Tracker97:23 TODO /1 REVIEW /73 DONE, retaining other owners' branch
+statuses rather than silently copying an unmerged tracker. /architect and /review
+complete; no UI, /imprint N/A; /remember saved. All five overview tables reviewed.
+[Delivery, review and evidence](../handoffs/p06-m02-seed-validation.md).
+
+---
+
 # Member 2 — RPT-01 API, page and CSV
 
 **Updated:** 2026-10-08 · **Branch:** feat/p05-m02-rpt01-api-ui · base dev93a82f8

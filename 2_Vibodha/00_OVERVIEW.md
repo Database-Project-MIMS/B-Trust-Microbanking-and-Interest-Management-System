@@ -11,6 +11,11 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
+reported integration failures in other members' code. Full current865/latest940
+tests pass; original stewardship and unfinished task statuses remain.
+[Repairs and review](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
+
 **Reconciled 2026-10-07:** M2 Phase 1 T01–T04 and Phase 2 T01–T05 technically DONE.
 T05 API/screens, migration 0223 and RLS/audit integration are verified locally;
 365 tests pass and the 19-migration rebuild/typecheck/lint/build pass.
@@ -36,8 +41,8 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
 | ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
-| ~~09~~ | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | ~~T01~~ DONE (PR #67); ~~T02~~ local REVIEW | Live scoped API/page, 0521 readers, exact SQL totals and snapshot CSV/audit; approved I-7 repairs; integration failures recorded | ~7 |
-| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
+| ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
+| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 REVIEW (implemented, AC-12 passes); T02–T03 TODO | Strict seed/ledger/payout validation and authorized seed completion; user publication pending | ~6 |
 
 ---
 
