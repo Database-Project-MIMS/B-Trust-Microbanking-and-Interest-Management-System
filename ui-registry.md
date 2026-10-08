@@ -314,3 +314,26 @@ File: app/customers/[id]/customer-fixed-deposits.tsx · Updated 2026-10-08 · /i
 
 Embedded only after an authorized customer profile. No opening action or invented
 financial data; product rates come from FD snapshots. Existing profile patterns retained.
+## RPT-01 live report and typed I-7 primitives — 2026-10-08
+
+Files: app/reports/agent-transactions/rpt01-screen.tsx; components/report/*.tsx.
+Captured through /imprint after the user-approved framework integration.
+
+| Property | Pattern |
+|---|---|
+| Panels / headings | card; page-header, page-title, eyebrow |
+| Labels / inputs | field, input; associated labels; disabled fieldset during load |
+| Actions | btn btn-primary for Apply; btn btn-secondary for export, retry and pagination |
+| Table | table-wrap, data-table; scoped row/column headers and descriptive caption |
+| Money / counts | text-right tabular-nums; exact decimal-string LKR formatting |
+| Metadata / notes | text-sm text-[var(--text-muted)], flex-wrap gap-4, space-y-2 |
+| Error / loading | card with role=alert and var(--danger); role=status for progress |
+| Spacing | space-y-6 between report sections; space-y-4 inside panels |
+
+Use explicit typed column definitions and totals matched by column key. Distinguish
+page subtotal from full-filter grand total even for empty details. Display applied
+dates/scope/agent/order with Colombo generation time and requester. Named scoped
+selectors precede Apply; CSV export uses applied filters. Preserve exact cents
+without Number conversion; unresolved net is text, not a fabricated zero. Keep
+wide tables inside table-wrap;375px QA confirmed no document horizontal overflow.
+ReportShell's code/endpoint/named metadata are optional for other report owners.
