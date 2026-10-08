@@ -1,10 +1,11 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { withTransaction } from "@/lib/db";
-import { DatabaseError, NotAuthorizedError, NotFoundError, ValidationError } from "@/lib/db/errors";
+import { logQueryError, withTransaction } from "@/lib/db";
+import { DatabaseError, NotAuthorizedError, NotFoundError, ValidationError, isRetryable } from "@/lib/db/errors";
 import { setRlsContext } from "@/lib/db/rls-context";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
+import type { AccountFixedDeposit } from "@/types/account-fixed-deposit";
 import {
   accountIdSchema, accountSearchSchema, addHolderSchema, idempotencyKeySchema, openAccountSchema,
   type OpenAccountInput,
@@ -37,6 +38,12 @@ export interface AccountDetail extends AccountSummary {
   holders: { accountHolderId: string; customerId: string; customerNumber: string; fullName: string; holderType: string; joinedDate: string }[];
   mandate: { mandateType: string; requiredSignatories: number; effectiveFrom: string; effectiveTo: string | null;
     state: "EFFECTIVE" | "NOT_YET_EFFECTIVE" | "EXPIRED" } | null;
+  /**
+   * Newest opening first, with exact money/rate strings (the rate is the snapshot taken at opening). Read under the
+   * caller's row-level security (fixed_deposit policies, 0420/0421). `null` means the list could not be read: the
+   * rest of the account is still returned, and the page must not claim there are no deposits.
+   */
+  fixedDeposits: AccountFixedDeposit[] | null;
 }
 
 // An AGENT sees only accounts held by a customer actively assigned to them (as the customer API does);
@@ -216,7 +223,7 @@ export async function listAccounts(input: unknown, actor: AccountActor): Promise
   }, { isolationLevel: "REPEATABLE READ" });
 }
 
-/** Reads one authorised account with plan, holders and mandate in one repeatable-read transaction. */
+/** Reads one authorised account with plan, holders, mandate and fixed deposits in one repeatable-read transaction. */
 export async function getAccountDetail(accountId: string, actor: AccountActor): Promise<AccountDetail> {
   const authenticated = validateActor(actor, DETAIL_ROLES);
   if (!accountIdSchema.safeParse(accountId).success) throw new ValidationError("Account ID must be a UUID.");
@@ -252,6 +259,26 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
       `SELECT transaction_type, amount::text, to_char(transaction_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS transaction_date, reference_number
          FROM transaction WHERE account_id = $1 ORDER BY transaction_date DESC, transaction_id DESC LIMIT 1`, [accountId]);
     const latest = last.rows[0];
+    // A side read: if it fails the account is still returned, with `null` instead of a false "no deposits".
+    // The savepoint keeps the surrounding transaction usable; a retryable conflict is not swallowed.
+    let fixedDeposits: AccountFixedDeposit[] | null = null;
+    await tx.query("SAVEPOINT account_fixed_deposits");
+    try {
+      const deposits = await tx.query<{ fd_id: string; fd_plan_id: string; plan_name: string; principal_amount: string;
+        interest_rate_at_opening: string; start_date: string; maturity_date: string; next_interest_date: string; status: AccountFixedDeposit["status"] }>(
+        `SELECT fd.fd_id, fd.fd_plan_id, fp.plan_name, fd.principal_amount::text, fd.interest_rate_at_opening::text,
+                fd.start_date::text, fd.maturity_date::text, fd.next_interest_date::text, fd.status
+           FROM fixed_deposit fd JOIN fd_plan fp ON fp.fd_plan_id = fd.fd_plan_id
+          WHERE fd.account_id = $1 ORDER BY fd.start_date DESC, fd.fd_id`, [accountId]);
+      fixedDeposits = deposits.rows.map(fd => ({ fdId: fd.fd_id, fdPlanId: fd.fd_plan_id, planName: fd.plan_name,
+        principalAmount: fd.principal_amount, interestRateAtOpening: fd.interest_rate_at_opening, startDate: fd.start_date,
+        maturityDate: fd.maturity_date, nextInterestDate: fd.next_interest_date, status: fd.status }));
+      await tx.query("RELEASE SAVEPOINT account_fixed_deposits");
+    } catch (error) {
+      if (isRetryable(error)) throw error;
+      await tx.query("ROLLBACK TO SAVEPOINT account_fixed_deposits");
+      logQueryError("account.fixedDeposits", 0, error);
+    }
     return { ...mapSummary(account), minBalance: account.min_balance,
       minHolders: account.min_holders, maxHolders: account.max_holders,
       availableToWithdraw: account.available_to_withdraw,
@@ -260,7 +287,8 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
       holders: holders.rows.map(holder => ({ accountHolderId: holder.account_holder_id, customerId: holder.customer_id,
         customerNumber: holder.customer_number, fullName: holder.full_name, holderType: holder.holder_type, joinedDate: holder.joined_date })),
       mandate: row ? { mandateType: row.mandate_type, requiredSignatories: row.required_signatories,
-        effectiveFrom: row.effective_from, effectiveTo: row.effective_to, state: row.state } : null };
+        effectiveFrom: row.effective_from, effectiveTo: row.effective_to, state: row.state } : null,
+      fixedDeposits };
   }, { isolationLevel: "REPEATABLE READ" });
 }
 
