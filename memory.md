@@ -1,7 +1,22 @@
 # Memory — RPT-01 view and authorized M4 withdrawal correction
 
 **Updated:** 2026-10-08 · /remember save
-**Branch:** feat/p05-m02-rpt01-view · HEAD/base dev 48f4185
+**Branch:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
+
+## Latest conflict resolution
+
+PR #67 is open. Resolved docs/09_task-tracker.md against dev d466866 without
+discarding either side's task statuses. All 97 task IDs remain unique; summaries
+now record 34 TODO /2 REVIEW /61 DONE. M1's I-7/CSV/access auditing is published
+through PR #65. RPT-01 and corrective M4 withdrawal remain REVIEW until PR #67
+integration; T02 awaits T01 integration and start authorization. M4 reversal/API
+tasks are already DONE in dev. General phase gates remain pending.
+
+Pending integration remains uncommitted and unstaged for the user. Documentation
+checks passed; the 663-test evidence below is historical and was not rerun on this
+combined tree. See .agent/handoffs/p05-m02-pr67-conflict-resolution.md.
+
+The implementation and verification notes below describe the pre-integration tree.
 
 ## What was built
 
@@ -57,7 +72,8 @@ test-results/rpt01-withdrawal-final-verification.log and rpt01-view-explain.json
 
 Inspect user publication/merge state; a combined PR must list P05-M02-T01 and
 P03-M04-T03 and migrations 0520/0363. Never publish automatically. Reconcile local
-REVIEW only after actual user publication/review evidence. M2 T02 waits for M1's
-I-7/CSV/access auditing and T01 integration. M4's next feature is T04 reversal,
-followed by T05 service/API/CSRF/signer integration, with their own gates. Apply new
+REVIEW only after actual user integration/review evidence. M2 T02 waits for T01
+integration and its own start authorization; I-7/CSV/access auditing is now available.
+M4 T04 reversal and T05 API tasks are DONE in dev; inspect their use of the corrected
+withdrawal contract during the next feature's review. Apply new
 migrations through the normal owner workflow before using them in the development DB.
