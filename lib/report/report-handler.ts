@@ -10,6 +10,7 @@ export interface ReportRequest {
   page?: number;
   pageSize?: number;
   sort?: string;
+  direction?: "asc" | "desc";
 }
 
 export interface ReportResult<T> {
@@ -47,15 +48,18 @@ export function allowListed(value: string | undefined, allowed: string[], defaul
   return allowed.includes(value) ? value : defaultValue;
 }
 
-import { writeAuditEvent } from '../../services/audit-service';
 import type { AuthenticatedUser } from '../../lib/auth/rbac';
-import { pool } from '../../lib/db';
+import type { Executor } from '../../lib/db';
 
+/** Appends access auditing in the caller's transaction, or one standalone insert for legacy callers. */
 export async function auditReportAccess(
   user: AuthenticatedUser,
   reportName: string,
-  filters: ReportRequest
+  filters: ReportRequest,
+  executor?: Executor
 ): Promise<void> {
+  const { writeAuditEvent } = await import('../../services/audit-service');
+  const writer = executor ?? (await import('../../lib/db')).pool;
   await writeAuditEvent({
     userId: user.userId,
     actorType: 'USER',
@@ -67,6 +71,5 @@ export async function auditReportAccess(
       filters: filters as unknown as Record<string, unknown>,
       format: filters.format,
     },
-    ipAddress: '127.0.0.1',
-  }, pool);
+  }, writer);
 }

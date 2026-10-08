@@ -333,13 +333,36 @@ T05 route/runtime/screen integration and security handoff:
 
 ## Reports — framework M1, each report by its owner
 
-**RPT-01 database delivery (2026-10-08):** P05-M02-T01 provides owner-only
-`vw_rpt01_agent_transactions` (0520), retaining exact posting timestamps and branches.
-P05-M02-T02 remains pending I-7/CSV/access auditing; the endpoint below is still a
-planned contract. Runtime authorization/RLS/grants must be established before SELECT
-is enabled. The [SQL consumer contract](../2_Vibodha/09_P5_rpt01-report.md) applies
-date/branch filters before a roster outer join, preserving range-specific zero rows
-and transferred historical attribution. M2 has not added a route or altered the UI.
+**RPT-01 live delivery (2026-10-08, ADR-0022):**
+`GET /api/reports/agent-transactions` and `/reports/agent-transactions` consume I-7.
+Allowed roles: BRANCH_MANAGER (current own branch), ADMIN, CENTRAL_OPS, AUDITOR.
+Strict query keys: `from`, `to` (real ordered inclusive Colombo dates; one implies a
+single day, absent defaults today), `branchId`, `agentId` (UUIDs), `format=json|csv`,
+`page` (1–1,000,000), `pageSize` (1–100, default25), `sort=employeeNo|agentName|netTotal`,
+`direction=asc|desc`. Unknown/repeated keys are rejected. Explicit foreign manager
+branch returns403. Stored active identity and role/profile/branch are revalidated
+inside the service transaction and guarded again by 0521 SQL readers.
+
+JSON `{data}` contains `reportName`, `rows`, `subtotals` (current page), `grandTotal`
+(all applied filters), effective `filters`, `generatedAt`, `requestedBy`, `totalRows`,
+`page`, `pageSize`, `timeZone`, `scopeLabel`, `exclusions` and `notes`. Detail/count/
+money fields are exact strings; detail net is NULL and aggregate net `UNRESOLVED`
+when any legacy reversal lacks a valid original link. Rows preserve captured
+posting branch and inactive/transferred history. NULL-agent exclusions cover the
+selected branch/date scope independently of agent selection, never inferred attribution.
+
+CSV uses the same materialized aggregate snapshot/order and SQL totals, exports all
+filtered detail rows, and records fixed-width HEADER/METADATA/DETAIL/PAGE_SUBTOTAL/
+GRAND_TOTAL records. Metadata contains applied filters, UTC generation time, user and
+notes/exclusions. Signed decimal strings remain exact; quotes/CRLF/formula prefixes
+are escaped. Batches spool privately to disk within REPEATABLE READ preparation;
+the access audit commits before backpressure-aware delivery. Completion, failure
+and cancellation close/remove the spool; network delivery holds no DB transaction.
+JSON/CSV and errors are private/no-store. Safe errors:400 validation,401 missing
+session,403 role/scope/stale actor,500 unexpected preparation/audit failure.
+The page shows named scoped selectors, applied metadata, exact LKR values, explicit
+zeros/empty/loading/error/retry states and pagination. Export uses applied filters.
+Other report endpoints below remain their owners' contracts.
 
 `GET /api/reports/{report}` — `report` ∈ `agent-transactions` (RPT-01) ·
 `account-summary` (RPT-02) · `active-fds` (RPT-03) · `interest-distribution` (RPT-04) ·
