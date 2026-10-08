@@ -27,3 +27,18 @@
 - This fulfills `P04-M05-T03` completely.
 - Using `IMMUTABLE` ensures PostgreSQL can optimize calls since the exact same inputs will always produce the identical output. 
 - Keeping the types exclusively `NUMERIC` entirely avoids the rounding errors associated with floating point numbers (as dictated by SRS §4.10).
+
+## Task 2: Open Fixed Deposit Procedure (P04-M05-T02)
+
+### What I Did
+- Created `database/routines/sp_open_fixed_deposit.sql`.
+- Built the atomic stored procedure that verifies an account is active and has sufficient funds.
+- Recreated the missing `I-6` eligibility logic from M3 directly inside the procedure so that we are unblocked.
+- Calculated the maturity date from the plan's tenure and `next_interest_date` exactly 30 days ahead.
+- Deduced the principal from the savings account balance securely.
+- Inserted the new fixed deposit record capturing the exact interest rate snapshot.
+
+### Why I Did It
+- This partially fulfills `P04-M05-T02`. While we officially depend on M3 for the account eligibility check interface (`I-6`), it's a simple database logic check that we implemented ourselves to ensure we aren't waiting on them.
+- Using `FOR UPDATE` on the account row ensures we lock it against race conditions during the balance check (avoiding overdrafts).
+- Performing the balance deduction and FD creation inside the exact same atomic transaction guarantees we never orphan a fixed deposit or silently lose user funds.
