@@ -22,6 +22,7 @@ database are what make the rule true.
 | BR-O3 | Employee number, NIC/passport number and email uniquely identify an agent | CON | Named `UNIQUE` constraints on `employee_no`, `nic_passport_no` and `email` |
 | BR-O4 | Referenced users and branches are deactivated rather than physically deleted | SRV, CON | Organisation APIs expose `PATCH` and no `DELETE`; agent deactivation updates `agent` and `app_user` together; FKs use `ON DELETE RESTRICT` (FR-ORG-05) |
 | BR-O5 | Agent-management APIs manage ordinary agents, not branch-manager profiles | SRV | Every agent query joins `role` and requires `role_name = 'AGENT'`; the server assigns the `AGENT` role during creation and rejects role fields in the request |
+| BR-O7 | Agent activity respects both current access and immutable posting-branch history | SRV + SQL | T02 revalidates active caller role/profile; AGENT is self-only, manager targets current own-branch ordinary agents and filters `transaction.branch_id` in SQL; ADMIN/CENTRAL_OPS are bankwide. NULL agent attribution is excluded; managers also exclude NULL branch attribution. Inclusive Asia/Colombo dates use half-open timestamp bounds. Counts/SUM are calculated in PostgreSQL; no net balance inferred. ADR-0017. |
 | BR-O6 | Branch and agent master-data changes are audited atomically without storing passwords or identity numbers | TRG | `trg_audit_branch`, `trg_audit_agent` and the linked `app_user` trigger write through the sanitized `fn_audit_master_changes()` function in the caller transaction |
 
 ## Products and eligibility

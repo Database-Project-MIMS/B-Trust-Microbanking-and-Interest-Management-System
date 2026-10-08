@@ -258,3 +258,26 @@ Last updated: 7 Oct 2026 · /imprint
 - Deposit/withdraw buttons, the statement link and the FD panel are intentionally absent until
   Phases 3 and 4. The SavingsPlanClient previously used classes that do not exist in this theme
   (`tag`, `btn-ghost`, `text-on-surface`, `font-headline`); it now uses only the classes above.
+
+### Agent daily activity
+
+Files: `app/agents/[id]/activity/page.tsx`, `agent-activity-screen.tsx` in that folder;
+directory links in `components/organization/organization-table.tsx`, self link in
+`app/customers/page.tsx`. Updated 8 Oct 2026 · /imprint.
+
+| Property | Existing class / token |
+|---|---|
+| Purpose / props | Live agent activity; agentId, initial Colombo today, server-selected backHref |
+| Surface / hierarchy | Existing AppShell; page-header, eyebrow, page-title, page-description; card and section-heading |
+| Filters / actions | Visible required labels with field/input, native date controls, two-col; btn-primary Show activity, btn-secondary Today/Retry |
+| Spacing | space-y-6 between sections, shared card padding, mt-6 and flex gap-3 button row |
+| Context | Current branch label, applied inclusive dates; workflow-notice explains attribution, scope and type totals |
+| Results | table-wrap/data-table, caption and column/row headers; tabular-nums count, amount using existing displayMoney string formatter |
+| States | role=status loading/empty; role=alert safe error and Retry; disabled date controls/actions while loading; superseded reads aborted |
+| Responsive | Date fields stack under 640px; table scrolls within the card; verified narrow page has no document overflow |
+| Focus / color | Existing global focus ring and primary/danger/text-muted tokens; no new color, radius or shadow |
+
+Today recomputes the Colombo date on click. Applied dates remain beside the result,
+and new period loads hide stale totals. No sum across transaction types or account
+balance is displayed. Browser QA covers populated/filtered/empty/denied/self views;
+screenshots are local ignored test evidence, described in the T02 handoff.
