@@ -1,10 +1,37 @@
 # Current State
 
-**Updated:** 2026-10-08 · **Owner:** M2 (current FD listing work below supersedes historical checkout notes)
-**Checkout:** feat/p04-m02-customer-fd-linkage · base dev c5fed03
-**Work:** P04-M02-T01 verified locally, REVIEW under ADR-0018; M2 Phase 3 complete through merged PR #53
+**Updated:** 2026-10-08 · **Owner:** M2 (current FD scope work supersedes historical checkout notes)
+**Checkout:** feat/p04-m02-fd-branch-scope · base dev e9291dc
+**Work:** P04-M02-T02 verified locally, REVIEW under ADR-0019; T01 DONE through PR #60
 
-## Current customer FD listing delivery
+## Current customer FD scope delivery
+
+Migration 0421 adds a stable SECURITY INVOKER stored-actor check and additive
+RESTRICTIVE SELECT-only FD policy. Direct base/view reads require current active
+stored user/role; staff profile/branch must be active and match branch context.
+Existing 0420 assignment/customer/account/self predicates remain ANDed. An owner-only
+installer binds immediately on an existing schema, or after 0420 in the existing
+post-migration views step. No merged migration, runtime write access, financial
+writer, table columns, DTO, route or UI is changed.
+
+Full verification PASS: **630 tests /60 suites**, zero failures/skips, clean isolated
+**31-migration** rebuild/checksums, typecheck/lint/production build. 14 new cases
+(DB10/API4) cover direct SQL context and live-session scope transitions plus context
+cleanup. An initial file-level branch-test failure was not reproduced: unchanged
+file passed 4/4 alone and the repeat combined run passed; recorded in the handoff.
+No new UI, so T01 browser/imprint evidence retained; /review and /remember complete.
+
+The user's “do it now” authorizes only this T02 read-side start (ADR-0019). General
+phase gates/OQ-13/OQ-14 remain pending. M1/M5 review the additive policy; future
+M5/M3 FD read paths retain owner responsibility. All five overviews reviewed, only
+M2 updated. Tracker: **48 TODO /1 REVIEW /48 DONE (97)**. Normal development database
+not migrated/reset; disposable verification clusters cleaned up. Changes unstaged/
+uncommitted on HEAD e9291dc; user retains commit/push/PR/merge control.
+[Handoff and review](handoffs/p04-m02-fd-branch-scope.md).
+
+---
+
+## Historical customer FD listing delivery (T01 subsequently merged PR #60)
 
 Caller-security `vw_customer_fd_summary`, authenticated
 `GET /api/customers/{id}/fixed-deposits` and the customer profile's Fixed Deposits

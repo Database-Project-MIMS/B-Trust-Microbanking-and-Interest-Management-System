@@ -35,7 +35,7 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
 | ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
-| 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | ~~T01~~ local REVIEW; T02 TODO | FD view, scoped listing API and profile panel verified under ADR-0018; user publication/review pending | ~5 |
+| ~~08~~ | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | ~~T01~~ DONE (PR #60); ~~T02~~ local REVIEW | FD listing merged; direct-read actor guard verified under ADR-0019, user publication/policy review pending | ~5 |
 | 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, CSV | ~7 |
 | 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
 
@@ -152,5 +152,10 @@ P04-M02-T01 is implemented and verified on feat/p04-m02-customer-fd-linkage unde
 ADR-0018. M5's merged 0480 table supplies the read-side schema; M5 opening remains
 partial. 612 tests /57 suites, clean isolated 29-migration rebuild/checksums,
 typecheck/lint/build and populated/empty/error/retry/mobile browser checks pass.
-Local REVIEW awaits user publication/review. No general phase gate is approved
-and P04-M02-T02 is not marked complete. See the FD listing handoff.
+T01 is DONE through merged PR #60 (dev e9291dc). No general phase gate is approved.
+The user authorized T02's scoped start; see ADR-0019 and the FD scope handoff.
+
+T02 is implemented and verified locally: 0421 restrictive stored-actor SELECT guard,
+DB/API scope-transition tests. Full 630 tests /60 suites, clean isolated 31-migration
+rebuild/checksums, typecheck/lint/build pass. Local REVIEW awaits user publication
+and M1/M5 policy review. No new UI/financial writer or general phase approval.

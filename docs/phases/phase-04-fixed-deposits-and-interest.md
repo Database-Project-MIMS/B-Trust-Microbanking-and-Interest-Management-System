@@ -73,6 +73,16 @@ general gate were explained (ADR-0018). 0480 supplies the merged FD schema; disp
 fixtures validate customer linkage without money-moving opening calls. Implementation
 is verified locally, REVIEW on feat/p04-m02-customer-fd-linkage: 612 tests /57 suites,
 clean 29-migration rebuild/checksums, typecheck/lint/build and browser checks pass.
-User publication and teammate review remain. This does not approve Phase 3 exit,
-general Phase 4 entry, OQ-13/OQ-14, or M5/M3 completion. T02's broader FD integration
-remains TODO; baseline SQL/RLS scope is required for the T01 listing itself.
+T01 is now DONE through merged PR #60 (dev e9291dc). This does not approve Phase 3
+exit, general Phase 4 entry, OQ-13/OQ-14, or M5/M3 completion. Baseline SQL/RLS scope
+is required for the T01 listing itself.
+
+Vibodha subsequently said “do it now” for P04-M02-T02 after the pending gate was
+explained. ADR-0019 authorizes its focused M2 FD read-scope completion: current-actor
+restrictive SELECT guard plus direct SQL/live-session regression tests. No general
+phase approval, FD financial writer or another member's read-path completion is
+inferred. Existing M2 UI/API shape is unchanged; M1/M5 policy review remains.
+
+T02 verified locally, REVIEW: 630 tests /60 suites, clean isolated 31-migration
+rebuild/checksums, typecheck/lint/build pass. User publication and policy review
+remain; the phase's entry/exit criteria above are not checked by this read task.
