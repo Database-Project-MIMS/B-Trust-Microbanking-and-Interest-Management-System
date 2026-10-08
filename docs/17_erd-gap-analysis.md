@@ -737,6 +737,15 @@ handoff. The user authorized T02's scoped start; general phase gates remain pend
 
 ## P05-M02-T01 report illustration corrections (2026-10-08)
 
+**T02 follow-up (ADR-0022, 0521):** The baseline transaction table has no active RLS
+policy despite NFR-SEC-07. Broadly changing its visibility would alter M4 writers
+and is not included in this report task. Narrow, fixed SECURITY DEFINER aggregates
+instead revalidate stored actor/context and immutable posting-branch scope in SQL,
+revoke PUBLIC EXECUTE and keep the 0520 view private. Record broader transaction
+RLS with M1/M4; do not claim this reader resolves the raw-table requirement.
+Signed net now follows transaction_reversal original type/account/amount; invalid
+links yield unresolved net and NULL-agent exclusions are disclosed independently.
+
 The task card's COUNT(*) on a LEFT JOIN counted an empty agent as one. Its all-time
 aggregation discarded the timestamp needed for a selected range, and `posted_at` /
 `idx_transaction_agent_posted` do not exist: the merged names are `transaction_date`
@@ -745,7 +754,8 @@ history after a transfer. ADR-0020 resolves these as a timestamp/type/posting-br
 aggregate view with COUNT(transaction_id), exact NUMERIC sums and a tested filtered
 roster outer-join contract. No ERD/table change or index is added. Include every
 agent-table attribution profile, preserving inactive/promoted staff history. Runtime
-report scope and signed net/reversal presentation remain T02/M1/M4 responsibilities.
+0521 now supplies guarded report scope and linked-reversal net; broader raw-table
+RLS and malformed legacy-link cleanup remain M1/M4 responsibilities.
 
 ## P03-M04-T03 merged routine correction (2026-10-08, ADR-0021)
 
