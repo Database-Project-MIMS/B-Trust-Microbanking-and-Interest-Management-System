@@ -169,7 +169,11 @@ test('P03-M04-T03: sp_post_withdrawal routine', async (t) => {
       assert.ok(postRes.p_reference_number);
       assert.equal(Number(postRes.p_balance_after), 49000.00);
 
-      const [acc] = await query('SELECT current_balance FROM account WHERE account_id = $1', [activeAccountId]);
+      const acc = await withTransaction(async (tx) => {
+        await setRlsContext(tx, { userId, roleName: 'ADMIN' });
+        const r = await tx.query('SELECT current_balance FROM account WHERE account_id = $1', [activeAccountId]);
+        return r.rows[0];
+      });
       assert.equal(Number(acc.current_balance), 49000.00);
 
       const [txn] = await query('SELECT amount, balance_after, transaction_type FROM transaction WHERE transaction_id = $1', [postRes.p_transaction_id]);

@@ -6,7 +6,7 @@ CREATE OR REPLACE PROCEDURE sp_write_rejection_audit(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, after_value)
+    INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, new_values)
     VALUES (p_user_id, 'USER', 'account', p_account_id, 'WITHDRAWAL_REJECTED',
             jsonb_build_object('reason', p_reason));
 END;
@@ -117,7 +117,7 @@ BEGIN
     UPDATE account SET current_balance = p_balance_after, updated_at = now()
     WHERE account_id = p_account_id;
 
-    INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, after_value)
+    INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, new_values)
     VALUES (p_initiated_by_user_id, 'USER', 'transaction', p_transaction_id, 'WITHDRAWAL',
             jsonb_build_object('amount', p_amount, 'balance_after', p_balance_after));
 END;
