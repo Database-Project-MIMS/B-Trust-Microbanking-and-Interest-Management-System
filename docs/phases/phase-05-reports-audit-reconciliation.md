@@ -24,6 +24,12 @@ the correction are merged through PR #67. Current T02 checks and remaining full
 suite failures are recorded in [its handoff](../../.agent/handoffs/p05-m02-rpt01-api-ui.md).
 The earlier 663-test result predates integration and is historical.
 
+**M4 scoped RPT-05 start (2026-10-08):** The user requested T01/T02 and confirmed
+joint activity attribution to every holder (ADR-0022). Local implementation is in
+REVIEW: seven RPT-05 DB/API tests pass and a disposable rebuild succeeds. The
+combined suite and typecheck still have failures outside RPT-05; general Phase 5
+entry remains pending. [Handoff](../../.agent/handoffs/p05-m04-rpt05.md).
+
 ## Tasks by member
 
 | Member | Focus |

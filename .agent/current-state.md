@@ -1,5 +1,16 @@
 # Current State
 
+## M4 RPT-05 update (2026-10-08)
+
+P05-M04-T01/T02 are in local REVIEW on the current dirty M4 checkout. Migration
+0560, the report service/API, and the live report page implement holder-attributed
+activity with reversal adjustment, SQL scope, CSV and access audit. The user
+confirmed every-holder joint attribution (ADR-0022). RPT-05 tests pass 8/8 and
+the disposable 43-migration rebuild/checksum checks pass. The combined suite
+still has 27 failures outside RPT-05; typecheck, lint and production build pass.
+Do not mark DONE yet.
+[Details](handoffs/p05-m04-rpt05.md). No assistant Git publication.
+
 **Updated:** 2026-10-08 · **Owner:** M2
 **Checkout:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
 **Work:** P05-M02-T02 implemented locally, REVIEW; user publication/integration review pending.

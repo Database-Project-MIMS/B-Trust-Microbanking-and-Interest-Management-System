@@ -627,8 +627,8 @@ SRS §6.1 requires intentional denormalisation to be documented. Four entries:
 
 | # | Denormalised value | Derivable from | Why it is kept | Control |
 |---|---|---|---|---|
-| D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view asserts equality with the ledger |
-| D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view compares against the window-function result |
+| D-1 | `account.current_balance` | `SUM` of signed ledger amounts | Recomputing on every withdrawal does not scale and makes `FOR UPDATE` locking awkward; a single locked row serialises concurrent withdrawals cleanly | `CHECK (>= 0)`; only posting routines may write it; Phase 5 reconciliation view `vw_reconciliation_balance` asserts equality with the ledger |
+| D-2 | `transaction.balance_after` | Window function over prior rows | FR-TXN-04 balance evidence; O(1) statement rendering; survives reversal ordering ambiguity | Written inside the same locked transaction; reconciliation view `vw_reconciliation_running_balance` compares against the window-function result |
 | D-3 | `fixed_deposit.interest_rate_at_opening` | `fd_plan.interest_rate` | Rates are effective-dated (BR-19); reading through the plan would retroactively change historical payouts | `NOT NULL`; set once at opening; never updated |
 | D-4 | `account.branch_id` | Opening agent's branch at account creation | Branch ownership must not drift when an agent transfers; it is the RLS and historical-report anchor | `NOT NULL FK`; assigned from trusted branch scope at opening; never changed |
 

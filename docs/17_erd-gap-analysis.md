@@ -1,5 +1,10 @@
 # 17 — ERD Gap Analysis
 
+**RPT-05 interpretation (ADR-0022):** The user confirmed one activity attribution
+per joint-account holder. Summing customer totals can therefore exceed a bankwide
+distinct-ledger total. This report's grand total is labelled holder-attributed; use
+the reconciliation report for a distinct-ledger control total.
+
 **Compares:** `Project 4` assignment brief · `Group 32 SRS v1.1` · `group_32_ERD2`
 **Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 3 remain blocking.
 

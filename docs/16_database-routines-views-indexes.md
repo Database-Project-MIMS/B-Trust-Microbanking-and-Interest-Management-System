@@ -112,8 +112,9 @@ coordination and API/UI integration remain pending; see the T04 handoff.
 | `vw_account_transaction_summary` | M3 | **RPT-02** — opening/closing balance, counts and totals by type | RPT-02 | L13 window functions |
 | `vw_active_fd_schedule` | M5 | **RPT-03** — active FDs with next payout and maturity | RPT-03 | L05 |
 | `vw_monthly_interest_distribution` | M5 | **RPT-04** — distributions per cycle per account type, with subtotals | RPT-04 | **L13 `ROLLUP` / `GROUPING SETS`** |
-| `vw_customer_activity` | M4 | **RPT-05** — deposits, withdrawals, interest and net movement per customer | RPT-05 | L05, L13 |
-| `vw_ledger_reconciliation` | M4 | Asserts `current_balance` = signed ledger sum = last `balance_after` | reconciliation | L11 consistency |
+| `vw_rpt05_customer_activity` (0560) | M4 | **RPT-05** — customer/account/ledger grain; reversals negate their original category; joint entries appear once per holder | RPT-05 | L05 outer joins, L13 filtered aggregation in service |
+| `vw_reconciliation_balance` | M4 | Asserts `current_balance` = signed ledger sum | reconciliation | L11 consistency |
+| `vw_reconciliation_running_balance` | M4 | Asserts `balance_after` = window function running balance | reconciliation | L11 consistency, L13 window |
 | `vw_interest_run_summary` | M5 | Run counts, totals and exceptions | audit | L05 |
 | `vw_customer_account_holdings` | M2 | Customers with their accounts, including joint | RPT-05 | L05 outer joins |
 | `vw_customer_fd_summary` (implemented 0420) | M2 | Customer→holder→account→FD/product; all statuses, exact snapshot values, caller RLS | customer profile | L05 joins, L07 privileges, L11 read snapshot |
