@@ -1,7 +1,7 @@
 # P02-M03-T06: account screens and real plans page
 
 **From:** Member 3 · **To:** Member 3 (review/PR), Member 1 (nav + route scope), Member 2 (document verification), Member 4 (Phase 3 buttons) · **Date:** 2026-10-07
-**Status:** built and tested locally; manual browser pass, `/review` and the user's PR pending (the user publishes).
+**Status:** merged into dev. Browser pass partial (2026-10-08): list, plans, wizard through review step and the server's `DOCUMENTS_NOT_VERIFIED` rejection verified; the successful opening and detail page await a verified document (Member 2). Known minor items: sub-minimum deposit not blocked client-side (server catches it); review-step card is narrower than the form.
 
 ## What exists
 | Route | Component | Notes |

@@ -5,7 +5,22 @@ blocks so nobody discovers the dependency by surprise.
 
 ## Blocking (must resolve before the phase noted can _finish_)
 
-_(none — OQ-01, OQ-04, OQ-05 and OQ-08 were resolved on 2026-10-02, see below)_
+### Account opening blocked: no document verification path — 2026-10-08 (raised by M3, owner M2)
+
+`sp_open_savings_account` and `sp_add_account_holder` require every holder to have a verified document
+(`DOCUMENTS_NOT_VERIFIED`, ERD Assumption 3). Registration only inserts unverified documents and the RLS policy
+`customer_document_insert_scope` forbids verified rows, and no endpoint or page sets `verified_by`/`verified_date`.
+Result: an app-registered customer can never be opened an account through the UI (found in the 2026-10-08 browser pass).
+Needed: a scoped verification endpoint and UI (and the role lock narrowing already noted in `current-state.md`), or
+seed data with verified documents so the demo works. Blocks the Phase 2 exit demonstration. Not an M3 file change.
+
+### Seeded branch managers cannot hold a session — 2026-10-08 (raised by M3, owner M1/M5)
+
+Seed users `bm_colombo`, `bm_kandy`, `bm_galle` have no `agent` row. `validateSession` (`lib/auth/session.ts`) requires an
+ACTIVE `agent` row for AGENT and BRANCH_MANAGER, so login returns 200 and then every page redirects to `/sign-in`
+(also `branchId` is null in the login response). The account wizard and customer registration are meant for
+BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch managers get `agent` rows (seed and
+`assertBranchProfile` expectations) or a different branch link, and fix the seed or the session query. Not an M3 file change.
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
