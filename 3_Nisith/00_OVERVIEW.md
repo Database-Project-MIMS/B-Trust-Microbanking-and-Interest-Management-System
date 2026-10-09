@@ -33,7 +33,7 @@ Closeout is merged into dev; the user retains all publication control.
 | 08 | [Mandate Validation & Balance](08_P3-T02-T03_mandate-validation-balance-panel.md) | P3 | T02–T03 | ~~Joint-mandate check callable from withdrawal path; balance/authority panel~~ (T02, T03 done) | ~5 |
 | ~~09~~ | ~~[FD Eligibility & Closure](09_P4_fd-eligibility-closure-panel.md)~~ | ~~P4~~ | ~~T01–T03~~ | ~~Account-side FD eligibility (**I-6**), closure rule (BR-18, backend only), FD panel~~ | ~~~7~~ |
 | ~~10~~ | ~~[RPT-02 Account Summary Report](10_P5_rpt02-report.md)~~ | ~~P5~~ | ~~T01–T02~~ | ~~Account-wise summary view, API, CSV, page~~ | ~~~7~~ |
-| 11 | [Concurrency & Constraint Tests](11_P6_concurrency-constraint-tests.md) | P6 | T01–T02 | Parallel-withdrawal overspend tests (AC-06); full constraint suite | ~5 |
+| ~~11~~ | ~~[Concurrency & Constraint Tests](11_P6_concurrency-constraint-tests.md)~~ | ~~P6~~ | ~~T01–T02~~ | ~~Parallel-withdrawal overspend tests (AC-06); full constraint suite~~ | ~~~5~~ |
 
 ---
 

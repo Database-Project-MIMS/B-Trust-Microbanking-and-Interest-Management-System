@@ -372,8 +372,8 @@ Unannotated Phase 6 rows remain TODO.
 | P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests + seed completion | P03-M05-T01; scoped start/completion ADR-0024 | REVIEW (PR #88; global AC-12 and exact ledger/payout/reseed checks pass; 0620 and authorized cross-owner repairs; actual resolved tree 940 tests pass; user merge commit/publication pending) |
 | P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | REVIEW (100 DB/16 API cases; focused 309/full 1062 including security; 51-migration rebuild/checksums/typecheck/lint pass; local commits authorized, publication pending) |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | TODO |
-| P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | TODO |
-| P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | TODO |
+| P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
+| P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | TODO |
 | P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 | TODO |
 | P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 | DONE |
