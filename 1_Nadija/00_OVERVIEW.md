@@ -8,6 +8,13 @@
 
 ## 🗺️ Work Order Summary
 
+**Current summary reviewed 2026-10-09:** [task tracker](../docs/09_task-tracker.md)
+and [local closeout](../docs/20_final-local-closeout.md) supersede older status notes.
+M2 T01/T02 are merged (PR #88/#90). ADR-0026 dependencies and final docs are locally
+implemented, REVIEW awaiting user publication. Live HTTPS and general acceptance remain
+pending; accepted savings/transfer extensions are not implemented.
+
+
 **2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
 reported integration failures in other members' code. Full current865/latest940
 tests pass; original stewardship and unfinished task statuses remain.
@@ -19,15 +26,15 @@ Closeout is merged into dev; the user retains all publication control.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~~3~~ |
-| ~~02~~ | ~~[Authentication](02_P1-T02_authentication.md)~~ | ~~P1~~ | ~~T02~~ | ~~Password hashing, login/logout APIs, session management~~ | ~~~3~~ |
-| ~~03~~ | ~~[RBAC & Scope](03_P1-T03_rbac-branch-scope-csrf.md)~~ | ~~P1~~ | ~~T03~~ | ~~`requireRole()`, `branchScope()`, CSRF ⚡ **CRITICAL PATH**~~ | ~~~3~~ |
-| ~~04~~ | ~~[Sign-in & Shell](04_P1-T04_sign-in-app-shell.md)~~ | ~~P1~~ | ~~T04~~ | ~~Sign-in page, app shell, role-aware nav~~ | ~~~2~~ |
-| ~~05~~ | ~~[Params & Audit](05_P1-T05_parameters-audit.md)~~ | ~~P1~~ | ~~T05~~ | ~~`system_parameter`, `business_calendar`, `audit_log`, triggers~~ | ~~~2~~ |
+| ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~about 3~~ |
+| ~~02~~ | ~~[Authentication](02_P1-T02_authentication.md)~~ | ~~P1~~ | ~~T02~~ | ~~Password hashing, login/logout APIs, session management~~ | ~~about 3~~ |
+| ~~03~~ | ~~[RBAC & Scope](03_P1-T03_rbac-branch-scope-csrf.md)~~ | ~~P1~~ | ~~T03~~ | ~~`requireRole()`, `branchScope()`, CSRF ⚡ **CRITICAL PATH**~~ | ~~about 3~~ |
+| ~~04~~ | ~~[Sign-in & Shell](04_P1-T04_sign-in-app-shell.md)~~ | ~~P1~~ | ~~T04~~ | ~~Sign-in page, app shell, role-aware nav~~ | ~~about 2~~ |
+| ~~05~~ | ~~[Params & Audit](05_P1-T05_parameters-audit.md)~~ | ~~P1~~ | ~~T05~~ | ~~`system_parameter`, `business_calendar`, `audit_log`, triggers~~ | ~~about 2~~ |
 | 06 | [RLS & Scope](06_P2_rls-audit-branchscope.md) | P2 | ~~T01–T03~~ | ~~Row Level Security, audit coverage, branch scope enforcement~~ | ~6 |
-| ~~07~~ | ~~[Hours & Reversals](07_P3_business-hours-reversal-audit.md)~~ | ~~P3~~ | ~~T01–T03~~ | ~~Business hours enforcement, reversal auth, financial audit~~ | ~~~8~~ |
-| ~~08~~ | ~~[Worker Auth](08_P4_worker-auth-cycle-config.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~Interest run auth, cycle configuration~~ | ~~~6~~ |
-| ~~09~~ | ~~[Report Framework](09_P5_report-framework-csv-audit-search.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Report framework (I-7), CSV export, audit search~~ | ~~~12~~ |
+| ~~07~~ | ~~[Hours & Reversals](07_P3_business-hours-reversal-audit.md)~~ | ~~P3~~ | ~~T01–T03~~ | ~~Business hours enforcement, reversal auth, financial audit~~ | ~~about 8~~ |
+| ~~08~~ | ~~[Worker Auth](08_P4_worker-auth-cycle-config.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~Interest run auth, cycle configuration~~ | ~~about 6~~ |
+| ~~09~~ | ~~[Report Framework](09_P5_report-framework-csv-audit-search.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Report framework (I-7), CSV export, audit search~~ | ~~about 12~~ |
 | 10 | [Security & Deploy](10_P6_security-testing-deployment.md) | P6 | T01–T04 | SQL injection tests, auth matrix, RLS verification, deployment | ~9 |
 
 ---

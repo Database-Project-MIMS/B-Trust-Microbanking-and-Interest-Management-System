@@ -1,5 +1,18 @@
 # Open Questions
 
+G-26 (2026-10-09, ADR-0026) records the missing FD API/UI and nonexecuting interest
+endpoint. User authorizes completing other-owner dependencies. New 0622 grants,
+policies and FD idempotency control metadata implement existing financial contracts;
+the production service commits each interest distribution independently. Legacy
+owner-only cycle SQL remains for deterministic seed compatibility.
+
+## 2026-10-09 final local closeout (ADR-0026)
+
+User authorizes necessary cross-owner fixes and local commits for P06-M02-T03.
+G-25 records missing transaction RLS; add a new 0621 migration, never edit merged
+migrations. M1/M4 ownership stays unchanged. Live HTTPS deployment remains pending
+by the user's explicit choice; no general checkpoint/lecturer approval is inferred.
+
 Raised during Phase 0 while reconciling the brief, SRS and ERD. Each entry says what it
 blocks so nobody discovers the dependency by surprise.
 
@@ -443,3 +456,38 @@ financial audit tests assume missing account fixtures/old event shapes; two olde
 withdrawal callers hit ambiguous overloads (42725). These files are unchanged by
 T02. M1/M4 own their fixes; see p05-m02-rpt01-api-ui.md for exact files/evidence.
 This prevents claiming full integration acceptance or general phase approval.
+
+## 2026-10-09 final local scope disposition
+
+ADR-0012 savings average-daily-balance interest remains absent from the physical payout
+schema/runtime. ADR-0010 transfer groups remain absent; OQ-12/OQ-13/OQ-14 retain
+explicit decisions. These are accepted extensions, not accomplished features.
+Transaction pages still using WorkflowScreen need real wiring/browser verification.
+User explicitly chose local verification only; live HTTPS remains pending.
+No general phase/lecturer acceptance is inferred from ADR-0026 or local test results.
+
+G-27: manager-only reversal is the authoritative docs/05/M4 contract. Legacy ADMIN
+allowance and missing procedure guard/key persistence are corrected under ADR-0026,
+using 0626; no new business-rule approval is needed to enforce the existing rule.
+
+## G-28 withdrawal adapter correction
+
+Final comparison found the service using login UUIDs as customer IDs and the throwing
+legacy routine, losing known-rejection audits. Before M4-owned adapter edits: resolve
+the active linked customer under RLS, accept explicit staff signer evidence, and use
+existing sp_try_post_withdrawal, committing its rejection audit before mapping the
+HTTP error. User authorization covers these changes; no ownership transfer or merged
+migration edit. Real runtime API tests must cover self-signing, ALL_HOLDERS, key replay,
+scope and durable rejection evidence. Physical signature capture UI remains pending.
+
+G-28 root cause found by real CUSTOMER API tests: account UPDATE RLS prevents
+SELECT FOR UPDATE, so the invoker path cannot implement the specifically documented
+customer withdrawal contract. Proposal 0627: a pinned-path SECURITY DEFINER wrapper
+checks stored active CUSTOMER/profile/context, own account and exactly self signer;
+then reuses the existing audited locked core. No customer UPDATE policy/grant change.
+Direct app UPDATE and forged wrapper calls must remain denied.
+
+G-27/G-28 local disposition (2026-10-09): RESOLVED by 0626/0627 and real runtime
+API/direct-SQL tests. Reversal actor/key/receipt and withdrawal identity/signers/rejection
+audit now match their contracts. Staff physical signature UI remains pending alongside
+prototype transaction pages; no live or lecturer acceptance is inferred.

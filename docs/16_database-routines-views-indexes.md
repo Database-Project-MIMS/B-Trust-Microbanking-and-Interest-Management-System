@@ -1,5 +1,13 @@
 # 16 — Database Routines, Views and Indexes
 
+**Current physical inventory:** [docs/18](18_implemented-database-catalog.md) lists
+routine signatures/kinds/security, views, indexes and triggers. Planned names below are
+historical design. Legacy FD opening/cycle functions are owner/seed-only. Runtime uses
+invoker `sp_open_fd_controlled` (0623), service-owned per-FD transactions, validated control
+policies (0622), `fn_agent_activity_scoped` (0624) and locked account-status checks (0625).
+Merged SQL files were preserved; corrections use new 0621–0627 migrations.
+
+
 Implementation inventory. Names are reconciled with our approved schema and the SRS §6.5
 routine table. The inventory contains both implemented Phase 1 objects and objects planned
 for later phases; the owning migration and task documentation record implementation state.
@@ -246,3 +254,20 @@ using the shared transaction-local RLS context. No routine, view or index is add
 L01 (introduction) and L12 (big data) are contextual; L12 is addressed in
 `12_testing-and-acceptance.md` under the one-million-row scalability target
 (NFR-PERF-04).
+
+### Controlled reversal — 0626 / G-27
+
+`fn_reversal_actor_is_current` validates stored active manager/branch identity.
+`sp_reverse_transaction_controlled` locks the account, validates/replays its ledger key,
+posts one compensating row and control/audit state. The old signature is a guarded wrapper.
+Both invoker procedures have no PUBLIC execution. Reversal-link INSERT RLS requires a
+current manager, matching actor and same-account REVERSAL row; SELECT inherits ledger scope.
+
+### Controlled customer withdrawal — 0627 / G-28
+
+`sp_try_customer_withdrawal` is a pinned-path SECURITY DEFINER wrapper, executable
+only by mims_app/owner. Stored active CUSTOMER role/profile and matching transaction
+context, exactly self signer and owned account are required. The existing 0363 core
+locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
+rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
+remains denied; staff continue through the invoker audited-attempt routine.

@@ -1,5 +1,13 @@
 # 13 — System Operation Guide
 
+**Current local guide (2026-10-09):** follow the verified-role
+[demonstration script](demonstration-script.md) and [docs/20](20_final-local-closeout.md).
+Some transaction pages described below remain prototypes; execute their real APIs with
+CSRF/idempotency headers for financial evidence. FD list/opening/quote, interest execution
+and RPT-03/RPT-04 are now wired. Current interest is FD-only; savings/transfer extensions
+and live HTTPS remain pending. Historical proposed flows below are not completion evidence.
+
+
 How to operate and demonstrate MIMS. Written so a QA tester or an examiner can follow it
 without asking anyone.
 

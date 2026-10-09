@@ -1,14 +1,14 @@
 # 04 — Database Schema
 
-**Baseline:** `group_32_ERD2` (16 tables). **Status:** Phase 1 implemented and verified;
-Phase 2 entry approved 2026-10-05. Account and transaction schemas also exist (`0240`,
-`0260`); customer/holder/mandate and later financial features remain planned.
+**Baseline:** original `group_32_ERD2` (16 entities), retained as historical design.
+The current clean rebuild has **26 public tables and 58 migration entries**.
+[Implemented database catalog](18_implemented-database-catalog.md) lists exact columns,
+nullability, defaults, constraints, routines, policies, triggers, indexes and migrations.
+It is the physical implementation reference; the original ERD is a design reference.
 
-This document has two clearly separated parts:
-
-- **Part A — CURRENT ERD.** What our approved ERD actually says. Nothing invented.
-- **Part B — PROPOSED CHANGES.** Every deviation, each traceable to a finding in
-  `17_erd-gap-analysis.md`. **Nothing in Part B may be implemented until it is approved.**
+- **Part A — Original ERD.** Source model and original keys.
+- **Part B — Change register.** Approved deviations and proposals; implementation
+  is identified explicitly and unresolved scope is in `17_erd-gap-analysis.md`.
 
 > Rule: if you need a schema change that is not in Part A or an approved Part B item,
 > stop. Add it to `17_erd-gap-analysis.md` and `.agent/open-questions.md` first. Do not
@@ -21,7 +21,7 @@ via `gen_random_uuid()`, `TIMESTAMPTZ` for all instants, `money_amount`/`positiv
 
 ---
 
-# Part A — CURRENT ERD (16 tables)
+# Part A — Original ERD (16 entities)
 
 ## Entity map
 
@@ -475,12 +475,12 @@ Implemented in `0363_p03_m04_transaction_reversal.sql`. Links an original transa
 
 ---
 
-# Part B — PROPOSED CHANGES (require approval)
+# Part B — Approved Change and Proposal Register
 
 Every item traces to `17_erd-gap-analysis.md`. **Do not implement anything here until the
 corresponding open question is resolved and an ADR exists.**
 
-## B.1 New tables (7)
+## B.1 Historical new-table proposals
 
 | Table | Purpose | Gap | Owner |
 |---|---|---|---|
@@ -491,7 +491,7 @@ corresponding open question is resolved and an ADR exists.**
 | `user_session` | Server-side session records so sessions can be invalidated (FR-AUTH-04) | G-16 | M1 |
 | `login_attempt` | Failed sign-in throttling (FR-AUTH-03) | G-17 | M1 |
 
-**16 current + 7 proposed = 23 tables.**
+**Historical proposal inventory.** Current physical inventory: 26 tables, including migration and request-receipt tables; see docs/18.
 
 ## B.2 Column additions
 
@@ -501,13 +501,13 @@ corresponding open question is resolved and an ADR exists.**
 | `transaction` (0320 implemented) | `agent_id uuid NULL FK` | RPT-01 reporting agent captured at posting time; ADR-0016 | G-07 |
 | `transaction` (0320 implemented) | `branch_id uuid NULL FK` | Historical posting branch; ADR-0016 | G-07 |
 | `transaction` | `idempotency_key varchar(80) NULL` | FR-DEP-04, AC-06 | G-04 |
-| `transaction` | `balance_after money_amount NOT NULL` | FR-TXN-04 running-balance evidence | G-14 |
+| `transaction` | `balance_after money_amount NULL` (legacy rows); new postings supply it | FR-TXN-04 running-balance evidence | G-14 |
 | `transaction` | `status varchar(20)` | **REJECTED**: Reversal state is derived purely via `transaction_reversal` to preserve the trigger immutability. | G-02 |
 | `fixed_deposit` | `maturity_date date NOT NULL` | FR-FD-04, RPT-03 | G-23 |
 | `fixed_deposit` | `interest_rate_at_opening interest_rate NOT NULL` | Rate fixed at opening; protects historical payouts (BR-19) | G-11 |
 | `interest_payout` | `interest_run_id uuid FK`, `cycle_date date` | Cycle idempotency | G-03 |
 | `savings_plan` (implemented) | `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult` | Data-driven eligibility (FR-ACC-02) | G-13 |
-| `savings_plan`, `fd_plan` (implemented) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
+| `fd_plan` (implemented; savings-plan rates remain mutable) | `effective_from`, `effective_to` | Effective-dated products (BR-19) | G-11 |
 | `branch` | `branch_code varchar(20) UNIQUE` | §4.2 requires unique branch codes | — |
 | `agent` | `employee_no varchar(30) UNIQUE`, `hired_date`, `status` | §4.2 unique employee numbers, FR-ORG-03 | — |
 | `account_holder` | `holder_type varchar(20)` | `PRIMARY` / `JOINT` (approved ADR-0009) | G-08 |
@@ -517,8 +517,8 @@ corresponding open question is resolved and an ADR exists.**
 
 | Change | Reason | Gap | Approval |
 |---|---|---|---|
-| `fixed_deposit`: replace `UNIQUE(account_id)` with partial unique index `WHERE status='ACTIVE'` | One *active* FD, not one ever | G-01 | **Blocking** |
-| `transaction.reference_number` → `UNIQUE NOT NULL` | BR-10, FR-DEP-02 | G-05 | **Blocking** |
+| `fixed_deposit`: replace `UNIQUE(account_id)` with partial unique index `WHERE status='ACTIVE'` | One *active* FD, not one ever | G-01 | Implemented 0480, ADR-0011 |
+| `transaction.reference_number` → `UNIQUE NOT NULL` | BR-10, FR-DEP-02 | G-05 | Implemented 0360; transfers remain pending |
 | `account.current_balance` → `NOT NULL DEFAULT 0 CHECK (>= 0)` | NFR-SAFE-01 | G-18 | No |
 | Partial unique index on `customer_agent(customer_id) WHERE is_active` — implemented 0221; at most one active | FR-CUS-02 | G-10 | No |
 | `interest_payout`: `UNIQUE(fd_id, cycle_date)` | FR-INT-03, NFR-SAFE-03 | G-03 | Yes |
@@ -767,3 +767,31 @@ NULL financial outputs. The future service commits this audit-only result throug
 withTransaction, then throws/maps the safe domain error outside it. Unexpected
 errors abort all effects. A legacy throwing call cannot preserve its audit through
 a caller rollback. No autonomous transaction, new table or live API is introduced.
+
+## P06 controlled runtime additions — ADR-0026
+
+0621 enables account-anchored transaction RLS. 0622 adds validated FD control actor
+policies, interest run/payout policies and `fd_opening_request` (UUID PK, actor/key unique,
+SHA-256 payload hash, restricted actor/FD FKs). The runtime view installer executes
+after the legacy customer-listing late binder. 0623 adds invoker `sp_open_fd_controlled`
+with minimum-principal, effective-plan, actor and account-lock checks. 0624 adds a narrow
+execute-only scoped agent-activity aggregate retaining self history without broad ledger
+access. 0625 rejects interest credits to inactive accounts after locking the account.
+
+Application execution of legacy owner/seed FD opening and cycle functions is revoked.
+Runtime cycle orchestration uses one transaction per FD distribution. The FD-only payout
+schema does not implement ADR-0012's savings source; ADR-0010 transfer groups are absent.
+
+0626 restores the existing manager-only reversal rule using a stored active manager/branch
+guard, constrained reversal-link RLS, controlled key persistence/replay and a guarded legacy
+wrapper. The seed uses real same-branch managers for its five reversals. Runtime principal
+and opening-rate UPDATE are not granted; only FD lifecycle columns can change.
+
+### Controlled customer withdrawal — 0627 / G-28
+
+`sp_try_customer_withdrawal` is a pinned-path SECURITY DEFINER wrapper, executable
+only by mims_app/owner. Stored active CUSTOMER role/profile and matching transaction
+context, exactly self signer and owned account are required. The existing 0363 core
+locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
+rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
+remains denied; staff continue through the invoker audited-attempt routine.

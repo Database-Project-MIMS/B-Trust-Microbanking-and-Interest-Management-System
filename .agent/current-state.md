@@ -1,3 +1,31 @@
+# Current State — P06-M02-T03 local closeout
+
+2026-10-09. Branch `feat/p06-m02-final-documentation`, base dev `053f6f6`.
+User authorizes necessary other-owner code/task completion and local commits; no push,
+PR creation or merge. Live verification explicitly deferred. PR #88/#90 merged T01/T02;
+PR #91/#92 merged M3/M4 tests. ADR-0026 and cross-owner handoff define this scope.
+
+Current physical/API catalogs: docs/18 and docs/19; final scope/evidence: docs/20.
+New 0621–0627 and FD/report/security/ops delivery are REVIEW until user publication.
+Savings ADB interest and transfers are accepted-but-unimplemented extensions; prototype
+transaction pages and live/browser/general phase acceptance remain pending. No overall
+SRS certification is inferred.
+
+Full regression: **3,133 tests / 113 suites** pass (2,000 security plus 1,133 API/DB/e2e),
+zero failures, cancellations or skips. Final receipt-guard verification: **331 API tests /
+30 suites**, typecheck, lint and production build pass. Final migration-format verification:
+**11 operations checks**, clean **58-migration** rebuild/checksums and exact dump/restore
+pass. The API guard adds only a safe missing-receipt error; final SQL whitespace changes
+were verified in the fresh operations rebuild. Temporary clusters were stopped/removed;
+the development database was preserved. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+
+Local implementation commits: `f4ea972`, `d78b045`; documentation/state/memory follow.
+Tracker: 97 total, 86 DONE, 8 REVIEW, 3 IN_PROGRESS. T03 is ready for user/peer review;
+local delivery does not mark incomplete UI/extensions/deployment accepted.
+
+
+## Historical session records — superseded status snapshots
+
 # Current State
 
 ## M3 P06-M03-T01 + T02 — concurrency and constraint suites (2026-10-09)

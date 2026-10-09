@@ -11,11 +11,16 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
-**2026-10-09 master-data verification:** P06-M02-T02 is explicitly authorized by
-ADR-0025 on `feat/p06-m02-master-data-integrity`. 100 DB/16 API adversarial cases;
-focused 309 and full 1062 tests (including security), 51-migration rebuild/checksums/
-typecheck/lint pass. T02 REVIEW; local commits authorized; publication remains with Vibodha. T03 remains
-TODO. [Coverage and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
+**Current summary reviewed 2026-10-09:** [task tracker](../docs/09_task-tracker.md)
+and [local closeout](../docs/20_final-local-closeout.md) supersede older status notes.
+M2 T01/T02 are merged (PR #88/#90). ADR-0026 dependencies and final docs are locally
+implemented, REVIEW awaiting user publication. Live HTTPS and general acceptance remain
+pending; accepted savings/transfer extensions are not implemented.
+
+
+**Merged master-data verification:** PR #90 integrates T02 (ADR-0025);
+focussed 309/full 1062 checks were historical pre-T03 evidence. PR #88 integrates T01.
+T03 is locally verified REVIEW under ADR-0026, awaiting user publication/review.
 
 **2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
 reported integration failures in other members' code. Full current865/latest940
@@ -39,16 +44,16 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~~3~~ |
-| ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~~3~~ |
-| ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~~8~~ |
+| ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~about 3~~ |
+| ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~about 3~~ |
+| ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~about 8~~ |
 | ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
 | ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
 | ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
 | ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
 | ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
-| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 REVIEW; T02 REVIEW (ADR-0025); T03 TODO | Seed acceptance and master-data integrity proof; user publication/review pending | ~6 |
+| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 DONE; T02 DONE (PR #90); T03 REVIEW (ADR-0026) | Seed/integrity merged; final docs and dependency repairs locally verified | ~6 |
 
 ---
 

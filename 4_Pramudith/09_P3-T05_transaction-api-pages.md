@@ -1,12 +1,12 @@
 # 🟡 Phase 3 — Task 05: Transaction APIs
 **Task ID:** `P03-M04-T05` · **Branch:** `feat/p03-m04-transaction-apis`
-**Status:** TODO
+**Status:** IN_PROGRESS — backend verified; prototype UI wiring/browser verification pending
 **Depends on:** T04 (`sp_reverse_transaction`), **I-1** (M1 RBAC)
 **Story Points:** ~8 · **Layer:** Backend only
 
-> ⚡ **UI COMPLETE** — Deposit, withdrawal, receipt, statement and reversal screens have
+> **Design prototypes exist; runtime UI wiring is pending.** Deposit, withdrawal, receipt, statement and reversal screens have
 > been pre-built in `app/dashboard/**`. Your job is to implement the **service layer and
-> API routes** that back those screens. Do not rebuild any UI component.
+> API routes** that back those screens. Existing prototype screens still need API wiring and browser verification.
 
 ---
 

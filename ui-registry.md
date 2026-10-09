@@ -388,3 +388,29 @@ Files: `app/reports/account-summary/account-summary-screen.tsx`, `page.tsx`; sha
 
 No new class, token, radius or shadow. Wide tables stay inside `table-wrap`. CSV button comes from the shell and exports all filtered accounts.
 
+
+### Controlled FD, Interest and FD Report Components
+
+Files: `app/fixed-deposits/fd-list.tsx`, `app/fixed-deposits/new/fd-opening.tsx`,
+`app/interest-runs/interest-console.tsx`, `app/reports/fd-report.tsx`.
+Last updated: 2026-10-09, /imprint under ADR-0026.
+
+| Property | Class/pattern |
+| --- | --- |
+| Background/border/radius | Existing `card` token; no new raw colors |
+| Primary text | `page-title`, `section-heading` |
+| Secondary text | `page-description`, `eyebrow` |
+| Spacing | `space-y-6` outer; `space-y-4` cards |
+| Actions | `btn btn-primary`, `btn btn-secondary`, disabled while busy |
+| Inputs | `field`, `input`, `form-grid` |
+| Data | `table-wrap`, `data-table`, `amount`; exact-string money format |
+| Confirmation | `card confirmation-card`; explicit second action after SQL preview |
+| Feedback | `role=alert` errors; `role=status` loading/result |
+
+Use server role guards and real scoped APIs. A preview is read-only and final posting
+revalidates. Preserve an FD idempotency key during retry. Interest preview clears when
+date changes. Auditors see history without execution controls. RPT-03/RPT-04 reuse
+ReportShell/ReportTable, scoped metadata and snapshot CSV. No prototype data on these pages.
+Current evidence includes initial rendered markup and financial API tests; full interactive
+browser verification remains pending. Prototype registry entries describe only remaining
+WorkflowScreen pages, not these completed runtime components.

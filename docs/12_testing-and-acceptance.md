@@ -1,5 +1,45 @@
 # 12 — Testing and Acceptance
 
+## Current local closeout evidence — 2026-10-09
+
+P06-M02-T03 / ADR-0026. Final-source evidence is recorded in the cross-owner
+[handoff](../.agent/handoffs/p06-m02-final-closeout.md) and docs/20. Scope is local;
+passing tests do not approve general phase entry or certify the missing accepted extensions.
+
+Full regression: **3,133 tests / 113 suites** pass (2,000 security plus 1,133 API/DB/e2e),
+zero failures, cancellations or skips. Final receipt-guard verification: **331 API tests /
+30 suites**, typecheck, lint and production build pass. Final migration-format verification:
+**11 operations checks**, clean **58-migration** rebuild/checksums and exact dump/restore
+pass. The API guard adds only a safe missing-receipt error; final SQL whitespace changes
+were verified in the fresh operations rebuild. Temporary clusters were stopped/removed;
+the development database was preserved. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+
+Security inventory: **41 exported handlers × 7 roles = 287 permission cases**,
+**212 declared input positions × 8 payloads = 1,696 injection probes**, independent
+handler coverage and valid free-text binding cases, nine direct-login RLS checks and
+six local deployment-configuration checks. Together: **2,000 security checks**.
+Denied requests preserve complete business/audit fingerprints; injection probes preserve
+business/financial rows. Valid-operation API suites separately exercise real success paths.
+
+FD/API tests prove SQL-exact quotes, one debit/FD/receipt, stable-key replay, altered-payload
+conflict, concurrent opening, branch/role/CSRF/minimum/product/balance denial, exact scoped
+report/CSV totals and independent commit survival under payout/finalization faults.
+Withdrawal API tests verify linked customer UUIDs, explicit staff ALL_HOLDERS evidence, stable replay, scope/CSRF/input denial, durable rejection audits and complete unexpected-error rollback.
+Reversal tests enforce manager-only actor/branch scope, durable replay/concurrent keys, actual receipt UUID, overdraft and raw-link denial. DB tests additionally reject direct minimum/actor/receipt violations and overwrites of
+principal/opening-rate snapshots. Initial markup tests prove financial action restrictions
+and required preview; this is not a full interactive browser pass.
+
+`npm run verify:operations` proves full dump/restore and atomic migration behavior
+(11 checks). [Evidence](migration-rollback-evidence.md) compares all 26 tables, financial
+sums, constraints, policies, ownership and sequences. The full runner executes security
+before load fixtures, then API/DB/e2e in the same isolated cluster with no exclusions.
+
+Host verification uses Node 24.15.0/PostgreSQL 18.6; `.nvmrc` remains Node 22.
+The original criterion mapping below is a requirement map, not blanket completion evidence.
+Savings ADB interest, transfers, prototype transaction UI and live deployment remain pending.
+
+
+
 Every acceptance criterion maps to at least one test. A criterion without a test is not
 satisfied.
 
@@ -183,20 +223,10 @@ with only a happy-path test is untested.
 
 ## Backup and Restore Evidence
 
-As required by AC-13, we have successfully run a backup and restore test against a fully seeded database instance using our automated `scripts/backup-restore-test.sh`.
-
-```text
-=== Step 1: Take a backup ===
-Backup size: 535K
-=== Step 2: Record checksums ===
-=== Step 3: Drop and restore ===
-NOTICE:  database "mims_test_restore" does not exist, skipping
-DROP DATABASE
-CREATE DATABASE
-=== Step 4: Compare checksums ===
-✅ Backup and restore produce identical data
-=== Step 5: Cleanup ===
-DROP DATABASE
-```
-
-This verifies that custom `pg_dump` format (`-Fc`) perfectly captures the schema, constraints, data, routines, and triggers, and that `pg_restore` perfectly rehydrates it without error or loss of referential integrity.
+Current evidence comes from the executable isolated dump/restore suite and
+[the migration/restore evidence](migration-rollback-evidence.md). It compares all
+26 tables by whole-row hashes, exact financial totals, constraints, RLS policies,
+ownership and sequence positions after a custom-format dump and restore.
+The generated source and restore databases are removed after verification; the
+normal development database is preserved. Historical example sizes/logs are not
+used as evidence for this branch. Live hosting backup verification remains pending.

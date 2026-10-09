@@ -271,17 +271,20 @@ T05 route/runtime/screen integration and security handoff:
 - **Purpose** Post a validated withdrawal (FR-WD-01…05).
 - **Roles** AGENT, BRANCH_MANAGER; CUSTOMER if an authorised holder
 - **Headers** `Idempotency-Key` (**required**)
-- **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, narration? }`
-- **Validation** requester is an authorised holder; account active; business hours; single and daily limits
-- **SQL routine** Future service uses `CALL sp_try_post_withdrawal(...)` (0363), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
-- **Success** `201 { data: { transactionId, referenceNumber, amount, balanceAfter } }`
+- **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, signerCustomerIds?, narration? }`
+- **Validation** strict body, UUIDs and decimal string; at most four signer IDs. Staff provide either `onBehalfOfCustomerId` or `signerCustomerIds` (not both). CUSTOMER resolves its active linked profile and can attest only its own customer UUID. Database checks account holders/mandate, active account, business calendar/hours and single/daily limits. Staff signer IDs represent collected attestations; physical evidence capture UI remains pending.
+- **SQL routine** Staff use `CALL sp_try_post_withdrawal(...)` (0363); CUSTOMER uses the guarded `sp_try_customer_withdrawal` wrapper (0627), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
+- **Success** `201` first posting, `200` successful replay: `{ data: { transactionId, referenceNumber, amount, balanceAfter, postedAt } }`
 - **Errors** `409 INSUFFICIENT_FUNDS` · `409 BELOW_MINIMUM_BALANCE` · `409 MANDATE_NOT_SATISFIED` · `409 LIMIT_EXCEEDED` · `409 ACCOUNT_NOT_ACTIVE`
-- **Note** A known financial rejection returns `p_rejection_code` and writes one audit event with **no ledger row** (FR-WD-05). Commit the audit-only result through withTransaction, then map the allow-listed error outside the transaction. An exception inside that transaction would roll back its audit too. Unexpected errors roll back every effect. T05 API/CSRF/service/signer-evidence integration remains planned; no live withdrawal route is added by this correction.
+- **Note** A known financial rejection returns `p_rejection_code` and writes one audit event with **no ledger row** (FR-WD-05). Commit the audit-only result through withTransaction, then map the allow-listed error outside the transaction. An exception inside that transaction would roll back its audit too. Unexpected errors roll back every effect. The API/CSRF/service/signer-evidence path is implemented; transaction pages still using WorkflowScreen await real wiring.
 - **Page** `/transactions/withdraw`
 
 ### `POST /api/transactions/{id}/reverse`
-- **Roles** **BRANCH_MANAGER only** (§4.8) · **Body** `{ reason }` (required)
-- **Routine** `CALL sp_reverse_transaction(...)` — inserts a compensating entry, links it, updates the balance. The original row is never modified.
+- **Roles** **BRANCH_MANAGER only** (§4.8), validated active stored manager and branch.
+- **Headers** `Idempotency-Key` required; CSRF protected.
+- **Body** `{ reason }`, trimmed nonempty, at most 255 characters; strict fields.
+- **Success** `201 { data: { reversalId, reversalTransactionId, balanceAfter } }`. Same actor/key/original/reason returns the original result without another effect. Changed key payload conflicts (409); a new key for an already reversed original also returns 409.
+- **Routine** `CALL sp_reverse_transaction_controlled(...)` — inserts a compensating entry, links it, updates the balance. The original row is never modified.
 - **Errors** `409 ALREADY_REVERSED` (unique violation on `transaction_reversal.original_transaction_id`) · `403` for non-managers
 - **Page** `/transactions/{id}`
 
@@ -293,11 +296,11 @@ T05 route/runtime/screen integration and security handoff:
 ## Fixed deposits and interest — Member 5
 
 ### `GET /api/fd-products`
-- **Purpose** List all active FD product plans (BR-13).
+- **Purpose** List FD product plans including history (BR-13).
 - **Roles** any authenticated
-- **SQL** `SELECT fd_plan_id, plan_name, tenure_months, interest_rate, description, status, effective_from, effective_to FROM fd_plan WHERE effective_to IS NULL ORDER BY tenure_months ASC`
+- **SQL** `SELECT fd_plan_id, plan_name, tenure_months, interest_rate, description, status, effective_from, effective_to FROM fd_plan ORDER BY tenure_months ASC`
 - **Success** `200 { data: [{ fdPlanId, planName, tenureMonths, interestRate, description, status, effectiveFrom, effectiveTo }] }`
-- **Notes** Rates are returned as string fractions (e.g. `"0.1300"` = 13%). Only currently-effective plans (`effective_to IS NULL`) are returned.
+- **Notes** Rates are returned as string fractions (e.g. `"0.1300"` = 13%). The opening form selects active currently-effective plans; administration also sees history.
 - **Page** `/fd-products`
 
 ### `PATCH /api/fd-products/{id}`
@@ -311,27 +314,41 @@ T05 route/runtime/screen integration and security handoff:
 - **Errors** `400 BAD_REQUEST` (invalid rate or status) · `403 FORBIDDEN` (non-ADMIN or missing CSRF) · `404 NOT_FOUND`
 - **Page** `/fd-products`
 
+### `GET /api/fixed-deposits` and `GET /api/fixed-deposits/quote`
+
+List roles: AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER. Account RLS
+limits staff/customer visibility. Filters: accountId, status, page, pageSize.
+Quote roles: AGENT, BRANCH_MANAGER, CENTRAL_OPS. Query: accountId, fdPlanId,
+principalAmount. SQL computes projected balance without mutation; opening revalidates.
+
 ### `POST /api/fixed-deposits`
-- **Roles** AGENT, BRANCH_MANAGER, CENTRAL_OPS
-- **Body** `{ accountId, fdPlanId, principalAmount }`
-- **Validation** account active; **no existing active FD**; balance covers the principal; principal ≥ configured minimum
-- **Routine** `CALL sp_open_fixed_deposit(...)` — locks the account, debits the principal through the ledger, creates the FD with `maturity_date` and `interest_rate_at_opening`
-- **Success** `201 { data: { fdId, principal, startDate, maturityDate, nextInterestDate, rate } }`
-- **Errors** `409 ACTIVE_FD_EXISTS` (partial unique index) · `409 INSUFFICIENT_FUNDS` · `409 ACCOUNT_NOT_ACTIVE`
-- **Page** `/fixed-deposits/new`
 
-### `POST /api/interest-runs`
-- **Purpose** Execute a controlled 30-day interest cycle (FR-INT-01…05).
-- **Roles** CENTRAL_OPS, ADMIN, or the scheduled worker presenting `INTEREST_WORKER_TOKEN`
-- **Body** `{ cycleDate, dryRun?: boolean }`
-- **Routine** `CALL sp_run_interest_cycle(...)` — creates the run (`UNIQUE(cycle_date)`), selects due FDs with locking, and processes **each FD in its own transaction**
-- **Transaction** one per distribution; a failure increments `exception_count` without rolling back completed FDs (FR-INT-04)
-- **Success** `201 { data: { runId, cycleDate, fdCount, totalInterest, exceptionCount, status } }`
-- **Errors** `409 RUN_ALREADY_EXISTS` — a re-run for the same cycle creates **no duplicate credit** (NFR-SAFE-03, AC-08)
-- **Page** `/interest-runs`
+Roles: AGENT, BRANCH_MANAGER, CENTRAL_OPS. CSRF and `Idempotency-Key` required.
+Body: `{ accountId, fdPlanId, principalAmount }`, UUIDs and exact decimal string.
+One `withTransaction()` locks account, validates minimum/balance/status/effective plan,
+calls `SELECT sp_open_fd_controlled(...)`, and inserts its actor/key/hash receipt.
+Principal debit, FD, rate snapshot and audit commit together. First response `201 { data }`;
+same actor/key/payload replay `200` returns the same FD. Changed payload/key reuse or
+second active FD is `409`; malformed input `400`; role/CSRF denial `403`.
+Page `/fixed-deposits/new` requires an explicit SQL-preview confirmation.
 
-| `GET /api/fixed-deposits` | List with filters | staff roles; CUSTOMER for own |
-| `GET /api/interest-runs` | Run history with totals and exceptions | CENTRAL_OPS, ADMIN, AUDITOR |
+### `GET /api/interest-runs` and `POST /api/interest-runs`
+
+GET: ADMIN, CENTRAL_OPS, AUDITOR; newest 100 rows with actual totals/exceptions.
+POST: ADMIN/CENTRAL_OPS session plus CSRF, or authenticated scheduled worker.
+Body: `{ cycleDate, dryRun?: boolean }`; strict real calendar date.
+`interest-request-service` executes the **FD-only** cycle synchronously. Run creation
+commits separately, each locked FD distribution uses its own transaction, and final totals
+persist separately. Failed FD processing increments exception count without undoing
+successful distributions. SQL computes money; credits use `sp_post_interest_credit`.
+Dry run returns `200` with `status: DRY_RUN` and no financial changes. Execution returns
+`200` with actual run ID, totals, status and replay flag; completed-cycle replay duplicates
+nothing. An interrupted RUNNING cycle is `409 RUN_IN_PROGRESS` and needs operator review.
+Completed runs with exceptions also need review; replay does not retry their exceptions.
+Page `/interest-runs` displays preview, explicit confirmation, results and history.
+
+Legacy owner/seed `sp_run_interest_cycle` is a function, not a procedure providing separate
+transactions. Application execution is revoked. ADR-0012 savings interest remains pending.
 
 ---
 
@@ -417,19 +434,23 @@ The page labels that meaning, and CSV uses the same report result and totals.
   reversed date range return `400 BAD_REQUEST`. Rows have stable `logged_at`,
   `log_id` ordering. Unexpected database failures use the safe error envelope.
 
-### Interest request authentication repair — 2026-10-09
+### Interest authentication and execution — current contract
 
-`POST /api/interest-runs`'s existing request handler accepts a valid worker
-Bearer token, or an ADMIN/CENTRAL_OPS session with matching CSRF cookie/header.
-A session takes precedence; a forbidden signed-in role remains `403`, even with
-a worker header. Missing/invalid authentication returns `401`; malformed JSON,
-invalid calendar dates, nonboolean `dryRun` and unexpected body fields return
-`400` without an initiation audit. `interest-request-service` writes the validated
-request's `INTEREST_RUN_INITIATED` event in one transaction, with USER identity for
-sessions and SYSTEM/null user for workers. The response remains `200` with
-`data.status = STARTED` under the existing contract. This handler currently
-records the request; actual cycle execution/status orchestration remains the
-separate M5 runtime work and is not certified by these request-auth tests.
+A valid session takes precedence over a worker header; a denied signed-in role remains
+403. Missing/invalid credentials are 401. Body/date validation precedes the initiation audit.
+The handler now executes the FD cycle and returns actual results. ADR-0026 supersedes
+the earlier audit-only STARTED response.
+
+### RPT-03/RPT-04 runtime completion
+
+Both APIs use common permission gates and safe error envelopes. Strict date, UUID,
+pagination, format and sort validation precedes queries. One REPEATABLE READ transaction
+covers rows, SQL-exact totals and access audit. RPT-04 filters leaf rows before rebuilding
+ROLLUP subtotals, preventing bank-wide totals in a branch report. CSV uses the same
+filters/totals, exporting all matches up to 10,000 (larger exports fail validation).
+Both pages use ReportShell/ReportTable with loading, empty, error, metadata, pagination
+and CSV states. [Complete handler permissions](19_implemented-api-matrix.md) are tested;
+ADMIN permissions are not inferred from a universal financial super-role.
 
 ---
 
