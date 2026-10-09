@@ -36,8 +36,8 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~08~~ | ~~[Transaction Reversal](08_P3-T04_transaction-reversal.md)~~ | ~~P3~~ | ~~T04~~ | ~~`transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02)~~ | ~~~5~~ |
 | ~~09~~ | ~~[Transaction APIs](09_P3-T05_transaction-api-pages.md)~~ | ~~P3~~ | ~~T05~~ | ~~`Idempotency-Key` header handling; deposit, withdrawal, reversal APIs~~ | ~~~8~~ |
 | ~~10~~ | ~~[Interest Credit Posting](10_P4_interest-credit-posting.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~`INTEREST_CREDIT` through the ledger routine — publishes **I-5**; statement display~~ | ~~~6~~ |
-| 11 | [RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md) | P5 | T01–T02 | Customer activity view, API, CSV | ~6 |
-| 12 | [Reconciliation](12_P5-T03_reconciliation.md) | P5 | T03 | Ledger vs `current_balance` vs `balance_after` (D-1, D-2) | ~4 |
+| ~~11~~ | ~~[RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md)~~ | ~~P5~~ | ~~T01–T02~~ | ~~Customer activity view, API, CSV~~ | ~~~6~~ |
+| ~~12~~ | ~~[Reconciliation](12_P5-T03_reconciliation.md)~~ | ~~P5~~ | ~~T03~~ | ~~Ledger vs `current_balance` vs `balance_after` (D-1, D-2)~~ | ~~~4~~ |
 | 13 | [Rollback, Idempotency & Performance Tests](13_P6_rollback-idempotency-performance-tests.md) | P6 | T01–T02 | Partial-failure evidence; posting performance under load | ~5 |
 
 ---

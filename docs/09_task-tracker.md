@@ -49,9 +49,9 @@ and merging remain user actions.
 | P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
 | P3 | 14 | 0 | 0 | 0 | 0 | 0 | 14 |
 | P4 | 14 | 3 | 0 | 0 | 0 | 0 | 11 |
-| P5 | 15 | 3 | 0 | 0 | 0 | 0 | 12 |
-| P6 | 13 | 9 | 0 | 1 | 0 | 2 | 1 |
-| **All** | **97** | **15** | **0** | **1** | **0** | **2** | **79** |
+| P5 | 15 | 0 | 0 | 0 | 0 | 0 | 15 |
+| P6 | 13 | 6 | 0 | 1 | 0 | 2 | 4 |
+| **All** | **97** | **9** | **0** | **1** | **0** | **2** | **85** |
 
 ---
 
@@ -327,9 +327,9 @@ is historical and must not be substituted for current verification.
 | P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7**; approved ADR-0022 | DONE (PR #74 merged; focused verification accepted; full-suite integration failures repaired in P06-M02-T01) |
 | P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance — `0540_p05_m03_rpt02_view.sql` (`vw_rpt02_account_summary`: per ledger event, `balance_before`/`balance_after_effective` from the stored `balance_after`, reversals net into their original category) and `0541_p05_m03_sp_open_account_balance_after.sql` (the opening deposit now records `balance_after`; it was NULL since 0243), `0542_p05_m03_transaction_ledger_seq.sql` (posting-order key `transaction.ledger_seq`, G-24/ADR-0023: timestamps tie and invert, 86 chain breaks on the seed → 0) and `0543_p05_m03_rpt02_view_v2.sql` (view ordered by `ledger_seq`, no overflow cast, no whole-ledger window); `tests/db/rpt02-view.test.mjs` 18/18, `tests/db/transaction-ledger-seq.test.mjs` 7/7; handoff [t01](../.agent/handoffs/p05-m03-t01-rpt02-view.md). The card's SQL used `posted_at`/`status`, which do not exist | DB | P03-M04-T02 | DONE (early start at the user's direction; no phase approval) |
 | P05-M03-T02 | 3 | RPT-02 API, page and CSV — `services/account-summary-report-service.ts` (one REPEATABLE READ transaction: actor re-check, totals, page, page subtotal, access audit), `GET /api/reports/account-summary` (JSON and all-rows CSV with identical totals), real `/reports/account-summary` on the shared report shell; `tests/api/rpt02-report.test.mjs` 16/16, `tests/e2e/account-summary-report-screen.test.mjs` 7/7; handoffs [t02](../.agent/handoffs/p05-m03-t02-rpt02-report.md) and [shell props for M1](../.agent/handoffs/p05-m03-report-shell-props-for-m1.md). Tests only, no browser pass | BE + FE | P05-M03-T01, **I-7** | DONE (early start at the user's direction; no phase approval) |
-| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 |
-| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** |
-| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 |
+| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 | DONE (0560, PR #78 merged) |
+| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** | DONE (PR #78 merged) |
+| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 | DONE (0561, PR #78 merged) |
 | P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 | DONE |
 | P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 | DONE |
 | P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** | DONE |
@@ -374,7 +374,7 @@ Unannotated Phase 6 rows remain TODO.
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | TODO |
 | P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
-| P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | TODO |
+| P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | DONE (2026-10-09; 6 tests in `tests/db/rollback-idempotency-evidence.test.mjs`; mid-transaction fault triggers prove zero partial state on deposit, withdrawal, reversal; live HTTP POST idempotency replay tested) |
 | P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 | TODO |
 | P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 | DONE |
 | P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all | TODO |

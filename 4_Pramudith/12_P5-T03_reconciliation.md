@@ -1,6 +1,6 @@
 # 🔴 Phase 5 — Task 03: Reconciliation — Ledger vs Balance vs `balance_after`
 **Task ID:** `P05-M04-T03` · **Branch:** `feat/p05-m04-reconciliation`
-**Status:** TODO
+**Status:** DONE (PR #78 merged)
 **Depends on:** `P05-M04-T01` (RPT-05 view, shares infrastructure)
 **Story Points:** ~4 · **Layer:** Database + Frontend
 

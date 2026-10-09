@@ -1,6 +1,6 @@
 # ⚫ Phase 6 — Tasks 01–02: Rollback/Idempotency Evidence & Posting Performance
 **Task IDs:** `P06-M04-T01`, `P06-M04-T02` · **Branch:** `feat/p06-m04-rollback-idempotency-performance`
-**Status:** TODO
+**Status:** IN_PROGRESS (T01 DONE; T02 TODO)
 **Depends on:** `P03-M04-T05` (transaction APIs, for T01); T01 for T02
 **Story Points:** ~3 + ~2 = ~5 · **Layer:** Tests only
 
@@ -99,11 +99,22 @@ npm test
 ---
 
 ## Acceptance Criteria
-- [ ] Forced mid-transaction failures in all three posting routines (deposit,
-      withdrawal, reversal) leave zero partial state, each with an explicit test
-- [ ] Idempotency replay is proven at the HTTP layer, not only at the database routine
-      layer
+- [x] Forced mid-transaction failures in all three posting routines (deposit,
+      withdrawal, reversal) leave zero partial state, each with an explicit test (`tests/db/rollback-idempotency-evidence.test.mjs`)
+- [x] Idempotency replay is proven at the HTTP layer, not only at the database routine
+      layer (`POST /api/transactions/deposits` exact replay, key reuse rejection, aborted retry)
 - [ ] Posting performance is measured against the documented NFR target, not an
       invented one, and the numbers are recorded
-- [ ] `npm run db:rebuild` succeeds from empty
-- [ ] `npm test` passes, including the fault-injection and performance suites
+- [x] `npm run db:rebuild` succeeds from empty
+- [ ] `npm test` passes, including the fault-injection and performance suites (1106 tests across 105 suites pass for T01; T02 performance suite pending)
+
+---
+
+### T01 Evidence Summary
+Implemented in `tests/db/rollback-idempotency-evidence.test.mjs` (6 passing tests):
+1. **Mid-transaction deposit rollback**: Dynamic fault trigger raises on `account` `UPDATE` after ledger `INSERT`. Result: 0 ledger rows, unchanged balance.
+2. **Mid-transaction withdrawal rollback**: Dynamic fault trigger raises on `audit_log` `INSERT` after balance `UPDATE`. Result: 0 ledger rows, 0 audit rows, unchanged balance.
+3. **Mid-transaction reversal rollback**: Dynamic fault trigger raises on `transaction_reversal` `INSERT` after compensating ledger `INSERT`. Result: neither reversal link nor compensating entry survives; original transaction remains eligible for reversal.
+4. **HTTP idempotency replay**: Live `POST /api/transactions/deposits` round-trip with session and CSRF cookie. First call returns 201; second call returns 200 with identical body; account balance credited exactly once.
+5. **Payload tampering rejection**: Reusing the same idempotency key with modified amount fails safely with `409 Conflict`.
+6. **Aborted transaction retry**: An aborted transaction does not lock the idempotency key; clean retry succeeds normally.

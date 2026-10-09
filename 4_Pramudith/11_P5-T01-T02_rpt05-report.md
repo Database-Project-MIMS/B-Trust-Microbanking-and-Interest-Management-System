@@ -1,6 +1,6 @@
 # 🔴 Phase 5 — Tasks 01–02: RPT-05 Customer Activity Report
 **Task IDs:** `P05-M04-T01`, `P05-M04-T02` · **Branch:** `feat/p05-m04-rpt05-customer-activity`
-**Migration:** `0560_p05_m04_rpt05_view.sql` · **Status:** TODO
+**Migration:** `0560_p05_m04_rpt05_view.sql` · **Status:** DONE (PR #78 merged)
 **Depends on:** `P03-M04-T02` (`sp_post_deposit`, for real ledger data), **I-7** (report
 shell from M1)
 **Story Points:** ~3 + ~3 = ~6 · **Layer:** Database + Backend

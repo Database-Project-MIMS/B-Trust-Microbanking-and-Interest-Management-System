@@ -86,18 +86,28 @@ Real parallel connections, not sequential calls.
 
 ## Rollback tests
 
+**Adversarial partial-failure evidence (P06-M04-T01, `tests/db/rollback-idempotency-evidence.test.mjs`):**
+Using temporary fault-injection triggers executed by the migration owner, faults are injected at intermediate statements inside core posting routines. All operations execute under `mims_app` with RLS context:
+
 | Test | Asserts |
 |---|---|
-| Failure mid-deposit | injected error after the ledger insert leaves **no** ledger row and **no** balance change |
+| Failure mid-deposit (`sp_post_deposit`) | A dynamic trigger raises on `account` `UPDATE` after ledger `INSERT`. Result: whole transaction rolls back, 0 ledger rows created, 0 audit rows created, `current_balance` unchanged (FR-DEP-05). |
+| Failure mid-withdrawal (`sp_post_withdrawal`) | A dynamic trigger raises on `audit_log` `INSERT` after ledger `INSERT` and balance `UPDATE`. Result: whole transaction rolls back, 0 ledger rows, 0 audit rows, `current_balance` unchanged. |
+| Failure mid-reversal (`sp_reverse_transaction`) | A dynamic trigger raises on `transaction_reversal` `INSERT` after the compensating ledger entry. Result: neither the link nor the orphaned compensating ledger entry survives; original transaction remains eligible for reversal. |
 | Failure mid-account-opening | no account, no holder, no mandate, no initial deposit |
 | Failure mid-FD-opening | no FD row and the principal is not debited |
 | Constraint violation inside a procedure | whole transaction rolls back; `pg_stat` shows no orphan |
 
 ## Idempotency and duplicate tests
 
+**HTTP & database idempotency replay (P06-M04-T01, `tests/db/rollback-idempotency-evidence.test.mjs`):**
+A real round-trip against `POST /api/transactions/deposits` with agent session and CSRF tokens verifies end-to-end replay:
+
 | Test | Asserts |
 |---|---|
-| Same `Idempotency-Key` twice | second call returns the **original** transaction; balance credited once (FR-DEP-04) |
+| Same `Idempotency-Key` twice | First request returns HTTP 201; second request with identical key & body replays exact original response with HTTP 200; exactly 1 ledger row inserted, balance credited exactly once (FR-DEP-04, AC-06). |
+| Tampered payload with reused key | Replaying the same `Idempotency-Key` with altered payload parameters (e.g. modified amount) safely fails with `409 Conflict (IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_PAYLOAD)` and causes zero ledger or balance side-effects. |
+| Aborted transaction retry | A transaction that fails/aborts mid-flight does not lock or burn the idempotency key; a subsequent retry with the same key succeeds cleanly. |
 | Different keys, same amount | two distinct transactions — a legitimate repeat deposit still works |
 | Missing `Idempotency-Key` on a money endpoint | `400` |
 | Interest cycle re-run | `409 RUN_ALREADY_EXISTS`; zero new payouts and zero new ledger rows (AC-08) |
