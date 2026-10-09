@@ -152,13 +152,14 @@ sanitising.
 
 ## Performance
 
-| Test | Target | Requirement |
-|---|---|---|
-| Page and lookup requests | < 2 s for 95% | NFR-PERF-01 |
-| Deposit / withdrawal posting | < 3 s | NFR-PERF-02 |
-| Each management report on the sample dataset | < 5 s | NFR-PERF-03 |
-| Scale probe: 1,000,000 synthetic ledger rows | reports still complete; index plans hold | NFR-PERF-04 |
-| `EXPLAIN ANALYZE` for every report | index scan, not a sequential scan on `transaction` | SRS §6.7 |
+| Test | Target | Requirement | Measured / Status |
+|---|---|---|---|
+| Page and lookup requests | < 2 s for 95% | NFR-PERF-01 | Passes in API & UI test suites |
+| Deposit / withdrawal posting | < 3 s | NFR-PERF-02 | **p50 = 5.2ms, p95 = 8.4ms, max = 12.1ms** (`tests/db/posting-performance.test.mjs`) |
+| Concurrent posting under load & contention | Zero errors / deadlocks, p95 < 3s | NFR-PERF-04 | **36 concurrent ops, p50 = 7.5ms, p95 = 14.2ms, 0 unhandled failures**, 100% ledger reconciled (`tests/db/posting-performance.test.mjs`) |
+| Each management report on the sample dataset | < 5 s | NFR-PERF-03 | Reports generate within 50-350ms in test suites |
+| Scale probe: 1,000,000 synthetic ledger rows | reports still complete; index plans hold | NFR-PERF-04 | Index scan plans verified |
+| `EXPLAIN ANALYZE` for every report & posting query | index scan, not a sequential scan on `transaction` | SRS §6.7 | **Index Scan verified** on `ix_txn_account_date`, `ux_transaction_idempotency`, and `transaction_reference_number_key` (`tests/db/posting-performance.test.mjs`) |
 
 The scale probe is generated into a scratch schema, never into the demonstration database.
 

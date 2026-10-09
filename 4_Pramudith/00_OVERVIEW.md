@@ -38,7 +38,7 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~10~~ | ~~[Interest Credit Posting](10_P4_interest-credit-posting.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~`INTEREST_CREDIT` through the ledger routine — publishes **I-5**; statement display~~ | ~~~6~~ |
 | ~~11~~ | ~~[RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md)~~ | ~~P5~~ | ~~T01–T02~~ | ~~Customer activity view, API, CSV~~ | ~~~6~~ |
 | ~~12~~ | ~~[Reconciliation](12_P5-T03_reconciliation.md)~~ | ~~P5~~ | ~~T03~~ | ~~Ledger vs `current_balance` vs `balance_after` (D-1, D-2)~~ | ~~~4~~ |
-| 13 | [Rollback, Idempotency & Performance Tests](13_P6_rollback-idempotency-performance-tests.md) | P6 | T01–T02 | Partial-failure evidence; posting performance under load | ~5 |
+| ~~13~~ | ~~[Rollback, Idempotency & Performance Tests](13_P6_rollback-idempotency-performance-tests.md)~~ | ~~P6~~ | ~~T01–T02~~ | ~~Partial-failure evidence; posting performance under load~~ | ~~~5~~ |
 
 ---
 

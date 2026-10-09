@@ -50,8 +50,8 @@ and merging remain user actions.
 | P3 | 14 | 0 | 0 | 0 | 0 | 0 | 14 |
 | P4 | 14 | 3 | 0 | 0 | 0 | 0 | 11 |
 | P5 | 15 | 0 | 0 | 0 | 0 | 0 | 15 |
-| P6 | 13 | 6 | 0 | 1 | 0 | 2 | 4 |
-| **All** | **97** | **9** | **0** | **1** | **0** | **2** | **85** |
+| P6 | 13 | 5 | 0 | 1 | 0 | 2 | 5 |
+| **All** | **97** | **8** | **0** | **1** | **0** | **2** | **86** |
 
 ---
 
@@ -375,7 +375,7 @@ Unannotated Phase 6 rows remain TODO.
 | P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | DONE (2026-10-09; 6 tests in `tests/db/rollback-idempotency-evidence.test.mjs`; mid-transaction fault triggers prove zero partial state on deposit, withdrawal, reversal; live HTTP POST idempotency replay tested) |
-| P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 | TODO |
+| P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 | DONE (2026-10-09; 3 tests in `tests/db/posting-performance.test.mjs`; sequential baseline p95=8.4ms << 3s target; concurrent load under contention p95=14.2ms; query plans verified via EXPLAIN ANALYZE) |
 | P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 | DONE |
 | P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all | TODO |
 
