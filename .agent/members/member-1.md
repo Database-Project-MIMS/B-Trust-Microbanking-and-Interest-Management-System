@@ -1,3 +1,15 @@
+# Authorized integration repair contribution — 2026-10-09
+
+Vibodha authorized M2 to fix the reported full-suite failures in other members'
+code. Original ownership and task assignments remain. Current full865/latest-dev
+overlay940 tests pass; focused186, rebuild/reseed/typecheck/lint pass. The
+[repair handoff](../handoffs/p06-m02-integration-failure-repairs.md) describes
+this member's contributions and review. Publication remains with the user.
+
+---
+
+## Historical owner context (retained)
+
 # Member 1 — context
 
 **Updated:** 2026-10-05, authorized Phase 1 closeout.

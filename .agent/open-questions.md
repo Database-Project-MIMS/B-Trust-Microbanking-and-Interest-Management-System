@@ -5,6 +5,29 @@ blocks so nobody discovers the dependency by surprise.
 
 ## Blocking (must resolve before the phase noted can _finish_)
 
+### AC-12 seed coverage — resolved locally 2026-10-09 (P06-M02-T01, steward M5)
+
+Strict read-only validation after a clean disposable rebuild of dev 095ea9c finds
+3 branches, 6 ordinary agents, 15 customers, 2 valid joint accounts and 125 ledger
+rows. Organization assignment checks pass. However fixed deposits = 0 (minimum 10),
+interest runs = 0 (minimum 2), payouts = 0, and three configured active roles have
+no active user. `_load-order.txt` lists `14_fixed_deposits.sql` and
+`15_interest_runs.sql`, but neither file exists. The old `seed-check.mjs` skips
+empty datasets and its `account.mandate_type` query does not match the schema;
+its success is not evidence of global AC-12 compliance.
+
+The preceding counts are historical. Vibodha subsequently instructed “complete
+this,” authorizing M2's necessary M5/M4 contribution. Global seed validation now
+passes: twelve funded FDs, three nonempty completed runs, thirty payouts, 191
+postings, all seven roles, customer links and manager staff profiles. Per-account
+signed-ledger reconciliation and payout/control checks pass. The specification
+records actual counts/totals and the runtime-generated timestamp limitation.
+Merged migrations are unchanged; new 0620 repairs interest references. T01 is
+REVIEW awaiting user publication. See [current evidence](handoffs/p06-m02-seed-validation.md).
+The reported integration failures have also been repaired under explicit authorization;
+current865 and latest-dev overlay940 full tests pass. General phase gates remain
+separate. The normal DB is preserved.
+
 ### Account opening blocked: no document verification path — 2026-10-08 (raised by M3, owner M2)
 
 `sp_open_savings_account` and `sp_add_account_holder` require every holder to have a verified document
@@ -14,7 +37,12 @@ Result: an app-registered customer can never be opened an account through the UI
 Needed: a scoped verification endpoint and UI (and the role lock narrowing already noted in `current-state.md`), or
 seed data with verified documents so the demo works. Blocks the Phase 2 exit demonstration. Not an M3 file change.
 
-### Seeded branch managers cannot hold a session — 2026-10-08 (raised by M3, owner M1/M5)
+### Seeded branch managers cannot hold a session — resolved locally 2026-10-09 (raised by M3, owner M1/M5)
+
+The authorized seed completion adds active manager profiles in `03_agents.sql`
+for `bm_colombo`, `bm_kandy` and `bm_galle`, with their correct branch links.
+All manager/staff profile checks pass. The M1 session query remains unchanged.
+Publication is pending with P06-M02-T01; the following report is historical.
 
 Seed users `bm_colombo`, `bm_kandy`, `bm_galle` have no `agent` row. `validateSession` (`lib/auth/session.ts`) requires an
 ACTIVE `agent` row for AGENT and BRANCH_MANAGER, so login returns 200 and then every page redirects to `/sign-in`
@@ -24,7 +52,23 @@ BRANCH_MANAGER too, so they cannot be exercised. Needed: decide whether branch m
 
 ## Non-blocking (approve when convenient, nothing is waiting on these)
 
-### 27 failing tests on dev 93a82f8 — 2026-10-08 (found by M3, owners M1/M4/M5)
+### M5 ops status differs between notes and tracker — 2026-10-09 (owner M5)
+
+During PR #88 conflict resolution against dev78aae1e,
+`5_Selith/notes/notesP6T2.md` claims P06-M05-T02 DONE, while the incoming
+`docs/09_task-tracker.md` row has no status. The resolution retains TODO, rather
+than certifying backup/restore/migration evidence from a status note. M5 should
+reconcile the authoritative row with its execution evidence. This does not block
+the seed/conflict delivery or imply general Phase 6 acceptance.
+[Resolution handoff](handoffs/p06-m02-pr88-conflict-resolution.md).
+
+### 27 failing tests on dev 93a82f8 — resolved locally 2026-10-09 (found by M3, owners M1/M4/M5)
+
+The historical failures below, and the 29 later observed on dev78aae1e, are
+resolved in the authorized M2 contribution: real sessions/RLS fixture context,
+audit contracts, database date boundaries and typed withdrawal calls. Full
+current865/latest940 suites pass; user publication remains pending. See the
+[integration handoff](handoffs/p06-m02-integration-failure-repairs.md).
 
 A clean export of origin/dev (735 tests, 75 suites) fails 27 tests; the same 27 fail with M3's P04-M03-T01 change. Most are
 `invalid input syntax for type uuid: "<64 hex chars>"` (a session token id used where a UUID is expected) or

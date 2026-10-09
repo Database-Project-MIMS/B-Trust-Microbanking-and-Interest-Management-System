@@ -5,7 +5,7 @@ import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P04-M04-T02: Transaction running balance is monotonic', async (t) => {
   const ts = Date.now();
-  const userRes = await query('SELECT user_id FROM app_user LIMIT 1');
+  const userRes = await query("SELECT u.user_id FROM app_user u JOIN role r ON r.role_id=u.role_id WHERE r.role_name='ADMIN' AND u.status='ACTIVE' AND r.status='ACTIVE' LIMIT 1");
   const userId = userRes[0].user_id;
 
   const channelRes = await query(`SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER' LIMIT 1`);
@@ -64,7 +64,7 @@ test('P04-M04-T02: Transaction running balance is monotonic', async (t) => {
   }
 
   async function callPostWithdrawal(client, aId, amount, reqCustId) {
-    const res = await client.query(`CALL sp_post_withdrawal($1, $2, $3, $4, $5, $6, 'W/d', NULL, NULL, NULL, NULL);`,
+    const res = await client.query(`CALL sp_post_withdrawal($1::uuid, $2::numeric, $3::uuid, $4::uuid, $5::uuid, $6::varchar, 'W/d', NULL, NULL, NULL, NULL);`,
       [aId, amount, channelId, userId, reqCustId, 'idem-w-' + Date.now() + Math.random()]
     );
     return res.rows[0];

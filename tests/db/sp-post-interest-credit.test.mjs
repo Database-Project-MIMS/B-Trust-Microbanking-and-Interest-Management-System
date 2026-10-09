@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { query, withTransaction } from '../../lib/db/index.ts';
 import { setRlsContext } from '../../lib/db/rls-context.ts';
 
@@ -23,7 +24,7 @@ test('P04-M04-T01: sp_post_interest_credit routine', async (t) => {
     return created.rows[0].account_id;
   });
 
-  const dummyFdId = '00000000-0000-0000-0000-000000000000'; // We don't have FDs strictly linked by FK in sp_post_interest_credit
+  const dummyFdId = randomUUID(); // Distinct fixture identity across independently posted test credits.
   
   async function callPostInterest(client, accountId, amount, fdId, cycleDate) {
     const res = await client.query(`
@@ -77,7 +78,7 @@ test('P04-M04-T01: sp_post_interest_credit routine', async (t) => {
     await t.test('4. The transaction is immutable exactly like any other row', async () => {
       const postRes = await withTransaction(async (tx) => {
         await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
-        return await callPostInterest(tx, activeAccountId, '10.00', dummyFdId, '2026-10-01');
+        return await callPostInterest(tx, activeAccountId, '10.00', randomUUID(), '2026-10-01');
       });
 
       await assert.rejects(
@@ -86,22 +87,21 @@ test('P04-M04-T01: sp_post_interest_credit routine', async (t) => {
       );
     });
 
-    await t.test('5. Calling this routine for the same p_fd_id/p_cycle_date twice produces two ledger rows', async () => {
-      const fdId2 = '11111111-1111-1111-1111-111111111111';
+    await t.test('5. The same FD/cycle rejects a duplicate credit without a second balance effect', async () => {
+      const fdId2 = randomUUID();
       const p1 = await withTransaction(async (tx) => {
         await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
         return await callPostInterest(tx, activeAccountId, '5.00', fdId2, '2026-11-01');
       });
-      const p2 = await withTransaction(async (tx) => {
+      await assert.rejects(withTransaction(async (tx) => {
         await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
         return await callPostInterest(tx, activeAccountId, '5.00', fdId2, '2026-11-01');
-      });
-
-      assert.notEqual(p1.p_transaction_id, p2.p_transaction_id);
+      }), error => error.sqlstate === '23505');
+      assert.ok(p1.p_transaction_id);
 
       const [acc] = await adminQuery('SELECT current_balance FROM account WHERE account_id = $1', [activeAccountId]);
-      // Started 1000, +50 (test1), +10 (test4), +5 (test5_a), +5 (test5_b) = 1070
-      assert.equal(Number(acc.current_balance), 1070.00);
+      // Started 1000, +50 (test1), +10 (test4), +5 (first attempt); replay rolls back.
+      assert.equal(acc.current_balance, '1065.00');
     });
 
   } finally {

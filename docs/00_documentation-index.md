@@ -1,5 +1,17 @@
 # 00 — Documentation Index
 
+**2026-10-09 current M2 work:** RPT-01 T02 is merged through PR #74. Vibodha
+authorized a scoped early start for P06-M02-T01 in
+[ADR-0024](../.agent/decisions/ADR-0024-seed-validation.md), then instructed completion
+of its blockers. All global AC-12 checks now pass: twelve funded FDs, three real
+cycles, thirty payouts and complete role/profile coverage. T01 is locally implemented,
+REVIEW awaiting user publication; see the
+[verification and M5 handoff](../.agent/handoffs/p06-m02-seed-validation.md).
+Reported integration failures are repaired under explicit cross-owner authorization:
+full865 tests on this branch and940 on latest-dev overlay pass; typecheck/lint pass.
+See the [integration repair handoff](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
+General Phase 6 entry, T02/T03 and Git publication remain separate.
+
 Start here. This tells you what every document is for, which ones are authoritative, and
 what to read first.
 

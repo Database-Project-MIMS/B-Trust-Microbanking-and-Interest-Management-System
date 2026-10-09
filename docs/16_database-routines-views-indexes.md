@@ -12,6 +12,17 @@ L01–L13.
 
 ## Stored procedures
 
+**0620 — P06-M02-T01 completion (M2 contribution; M4 posting steward):**
+Replaces only the reference calculation in `sp_post_interest_credit`. A 45-character
+full FD/cycle reference prevents shared-prefix collisions and duplicate direct
+credits for one FD/cycle. Signature, account locking, exact NUMERIC arithmetic,
+ledger/balance/audit transaction and caller-owned boundary are retained.
+Existing 0460/0483 are immutable. The seed uses the posting routines rather than
+writing financial rows by hand; `sp_run_interest_cycle` produces all thirty
+interest credits and linked payouts. This seed proof does not certify the
+existing cycle function's per-FD independent-commit requirement (it uses nested
+subtransactions); that runtime orchestration remains M5's separate responsibility.
+
 ### Implemented service-owned customer transactions (P02-M02-T04)
 
 These are TypeScript orchestration functions in `services/customer-service.ts`,

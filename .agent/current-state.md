@@ -1,6 +1,65 @@
 # Current State
 
-## M4 RPT-05 update (2026-10-08)
+## PR #88 conflict resolution — 2026-10-09
+
+Branch `p06-m02-seed-validation` remains at feature HEAD f323516. Latest dev78aae1e
+is prepared with --no-commit --no-ff; the user completes the merge commit and push.
+The five conflicts preserve tested code and both owners' task histories. The
+tracker has 97 tasks:16 TODO,1 IN_PROGRESS,1 REVIEW,79 DONE; seed T01 is REVIEW,
+M2 RPT-01 is DONE, incoming M3/M5 DONE and M1 deployment IN_PROGRESS are retained.
+General phase gates remain separate. The M5 ops note/tracker discrepancy is
+recorded without changing its TODO status. Actual resolved-tree verification passes:
+940 full tests,186 focused,6 security;51-migration rebuild/reseed/typecheck/lint.
+The resolution is staged for the user; see the [resolution handoff](handoffs/p06-m02-pr88-conflict-resolution.md).
+The development DB is preserved. No new commit, push or completed merge.
+
+---
+
+## Historical delivery evidence before latest-dev preparation
+
+
+## M2 P06-M02-T01 — seed acceptance completed locally (2026-10-09)
+
+**Checkout:** `p06-m02-seed-validation` · **Base:** dev 095ea9c
+**Integration tested:** exported dev 78aae1e (PR #87), with this delivery overlaid.
+**Status:** REVIEW; implementation and global AC-12 pass, user publication pending.
+
+Vibodha said “complete this” after the missing seed coverage was reported.
+ADR-0024 records the scoped start and authorized M5/M4 contributions; it was
+renumbered because latest dev already uses ADR-0023 for ledger ordering.
+M5 retains seed stewardship; M4 retains posting; M3 retains its eligibility tests.
+
+Twelve funded FDs (ten active/two matured), three real interest cycles/thirty
+payouts, 191 ledger postings, fourteen users/seven roles, manager staff profiles
+and a linked customer login are delivered. Every account reconciles to signed
+ledger entries, every payout matches its credit/formula/run total, and all
+active balances satisfy plan minimums. Reseeding preserves exact financial totals
+and custom posting configuration. Opening cash now has actual ledger entries.
+New 0620 makes full FD/cycle references unique; merged migrations are unchanged.
+
+Strict checker/loader, 39 seed cases, original checker compatibility, interest
+credit/FD-opening/assigned-agent fixture regressions, customer FD API tests,
+typecheck and lint pass. Current branch: 186 focused tests /15 suites and clean
+46-migration rebuild/checksums; full suite 865 tests /87 suites, all pass.
+Latest-dev overlay: matching focused proof and 51-migration rebuild/checksums;
+full suite 940 tests /95 suites, all pass. Zero failures, cancellations or skips.
+Vibodha explicitly authorized repairs in other members' code after the earlier
+29 failures were reported. Production session fixtures, RLS setup, stored-role
+selection, date boundaries, audit contracts, SQL overloads and CSV assertions
+are repaired. Audit/interest request routes now return safe role denials;
+interest session requests enforce CSRF and validate bodies before audit writes.
+Original ownership remains. See the integration failure repair handoff.
+
+The development DB is preserved. The user subsequently authorized a few local commits; no Git merge, push or PR is authorized.
+User integrates latest dev and handles remote publication. General Phase 6 and T02/T03 remain
+separate. Tracker97:23 TODO /1 REVIEW /73 DONE, retaining other owners' branch
+statuses rather than silently copying an unmerged tracker. /architect and /review
+complete; no UI, /imprint N/A; /remember saved. All five overview tables reviewed.
+[Delivery, review and evidence](handoffs/p06-m02-seed-validation.md).
+
+---
+
+## Historical M4 RPT-05 update (2026-10-08)
 
 P05-M04-T01/T02 are in local REVIEW on the current dirty M4 checkout. Migration
 0560, the report service/API, and the live report page implement holder-attributed
@@ -324,4 +383,3 @@ P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 e
 identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
 `tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
 already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).
-

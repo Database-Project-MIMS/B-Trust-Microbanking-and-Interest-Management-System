@@ -1,3 +1,15 @@
+# Authorized integration repair contribution — 2026-10-09
+
+Vibodha authorized M2 to fix the reported full-suite failures in other members'
+code. Original ownership and task assignments remain. Current full865/latest-dev
+overlay940 tests pass; focused186, rebuild/reseed/typecheck/lint pass. The
+[repair handoff](../handoffs/p06-m02-integration-failure-repairs.md) describes
+this member's contributions and review. Publication remains with the user.
+
+---
+
+## Historical owner context (retained)
+
 # Member 3 — context
 
 **Updated:** 2026-10-05, authorized Phase 1 closeout.
@@ -79,4 +91,3 @@ Evidence: [checkpoint](../checkpoints/phase-01-checkpoint.md).
 - 2026-10-08: `/review` of P05-M03-T01 found 2 important issues and 1 minor; at the user's choice both were fixed. Measured on the pure seed first: 73/125 rows tie on `transaction_date`, 86 balance-chain breaks, 6 of 10 accounts' last row ≠ `current_balance`. Added `0542` (`transaction.ledger_seq`, G-24, ADR-0023: posting-order key, UNIQUE (account_id, ledger_seq), no posting routine changed) and `0543` (view v2: ordered by `ledger_seq`, no numeric(15,2) overflow cast, correlated legacy sum instead of a whole-ledger window). Seed now: 0 breaks, 0 mismatches; one-branch plan reads only that branch. Tests: `rpt02-view` 18/18, `transaction-ledger-seq` 7/7. Suite 865 tests / 837 pass / the same 28 inherited failures. New records: ADR-0023, G-24, handoff to M4 `p05-m03-ledger-seq-for-m4.md`. Also found: seed dates are all one day; all 10 seeded accounts start with a balance outside the ledger. Next: commit, then P05-M03-T02 (service, API, CSV, page).
 
 - 2026-10-08: P05-M03-T02 done (early start at the user's direction; no phase approval; tests only, no browser pass) — `services/account-summary-report-service.ts` (one REPEATABLE READ transaction: actor re-check, scoped totals/page/page subtotal, in-transaction access audit), `GET /api/reports/account-summary` (JSON and ALL-rows CSV with identical totals), real `/reports/account-summary` on the shared shell with typed opening/closing columns; validation `lib/validation/account-summary-report.ts`; three additive optional props on M1's shared report components (handoff to M1). `tests/api/rpt02-report.test.mjs` 16/16 (as mims_app), `tests/e2e/account-summary-report-screen.test.mjs` 7/7 (rendered markup, RPT-01 defaults unchanged). EXPLAIN ANALYZE on 40k ledger rows: one account 0.31 ms, one branch 65 ms, bank-wide 176 ms. Suite 888 tests / 860 pass / the same 28 inherited failures; tsc, eslint, next build clean; `/imprint` entry added. RPT-02 (T01+T02) is done. Handoff `.agent/handoffs/p05-m03-t02-rpt02-report.md`. Next: `/review` of T02; remaining M3: P06-M03-T01 (concurrency) and P06-M03-T02 (constraints, waits on Phase 4).
-

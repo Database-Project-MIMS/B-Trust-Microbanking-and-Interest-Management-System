@@ -1,4 +1,4 @@
-import { pool } from './lib/db/index.ts';
+import { pool } from './lib/db/index';
 
 async function main() {
   const queries = [
@@ -15,10 +15,10 @@ async function main() {
       const res = await pool.query(q.sql);
       res.rows.forEach(r => console.log(r['QUERY PLAN']));
     } catch (e) {
-      console.error(e.message);
+      console.error(e instanceof Error ? e.message : 'Report analysis failed.');
     }
   }
-  pool.end();
+  await pool.end();
 }
 
 main();

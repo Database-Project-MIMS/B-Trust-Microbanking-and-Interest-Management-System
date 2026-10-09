@@ -1,6 +1,7 @@
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import pg from "pg";
+import { spawnSync } from 'node:child_process';
+import { createMigrationClient } from '../../lib/db/migration-client.mjs';
 
 if (!process.env.DATABASE_URL) {
     try { process.loadEnvFile(); } catch { /* loaded by runner */ }
@@ -9,16 +10,36 @@ const connectionString = process.env.DATABASE_MIGRATION_URL ?? process.env.DATAB
 
 describe("Phase 4: Fixed Deposit Constraints and SP", () => {
     let client;
+    let admin;
+    let created = false;
     let activeAccountId;
     let inactiveAccountId;
     let fdPlanId;
+    let userId;
+    let channelId;
 
     before(async () => {
-        client = new pg.Client({ connectionString });
+        if (process.env.MIMS_ISOLATED_TEST !== '1') throw new Error('Use the disposable verification harness.');
+        admin = createMigrationClient(connectionString);
+        await admin.connect();
+        const database = (await admin.query('SELECT current_database() AS name')).rows[0].name;
+        assert.ok(['mims_test_closeout', 'mims_test_customer_schema'].includes(database));
+        await admin.query('CREATE DATABASE mims_test_fd_opening OWNER mims_owner');
+        created = true;
+        const owner = new URL(connectionString);
+        const app = new URL(process.env.DATABASE_URL);
+        owner.pathname = app.pathname = '/mims_test_fd_opening';
+        const rebuild = spawnSync(process.execPath, ['scripts/db-rebuild.mjs'],
+          { env: { ...process.env, DATABASE_MIGRATION_URL: owner.href, DATABASE_URL: app.href },
+            encoding: 'utf8', windowsHide: true, timeout: 30000 });
+        assert.equal(rebuild.status, 0, 'Fresh FD-opening fixture rebuild must pass.');
+        client = createMigrationClient(owner.href);
         await client.connect();
         
         const planRes = await client.query("SELECT fd_plan_id FROM fd_plan WHERE plan_name = '6 Month FD'");
         fdPlanId = planRes.rows[0].fd_plan_id;
+        userId = (await client.query("SELECT user_id FROM app_user WHERE username = 'admin'")).rows[0].user_id;
+        channelId = (await client.query("SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER'")).rows[0].channel_id;
         
         // Find an active account that we can debit from safely.
         // The seeds create some accounts. We'll pick one and give it massive funds.
@@ -32,16 +53,17 @@ describe("Phase 4: Fixed Deposit Constraints and SP", () => {
         await client.query("UPDATE account SET status = 'FROZEN' WHERE account_id = $1", [inactiveAccountId]);
         
         // Cleanup any existing FDs so we have a clean slate
+        // Only this suite's owned disposable DB is cleared; seeded parent history is intact.
+        await client.query('DELETE FROM interest_payout');
+        await client.query('DELETE FROM interest_run');
         await client.query("DELETE FROM fixed_deposit");
     });
 
     after(async () => {
-        await client.query("DELETE FROM fixed_deposit");
-        // Revert inactive account back
-        if(inactiveAccountId) {
-             await client.query("UPDATE account SET status = 'ACTIVE' WHERE account_id = $1", [inactiveAccountId]);
-        }
-        await client.end();
+        try {
+            await client?.end();
+            if (created) await admin.query('DROP DATABASE mims_test_fd_opening');
+        } finally { await admin?.end(); }
     });
 
     describe("Task 1: Schema Constraints", () => {
@@ -91,17 +113,6 @@ describe("Phase 4: Fixed Deposit Constraints and SP", () => {
     });
 
     describe("Task 2: sp_open_fixed_deposit", () => {
-        let userId;
-        let channelId;
-
-        before(async () => {
-            const userRes = await client.query("SELECT user_id FROM app_user WHERE status = 'ACTIVE' LIMIT 1");
-            userId = userRes.rows[0].user_id;
-
-            const channelRes = await client.query("SELECT channel_id FROM transaction_channel WHERE status = 'ACTIVE' LIMIT 1");
-            channelId = channelRes.rows[0].channel_id;
-        });
-
         test("1. Open FD with insufficient balance throws exception", async () => {
             const tryAmount = 9000000; // Unreasonably high
             await assert.rejects(

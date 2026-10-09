@@ -15,6 +15,11 @@ transaction), and **idempotency as a database constraint**, not an in-memory cac
 
 ## 🗺️ Work Order Summary
 
+**2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
+reported integration failures in other members' code. Full current865/latest940
+tests pass; original stewardship and unfinished task statuses remain.
+[Repairs and review](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
+
 **Reconciled 2026-10-07:** Phase 1 T01–T04 and Phase 2 transaction-schema T01 retain DONE. M2 T05 uses shared transaction/error helpers without changing lib/db. Phase 3 retains its separate approval/decision gates.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.

@@ -1,53 +1,42 @@
-import { describe, test, before, after } from "node:test";
-import assert from "node:assert/strict";
-import { execSync } from 'node:child_process';
-import pg from "pg";
+import { after, before, describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { createMigrationClient } from '../../lib/db/migration-client.mjs';
+import { validateSeedDatabase } from '../../scripts/seed-validation.mjs';
 
-if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
-    try { process.loadEnvFile(); } catch {}
-}
-
-const url = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
-
-describe("P01-M05-T03: Seed Validation", () => {
-    let client;
-
-    before(async () => {
-        client = new pg.Client({ connectionString: url });
-        await client.connect();
-    });
-
-    after(async () => {
-        await client.end();
-    });
-
-    test("1. Seeding once -> correct row counts (Minimum data present)", () => {
-        try {
-            // Executing our seed-check script which handles the idempotency logic
-            // and verifies that the minimum bounds requested by AC-12 are met.
-            const out = execSync('node --env-file=.env scripts/seed-check.mjs', { stdio: 'pipe' }).toString();
-            assert.ok(out.includes('[PASS] Seed is idempotent'), "Seed check script should pass");
-        } catch (e) {
-            console.error(e.stdout ? e.stdout.toString() : e.message);
-            console.error(e.stderr ? e.stderr.toString() : '');
-            assert.fail("seed-check.mjs failed. Minimum data not present or idempotency failed.");
-        }
-    });
-
-    test("2. Seeding twice -> identical row counts (Determinism)", () => {
-        // If the seed-check script passed above, determinism holds.
-        assert.ok(true, "Handled and enforced by seed-check.mjs idempotency checks");
-    });
-    
-    test("3. Seeding twice -> identical financial totals (No random data)", () => {
-        // If the seed-check script passed above, financial sums remain identical.
-        assert.ok(true, "Handled and enforced by seed-check.mjs financial sum comparisons");
-    });
-
-    test("4. FK integrity holds after seed (Referential integrity)", async () => {
-        // If the seed was successful, the database's foreign key constraints inherently guarantee referential integrity.
-        // We run a quick check to see if tables exist, proving the transaction didn't rollback.
-        const res = await client.query(`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = 'public'`);
-        assert.ok(parseInt(res.rows[0].count) > 0, "Tables exist and FK constraints are enforced by Postgres");
-    });
+// Compatibility entry for the original M5 seed-framework tests. Other suites
+// deliberately mutate shared fixtures, so validate a freshly rebuilt owned DB.
+describe('P01-M05-T03 / P06-M02-T01: seed framework acceptance', () => {
+  let admin, environment, created = false;
+  before(async () => {
+    if (process.env.MIMS_ISOLATED_TEST !== '1') throw new Error('Use the disposable verification harness.');
+    admin = createMigrationClient(process.env.DATABASE_MIGRATION_URL);
+    await admin.connect();
+    const { rows } = await admin.query('SELECT current_database() AS name');
+    assert.ok(['mims_test_closeout', 'mims_test_customer_schema'].includes(rows[0].name));
+    await admin.query('CREATE DATABASE mims_test_seed_checker OWNER mims_owner');
+    created = true;
+    const owner = new URL(process.env.DATABASE_MIGRATION_URL);
+    const app = new URL(process.env.DATABASE_URL);
+    owner.pathname = app.pathname = '/mims_test_seed_checker';
+    environment = { ...process.env, DATABASE_MIGRATION_URL: owner.href, DATABASE_URL: app.href };
+    const result = spawnSync(process.execPath, ['scripts/db-rebuild.mjs'],
+      { env: environment, encoding: 'utf8', windowsHide: true, timeout: 30000 });
+    assert.equal(result.status, 0, 'Fresh seed checker rebuild must succeed.');
+  });
+  after(async () => {
+    try { if (created) await admin.query('DROP DATABASE mims_test_seed_checker'); }
+    finally { await admin?.end(); }
+  });
+  test('seeding once meets every minimum and financial invariant', async () => {
+    const results = await validateSeedDatabase(environment.DATABASE_MIGRATION_URL);
+    assert.deepEqual(results.filter(result => !result.ok), []);
+  });
+  test('seeding twice preserves measured counts and exact financial totals', () => {
+    const result = spawnSync(process.execPath, ['scripts/seed-check.mjs'],
+      { env: environment, encoding: 'utf8', windowsHide: true, timeout: 15000 });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /PASS global seed minimums, financial invariants and reseeding/);
+    assert.doesNotMatch(result.stdout, /SKIP/);
+  });
 });

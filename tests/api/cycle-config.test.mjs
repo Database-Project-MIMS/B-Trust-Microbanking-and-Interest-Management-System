@@ -1,14 +1,16 @@
-import test, { before, beforeEach, after } from 'node:test';
+import test, { before, beforeEach, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import { getInterestCycleDays, getMinFdPrincipal } from '../../services/interest-config-service.js';
-import { createFixture, pool, requireDisposableDatabase } from '../helpers/customer-registration.mjs';
-import { randomBytes, createHash } from 'node:crypto';
+import { pool, requireDisposableDatabase } from '../helpers/customer-registration.mjs';
+import { randomBytes } from 'node:crypto';
+import { authorizedFixture, fixtureSession } from '../helpers/authorized-fixture.mjs';
 const { PUT } = await import('../../app/api/admin/parameters/[key]/route.ts');
 
-test('Cycle Config Service and Admin API', async (t) => {
+describe('Cycle Config Service and Admin API', () => {
   let client, fixture;
   const tokens = {};
+  const csrf = randomBytes(32).toString('hex');
 
   before(async () => {
     client = await pool.connect();
@@ -16,25 +18,18 @@ test('Cycle Config Service and Admin API', async (t) => {
   });
 
   beforeEach(async () => {
-    fixture = await createFixture(client);
+    fixture = await authorizedFixture(client);
     tokens.admin = await session(await fixture.staff('ADMIN'));
     tokens.agent = await session(fixture.agentId);
   });
 
   after(async () => {
     client?.release();
+    await pool.end();
   });
 
   async function session(userId) {
-    const id = randomBytes(32).toString('hex');
-    const secret = process.env.SESSION_SECRET || 'CHANGE_ME_32_BYTE_RANDOM_VALUE';
-    const hash = createHash('sha256').update(id + secret).digest('hex');
-    await client.query(
-      `INSERT INTO user_session (session_id, user_id, token_hash, expires_at)
-       VALUES ($1, $2, $3, now() + interval '1 hour')`,
-      [id, userId, hash]
-    );
-    return id;
+    return fixtureSession(client, userId);
   }
 
   async function updateParam(token, key, value) {
@@ -42,8 +37,8 @@ test('Cycle Config Service and Admin API', async (t) => {
       method: 'PUT',
       headers: new Headers({
         'Content-Type': 'application/json',
-        'Cookie': `mims_session=${token}`,
-        'x-csrf-token': 'test-csrf'
+        'Cookie': `mims_session=${token}; mims_csrf=${csrf}`,
+        'x-csrf-token': csrf
       }),
       body: JSON.stringify({ value })
     });
@@ -51,7 +46,7 @@ test('Cycle Config Service and Admin API', async (t) => {
     return PUT(req, { params: Promise.resolve({ key }) });
   }
 
-  await t.test('reads parameters from system_parameter', async () => {
+  test('reads parameters from system_parameter', async () => {
     const cycleDays = await getInterestCycleDays();
     assert.equal(cycleDays, 30);
     
@@ -59,18 +54,19 @@ test('Cycle Config Service and Admin API', async (t) => {
     assert.equal(minFd, '10000.00');
   });
 
-  await t.test('Admin can update cycle config via API, which changes service response', async () => {
-    const res = await updateParam(tokens.admin, 'INTEREST_CYCLE_DAYS', '45');
-    assert.equal(res.status, 200);
-    
-    const newCycleDays = await getInterestCycleDays();
-    assert.equal(newCycleDays, 45);
-    
-    // restore
-    await updateParam(tokens.admin, 'INTEREST_CYCLE_DAYS', '30');
+  test('Admin can update cycle config via API, which changes service response', async () => {
+    const original = await getInterestCycleDays();
+    try {
+      const res = await updateParam(tokens.admin, 'INTEREST_CYCLE_DAYS', '45');
+      assert.equal(res.status, 200);
+      assert.equal(await getInterestCycleDays(), 45);
+    } finally {
+      await client.query('UPDATE system_parameter SET param_value=$1 WHERE param_key=$2',
+        [String(original), 'INTEREST_CYCLE_DAYS']);
+    }
   });
 
-  await t.test('Non-admin cannot update cycle config', async () => {
+  test('Non-admin cannot update cycle config', async () => {
     const res = await updateParam(tokens.agent, 'INTEREST_CYCLE_DAYS', '60');
     assert.equal(res.status, 403);
     

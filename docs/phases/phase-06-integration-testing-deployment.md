@@ -13,6 +13,19 @@ Phase 5 completion.
 - [ ] Phase 5 exit criteria met
 - [ ] All features implemented; remaining work is verification and delivery
 
+**Scoped exception (2026-10-08):** Vibodha authorized only P06-M02-T01's early
+seed-validation work ([ADR-0024](../../.agent/decisions/ADR-0024-seed-validation.md)).
+The M5 transaction dependency is DONE. On 2026-10-09 Vibodha instructed completion
+of the reported seed blockers, authorizing the necessary M5/M4 contributions.
+Strict global AC-12 now passes on `p06-m02-seed-validation`: twelve funded FDs,
+three completed nonempty cycles, thirty payouts and all seven roles/profile links.
+T01 is implemented locally, REVIEW awaiting user publication. General entry and
+T02/T03 remain separate. Vibodha additionally authorized repairs to the reported
+full-suite failures in other members' code. The current branch full865 tests and
+latest-dev overlay full940 tests all pass, with zero cancellations/skips; focused
+seed/date proof is186 tests. These results do not certify general Phase 6 exit.
+[Evidence and handoff](../../.agent/handoffs/p06-m02-seed-validation.md).
+
 ## Tasks by member
 
 | Member | Focus |

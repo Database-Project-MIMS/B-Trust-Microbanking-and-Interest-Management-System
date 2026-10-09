@@ -1,13 +1,15 @@
 import { after, before, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
-import { createFixture, pool, requireDisposableDatabase } from '../helpers/customer-registration.mjs';
-import { randomBytes, createHash } from 'node:crypto';
+import { pool, requireDisposableDatabase } from '../helpers/customer-registration.mjs';
+import { randomBytes } from 'node:crypto';
+import { authorizedFixture, fixtureSession } from '../helpers/authorized-fixture.mjs';
 const { POST } = await import('../../app/api/transactions/[id]/reverse/route.ts');
 
 describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   let client, fixture;
   const tokens = {};
+  const csrf = randomBytes(32).toString('hex');
 
   before(async () => {
     client = await pool.connect();
@@ -15,7 +17,7 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   });
 
   beforeEach(async () => {
-    fixture = await createFixture(client);
+    fixture = await authorizedFixture(client);
     tokens.manager = await session(fixture.managerId);
     tokens.admin = await session(await fixture.staff('ADMIN'));
     tokens.agent = await session(fixture.agentId);
@@ -28,21 +30,13 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   });
 
   async function session(userId) {
-    const id = randomBytes(32).toString('hex');
-    const secret = process.env.SESSION_SECRET || 'CHANGE_ME_32_BYTE_RANDOM_VALUE';
-    const hash = createHash('sha256').update(id + secret).digest('hex');
-    await client.query(
-      `INSERT INTO user_session (session_id, user_id, token_hash, expires_at)
-       VALUES ($1, $2, $3, now() + interval '1 hour')`,
-      [id, userId, hash]
-    );
-    return id;
+    return fixtureSession(client, userId);
   }
 
   async function reverse(token, transactionId, reason = 'Test reversal') {
     const req = new NextRequest(`http://localhost:3000/api/transactions/${transactionId}/reverse`, {
       method: 'POST',
-      headers: new Headers({ 'Content-Type': 'application/json', 'Cookie': `mims_session=${token}` }),
+      headers: new Headers({ 'Content-Type': 'application/json', 'x-csrf-token': csrf, 'Cookie': `mims_session=${token}; mims_csrf=${csrf}` }),
       body: JSON.stringify({ reason }),
     });
     return POST(req, { params: Promise.resolve({ id: transactionId }) });
@@ -64,7 +58,7 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
     const fakeId = '00000000-0000-0000-0000-000000000001';
     const req = new NextRequest(`http://localhost:3000/api/transactions/${fakeId}/reverse`, {
       method: 'POST',
-      headers: new Headers({ 'Content-Type': 'application/json', 'Cookie': `mims_session=${tokens.manager}` }),
+      headers: new Headers({ 'Content-Type': 'application/json', 'x-csrf-token': csrf, 'Cookie': `mims_session=${tokens.manager}; mims_csrf=${csrf}` }),
       body: JSON.stringify({ reason: '' }),
     });
     const res = await POST(req, { params: Promise.resolve({ id: fakeId }) });

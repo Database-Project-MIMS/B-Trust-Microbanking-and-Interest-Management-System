@@ -41,3 +41,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0021](ADR-0021-withdrawal-contract-repair.md) | Authorized M4 withdrawal correction, array signers and audited rejection boundary | User-authorized cross-member repair; M4 ownership retained |
 | [ADR-0023](ADR-0023-ledger-posting-order.md) | `transaction.ledger_seq` posting-order key (G-24) and RPT-02 view v2 | User-authorized M3 implementation on M4's table; M4 review retained |
 | [ADR-0022](ADR-0022-rpt01-api-ui.md) | Scoped RPT-01 runtime readers, snapshot CSV and approved I-7 repairs | Explicitly approved by user; M1 ownership retained; general phase entry pending |
+| [ADR-0024](ADR-0024-seed-validation.md) | Strict seed acceptance, authorized seed completion and 0620 interest-reference repair | User-authorized scoped start/completion; M5/M4 ownership and general phase gates retained; numbered after dev's ledger-order ADR-0023 |

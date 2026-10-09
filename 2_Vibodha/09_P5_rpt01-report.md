@@ -1,3 +1,11 @@
+# Current publication status — 2026-10-08
+
+P05-M02-T02 is merged into dev through PR #74 and is DONE in the tracker.
+The delivery/review evidence below is historical; the previously reported full-suite
+integration gaps are resolved in the P06-M02-T01 integration repair handoff.
+P06-M02-T01 is now the separately authorized
+seed-validation task. No general phase approval is inferred from this merge.
+
 # Phase 5 — RPT-01 Agent-Wise Transaction Report
 
 **Task IDs:** P05-M02-T01, P05-M02-T02

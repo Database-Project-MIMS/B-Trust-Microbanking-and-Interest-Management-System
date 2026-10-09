@@ -626,6 +626,14 @@ changing merged migrations. See ADR-0015 and the M1 coordination handoff.
 
 ## B.5 Denormalisation register
 
+**P06-M02-T01 (0620, 2026-10-09):** No table/column change. The interest ledger
+reference now encodes the complete FD UUID and business cycle date in 45
+characters, fitting `transaction.reference_number varchar(50)`. Existing UNIQUE
+enforcement also rejects a second direct credit for the same FD/cycle. Opening
+seed cash, FD principal debits/returns and interest all have ledger entries;
+global seed validation reconciles every account to signed postings including
+linked reversals. Merged migrations remain unchanged.
+
 SRS §6.1 requires intentional denormalisation to be documented. Four entries:
 
 | # | Denormalised value | Derivable from | Why it is kept | Control |

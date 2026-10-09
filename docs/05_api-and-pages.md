@@ -411,6 +411,25 @@ The page labels that meaning, and CSV uses the same report result and totals.
 ### `GET /api/audit`
 - **Roles** AUDITOR, ADMIN · **Query** `actorId`, `entityType`, `entityId`, `action`, `from`, `to`
 - Uses indexes `(user_id, logged_at DESC)` and `(entity_type, entity_id)`. Read-only; the audit log has no write endpoint.
+- The route returns safe authentication/role errors and delegates SQL to
+  `audit-query-service`. UUID/date filters are validated; `page` is a positive
+  integer (default 1), `pageSize` is 1–100 (default 20). Unknown filters and a
+  reversed date range return `400 BAD_REQUEST`. Rows have stable `logged_at`,
+  `log_id` ordering. Unexpected database failures use the safe error envelope.
+
+### Interest request authentication repair — 2026-10-09
+
+`POST /api/interest-runs`'s existing request handler accepts a valid worker
+Bearer token, or an ADMIN/CENTRAL_OPS session with matching CSRF cookie/header.
+A session takes precedence; a forbidden signed-in role remains `403`, even with
+a worker header. Missing/invalid authentication returns `401`; malformed JSON,
+invalid calendar dates, nonboolean `dryRun` and unexpected body fields return
+`400` without an initiation audit. `interest-request-service` writes the validated
+request's `INTEREST_RUN_INITIATED` event in one transaction, with USER identity for
+sessions and SYSTEM/null user for workers. The response remains `200` with
+`data.status = STARTED` under the existing contract. This handler currently
+records the request; actual cycle execution/status orchestration remains the
+separate M5 runtime work and is not certified by these request-auth tests.
 
 ---
 

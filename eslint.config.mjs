@@ -9,5 +9,5 @@ export default [
     linterOptions: { reportUnusedDisableDirectives: "off" },
     rules: nextPlugin.configs["core-web-vitals"].rules,
   },
-  { ignores: [".next/**", "node_modules/**"] },
+  { ignores: [".next/**", "node_modules/**", "scratch/**"] },
 ];

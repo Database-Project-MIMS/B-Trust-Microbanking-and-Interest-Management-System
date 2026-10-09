@@ -112,6 +112,15 @@ a negative balance (NFR-SAFE-01, AC-06).
 
 ### The interest formula
 
+**P06-M02-T01 completion (0620):** `sp_post_interest_credit` uses
+`INT-YYYYMMDD-<full UUID without hyphens>`; reference uniqueness rejects a second
+direct credit for the same FD/cycle even before a payout is inserted. Full UUID
+identity avoids collisions between deterministic seed IDs sharing a prefix.
+The seed executes three real interest cycles, checks nonempty payouts/control
+totals, and proves the second-cycle re-run leaves financial state unchanged.
+`seed-validation.mjs` also checks signed-ledger balances, plan minimums, payout
+amounts/accounts/formulas, customer links and active branch-staff profiles.
+
 ```
 interest = round(principal × interest_rate_at_opening × 30 / 365, 2)
 ```
@@ -233,3 +242,12 @@ still checks both branches, current assignment and the optional self link. Bankw
 readers retain bankwide scope even with a historical inactive staff profile. This
 does not authenticate database context setters; live server session checks remain
 mandatory. General Phase 4 gate is unchanged; ADR-0019 authorizes this task only.
+
+## Integration security checks — 2026-10-09
+
+P06-M02-T01's authorized integration repairs preserve role denials as 403 in
+audit/interest request APIs. Session-authenticated interest requests require CSRF;
+worker authentication cannot override a supplied forbidden session. Validated
+request bodies precede audit writes; invalid requests add no initiation event.
+The audit reader validates bounded pagination/UUID/date filters and delegates
+parameterized SQL to its service. No financial routine or database rule is relaxed.
