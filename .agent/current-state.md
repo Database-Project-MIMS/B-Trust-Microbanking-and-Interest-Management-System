@@ -19,6 +19,33 @@ Test-only; no schema, routine or migration changes. Both tasks DONE per tracker.
 - Env note: on macOS `npm test` needs `LC_ALL=en_US.UTF-8` or the isolated postgres
   cluster will not start. The local `mims_dev` is stale (23 migrations); a scratch
   `mims_test_customer_schema` database was created and rebuilt for these tests.
+## M2 P06-M02-T02 — verified master-data integrity (2026-10-09)
+
+**Checkout:** `feat/p06-m02-master-data-integrity` · **Base:** `fe7034f`
+**Status:** REVIEW; implemented/verified locally, awaiting user publication/review.
+Vibodha explicitly confirmed the T02 blueprint (ADR-0025), then authorized failure
+repairs across owners and local commits. Push, PR creation and merge remain prohibited.
+The prior PR #88 conflict-resolution merge was already committed by the user at
+fe7034f before this task started; the following older pending-merge notes are historical.
+
+100 database/16 API cases prove all five M2 master tables' keys, required fields,
+FKs/checks, assignment history, document pairing, referenced-row deletion restrictions,
+atomic failure rollback and deactivation retention through existing runtime routes.
+The helper now creates its disposable database before rebuilding; no production
+schema, service, authorization, UI or merged migration change was needed.
+
+Focused 309 tests /14 suites and full 1062 tests /98 suites (including security)
+PASS with zero failures/cancellations/skips. Clean 51-migration rebuild/checksums,
+final-source typecheck/lint PASS. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+All temporary clusters stopped/removed; normal development DB preserved.
+Test/tooling commit: `a58112e`; documentation/state are a separate local commit.
+/architect, /review and approved /remember save complete; no UI, /imprint N/A.
+All five overview summaries reviewed; only M2 summary changes. Tracker97:
+15 TODO /1 IN_PROGRESS /2 REVIEW /79 DONE, retaining other owners' statuses.
+General Phase 6 entry and T03 remain separate; T01 remains REVIEW in the tracker.
+[Coverage, review and next steps](handoffs/p06-m02-master-data-integrity.md).
+
+---
 
 ## PR #88 conflict resolution — 2026-10-09
 

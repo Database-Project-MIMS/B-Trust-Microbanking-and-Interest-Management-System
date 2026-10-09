@@ -50,8 +50,8 @@ and merging remain user actions.
 | P3 | 14 | 0 | 0 | 0 | 0 | 0 | 14 |
 | P4 | 14 | 3 | 0 | 0 | 0 | 0 | 11 |
 | P5 | 15 | 3 | 0 | 0 | 0 | 0 | 12 |
-| P6 | 13 | 10 | 0 | 1 | 0 | 1 | 1 |
-| **All** | **97** | **16** | **0** | **1** | **0** | **1** | **79** |
+| P6 | 13 | 9 | 0 | 1 | 0 | 2 | 1 |
+| **All** | **97** | **15** | **0** | **1** | **0** | **2** | **79** |
 
 ---
 
@@ -335,7 +335,17 @@ is historical and must not be substituted for current verification.
 | P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** | DONE |
 | P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 | DONE |
 
-## Phase 6 — Integration, Testing & Deployment (10 TODO, 1 IN_PROGRESS, 1 REVIEW, 1 DONE; general entry pending)
+## Phase 6 — Integration, Testing & Deployment (9 TODO, 1 IN_PROGRESS, 2 REVIEW, 1 DONE; general entry pending)
+
+**2026-10-09 T02 delivery:** Vibodha authorized and explicitly confirmed
+P06-M02-T02 (ADR-0025), including local commits and fixes for verification failures.
+100 database and 16 API integrity cases pass; focused 309 tests /14 suites and full
+1062 tests /98 suites (including security), clean 51-migration rebuild/checksums,
+typecheck and lint pass with zero failures/cancellations/skips. The disposable
+verifier's obsolete database-creation assumption is repaired. No production
+schema/service/UI change. T02 is REVIEW pending user publication/review; general
+Phase 6 entry and T03 remain separate.
+[Coverage and review](../.agent/handoffs/p06-m02-master-data-integrity.md).
 
 **2026-10-08 scoped start:** Vibodha authorized P06-M02-T01 after the general
 Phase 6 gate was explained ([ADR-0024](../.agent/decisions/ADR-0024-seed-validation.md)).
@@ -346,7 +356,8 @@ The seed has twelve funded FDs, three real cycles/thirty payouts and all seven
 roles with required staff/customer links. New 0620 fixes shared-prefix interest
 references. Full-suite tests/typecheck/lint and clean rebuilds pass; the earlier broader
 failures are repaired. T01 is implemented locally, REVIEW awaiting publication.
-No general phase entry or T02/T03 start is inferred. Three local commits were
+No general phase entry or T03 start is inferred. T02 has separate ADR-0025 approval.
+Three local commits for T01 were
 explicitly authorized; PR #88 was opened by the user. This conflict resolution
 prepares latest dev without making the merge commit or pushing.
 [Evidence and owner handoff](../.agent/handoffs/p06-m02-seed-validation.md).
@@ -359,7 +370,7 @@ Unannotated Phase 6 rows remain TODO.
 | P06-M01-T03 | 1 | RLS verification: policies hold when the app layer is bypassed | DB + tests | P02-M01-T01 | TODO |
 | P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — | IN_PROGRESS (config and 6 security tests pass; live HTTPS deployment and combined gates pending) |
 | P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests + seed completion | P03-M05-T01; scoped start/completion ADR-0024 | REVIEW (PR #88; global AC-12 and exact ledger/payout/reseed checks pass; 0620 and authorized cross-owner repairs; actual resolved tree 940 tests pass; user merge commit/publication pending) |
-| P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2 | TODO |
+| P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | REVIEW (100 DB/16 API cases; focused 309/full 1062 including security; 51-migration rebuild/checksums/typecheck/lint pass; local commits authorized, publication pending) |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | TODO |
 | P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |

@@ -1,6 +1,6 @@
 # ⚫ Phase 6 — Tasks 01–03: Seed Validation, Master-Data Integrity & Final Docs
-**Task IDs:** `P06-M02-T01`, `P06-M02-T02`, `P06-M02-T03` · **Current T01 branch:** `p06-m02-seed-validation`; T02/T03 use separate future branches
-**Status:** T01 implemented locally, REVIEW (AC-12 passes; user publication pending); T02/T03 TODO
+**Task IDs:** `P06-M02-T01`, `P06-M02-T02`, `P06-M02-T03` · **T01 branch:** `p06-m02-seed-validation`; **T02:** `feat/p06-m02-master-data-integrity`; T03 future
+**Status:** T01 REVIEW; T02 REVIEW under ADR-0025 (verified locally, publication pending); T03 TODO
 **Depends on:** `P03-M05-T01` (seed set 4), Phase 2 (your own tables), all (for T03)
 **Story Points:** ~2 + ~2 + ~2 = ~6 · **Layer:** Tests + Docs
 
@@ -57,9 +57,24 @@ fails a missing ordered seed stage before writing. No developer DB is rebuilt
 by the disposable harness. The user has now authorized grouped local commits;
 push, PR creation and merge remain with the user.
 
-T02/T03 remain separate future work.
+T02 is separately authorized in ADR-0025 below; T03 remains future work.
 
 ## T02 — Master-Data Integrity Tests
+
+**Implemented 2026-10-09 (ADR-0025):** 100 database cases cover every Phase 1–2
+M2 key/check/FK/required field, direct INSERT/UPDATE attacks, inactive-history
+deletion restrictions and deactivation retention. 16 API cases prove exact
+master-row/audit rollback, normalized duplicates, actual mims_app authorization
+and both ADMIN/manager deactivation paths. Customer status retention uses direct
+SQL plus its existing profile/search routes; no customer PATCH/DELETE is added.
+
+Run `npm run verify:master-data-integrity` for the new suites plus the original
+organization/customer/registration regressions inside a freshly initialized
+disposable cluster. Focused 309 tests, 51-migration rebuild/checksums, typecheck
+and lint pass. Full 1062 tests /98 suites (including security) pass with zero
+failures/cancellations/skips. /review passes; local commits authorized, user
+publication/review pending. General Phase 6 entry and T03 remain separate.
+[Coverage, review and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
 
 Adversarial tests against every constraint you added in Phases 1–2. This is not new
 coverage of new features — it's a stress pass on what already exists, written as if
@@ -129,9 +144,9 @@ anything that fell through between phases.
 
 ### Step 5 — Update Docs (future combined closeout)
 - All of §T03 above
-- Update only completed, accepted task statuses. T01 is currently BLOCKED for global
-  seed acceptance; T02/T03 remain TODO. Do not mark all three DONE together merely
-  because organization seed checks pass.
+- Update only completed, accepted task statuses. T01 is REVIEW with global AC-12
+  passing; T02 is independently verified under ADR-0025; T03 remains TODO.
+  Do not mark all three DONE together merely because organization seed checks pass.
 - Update `.agent/current-state.md`
 
 ---

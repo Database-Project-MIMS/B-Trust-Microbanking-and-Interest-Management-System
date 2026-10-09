@@ -56,10 +56,11 @@ try {
   run(binary('psql'), ['-X', '-v', 'ON_ERROR_STOP=1', '-d', 'postgres'], environment,
     `CREATE ROLE mims_owner CREATEDB LOGIN PASSWORD '${password}';\nCREATE ROLE mims_app LOGIN PASSWORD '${password}';`
       // Disposable-only membership permits the service test to SET ROLE to the real app role.
-      + (process.argv.includes('--registration') ? '\nGRANT mims_app TO mims_owner;' : ''));
+      + (process.argv.includes('--registration') || process.argv.includes('--integrity') ? '\nGRANT mims_app TO mims_owner;' : '')
+      + '\nCREATE DATABASE mims_test_customer_schema OWNER mims_owner;');
 
   console.log('Rebuilding in disposable mims_test_customer_schema; development database is preserved.');
-  run(process.execPath, ['--env-file=.env', 'scripts/db-rebuild.mjs', database], environment);
+  run(process.execPath, ['scripts/db-rebuild.mjs'], environment);
   run(process.execPath, ['scripts/migrate.mjs', 'up'], environment);
   run(process.execPath, ['scripts/migrate.mjs', 'verify'], environment);
   const testFiles = ['tests/db/customer-constraints.test.mjs', 'tests/db/branch-constraints.test.mjs',
@@ -72,11 +73,15 @@ try {
   if (process.argv.includes('--registration')) testFiles.push(
     'tests/db/customer-registration-transaction.test.mjs', 'tests/api/customer-service.test.mjs',
   );
+  if (process.argv.includes('--integrity')) testFiles.push(
+    'tests/db/master-data-integrity.test.mjs', 'tests/api/master-data-integrity.test.mjs',
+    'tests/api/customers.test.mjs',
+  );
   run(process.execPath, ['node_modules/tsx/dist/cli.mjs', '--conditions', 'react-server',
     '--test', '--test-concurrency=1', ...testFiles], environment);
   run(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit'], environment);
   run(process.execPath, ['node_modules/eslint/bin/eslint.js', '.'], environment);
-  const scope = process.argv.includes('--registration') ? 'CUSTOMER REGISTRATION' : process.argv.includes('--relations') ? 'CUSTOMER RELATIONS' : 'CUSTOMER SCHEMA';
+  const scope = process.argv.includes('--integrity') ? 'MASTER-DATA INTEGRITY' : process.argv.includes('--registration') ? 'CUSTOMER REGISTRATION' : process.argv.includes('--relations') ? 'CUSTOMER RELATIONS' : 'CUSTOMER SCHEMA';
   console.log(`${scope}: all selected tests, clean rebuild, typecheck and lint passed.`);
 } catch (error) {
   console.error(error.message);
