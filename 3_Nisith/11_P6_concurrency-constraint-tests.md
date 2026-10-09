@@ -1,6 +1,6 @@
 # ⚫ Phase 6 — Tasks 01–02: Concurrency & Constraint Test Suites
 **Task IDs:** `P06-M03-T01`, `P06-M03-T02` · **Branch:** `feat/p06-m03-concurrency-constraint-tests`
-**Status:** TODO
+**Status:** DONE (2026-10-09) — `tests/db/concurrent-withdrawals.test.mjs` (8 tests) and `tests/db/constraint-suite-plans-accounts.test.mjs` (29 tests)
 **Depends on:** `P03-M04-T03` (M4's `sp_post_withdrawal`, for T01); Phase 4 complete (for T02)
 **Story Points:** ~3 + ~2 = ~5 · **Layer:** Tests only
 

@@ -18,7 +18,7 @@ satisfied.
 | AC-03 | Schema shows normalisation, PK/FK, constraints, routines, triggers, indexes | `schema-inventory.test.mjs` — asserts every table has a PK, counts routines/triggers/indexes | db | M4 |
 | AC-04 | Register a customer, open an individual account, open a joint account | `e2e/onboarding.test.mjs` | e2e | M2/M3 |
 | AC-05 | Post a deposit and an eligible withdrawal; invalid ones rejected | `db/withdrawal-rules.test.mjs`, `api/transactions.test.mjs` | db+api | M4 |
-| AC-06 | Concurrent/repeated requests create no duplicate or overspent transaction | `db/concurrency.test.mjs`, `api/idempotency.test.mjs` | db+api | M3/M4 |
+| AC-06 | Concurrent/repeated requests create no duplicate or overspent transaction | `db/concurrent-withdrawals.test.mjs` (P06-M03-T01), `db/sp-post-withdrawal.test.mjs`, `api/idempotency.test.mjs` | db+api | M3/M4 |
 | AC-07 | Open an FD, run a 30-day cycle, see a separate credit | `e2e/fd-interest.test.mjs` | e2e | M5 |
 | AC-08 | No second active FD; no duplicate FD-cycle interest | `db/fd-constraints.test.mjs`, `db/interest-idempotency.test.mjs` | db | M5 |
 | AC-09 | All five reports produce correct totals with matching CSV | `api/reports.test.mjs` — compares JSON totals to CSV totals | api | each report owner |
@@ -46,6 +46,7 @@ claim financial operations, full RLS or full transactional seed targets are deli
 | Zero/negative amount rejected | `INSERT transaction (amount = 0)` violates `positive_money` | DB-CON-03 |
 | Duplicate account number | second insert raises `23505` | FR-ACC-01 |
 | Duplicate transaction reference | second insert raises `23505` | BR-10, G-05 |
+| Canonical constraint suite — `savings_plan`, `account`, `account_holder`, `joint_mandate` (P06-M03-T02, `tests/db/constraint-suite-plans-accounts.test.mjs`) | Every CHECK, UNIQUE (incl. the partial one-PRIMARY index) and FK has an individual negative test with SQLSTATE and constraint name; delete of a referenced account/plan/customer raises `23503`; `trg_validate_joint_mandate` rejects 1-holder and 5-holder Joint accounts. Runs in rolled-back transactions. A completeness guard compares `pg_constraint`/unique indexes with the covered list, so a new constraint fails the suite until it is tested. | NFR-SAFE-01, G-06, G-08, G-18 |
 | Duplicate NIC | second customer raises `23505` | FR-CUS-04 |
 | Two active FDs on one account | second insert raises `23505` on the partial unique index | BR-12, G-01 |
 | Duplicate `(fd_id, cycle_date)` | raises `23505` | FR-INT-03 |
@@ -77,6 +78,7 @@ Real parallel connections, not sequential calls.
 | Test | Setup | Expected |
 |---|---|---|
 | **Concurrent withdrawals** | Balance 1,000. Two clients each withdraw 600 simultaneously | Exactly one succeeds; the other is rejected; final balance 400; **never** −200 (AC-06) |
+| Concurrent withdrawals under contention (P06-M03-T01, `tests/db/concurrent-withdrawals.test.mjs`) | 2, 4 and 5 racers on one account, each on its own pooled connection: 2×600 on 1,000 (`INSUFFICIENT_FUNDS`); Teen 2×600 on 1,500 (`BELOW_MINIMUM_BALANCE`, balance 900); 5×300 (3 win, balance 100); 5×400 (2 win, balance 200); 4×333.33 (balance 0.01); deposits mixed with withdrawals; 10 repeated rounds | Winners never exceed what the balance allows; never both, never neither; `current_balance` = start + deposits − withdrawals from the ledger; `balance_after` chains exactly in `ledger_seq` order; one audited `WITHDRAWAL_REJECTED` per loser. A test holds `FOR UPDATE` on the row and asserts via `pg_stat_activity` that all racers are queued on the lock, so the race cannot pass vacuously. Removing `FOR UPDATE` from `sp_post_withdrawal` fails all eight tests. |
 | Concurrent deposits | Two clients deposit 500 each | Both succeed; balance increases by exactly 1,000 (no lost update) |
 | Concurrent FD opening | Two clients open an FD on the same account | Exactly one succeeds; the other gets `23505` |
 | Concurrent interest runs | Same `cycle_date` started twice | One run; no duplicate payout (NFR-SAFE-03) |

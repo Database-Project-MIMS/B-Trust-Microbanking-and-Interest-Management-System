@@ -1,5 +1,25 @@
 # Current State
 
+## M3 P06-M03-T01 + T02 — concurrency and constraint suites (2026-10-09)
+
+Test-only; no schema, routine or migration changes. Both tasks DONE per tracker.
+
+- `tests/db/concurrent-withdrawals.test.mjs` (8 tests): 2–5 racers on separate pooled
+  connections through `sp_try_post_withdrawal`; exact winners/balances, plan-minimum race,
+  cent-exact amounts, deposits mixed in, 10 repeated rounds, and a lock-held test that
+  proves via `pg_stat_activity` the racers really queue. Every case reconciles ledger SUM,
+  `balance_after` chain (`ledger_seq` order) and audited rejections. Mutation-checked: with
+  `FOR UPDATE` removed from `sp_post_withdrawal` (scratch DB only, restored) all 8 fail.
+  M4's routine needed no change.
+- `tests/db/constraint-suite-plans-accounts.test.mjs` (29 tests): every CHECK/UNIQUE/FK on
+  `savings_plan`, `account`, `account_holder`, `joint_mandate`, the interest_rate domain,
+  RESTRICT deletes and `trg_validate_joint_mandate` 1/5-holder rejections; rolled-back
+  transactions; completeness guard against `pg_constraint` and unique indexes.
+- Docs: `docs/12_testing-and-acceptance.md`, tracker, `3_Nisith/00_OVERVIEW.md`.
+- Env note: on macOS `npm test` needs `LC_ALL=en_US.UTF-8` or the isolated postgres
+  cluster will not start. The local `mims_dev` is stale (23 migrations); a scratch
+  `mims_test_customer_schema` database was created and rebuilt for these tests.
+
 ## PR #88 conflict resolution — 2026-10-09
 
 Branch `p06-m02-seed-validation` remains at feature HEAD f323516. Latest dev78aae1e
