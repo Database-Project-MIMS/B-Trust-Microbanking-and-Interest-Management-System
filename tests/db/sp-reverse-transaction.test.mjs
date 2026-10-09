@@ -9,6 +9,9 @@ test('P03-M04-T04: sp_reverse_transaction', async (t) => {
 
   const userId = userRes[0].user_id;
   const channelId = channelRes[0].channel_id;
+  const [manager]=await query(`SELECT u.user_id,a.branch_id FROM app_user u JOIN role r ON r.role_id=u.role_id
+    JOIN agent a ON a.agent_id=u.user_id JOIN branch b ON b.branch_id=a.branch_id
+    WHERE r.role_name='BRANCH_MANAGER' AND u.status='ACTIVE' AND a.status='ACTIVE' AND b.status='ACTIVE' LIMIT 1`);
 
   const ts = Date.now();
 
@@ -24,7 +27,7 @@ test('P03-M04-T04: sp_reverse_transaction', async (t) => {
   const { accountId, customerId } = await withTransaction(async (tx) => {
     await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
     const plan = await tx.query('SELECT plan_id, min_balance FROM savings_plan WHERE max_holders = 1 LIMIT 1');
-    const branch = await tx.query('SELECT branch_id FROM branch LIMIT 1');
+    const branch={rows:[{branch_id:manager.branch_id}]};
     const agent = await tx.query('SELECT agent_id FROM agent LIMIT 1');
     
     const cust = await tx.query(`
@@ -69,9 +72,9 @@ test('P03-M04-T04: sp_reverse_transaction', async (t) => {
 
   async function reverseTransaction(txnId, reason = 'Mistake') {
     return await withTransaction(async (tx) => {
-      await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
+      await setRlsContext(tx, { userId:manager.user_id,branchId:manager.branch_id,roleName:'BRANCH_MANAGER' });
       const res = await tx.query(`CALL sp_reverse_transaction($1, $2, $3, NULL, NULL, NULL)`, 
-        [txnId, reason, userId]);
+        [txnId, reason, manager.user_id]);
       return res.rows[0];
     });
   }
@@ -149,8 +152,8 @@ test('P03-M04-T04: sp_reverse_transaction', async (t) => {
       
       await assert.rejects(
         withTransaction(async (tx) => {
-          await setRlsContext(tx, { userId, branchId: null, roleName: 'ADMIN' });
-          await tx.query(`INSERT INTO transaction_reversal (original_transaction_id, reversal_transaction_id, reason, reversed_by_user_id) VALUES ($1, $2, 'force', $3)`, [dep.p_transaction_id, rev.p_reversal_transaction_id, userId]);
+          await setRlsContext(tx, {userId:manager.user_id,branchId:manager.branch_id,roleName:'BRANCH_MANAGER'});
+          await tx.query(`INSERT INTO transaction_reversal (original_transaction_id, reversal_transaction_id, reason, reversed_by_user_id) VALUES ($1, $2, 'force', $3)`, [dep.p_transaction_id, rev.p_reversal_transaction_id, manager.user_id]);
         }),
         (err) => err.code === 'UNIQUE_VIOLATION' || err.constraint === 'ux_transaction_reversal_original' || err.constraint === 'transaction_reversal_original_transaction_id_key'
       );

@@ -1,19 +1,21 @@
 import { after, before, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import {useCustomerRuntime} from '../helpers/customer-runtime.mjs';
 import { NextRequest } from 'next/server';
 import { pool, requireDisposableDatabase } from '../helpers/customer-registration.mjs';
-import { randomBytes } from 'node:crypto';
+import { randomBytes,randomUUID } from 'node:crypto';
 import { authorizedFixture, fixtureSession } from '../helpers/authorized-fixture.mjs';
 const { POST } = await import('../../app/api/transactions/[id]/reverse/route.ts');
 
 describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
-  let client, fixture;
+  let client, fixture, restore;
   const tokens = {};
   const csrf = randomBytes(32).toString('hex');
 
   before(async () => {
     client = await pool.connect();
     await requireDisposableDatabase(client);
+    restore=useCustomerRuntime(pool);
   });
 
   beforeEach(async () => {
@@ -25,6 +27,7 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   });
 
   after(async () => {
+    await restore?.();
     client?.release();
     await pool.end();
   });
@@ -36,7 +39,7 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   async function reverse(token, transactionId, reason = 'Test reversal') {
     const req = new NextRequest(`http://localhost:3000/api/transactions/${transactionId}/reverse`, {
       method: 'POST',
-      headers: new Headers({ 'Content-Type': 'application/json', 'x-csrf-token': csrf, 'Cookie': `mims_session=${token}; mims_csrf=${csrf}` }),
+      headers: new Headers({ 'Content-Type': 'application/json', 'Idempotency-Key':'REV-'+randomUUID(), 'x-csrf-token': csrf, 'Cookie': `mims_session=${token}; mims_csrf=${csrf}` }),
       body: JSON.stringify({ reason }),
     });
     return POST(req, { params: Promise.resolve({ id: transactionId }) });
@@ -58,7 +61,7 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
     const fakeId = '00000000-0000-0000-0000-000000000001';
     const req = new NextRequest(`http://localhost:3000/api/transactions/${fakeId}/reverse`, {
       method: 'POST',
-      headers: new Headers({ 'Content-Type': 'application/json', 'x-csrf-token': csrf, 'Cookie': `mims_session=${tokens.manager}; mims_csrf=${csrf}` }),
+      headers: new Headers({ 'Content-Type': 'application/json', 'Idempotency-Key':'REV-'+randomUUID(), 'x-csrf-token': csrf, 'Cookie': `mims_session=${tokens.manager}; mims_csrf=${csrf}` }),
       body: JSON.stringify({ reason: '' }),
     });
     const res = await POST(req, { params: Promise.resolve({ id: fakeId }) });
@@ -70,14 +73,13 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
   test('BRANCH_MANAGER reversing unknown transaction → 404', async () => {
     const fakeId = '00000000-0000-0000-0000-000000000001';
     const res = await reverse(tokens.manager, fakeId, 'Genuine error');
-    // 404 or 503 (if sp_reverse_transaction not yet merged)
-    assert.ok([404, 503].includes(res.status), `Expected 404 or 503, got ${res.status}`);
+    assert.equal(res.status,404);
   });
 
-  test('ADMIN reversing unknown transaction → 404 or 503', async () => {
+  test('ADMIN cannot reverse transactions → 403', async () => {
     const fakeId = '00000000-0000-0000-0000-000000000001';
     const res = await reverse(tokens.admin, fakeId, 'Admin override');
-    assert.ok([404, 503].includes(res.status), `Expected 404 or 503, got ${res.status}`);
+    assert.equal(res.status,403);
   });
 
   test('Cross-branch reversal attempt → 403 or 404 (scope enforcement)', async () => {
@@ -88,11 +90,17 @@ describe('P03-M01-T02: Manager-Only Reversal Authorization', () => {
       WHERE a.branch_id = $1 LIMIT 1
     `, [fixture.otherBranchId]);
 
-    if (otherBranchTx.rows.length === 0) return; // skip if no cross-branch data
-
-    const txId = otherBranchTx.rows[0].transaction_id;
+    let txId=otherBranchTx.rows[0]?.transaction_id;
+    if(!txId){
+      const account=(await client.query(`INSERT INTO account(account_number,plan_id,branch_id,opened_by_agent_id,current_balance)
+        SELECT $1,plan_id,$2,$3,1000 FROM savings_plan WHERE plan_name='Adult' RETURNING account_id`,
+        ['REV-SCOPE-'+randomUUID(),fixture.otherBranchId,fixture.otherManagerId])).rows[0].account_id;
+      txId=(await client.query(`INSERT INTO transaction(account_id,initiated_by_user_id,channel_id,reference_number,transaction_type,amount)
+        SELECT $1,$2,channel_id,$3,'DEPOSIT',10 FROM transaction_channel WHERE channel_name='BRANCH_COUNTER' RETURNING transaction_id`,
+        [account,fixture.otherManagerId,'REV-SCOPE-'+randomUUID()])).rows[0].transaction_id;
+    }
     const res = await reverse(tokens.manager, txId, 'Cross-branch attempt');
     // Should be denied: 403 or 404 (not found in scope)
-    assert.ok([403, 404, 503].includes(res.status), `Expected 403/404/503, got ${res.status}`);
+    assert.ok([403,404].includes(res.status),`Expected scoped denial, got ${res.status}`);
   });
 });

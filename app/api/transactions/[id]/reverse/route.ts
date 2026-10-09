@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
 import { reverseTransaction } from "@/services/transaction-service";
+import { requireIdempotencyKey } from "@/lib/api/idempotency";
 import { DomainError } from "@/lib/db/errors";
 
 export const POST = withAuth(async (request: NextRequest, user) => {
-  // Only BRANCH_MANAGER and ADMIN can reverse a transaction
-  requireRole(user, "BRANCH_MANAGER", "ADMIN");
+  // The existing specification permits branch managers only.
+  requireRole(user, "BRANCH_MANAGER");
   
   // Enforce CSRF protection for this state-changing endpoint
   verifyCsrf(request);
   
+  const idempotencyKey=requireIdempotencyKey(request);
+  if(idempotencyKey instanceof NextResponse)return idempotencyKey;
   const scope = branchScope(user);
   
   const parts = request.nextUrl.pathname.split("/");
@@ -37,7 +40,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
 
   try {
     // Note: passing body which contains reason.
-    const result = await reverseTransaction(transactionId, body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId });
+    const result = await reverseTransaction(transactionId, body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId }, idempotencyKey);
     return NextResponse.json({ data: result.data }, { status: 201 });
   } catch (err) {
     if (err instanceof DomainError) {

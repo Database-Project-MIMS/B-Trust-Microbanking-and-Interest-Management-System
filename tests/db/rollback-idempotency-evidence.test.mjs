@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
-import pg from 'pg';
+import {createMigrationClient} from '../../lib/db/migration-client.mjs';
 import { NextRequest } from 'next/server';
 import { withTransaction } from '../../lib/db/index.ts';
 import { setRlsContext } from '../../lib/db/rls-context.ts';
@@ -30,10 +30,10 @@ const ownerUrl = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
  * 6. An aborted transaction before commit releases the idempotency key for successful retry.
  */
 test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)', async (t) => {
-  const ownerClient = new pg.Client({ connectionString: ownerUrl });
+  const ownerClient = createMigrationClient(ownerUrl);
   await ownerClient.connect();
 
-  let adminUserId, agentUserId, branchId, channelId;
+  let adminUserId, agentUserId, managerUserId, branchId, channelId;
   let savedBusinessStart, savedBusinessEnd;
 
   try {
@@ -69,6 +69,10 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
     `);
     agentUserId = agentRes.rows[0]?.agent_id;
     branchId = agentRes.rows[0]?.branch_id;
+    const manager=(await ownerClient.query(`SELECT a.agent_id FROM agent a JOIN app_user u ON u.user_id=a.agent_id
+      JOIN role r ON r.role_id=u.role_id WHERE a.branch_id=$1 AND r.role_name='BRANCH_MANAGER'
+      AND a.status='ACTIVE' AND u.status='ACTIVE' LIMIT 1`,[branchId])).rows[0];
+    managerUserId=manager?.agent_id;assert.ok(managerUserId,'Same-branch manager required.');
 
     const channelRes = await ownerClient.query(`
       SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER' LIMIT 1
@@ -266,10 +270,10 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
         await assert.rejects(
           async () => {
             await withTransaction(async (tx) => {
-              await setRlsContext(tx, { userId: adminUserId, branchId: null, roleName: 'ADMIN' });
+              await setRlsContext(tx, { userId:managerUserId,branchId,roleName:'BRANCH_MANAGER' });
               await tx.query(`
                 CALL sp_reverse_transaction($1, $2, $3, NULL, NULL, NULL)
-              `, [originalTransactionId, 'FORCE_MID_REVERSAL_FAILURE', adminUserId]);
+              `, [originalTransactionId, 'FORCE_MID_REVERSAL_FAILURE', managerUserId]);
             });
           },
           (err) => {
@@ -306,10 +310,10 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
 
       // Now execute legitimate reversal to verify the original transaction remained in a healthy state
       await withTransaction(async (tx) => {
-        await setRlsContext(tx, { userId: adminUserId, branchId: null, roleName: 'ADMIN' });
+        await setRlsContext(tx, { userId:managerUserId,branchId,roleName:'BRANCH_MANAGER' });
         await tx.query(`
           CALL sp_reverse_transaction($1, $2, $3, NULL, NULL, NULL)
-        `, [originalTransactionId, 'Legitimate customer correction', adminUserId]);
+        `, [originalTransactionId, 'Legitimate customer correction', managerUserId]);
       });
 
       const finalBal = (await ownerClient.query(`SELECT current_balance FROM account WHERE account_id = $1`, [accountId])).rows[0].current_balance;

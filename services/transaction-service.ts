@@ -4,7 +4,7 @@ import { NotAuthorizedError, ValidationError } from "@/lib/db/errors";
 import { setRlsContext } from "@/lib/db/rls-context";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
 import { depositSchema, withdrawalSchema, reversalSchema } from "@/lib/validation/transaction";
-import { throwTransactionDatabaseError } from "./transaction-errors";
+import { throwTransactionDatabaseError, withdrawalRejectionError } from "./transaction-errors";
 import { z } from "zod";
 
 const uuid = z.string().uuid();
@@ -58,7 +58,7 @@ export async function postDeposit(
   });
 }
 
-/** One transaction owns idempotency, locked withdrawal, balance and audit. */
+/** One transaction posts the withdrawal or commits a known rejection audit before returning an error. */
 export async function postWithdrawal(
   input: unknown,
   actor: TransactionActor,
@@ -69,53 +69,54 @@ export async function postWithdrawal(
   if (!parsed.success) throw new ValidationError("Invalid withdrawal payload.");
   const value = parsed.data;
 
-  // CUSTOMER can only act on behalf of themselves
-  if (actor.roleName === "CUSTOMER") {
-    if (value.onBehalfOfCustomerId && value.onBehalfOfCustomerId !== actor.userId) {
-      throw new NotAuthorizedError();
-    }
-    value.onBehalfOfCustomerId = actor.userId;
-  }
-
-  return await withTransaction(async (tx) => {
+  const result = await withTransaction(async (tx) => {
     await setRlsContext(tx, { userId: actor.userId, branchId: actor.branchId, roleName: actor.roleName });
     try {
-      const existing = await tx.query(`SELECT transaction_id FROM transaction WHERE idempotency_key = $1`, [idempotencyKey]);
-      const replayed = (existing.rowCount ?? 0) > 0;
-
-      // Notice sp_post_withdrawal has 11 arguments
-      const res = await tx.query(
-        `CALL sp_post_withdrawal($1, $2, $3, $4, $5, $6, $7, NULL, NULL, NULL, NULL)`,
-        [
-          value.accountId, value.amount, value.channelId, actor.userId,
-          value.onBehalfOfCustomerId ?? actor.userId, idempotencyKey, value.narration ?? null
-        ]
-      );
+      let signers = value.signerCustomerIds ?? (value.onBehalfOfCustomerId ? [value.onBehalfOfCustomerId] : []);
+      if (actor.roleName === "CUSTOMER") {
+        const profile = (await tx.query<{ customer_id: string }>(
+          "SELECT customer_id FROM customer WHERE app_user_id=$1 AND status='ACTIVE'", [actor.userId]
+        )).rows[0];
+        if (!profile || signers.some(id => id !== profile.customer_id)) throw new NotAuthorizedError();
+        signers = [profile.customer_id];
+      } else if (signers.length === 0) {
+        throw new ValidationError("Customer signer evidence is required.");
+      }
+      const existing = await tx.query("SELECT transaction_id FROM transaction WHERE idempotency_key=$1", [idempotencyKey]);
+      const res = await tx.query<{
+        p_transaction_id: string; p_reference_number: string; p_balance_after: string;
+        p_posted_at: Date; p_rejection_code: string | null;
+      }>(actor.roleName === "CUSTOMER"
+        ? "CALL sp_try_customer_withdrawal($1,$2,$3,$4,$5::uuid[],$6,$7,NULL,NULL,NULL,NULL,NULL)"
+        : "CALL sp_try_post_withdrawal($1,$2,$3,$4,$5::uuid[],$6,$7,NULL,NULL,NULL,NULL,NULL)",
+        [value.accountId, value.amount, value.channelId, actor.userId, signers, idempotencyKey, value.narration ?? null]);
       const out = res.rows[0];
-
+      if (!out) throw new Error("Withdrawal receipt unavailable.");
       return {
-        replayed,
+        rejectionCode: out.p_rejection_code,
+        replayed: (existing.rowCount ?? 0) > 0,
         data: {
-          transactionId: out.p_transaction_id,
-          referenceNumber: out.p_reference_number,
-          amount: value.amount,
-          balanceAfter: out.p_balance_after,
-          postedAt: out.p_posted_at
+          transactionId: out.p_transaction_id, referenceNumber: out.p_reference_number,
+          amount: value.amount, balanceAfter: out.p_balance_after, postedAt: out.p_posted_at
         }
       };
     } catch (err) {
       throwTransactionDatabaseError(err);
     }
   });
+  // Known rejections have durable audit evidence. Throw only after that transaction commits.
+  if (result.rejectionCode) throw withdrawalRejectionError(result.rejectionCode);
+  return { replayed: result.replayed, data: result.data };
 }
 
 /** One transaction owns the compensating entry, balance and audit. */
 export async function reverseTransaction(
   transactionId: string,
   input: unknown,
-  actor: TransactionActor
+  actor: TransactionActor,
+  idempotencyKey: string
 ) {
-  validateActor(actor, ["BRANCH_MANAGER", "ADMIN"]);
+  validateActor(actor, ["BRANCH_MANAGER"]);
   validateId(transactionId);
   const parsed = reversalSchema.safeParse(input);
   if (!parsed.success) throw new ValidationError("Invalid reversal payload.");
@@ -125,13 +126,15 @@ export async function reverseTransaction(
     await setRlsContext(tx, { userId: actor.userId, branchId: actor.branchId, roleName: actor.roleName });
     try {
       const res = await tx.query(
-        `CALL sp_reverse_transaction($1, $2, $3, NULL, NULL, NULL)`,
-        [transactionId, value.reason, actor.userId]
+        `CALL sp_reverse_transaction_controlled($1, $2, $3, $4, NULL, NULL, NULL)`,
+        [transactionId, value.reason, actor.userId, idempotencyKey]
       );
       const out = res.rows[0];
+      const link=(await tx.query<{reversal_id:string}>('SELECT reversal_id FROM transaction_reversal WHERE reversal_transaction_id=$1',[out.p_reversal_transaction_id])).rows[0];
+      if(!link)throw new Error('Reversal control unavailable.');
       return {
         data: {
-          reversalId: out.p_reversal_id,
+          reversalId: link.reversal_id,
           reversalTransactionId: out.p_reversal_transaction_id,
           balanceAfter: out.p_balance_after
         }
