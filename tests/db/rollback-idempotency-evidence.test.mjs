@@ -460,7 +460,7 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
     try {
       if (savedBusinessStart && savedBusinessEnd) {
         await ownerClient.query(`UPDATE system_parameter SET param_value = $1 WHERE param_key = 'BUSINESS_HOUR_START'`, [savedBusinessStart]);
-        await ownerClient.query(`UPDATE system_parameter SET param_value = $2 WHERE param_key = 'BUSINESS_HOUR_END'`, [savedBusinessEnd]);
+        await ownerClient.query(`UPDATE system_parameter SET param_value = $1 WHERE param_key = 'BUSINESS_HOUR_END'`, [savedBusinessEnd]);
       }
     } catch (e) {
       console.error('Error restoring parameters:', e);

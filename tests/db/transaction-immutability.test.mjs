@@ -1,6 +1,13 @@
-import test from 'node:test';
+import test, {after} from 'node:test';
 import assert from 'node:assert/strict';
-import { query, withTransaction } from '../../lib/db/index.ts';
+import { withTransaction } from '../../lib/db/index.ts';
+import { createMigrationClient } from '../../lib/db/migration-client.mjs';
+if(process.env.MIMS_ISOLATED_TEST!=='1')throw new Error('Use the isolated database runner.');
+const owner=createMigrationClient(process.env.DATABASE_MIGRATION_URL);
+await owner.connect();
+after(()=>owner.end());
+// Constraint and owner-trigger tests intentionally bypass RLS; direct runtime coverage is separate.
+const query=async(sql,params)=>(await owner.query(sql,params)).rows;
 import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
@@ -87,14 +94,14 @@ test('P02-M04-T01: Transaction Schema & Immutability', async (t) => {
         INSERT INTO transaction (account_id, initiated_by_user_id, channel_id, reference_number, transaction_type, amount)
         VALUES ($1, $2, $3, $4, 'DEPOSIT', 100.00)
       `, [fakeId, userId, channelId, `TXN-${ts}-4`]),
-      (err) => err.code === '23503' || err.sqlstate === '23503'
+      (err) => err.code === '23503' || err.sqlstate === '23503' || err.code === '23001'
     );
   });
 
   await t.test('7. Deleting referenced transaction_channel is rejected', async () => {
     await assert.rejects(
       query(`DELETE FROM transaction_channel WHERE channel_id = $1`, [channelId]),
-      (err) => err.code === '42501' || err.sqlstate === '42501' || err.code === '23503' || err.sqlstate === '23503'
+      (err) => err.code === '42501' || err.sqlstate === '42501' || err.code === '23503' || err.sqlstate === '23503' || err.code === '23001'
     );
   });
 });

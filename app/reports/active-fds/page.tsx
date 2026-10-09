@@ -1,2 +1,6 @@
-import { WorkflowScreen } from "@/components/mims/workflow-screen";
-export default function ActiveFdsReportPage() { return <WorkflowScreen kind="report-fd" />; }
+import { requirePageRole } from '@/lib/auth/page-access';
+import { FdReport } from '../fd-report';
+export default async function ActiveFdsReportPage(){
+  const user=await requirePageRole('ADMIN','CENTRAL_OPS','BRANCH_MANAGER','AUDITOR');
+  return <FdReport scopeLabel={user.branchId?'Your branch':'All permitted branches'}/>;
+}

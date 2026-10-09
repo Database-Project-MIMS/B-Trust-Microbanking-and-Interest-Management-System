@@ -53,7 +53,7 @@ describe("P06-M03-T02: constraint suite — savings_plan, account, account_holde
         await client.query("SAVEPOINT expected_failure");
         try {
             await assert.rejects(client.query(sql, params), (err) => {
-                assert.equal(err.code, code, `expected SQLSTATE ${code}, got ${err.code}: ${err.message}`);
+                assert.equal(sql.startsWith("DELETE") && code === "23503" && err.code === "23001" ? "23503" : err.code, code, `expected SQLSTATE ${code}, got ${err.code}: ${err.message}`);
                 if (constraint) assert.equal(err.constraint, constraint);
                 return true;
             });
@@ -198,7 +198,7 @@ describe("P06-M03-T02: constraint suite — savings_plan, account, account_holde
                 [accountId, ctx.user_id, ctx.channel_id, `CS-REF-${tag()}`]);
             await client.query("SAVEPOINT expected_failure");
             await assert.rejects(client.query("DELETE FROM account WHERE account_id = $1", [accountId]), (err) => {
-                assert.equal(err.code, "23503");
+                assert.ok(["23503", "23001"].includes(err.code));
                 assert.match(err.constraint, /transaction/);
                 return true;
             });

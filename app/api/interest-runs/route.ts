@@ -1,9 +1,18 @@
 import { authenticateInterestWorker } from '@/lib/auth/worker-auth';
 import { requireUser, requireRole } from '@/lib/auth/rbac';
 import { verifyCsrf } from '@/lib/auth/csrf';
-import { recordInterestRunRequest } from '@/services/interest-request-service';
+import { recordInterestRunRequest,listInterestRuns } from '@/services/interest-request-service';
 import { errorResponse } from '@/lib/http/error-response';
 import { NextRequest } from 'next/server';
+
+export async function GET(request:NextRequest):Promise<Response>{
+  try{
+    const user=await requireUser(request);
+    requireRole(user,'ADMIN','CENTRAL_OPS','AUDITOR');
+    if([...request.nextUrl.searchParams].length) return Response.json({error:{code:'VALIDATION_FAILED',message:'Run history accepts no filters.'}},{status:400});
+    return Response.json({data:await listInterestRuns(user)});
+  }catch(error){return errorResponse(error);}
+}
 
 export async function POST(request: NextRequest): Promise<Response> {
   try {

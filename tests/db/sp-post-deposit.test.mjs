@@ -88,7 +88,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
       assert.equal(Number(acc.current_balance), 1200.00);
 
       // Verify ledger row exists with balance_after
-      const [txn] = await query('SELECT amount, balance_after, transaction_type FROM transaction WHERE transaction_id = $1', [postRes.p_transaction_id]);
+      const [txn] = await withTransaction(async tx=>{await setRlsContext(tx,{userId,branchId:null,roleName:'ADMIN'});return (await tx.query('SELECT amount,balance_after,transaction_type FROM transaction WHERE transaction_id=$1',[postRes.p_transaction_id])).rows;});
       assert.equal(Number(txn.amount), 200.00);
       assert.equal(Number(txn.balance_after), 1200.00);
       assert.equal(txn.transaction_type, 'DEPOSIT');
@@ -157,7 +157,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
       assert.equal(Number(acc.current_balance), 1500.00);
 
       // Exactly 1 transaction row for this key
-      const ledgerRows = await query('SELECT * FROM transaction WHERE idempotency_key = $1', [idemKey]);
+      const ledgerRows = await withTransaction(async tx=>{await setRlsContext(tx,{userId,branchId:null,roleName:'ADMIN'});return (await tx.query('SELECT transaction_id FROM transaction WHERE idempotency_key=$1',[idemKey])).rows;});
       assert.equal(ledgerRows.length, 1);
     });
 

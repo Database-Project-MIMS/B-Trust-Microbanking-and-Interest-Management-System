@@ -1,23 +1,22 @@
 import { describe, test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import pg from "pg";
+import { isolatedOpsDatabase } from '../helpers/isolated-ops-database.mjs';
 
 if (!process.env.DATABASE_URL) {
     try { process.loadEnvFile(); } catch { /* loaded by runner */ }
 }
-const connectionString = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
 
 describe("P04-M05-T04: sp_run_interest_cycle", () => {
     let client;
+    let isolated;
     let account1;
     let account2;
     let planId;
     let cycleDate = '2026-05-01'; // Future date for testing
 
     before(async () => {
-        client = new pg.Client({ connectionString });
+        isolated=await isolatedOpsDatabase('interest_cycle');client=isolated.client;
         client.on('notice', msg => console.warn("PG NOTICE:", msg.message));
-        await client.connect();
 
         // Cleanup before starting
         await client.query("DELETE FROM interest_payout");
@@ -45,10 +44,7 @@ describe("P04-M05-T04: sp_run_interest_cycle", () => {
     });
 
     after(async () => {
-        await client.query("DELETE FROM interest_payout");
-        await client.query("DELETE FROM interest_run");
-        await client.query("DELETE FROM fixed_deposit");
-        await client.end();
+        await isolated?.close();
     });
 
     test("1. Run with 2 due FDs -> 2 payouts, correct totals", async () => {

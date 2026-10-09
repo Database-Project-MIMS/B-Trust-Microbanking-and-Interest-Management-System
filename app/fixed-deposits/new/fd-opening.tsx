@@ -1,0 +1,71 @@
+"use client";
+import { useEffect,useRef,useState } from 'react';
+import Link from 'next/link';
+import { accountRequest,csrfToken } from '@/app/accounts/account-client';
+import { displayDate,displayRate } from '@/app/accounts/account-format';
+import { reportMoney } from '@/components/report/report-format';
+import type { FixedDepositRow } from '@/services/fixed-deposit-service';
+type Account={accountId:string;accountNumber:string;currentBalance:string};
+type Product={fdPlanId:string;planName:string;interestRate:string;status:string;effectiveTo:string|null};
+type Quote={accountNumber:string;principalAmount:string;balanceAfter:string};
+export function FdOpening(){
+  const [accounts,setAccounts]=useState<Account[]>([]),[products,setProducts]=useState<Product[]>([]);
+  const [value,setValue]=useState({accountId:'',fdPlanId:'',principalAmount:''});
+  const [quote,setQuote]=useState<Quote|null>(null),[result,setResult]=useState<FixedDepositRow|null>(null);
+  const [error,setError]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
+  const key=useRef<string|null>(null);
+  useEffect(()=>{
+    const controller=new AbortController();
+    Promise.all([accountRequest<{accounts:Account[]}>('/api/accounts?status=ACTIVE&pageSize=100',{signal:controller.signal}),
+      accountRequest<Product[]>('/api/fd-products',{signal:controller.signal})]).then(([a,p])=>{
+      if(!a.ok || !p.ok){setError(a.error?.message ?? p.error?.message ?? 'Unable to load opening choices.');return;}
+      setAccounts(a.data?.accounts ?? []);setProducts((p.data ?? []).filter(row=>row.status==='ACTIVE' && row.effectiveTo===null));
+    }).catch(()=>{if(!controller.signal.aborted)setError('Unable to load opening choices.');})
+      .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
+    return ()=>controller.abort();
+  },[]);
+  async function review(){
+    setBusy(true);setError('');
+    try{
+      const response=await accountRequest<Quote>('/api/fixed-deposits/quote?'+new URLSearchParams(value));
+      if(!response.ok || !response.data){setError(response.error?.message ?? 'Unable to preview this deposit.');return;}
+      key.current=crypto.randomUUID();setQuote(response.data);
+    }finally{setBusy(false);}
+  }
+  async function confirm(){
+    setBusy(true);setError('');
+    try{
+      const response=await accountRequest<FixedDepositRow>('/api/fixed-deposits',{method:'POST',
+        headers:{'content-type':'application/json','x-csrf-token':csrfToken(),'idempotency-key':key.current ?? ''},
+        body:JSON.stringify(value)});
+      if(!response.ok || !response.data){setError(response.error?.message ?? 'Unable to open this deposit.');return;}
+      setResult(response.data);setQuote(null);
+    }finally{setBusy(false);}
+  }
+  const product=products.find(row=>row.fdPlanId===value.fdPlanId);
+  return <div className="space-y-6"><div className="page-header"><div><p className="eyebrow">Fixed deposits</p>
+    <h1 className="page-title">Open a fixed deposit</h1><p className="page-description">Fund a fixed deposit from an active savings account.</p></div></div>
+    {error && <p className="card" role="alert">{error}</p>}
+    {loading ? <p className="card" role="status">Loading accounts and products…</p> : result ?
+      <section className="card space-y-4" role="status"><h2 className="section-heading">Fixed deposit opened</h2>
+        <p>{result.accountNumber} · {reportMoney(result.principalAmount)} · {displayRate(result.rate)}</p>
+        <p>Matures {displayDate(result.maturityDate)} · next payout {displayDate(result.nextInterestDate)}</p>
+        <Link className="btn btn-primary" href="/fixed-deposits">View fixed deposits</Link></section> : quote ?
+      <section className="card confirmation-card space-y-4"><h2 className="section-heading">Confirm principal transfer</h2>
+        <dl><div><dt>Account</dt><dd>{quote.accountNumber}</dd></div><div><dt>Principal debit</dt><dd className="amount">{reportMoney(quote.principalAmount)}</dd></div>
+          <div><dt>Projected savings balance</dt><dd className="amount">{reportMoney(quote.balanceAfter)}</dd></div>
+          <div><dt>Product and rate</dt><dd>{product?.planName} · {displayRate(product?.interestRate)}</dd></div></dl>
+        <p>The balance and product are checked again when you confirm.</p>
+        <div className="flex gap-4"><button className="btn btn-secondary" disabled={busy} onClick={()=>{setQuote(null);key.current=null;}}>Back to edit</button>
+          <button className="btn btn-primary" disabled={busy} onClick={()=>void confirm()}>{busy?'Opening…':'Confirm and open'}</button></div></section> :
+      <form className="card form-grid max-w-3xl" onSubmit={event=>{event.preventDefault();void review();}}>
+        <label className="field">Account (required)<select className="input" required value={value.accountId} onChange={event=>setValue({...value,accountId:event.target.value})}>
+          <option value="">Select an account</option>{accounts.map(row=><option key={row.accountId} value={row.accountId}>{row.accountNumber} · {reportMoney(row.currentBalance)}</option>)}</select></label>
+        <label className="field">FD product (required)<select className="input" required value={value.fdPlanId} onChange={event=>setValue({...value,fdPlanId:event.target.value})}>
+          <option value="">Select a product</option>{products.map(row=><option key={row.fdPlanId} value={row.fdPlanId}>{row.planName} · {displayRate(row.interestRate)}</option>)}</select></label>
+        <label className="field">Principal in LKR (required)<input className="input" inputMode="decimal" required pattern="^[0-9]{1,13}[.][0-9]{2}$"
+          value={value.principalAmount} onChange={event=>setValue({...value,principalAmount:event.target.value})}/><small>Enter a positive amount with two decimal places.</small></label>
+        {!accounts.length && <p>No eligible accounts are available. Register holders and open a funded savings account first.</p>}
+        <button className="btn btn-primary" disabled={busy || !accounts.length || !products.length} type="submit">{busy?'Preparing…':'Review fixed deposit'}</button></form>}
+  </div>;
+}

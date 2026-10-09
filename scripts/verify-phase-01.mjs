@@ -68,17 +68,27 @@ try {
 
   console.log("Isolated PostgreSQL cluster ready. Existing mims_dev is preserved.");
   command(process.execPath, ["scripts/db-rebuild.mjs"], env);
+  if (process.argv.includes('--catalog')) command(process.execPath,['scripts/write-documentation-catalog.mjs'],env);
   const requestedSuite = process.argv.find(arg => arg.startsWith("--suite="))?.slice(8);
   if (requestedSuite && !["api", "db", "e2e", "security"].includes(requestedSuite)) throw new Error("Unknown test suite.");
-  const tests = (requestedSuite ? [requestedSuite] : ["api", "db", "e2e", "security"]).flatMap(folder =>
-    readdirSync(join("tests", folder)).filter(file => file.endsWith(".test.mjs")).map(file => join("tests", folder, file)));
-  command(process.execPath, ["node_modules/tsx/dist/cli.mjs", "--conditions", "react-server", "--test", "--test-concurrency=1", ...tests], env);
+  const tests = (process.argv.includes('--operations') ? ['db'] : requestedSuite ? [requestedSuite] : ["api", "db", "e2e", "security"]).flatMap(folder =>
+    readdirSync(join("tests", folder)).filter(file => file.endsWith(".test.mjs")
+      && (!process.argv.includes('--operations') || ['backup-restore.test.mjs','migration-runner.test.mjs'].includes(file)))
+      .map(file => join("tests", folder, file)));
+  const testCommand = files => command(process.execPath,
+    ["node_modules/tsx/dist/cli.mjs", "--conditions", "react-server", "--test", "--test-concurrency=1", ...files], env);
+  if (!requestedSuite && !process.argv.includes('--operations')) {
+    // Security fingerprints complete business state. Run before load fixtures grow it;
+    // all suites still run against the same fresh cluster, without exclusions.
+    testCommand(tests.filter(file => file.startsWith(join('tests','security') + sep)));
+    testCommand(tests.filter(file => !file.startsWith(join('tests','security') + sep)));
+  } else testCommand(tests);
   if (!process.argv.includes("--tests-only")) {
     command(process.execPath, ["node_modules/typescript/bin/tsc", "--noEmit"], env);
     command(process.execPath, ["node_modules/eslint/bin/eslint.js", "."], env);
     command(process.execPath, ["node_modules/next/dist/bin/next", "build"], env);
   }
-  console.log(process.argv.includes("--tests-only") ? "ISOLATED TESTS: all checks passed." : "PHASE 1 CLOSEOUT: all checks passed.");
+  console.log(process.argv.includes("--tests-only") ? "ISOLATED TESTS: all checks passed." : "LOCAL VERIFICATION: all checks passed.");
 } catch (error) {
   console.error(error.message);
   if (!started && existsSync(join(workspace, "postgres.log"))) console.error(readFileSync(join(workspace, "postgres.log"), "utf8").split(password).join("[REDACTED]"));

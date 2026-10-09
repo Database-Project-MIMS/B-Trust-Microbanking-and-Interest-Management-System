@@ -55,7 +55,10 @@ describe('P04-M02-T02: direct runtime FD context and scope backstop',()=>{
     await hidden(actor(fixture.agentId,'BRANCH_MANAGER'));
     await hidden(actor(fixture.auditorId,'CENTRAL_OPS',null));
     await hidden(actor(fixture.otherManagerId,'BRANCH_MANAGER',fixture.branchId));
-    await hidden(actor(fixture.adminId,'ADMIN',null));
+    // ADR-0026 adds legitimate ADMIN base-table access for controlled interest runs.
+    // The M2 customer-listing view and controller still exclude ADMIN.
+    const adminListing=await listing(actor(fixture.adminId,'ADMIN',null));
+    assert.ok(adminListing.base.length>0);assert.equal(adminListing.view.length,0);
   });
   test('deactivated user or role invalidates a previously valid SQL context',async()=>{
     assert.equal((await listing(actor())).base.length,4);

@@ -1,10 +1,16 @@
 import "server-only";
-import { withTransaction, query } from "@/lib/db";
+import { withTransaction } from "@/lib/db";
 import { NotAuthorizedError, ValidationError } from "@/lib/db/errors";
 import { setRlsContext } from "@/lib/db/rls-context";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
 import { depositSchema, withdrawalSchema, reversalSchema } from "@/lib/validation/transaction";
 import { throwTransactionDatabaseError } from "./transaction-errors";
+import { z } from "zod";
+
+const uuid = z.string().uuid();
+function validateId(value: string): void {
+  if (!uuid.safeParse(value).success) throw new ValidationError("Invalid identifier.");
+}
 
 export type TransactionActor = Pick<AuthenticatedUser, "userId" | "roleName" | "branchId">;
 
@@ -13,6 +19,7 @@ function validateActor(actor: TransactionActor, allowed: readonly string[]) {
   return actor;
 }
 
+/** One transaction owns idempotency, ledger posting, balance and audit. */
 export async function postDeposit(
   input: unknown,
   actor: TransactionActor,
@@ -51,6 +58,7 @@ export async function postDeposit(
   });
 }
 
+/** One transaction owns idempotency, locked withdrawal, balance and audit. */
 export async function postWithdrawal(
   input: unknown,
   actor: TransactionActor,
@@ -101,12 +109,14 @@ export async function postWithdrawal(
   });
 }
 
+/** One transaction owns the compensating entry, balance and audit. */
 export async function reverseTransaction(
   transactionId: string,
   input: unknown,
   actor: TransactionActor
 ) {
   validateActor(actor, ["BRANCH_MANAGER", "ADMIN"]);
+  validateId(transactionId);
   const parsed = reversalSchema.safeParse(input);
   if (!parsed.success) throw new ValidationError("Invalid reversal payload.");
   const value = parsed.data;
@@ -132,8 +142,14 @@ export async function reverseTransaction(
   });
 }
 
+/** One read transaction sets caller RLS context and reads a scoped statement. */
 export async function getStatement(accountId: string, actor: TransactionActor, page = 1, pageSize = 20) {
   validateActor(actor, ["AGENT", "BRANCH_MANAGER", "AUDITOR", "CUSTOMER"]);
+  validateId(accountId);
+  if (!Number.isInteger(page) || page < 1 || page > 1000000
+      || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    throw new ValidationError("Invalid statement pagination.");
+  }
   return await withTransaction(async (tx) => {
     await setRlsContext(tx, { userId: actor.userId, branchId: actor.branchId, roleName: actor.roleName });
     
@@ -163,8 +179,10 @@ export async function getStatement(accountId: string, actor: TransactionActor, p
   });
 }
 
+/** One read transaction sets caller RLS context and reads a visible ledger row. */
 export async function getTransaction(transactionId: string, actor: TransactionActor) {
   validateActor(actor, ["AGENT", "BRANCH_MANAGER", "AUDITOR", "CUSTOMER"]);
+  validateId(transactionId);
   return await withTransaction(async (tx) => {
     await setRlsContext(tx, { userId: actor.userId, branchId: actor.branchId, roleName: actor.roleName });
     

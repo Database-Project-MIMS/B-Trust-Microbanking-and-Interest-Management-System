@@ -616,11 +616,12 @@ describe('P02-M03-T05: account routes under mims_app', () => {
   test('if the fixed-deposit list cannot be read the account is still returned, with null and no false empty list', async () => {
     const accountId = await openZeroBalance();
     await addFixedDepositOn(accountId, 'ACTIVE', 3, '1500.00');
-    // Disposable database only: take away one column privilege, then give it back.
+    // Disposable DB only: remove both table-level and legacy column-level grants.
+    await client.query('REVOKE SELECT ON fixed_deposit FROM mims_app');
     await client.query('REVOKE SELECT (status) ON fixed_deposit FROM mims_app');
     let degraded;
     try { degraded = await detail(accountId); }
-    finally { await client.query('GRANT SELECT (status) ON fixed_deposit TO mims_app'); }
+    finally { await client.query('GRANT SELECT ON fixed_deposit TO mims_app');await client.query('GRANT SELECT (status) ON fixed_deposit TO mims_app'); }
     assert.equal(degraded.status, 200);
     const data = (await degraded.json()).data;
     assert.equal(data.fixedDeposits, null);
@@ -650,4 +651,3 @@ describe('P02-M03-T05: account routes under mims_app', () => {
     assert.equal((await (await detail(tied)).json()).data.lastTransaction.amount, '30.00');
   });
 });
-

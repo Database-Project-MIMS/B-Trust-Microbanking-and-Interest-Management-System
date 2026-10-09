@@ -26,7 +26,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
     );
   }
 
-  const reason = body?.reason?.trim() ?? "";
+  const reason = typeof body?.reason === "string" ? body.reason.trim() : "";
 
   if (!reason) {
     return NextResponse.json(

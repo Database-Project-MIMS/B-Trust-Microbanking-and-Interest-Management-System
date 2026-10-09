@@ -9,8 +9,8 @@ export const GET = withAuth(async (request: NextRequest, user) => {
 
   
   const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const pageSize = parseInt(searchParams.get("pageSize") || "20", 10);
+  const page = Number(searchParams.get("page") ?? "1");
+  const pageSize = Number(searchParams.get("pageSize") ?? "20");
 
   try {
     const scope = branchScope(user);

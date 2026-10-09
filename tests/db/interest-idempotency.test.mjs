@@ -1,22 +1,21 @@
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import pg from 'pg';
+import { isolatedOpsDatabase } from '../helpers/isolated-ops-database.mjs';
 
 if (!process.env.DATABASE_URL) {
   try { process.loadEnvFile(); } catch { /* loaded by runner */ }
 }
-const connectionString = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
 
 describe('Interest cycle idempotency (AC-08)', () => {
   let client;
+  let isolated;
   let activeAccountId;
   let fdPlanId;
   let fdId;
   const cycleDate = '2026-02-01';
 
   before(async () => {
-    client = new pg.Client({ connectionString });
-    await client.connect();
+    isolated = await isolatedOpsDatabase('interest_idempotency');client=isolated.client;
     
     // Find a plan and an account
     const planRes = await client.query("SELECT fd_plan_id FROM fd_plan WHERE plan_name = '6 Month FD'");
@@ -45,10 +44,7 @@ describe('Interest cycle idempotency (AC-08)', () => {
   });
 
   after(async () => {
-    await client.query("DELETE FROM interest_payout");
-    await client.query("DELETE FROM interest_run");
-    await client.query("DELETE FROM fixed_deposit");
-    await client.end();
+    await isolated?.close();
   });
 
   test('first run processes all due FDs and credits interest', async () => {
@@ -103,9 +99,9 @@ describe('Interest cycle idempotency (AC-08)', () => {
 
   test('partial failure does not roll back completed payouts', async () => {
     // 1. Set up one FD that will fail (e.g., linked to a CLOSED account)
-    const closedRes = await client.query("SELECT account_id FROM account WHERE status != 'ACTIVE' LIMIT 1");
-    const closedId = closedRes.rows[0]?.account_id;
-    if (!closedId) return; // skip if no closed account
+    const closedRes = await client.query("SELECT account_id FROM account WHERE account_id<>$1 LIMIT 1",[activeAccountId]);
+    const closedId = closedRes.rows[0].account_id;
+    await client.query("UPDATE account SET status='FROZEN' WHERE account_id=$1",[closedId]);
     
     await client.query(`
       INSERT INTO fixed_deposit (
@@ -125,11 +121,11 @@ describe('Interest cycle idempotency (AC-08)', () => {
 
 describe('Report totals reconciliation (AC-09)', () => {
   let client;
+  let isolated;
   let initialTxnCount = 0;
 
   before(async () => {
-    client = new pg.Client({ connectionString });
-    await client.connect();
+    isolated=await isolatedOpsDatabase('interest_reports');client=isolated.client;
     
     // Seed some data for the reports
     const planRes = await client.query("SELECT fd_plan_id FROM fd_plan WHERE plan_name = '6 Month FD'");
@@ -157,10 +153,7 @@ describe('Report totals reconciliation (AC-09)', () => {
   });
 
   after(async () => {
-    await client.query("DELETE FROM interest_payout");
-    await client.query("DELETE FROM interest_run");
-    await client.query("DELETE FROM fixed_deposit");
-    await client.end();
+    await isolated?.close();
   });
 
   test('RPT-03 total principal matches SUM of active FD principals', async () => {

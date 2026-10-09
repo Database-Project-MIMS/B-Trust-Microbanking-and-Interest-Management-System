@@ -38,17 +38,19 @@ describe('P04-M02-T01: caller-RLS FD view and read grants',()=>{
     const rows=(await runtime(actor(fixture.customerLoginId,'CUSTOMER',null),view)).rows;
     assert.equal(rows.length,4);assert.ok(rows.every(row=>row.customer_id===fixture.customerId));
   });
-  test('FD base column reads are scoped too; metadata and write/bootstrap grants are denied',async()=>{
+  test('FD reads are scoped; agent lifecycle updates affect no rows and bootstrap/delete are denied',async()=>{
     const rows=(await runtime(actor(),tx=>tx.query('SELECT fd_id FROM fixed_deposit'))).rows;
     assert.equal(rows.length,4);assert.ok(!rows.some(row=>row.fd_id===fixture.otherId));
-    for(const sql of ['SELECT created_at FROM fixed_deposit','UPDATE fixed_deposit SET status=\'CLOSED\'',
+    // Metadata SELECT is now needed for the runtime FD DTO; UPDATE is RLS-hidden for an agent.
+    assert.equal((await runtime(actor(),tx=>tx.query('UPDATE fixed_deposit SET status=\'CLOSED\' RETURNING fd_id'))).rowCount,0);
+    for(const sql of [
       'DELETE FROM fixed_deposit','SELECT fn_install_customer_fd_summary()'])
       await assert.rejects(runtime(actor(),tx=>tx.query(sql)),error=>error.code==='42501');
     const permissions=(await client.query(`SELECT
       has_table_privilege('mims_app','fixed_deposit','INSERT') AS insert,
       has_table_privilege('mims_app','fixed_deposit','UPDATE') AS update,
       has_table_privilege('mims_app','vw_customer_fd_summary','UPDATE') AS view_update`)).rows[0];
-    assert.deepEqual(permissions,{insert:false,update:false,view_update:false});
+    assert.deepEqual(permissions,{insert:true,update:false,view_update:false});
   });
   test('bankwide view has one row per actual customer/FD relation, with exact snapshot values',async()=>{
     const result=await runtime(actor(fixture.auditorId,'AUDITOR',null),tx=>tx.query(

@@ -104,31 +104,18 @@ test('P04-M04-T02: Transaction running balance is monotonic', async (t) => {
       });
 
       // Fetch all ledger rows for this account ordered by created_at or transaction_id
-      const rows = await query(`
-        SELECT transaction_type, amount, balance_after
-        FROM transaction
-        WHERE account_id = $1
-        ORDER BY created_at ASC, transaction_id ASC
-      `, [accountId]);
+      const rows = await withTransaction(async tx=>{
+        await setRlsContext(tx,{userId,branchId:null,roleName:'ADMIN'});
+        return (await tx.query(`SELECT transaction_type,amount,balance_after FROM transaction
+          WHERE account_id=$1 ORDER BY ledger_seq`,[accountId])).rows;
+      });
 
       assert.equal(rows.length, 4, 'Should have exactly 4 ledger rows');
 
-      // The account started with 50,000.00. However, the initial balance was not deposited via transaction,
-      // it was inserted directly (50000.00) in the test setup. 
-      // The first transaction is +5000, so balance_after should be 55000.
-      let currentExpectedBalance = 50000.00;
-
-      for (const row of rows) {
-        const amt = Number(row.amount);
-        const balAfter = Number(row.balance_after);
-        if (row.transaction_type === 'WITHDRAWAL' || row.transaction_type === 'REVERSAL') { // actually reversal is positive/negative? With sp_post_withdrawal, type is WITHDRAWAL.
-          currentExpectedBalance -= amt;
-        } else {
-          currentExpectedBalance += amt;
-        }
-
-        assert.equal(balAfter, currentExpectedBalance, `Monotonicity failed for ${row.transaction_type}: expected ${currentExpectedBalance} but got ${balAfter}`);
-      }
+      assert.deepEqual(rows.map(row=>[row.transaction_type,row.amount,row.balance_after]),[
+        ['DEPOSIT','5000.00','55000.00'],['WITHDRAWAL','2000.00','53000.00'],
+        ['INTEREST_CREDIT','150.00','53150.00'],['DEPOSIT','1000.00','54150.00'],
+      ]);
     });
   } finally {
     // Revert settings
