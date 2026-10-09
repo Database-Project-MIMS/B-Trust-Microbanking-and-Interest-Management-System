@@ -1,5 +1,15 @@
 # 00 — Documentation Index
 
+**2026-10-09 M2 integrity work:** Vibodha explicitly confirmed scoped
+P06-M02-T02 in [ADR-0025](../.agent/decisions/ADR-0025-master-data-integrity.md).
+Branch `feat/p06-m02-master-data-integrity` adds 100 DB and 16 API adversarial
+cases and repairs disposable verifier setup. Focused 309 tests /14 suites and
+full 1062 /98 suites (including security), 51-migration rebuild/checksums,
+typecheck/lint pass; T02 REVIEW pending user publication/review.
+[Coverage and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
+Local commits are authorized; publication/merge remain user actions. General
+Phase 6 entry and T03 remain separate.
+
 **2026-10-09 current M2 work:** RPT-01 T02 is merged through PR #74. Vibodha
 authorized a scoped early start for P06-M02-T01 in
 [ADR-0024](../.agent/decisions/ADR-0024-seed-validation.md), then instructed completion
@@ -10,7 +20,8 @@ REVIEW awaiting user publication; see the
 Reported integration failures are repaired under explicit cross-owner authorization:
 full865 tests on this branch and940 on latest-dev overlay pass; typecheck/lint pass.
 See the [integration repair handoff](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
-General Phase 6 entry, T02/T03 and Git publication remain separate.
+General Phase 6 entry, T03 and Git publication remain separate; T02 is now
+explicitly authorized by ADR-0025 above.
 
 Start here. This tells you what every document is for, which ones are authoritative, and
 what to read first.
