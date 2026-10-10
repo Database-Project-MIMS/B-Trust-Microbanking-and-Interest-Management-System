@@ -8,6 +8,7 @@ import { colomboToday } from "@/lib/validation/agent-activity";
 import type { AgentActivity, AgentActivityType } from "@/types/agent-activity";
 
 const labels: Record<AgentActivityType, string> = {
+  TRANSFER_IN:"Transfer in",TRANSFER_OUT:"Transfer out",FD_MATURITY:"FD principal return",
   DEPOSIT: "Deposits", WITHDRAWAL: "Withdrawals", INTEREST_CREDIT: "Interest credits", REVERSAL: "Reversals",
 };
 

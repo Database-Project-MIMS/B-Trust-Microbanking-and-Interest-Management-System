@@ -861,3 +861,26 @@ G-27/G-28 local disposition (2026-10-09): RESOLVED by 0626/0627 and real runtime
 API/direct-SQL tests. Reversal actor/key/receipt and withdrawal identity/signers/rejection
 audit now match their contracts. Staff physical signature UI remains pending alongside
 prototype transaction pages; no live or lecturer acceptance is inferred.
+
+## FR-AUTH-04 reset control (0638)
+
+SRS single-use reset tokens are implemented in `password_reset_token`: UUID PK,
+user FK RESTRICT, unique SHA-256 hash, expiry, used timestamp and created timestamp.
+ADMIN issues a 30-minute link. Guarded SQL consumes the token, changes the Argon2id
+hash and invalidates every session atomically. No email integration is assumed.
+
+## Current gap disposition — 2026-10-10 / ADR-0027
+
+Older absent-transfer/FD-only/prototype statements describe earlier snapshots. G-28 physical
+holder-attestation UI and the document-verification opening blocker now have working paths.
+0628 fixes deposit replay/actor/attribution; 0629 resolves document verification without
+broadening child-table UPDATE; 0630 uses ledger order for reconciliation. ADR-0010 adds paired
+transfer groups/types (0631); ADR-0012 adds account payout source/cursor/rate/interval (0632).
+Automatic maturity uses a separate immutable principal credit and unique receipt; 0635/0636
+link FD funding and disallow isolated reversal of lifecycle/system postings. FR-AUTH-04 is
+implemented by 0638 controls. 0639 closes the earned-interest-forfeiture hole conservatively.
+
+Remaining requirement conflict: zero-balance closure and withdrawal minimum mean a funded
+minimum-bearing plan needs a separately approved final settlement flow. Do not weaken the
+ordinary minimum rule or forfeit accrued interest silently. Lecturer acceptance of the
+accepted extensions, live HTTPS and target-runtime verification remain external gates.

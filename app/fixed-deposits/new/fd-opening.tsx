@@ -3,23 +3,23 @@ import { useEffect,useRef,useState } from 'react';
 import Link from 'next/link';
 import { accountRequest,csrfToken } from '@/app/accounts/account-client';
 import { displayDate,displayRate } from '@/app/accounts/account-format';
+import { AccountSelector } from '@/components/mims/account-selector';
 import { reportMoney } from '@/components/report/report-format';
 import type { FixedDepositRow } from '@/services/fixed-deposit-service';
-type Account={accountId:string;accountNumber:string;currentBalance:string};
-type Product={fdPlanId:string;planName:string;interestRate:string;status:string;effectiveTo:string|null};
+type Product={fdPlanId:string;planName:string;interestRate:string;status:string;effectiveTo:string|null;effectiveFrom:string|null};
 type Quote={accountNumber:string;principalAmount:string;balanceAfter:string};
-export function FdOpening(){
-  const [accounts,setAccounts]=useState<Account[]>([]),[products,setProducts]=useState<Product[]>([]);
-  const [value,setValue]=useState({accountId:'',fdPlanId:'',principalAmount:''});
+export function FdOpening({initialId=""}:{initialId?:string}){
+  const [products,setProducts]=useState<Product[]>([]);
+  const [value,setValue]=useState({accountId:initialId,fdPlanId:'',principalAmount:''});
   const [quote,setQuote]=useState<Quote|null>(null),[result,setResult]=useState<FixedDepositRow|null>(null);
   const [error,setError]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
   const key=useRef<string|null>(null);
   useEffect(()=>{
     const controller=new AbortController();
-    Promise.all([accountRequest<{accounts:Account[]}>('/api/accounts?status=ACTIVE&pageSize=100',{signal:controller.signal}),
-      accountRequest<Product[]>('/api/fd-products',{signal:controller.signal})]).then(([a,p])=>{
-      if(!a.ok || !p.ok){setError(a.error?.message ?? p.error?.message ?? 'Unable to load opening choices.');return;}
-      setAccounts(a.data?.accounts ?? []);setProducts((p.data ?? []).filter(row=>row.status==='ACTIVE' && row.effectiveTo===null));
+    accountRequest<Product[]>('/api/fd-products',{signal:controller.signal}).then(p=>{
+      if(!p.ok){setError(p.error?.message ?? 'Unable to load opening choices.');return;}
+      const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      setProducts((p.data ?? []).filter(row=>row.status==='ACTIVE' && (!row.effectiveFrom||row.effectiveFrom.slice(0,10)<=today) && (!row.effectiveTo||row.effectiveTo.slice(0,10)>today)));
     }).catch(()=>{if(!controller.signal.aborted)setError('Unable to load opening choices.');})
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
@@ -59,13 +59,11 @@ export function FdOpening(){
         <div className="flex gap-4"><button className="btn btn-secondary" disabled={busy} onClick={()=>{setQuote(null);key.current=null;}}>Back to edit</button>
           <button className="btn btn-primary" disabled={busy} onClick={()=>void confirm()}>{busy?'Opening…':'Confirm and open'}</button></div></section> :
       <form className="card form-grid max-w-3xl" onSubmit={event=>{event.preventDefault();void review();}}>
-        <label className="field">Account (required)<select className="input" required value={value.accountId} onChange={event=>setValue({...value,accountId:event.target.value})}>
-          <option value="">Select an account</option>{accounts.map(row=><option key={row.accountId} value={row.accountId}>{row.accountNumber} · {reportMoney(row.currentBalance)}</option>)}</select></label>
+        <AccountSelector value={value.accountId} onChange={accountId=>setValue({...value,accountId})} disabled={busy}/>
         <label className="field">FD product (required)<select className="input" required value={value.fdPlanId} onChange={event=>setValue({...value,fdPlanId:event.target.value})}>
           <option value="">Select a product</option>{products.map(row=><option key={row.fdPlanId} value={row.fdPlanId}>{row.planName} · {displayRate(row.interestRate)}</option>)}</select></label>
         <label className="field">Principal in LKR (required)<input className="input" inputMode="decimal" required pattern="^[0-9]{1,13}[.][0-9]{2}$"
           value={value.principalAmount} onChange={event=>setValue({...value,principalAmount:event.target.value})}/><small>Enter a positive amount with two decimal places.</small></label>
-        {!accounts.length && <p>No eligible accounts are available. Register holders and open a funded savings account first.</p>}
-        <button className="btn btn-primary" disabled={busy || !accounts.length || !products.length} type="submit">{busy?'Preparing…':'Review fixed deposit'}</button></form>}
+        <button className="btn btn-primary" disabled={busy || !value.accountId || !products.length} type="submit">{busy?'Preparing…':'Review fixed deposit'}</button></form>}
   </div>;
 }

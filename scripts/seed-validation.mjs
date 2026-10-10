@@ -67,15 +67,15 @@ const metrics = [
       LEFT JOIN public.transaction_reversal r ON r.reversal_transaction_id = t.transaction_id
       LEFT JOIN public.transaction o ON o.transaction_id = r.original_transaction_id
       WHERE t.transaction_type = 'REVERSAL' AND (o.transaction_id IS NULL
-        OR o.transaction_type NOT IN ('DEPOSIT', 'WITHDRAWAL', 'INTEREST_CREDIT')
+        OR o.transaction_type NOT IN ('DEPOSIT', 'WITHDRAWAL', 'INTEREST_CREDIT','TRANSFER_OUT','TRANSFER_IN','FD_MATURITY')
         OR o.account_id <> t.account_id OR o.amount <> t.amount)` },
   { key: 'unreconciled_accounts', scope: 'full', maximum: 0n,
     sql: `SELECT count(*)::text AS value FROM public.account a
       LEFT JOIN LATERAL (SELECT sum(CASE
-        WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT') THEN t.amount
-        WHEN t.transaction_type = 'WITHDRAWAL' THEN -t.amount
-        WHEN t.transaction_type = 'REVERSAL' AND o.transaction_type = 'WITHDRAWAL' THEN t.amount
-        WHEN t.transaction_type = 'REVERSAL' AND o.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT') THEN -t.amount
+        WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT','TRANSFER_IN','FD_MATURITY') THEN t.amount
+        WHEN t.transaction_type IN ('WITHDRAWAL','TRANSFER_OUT') THEN -t.amount
+        WHEN t.transaction_type = 'REVERSAL' AND o.transaction_type IN ('WITHDRAWAL','TRANSFER_OUT') THEN t.amount
+        WHEN t.transaction_type = 'REVERSAL' AND o.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT','TRANSFER_IN','FD_MATURITY') THEN -t.amount
         ELSE NULL END) AS balance FROM public.transaction t
         LEFT JOIN public.transaction_reversal r ON r.reversal_transaction_id = t.transaction_id
         LEFT JOIN public.transaction o ON o.transaction_id = r.original_transaction_id
@@ -92,7 +92,7 @@ const metrics = [
       LEFT JOIN public.transaction t ON t.transaction_id = p.transaction_id
       WHERE t.transaction_id IS NULL OR t.transaction_type <> 'INTEREST_CREDIT'
         OR t.account_id <> f.account_id OR t.amount <> p.interest_amount
-        OR p.cycle_date <> r.cycle_date OR p.interest_amount <= 0
+        OR p.cycle_date > r.cycle_date OR p.interest_amount <= 0
         OR p.interest_amount IS DISTINCT FROM round(f.principal_amount * f.interest_rate_at_opening * 30 / 365, 2)` },
   { key: 'unlinked_interest_credits', scope: 'full', maximum: 0n,
     sql: `SELECT count(*)::text AS value FROM public.transaction t
@@ -103,7 +103,7 @@ const metrics = [
       LEFT JOIN LATERAL (SELECT count(*) AS n, coalesce(sum(p.interest_amount), 0) AS total
         FROM public.interest_payout p WHERE p.interest_run_id = r.run_id) payouts ON true
       WHERE r.status <> 'COMPLETED' OR r.exception_count IS DISTINCT FROM 0
-        OR r.fd_count IS DISTINCT FROM payouts.n OR r.total_interest IS DISTINCT FROM payouts.total` },
+        OR (r.fd_count+r.savings_count) IS DISTINCT FROM payouts.n OR r.total_interest IS DISTINCT FROM payouts.total` },
 ];
 
 function scopeMetrics(scope) {

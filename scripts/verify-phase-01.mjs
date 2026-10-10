@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
@@ -69,6 +69,16 @@ try {
   console.log("Isolated PostgreSQL cluster ready. Existing mims_dev is preserved.");
   command(process.execPath, ["scripts/db-rebuild.mjs"], env);
   if (process.argv.includes('--catalog')) command(process.execPath,['scripts/write-documentation-catalog.mjs'],env);
+  if(process.argv.includes('--preview')){
+    command(process.execPath,['node_modules/tsx/dist/cli.mjs','--conditions','react-server','tests/helpers/browser-fixture.mjs'],env);
+    const webPort=await new Promise((accept,reject)=>{const server=createServer();server.on('error',reject);server.listen(0,'127.0.0.1',()=>{const n=server.address().port;server.close(()=>accept(n));});});
+    const marker=resolve('test-results/preview-stop');if(existsSync(marker))rmSync(marker);
+    const web=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(webPort)],{env,windowsHide:true,stdio:'inherit'});
+    writeFileSync('test-results/preview-url.json',JSON.stringify({url:`http://127.0.0.1:${webPort}`}));
+    console.log('Disposable browser preview running; create test-results/preview-stop to stop it.');
+    try{while(!existsSync(marker)&&web.exitCode===null)await new Promise(done=>setTimeout(done,500));}
+    finally{web.kill();await new Promise(done=>web.exitCode!==null?done():web.once('exit',done));}
+  } else {
   const requestedSuite = process.argv.find(arg => arg.startsWith("--suite="))?.slice(8);
   if (requestedSuite && !["api", "db", "e2e", "security"].includes(requestedSuite)) throw new Error("Unknown test suite.");
   const tests = (process.argv.includes('--operations') ? ['db'] : requestedSuite ? [requestedSuite] : ["api", "db", "e2e", "security"]).flatMap(folder =>
@@ -76,7 +86,7 @@ try {
       && (!process.argv.includes('--operations') || ['backup-restore.test.mjs','migration-runner.test.mjs'].includes(file)))
       .map(file => join("tests", folder, file)));
   const testCommand = files => command(process.execPath,
-    ["node_modules/tsx/dist/cli.mjs", "--conditions", "react-server", "--test", "--test-concurrency=1", ...files], env);
+    ["node_modules/tsx/dist/cli.mjs", "--conditions", "react-server", "--test", ...(process.argv.includes('--tap') ? ['--test-reporter=tap'] : []), "--test-concurrency=1", ...files], env);
   if (!requestedSuite && !process.argv.includes('--operations')) {
     // Security fingerprints complete business state. Run before load fixtures grow it;
     // all suites still run against the same fresh cluster, without exclusions.
@@ -89,6 +99,7 @@ try {
     command(process.execPath, ["node_modules/next/dist/bin/next", "build"], env);
   }
   console.log(process.argv.includes("--tests-only") ? "ISOLATED TESTS: all checks passed." : "LOCAL VERIFICATION: all checks passed.");
+  }
 } catch (error) {
   console.error(error.message);
   if (!started && existsSync(join(workspace, "postgres.log"))) console.error(readFileSync(join(workspace, "postgres.log"), "utf8").split(password).join("[REDACTED]"));

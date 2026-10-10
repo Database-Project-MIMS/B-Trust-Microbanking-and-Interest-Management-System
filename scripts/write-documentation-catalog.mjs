@@ -47,7 +47,7 @@ try{
   writeFileSync('docs/19_implemented-api-matrix.md','# 19 — Implemented API Permission Matrix\n\n'+
     'Independent contract used by the security suite; a completeness guard compares every exported route handler.\n'+
     'Allowed means the role reaches validation/business processing; valid-operation tests separately prove success.\n'+
-    'Unauthenticated requests are denied except login and CSRF-protected idempotent logout. Worker interest requests require their separate bearer credential.\n\n'+
+    'Unauthenticated requests are denied except login, the public reset-CSRF initializer, token-authorized CSRF-protected password reset and CSRF-protected idempotent logout. Worker interest requests require their separate bearer credential.\n\n'+
     'Roles: '+roles.join(', ')+'. SYSTEM is internal, not a human QA role.\n\n'+
     table(['Method','Endpoint','Allowed roles','Input positions probed'],routes.map(row=>[row.method,'/api/'+row.path.replace('[id]','{id}').replace('[key]','{key}'),row.allowed.join(', '),row.fields.join(', ')]))+
     '\nRead [endpoint contracts](05_api-and-pages.md) for payloads and success/error semantics. Branch and holder scope still applies to allowed roles.\n');

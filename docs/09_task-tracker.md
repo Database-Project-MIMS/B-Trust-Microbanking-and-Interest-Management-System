@@ -1,7 +1,7 @@
 # 09 — Task Tracker
 
-**Current authority (2026-10-09):** the task rows below describe merged or locally
-verified implementation. Earlier session notes are historical. ADR-0026 authorizes local
+**Current authority (2026-10-10):** the task rows below describe merged or locally
+verified implementation. Earlier session notes are historical. ADR-0027 authorizes local
 T03/cross-owner completion and commits; publication remains the user's action.
 Live deployment, lecturer scope decisions and general phase approval remain pending.
 
@@ -53,11 +53,11 @@ and merging remain user actions.
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
 | P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
-| P3 | 14 | 0 | 0 | 1 | 0 | 0 | 13 |
-| P4 | 14 | 0 | 0 | 1 | 0 | 2 | 11 |
+| P3 | 14 | 0 | 0 | 0 | 0 | 1 | 13 |
+| P4 | 14 | 0 | 0 | 0 | 0 | 3 | 11 |
 | P5 | 15 | 0 | 0 | 0 | 0 | 1 | 14 |
 | P6 | 13 | 0 | 0 | 1 | 0 | 5 | 7 |
-| **All** | **97** | **0** | **0** | **3** | **0** | **8** | **86** |
+| **All** | **97** | **0** | **0** | **1** | **0** | **10** | **86** |
 
 ---
 
@@ -233,7 +233,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
 | P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 3 — Financial Transactions (13 DONE, 1 IN_PROGRESS; general entry pending)
+## Phase 3 — Financial Transactions (13 DONE, 1 REVIEW; general entry pending)
 
 **Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
 OQ-08 was resolved by ADR-0010; it is not an open blocker.
@@ -281,10 +281,10 @@ user's direction and is DONE; P04-M03-T02 (`sp_close_account`, BR-18) and P04-M0
 | P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | DONE (migration `0361`, branch `feat/p03-m04-sp-post-deposit`) |
 | P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4**; user-authorized repair ADR-0021 | DONE (original PR #61 and corrective 0363 PR #67 merged; current legacy caller ambiguities recorded in T02 handoff) |
 | P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | DONE (branch `feat/p03-m04-transaction-reversal`) |
-| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | IN_PROGRESS (backend verified; deposit/withdrawal/detail/statement pages remain prototypes; UI wiring and browser proof pending) |
+| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | REVIEW (ADR-0027: real scoped posting, holder authorization, receipts/reversal, statements and browser/API evidence; local publication pending) |
 | P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | DONE |
 
-## Phase 4 — Fixed Deposits & Interest (11 DONE, 1 IN_PROGRESS, 2 REVIEW; general entry pending)
+## Phase 4 — Fixed Deposits & Interest (11 DONE, 3 REVIEW; general entry pending)
 
 **Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
 OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
@@ -299,11 +299,11 @@ OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
 | P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) — `0441_p04_m03_sp_close_account.sql` (`sp_close_account` + `trg_account_close_guard`), `closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` now live (was a 501 stub); `tests/db/sp-close-account.test.mjs` 17/17, `tests/api/accounts.test.mjs` +6; handoff [t02](../.agent/handoffs/p04-m03-t02-account-closure.md). Backend only; no UI | DB + BE | P04-M03-T01 | DONE (early start at the user's direction; no phase approval) |
 | P04-M03-T03 | 3 | FD panel on the account detail page — `GET /api/accounts/{id}` gains `fixedDeposits` (read under RLS from `fixed_deposit`); `/accounts/{id}` shows the FDs, an "Open a fixed deposit" link to `/fixed-deposits/new?accountId=…` and a note when an active FD blocks closing; `fixedDepositPanel` in `account-format.ts`; `fixedDeposits` is `null` if the list cannot be read (rest of the page still loads); `tests/api/accounts.test.mjs` +4, `tests/e2e/accounts-ui-model.test.mjs` +7, `tests/e2e/account-fixed-deposits-panel.test.mjs` 8 (rendered markup); `/imprint` saved; handoff [t03](../.agent/handoffs/p04-m03-t03-fd-panel.md). No browser pass | FE | P04-M03-T02 (`fn_calculate_fd_interest` was context only) | DONE (early start at the user's direction; no phase approval) |
 | P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 | DONE |
-| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 | IN_PROGRESS (API/ledger running-balance checks pass; statement page remains a prototype) |
+| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 | REVIEW (ADR-0027: real paginated statement, exact balances and posting-order/browser evidence; local publication pending) |
 | P04-M05-T01 | 5 | `fixed_deposit` schema: partial unique active index (G-01), `maturity_date` (G-23), `interest_rate_at_opening` (G-11) | DB | **OQ-01** | DONE (0480; ADR-0011 active-FD index) |
 | P04-M05-T02 | 5 | `sp_open_fixed_deposit` — eligibility, debit principal, create FD, atomic | DB | P04-M05-T01, **I-6** | DONE |
 | P04-M05-T03 | 5 | `fn_calculate_fd_interest` — exact `principal × rate × 30 / 365`, rounded to 2dp | DB | P04-M05-T01 | DONE (0481; exact SQL actual/365 FD formula) |
-| P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** | REVIEW (ADR-0026 completes service-owned per-FD transactions; legacy seed function retained; savings interest pending) |
+| P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** | REVIEW (ADR-0027: service-owned FD catch-up, savings daily-balance distributions and automatic principal return; legacy seed function retained) |
 | P04-M05-T05 | 5 | FD opening page, FD list, interest run console | BE + FE | P04-M05-T04, **I-1** | REVIEW (ADR-0026: real FD list/opening/quote and interest preview/console; local publication pending) |
 
 ## Phase 5 — Reports, Audit & Reconciliation (14 DONE, 1 REVIEW; general entry pending)
@@ -347,7 +347,7 @@ is historical and must not be substituted for current verification.
 verification on dev `053f6f6`. Vibodha authorized T03 and necessary cross-owner code,
 verification and local commits (ADR-0026). New deliveries remain REVIEW until user
 publication/team review. No push, PR creation or merge. Live HTTPS explicitly pending.
-Current evidence and accepted-but-unimplemented savings/transfer scope are in
+Current evidence and implemented savings/transfer scope are in
 [docs/20](20_final-local-closeout.md). Historical counts elsewhere retain their date/base.
 
 | ID | M | Title | Layers | Depends on | Status |
@@ -372,8 +372,24 @@ Current evidence and accepted-but-unimplemented savings/transfer scope are in
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
-| Phase 3 transaction work | **OQ-12**, **OQ-14** — transfer typing and lecturer scope acceptance | Team / Lecturer |
-| Phase 4 interest work | **OQ-13**, **OQ-14** — mid-cycle interest and scope acceptance | Team / Lecturer |
+| Course acceptance of extensions | **OQ-14** — lecturer scope acceptance; transfer typing/staff-only scope implemented | Team / Lecturer |
+| Funded account final settlement | SRS minimum/zero-balance closure conflict; unpaid-interest guard implemented, final settlement policy unanswered | User / Team |
 
 These future-phase decisions do not block P02-M02-T01. OQ-11 is needed before optional
 customer login provisioning/UI, rather than before the independent customer schema.
+
+## Predeployment integration receipt — 2026-10-10
+
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
+
+P03-M04-T05 and P04-M04-T02 are locally complete and REVIEW. Accepted extensions,
+reset/admin/document/reconciliation corrections are included in authorized P06-M02-T03
+cross-owner delivery (ADR-0027). Status totals: 97 tasks, 86 DONE, 10 REVIEW,
+1 IN_PROGRESS (live deployment). REVIEW preserves user publication/peer acceptance;
+no push, PR or merge was performed. Remaining product/external limits: docs/21.

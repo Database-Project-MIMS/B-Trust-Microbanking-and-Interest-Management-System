@@ -79,7 +79,7 @@ describe('P06-M01-T01/T02: actual endpoint injection and independent role matrix
     // Authentication intentionally changes session last_seen/login_attempt. Business
     // rows and audits must be identical on a role denial, not just equal counts.
     const tables = ['branch','agent','customer','customer_agent','customer_document','account','account_holder',
-      'joint_mandate','transaction','transaction_reversal','fixed_deposit','interest_run','interest_payout','audit_log','savings_plan','fd_plan','system_parameter'];
+      'joint_mandate','transaction','transaction_reversal','fixed_deposit','fd_maturity_receipt','fd_opening_request','account_opening_request','interest_run','interest_payout','password_reset_token','audit_log','savings_plan','fd_plan','system_parameter'];
     const fields = tables.filter(table => !excludeAudit || table !== 'audit_log').map(table =>
       `(SELECT md5(COALESCE(string_agg(row_to_json(t)::text, '' ORDER BY row_to_json(t)::text),'')) FROM ${table} t) AS "${table}"`);
     return (await client.query(`SELECT ${fields.join(',')}`)).rows[0];

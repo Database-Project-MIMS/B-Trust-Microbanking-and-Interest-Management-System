@@ -276,3 +276,22 @@ context, exactly self signer and owned account are required. The existing 0363 c
 locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
 rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
 remains denied; staff continue through the invoker audited-attempt routine.
+
+## Predeployment enforcement — 2026-10-10 (ADR-0027)
+
+| Rule | Enforcement point |
+|---|---|
+| Staff-only transfer; current branch, assigned agent source, active accounts, holder mandate | `fn_post_staff_transfer`, stored actor/context check and locked account decisions; route role/CSRF/schema |
+| Equal two-leg transfer; no partial balance or audit effect | Deferred `trg_transfer_pair`, group/type unique index, service-owned transaction and deterministic account locks |
+| Transfer-out and cash withdrawals share single/daily debit limits and preserve minimum | 0631 transfer function and 0634 withdrawal core; Colombo business date and database parameters |
+| Transfer reversal compensates both legs; destination must repay; no system/funding reversal | 0636 `fn_reverse_transfer`, paired reversal constraint and controlled reversal core |
+| Savings pays actual funded/open days and never repeats or skips an unpaid interval | 0632 `fn_savings_interest`/`fn_post_savings_interest`; locked exclusive paid-through cursor, source check, unique account/cycle and rate snapshot |
+| Every due FD period paid before maturity; automatic principal returned once | Service catch-up, locked next date, FD/cycle unique payout, `fn_return_fd_principal` and unique maturity receipt |
+| Close only at zero with no ACTIVE FD and no positive unpaid interest | `fn_account_close_guard` in 0639; no approved minimum-waiving settlement operation |
+| Documents verified only by assigned/branch-authorized current staff | 0629 `fn_verify_customer_document`; paired verifier/date constraint; stable replay audit |
+| At least one active ADMIN; access/password changes revoke sessions and resets | 0637 trigger, admin service, 0638 reset invalidation/consume capability |
+| Reset capability finite, hashed, single-use, superseded by another issue | 0638 functions and user/token lock order; server CSRF and strict schema |
+
+The savings rate is the current mutable plan rate, snapshotted for the distribution.
+No effective-dated savings-rate history is invented. Ordinary closure settlement policy
+and live deployment acceptance remain recorded questions, not implicit rule exceptions.

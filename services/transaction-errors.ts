@@ -19,6 +19,12 @@ const DEPOSIT_RULES: Record<string, { code: string; message: string; status: num
 };
 
 const WITHDRAWAL_REVERSAL_CODES: Record<string, { message: string; status: number }> = {
+  TRANSFER_NOT_AUTHORIZED: { message: "You are not authorized to transfer between these accounts.", status: 403 },
+  FD_FUNDING_NOT_REVERSIBLE: {message:"Fixed-deposit funding must be corrected through its deposit lifecycle.",status:409},
+  CANNOT_REVERSE_A_REVERSAL: {message:"Compensating entries cannot be reversed.",status:409},
+  REVERSAL_WOULD_OVERDRAFT: {message:"The reversal would overdraw an account.",status:409},
+  DEPOSIT_NOT_AUTHORIZED: { message: "You are not authorized to deposit into this account.", status: 403 },
+  IDEMPOTENCY_KEY_REUSED: { message: "This request key was used for a different operation.", status: 409 },
   WITHDRAWAL_NOT_AUTHORIZED: { message: "You are not authorized to withdraw from this account.", status: 403 },
   ACCOUNT_NOT_FOUND: { message: "Account was not found.", status: 404 },
   ACCOUNT_NOT_ACTIVE: { message: "Account is not active.", status: 409 },
@@ -48,6 +54,7 @@ export function withdrawalRejectionError(code: string): TransactionRuleError {
 export function throwTransactionDatabaseError(error: unknown): never {
   if (error instanceof DomainError) throw error;
   if (isPgError(error)) {
+    if (error.code === "42501") throw new TransactionRuleError("NOT_AUTHORIZED", "You are not authorized to perform this operation.",403);
     if (error.code === PG_ERROR.RAISE_EXCEPTION) {
       if (typeof error.constraint === "string") {
         const rule = DEPOSIT_RULES[error.constraint];

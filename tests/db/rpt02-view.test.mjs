@@ -103,7 +103,7 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
 
         adultPlanId = (await client.query("SELECT plan_id FROM savings_plan WHERE plan_name = 'Adult'")).rows[0]?.plan_id;
         channelId = (await client.query("SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER'")).rows[0]?.channel_id;
-        agent = (await client.query("SELECT agent_id, branch_id FROM agent WHERE status = 'ACTIVE' ORDER BY employee_no LIMIT 1")).rows[0];
+        agent = (await client.query("SELECT a.agent_id,a.branch_id FROM agent a JOIN app_user u ON u.user_id=a.agent_id JOIN role r USING(role_id) JOIN branch b ON b.branch_id=a.branch_id WHERE a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' AND b.status='ACTIVE' AND r.role_name='AGENT' ORDER BY a.employee_no LIMIT 1")).rows[0];
         assert.ok(adultPlanId && channelId && agent, "seeded plan, channel and agent are required");
         otherBranchId = (await client.query("SELECT branch_id FROM branch WHERE branch_id <> $1 LIMIT 1", [agent.branch_id])).rows[0].branch_id;
 
@@ -276,7 +276,7 @@ describe("P05-M03-T01: vw_rpt02_account_summary and the opening-deposit balance_
              VALUES ($1, 'NIC', '/synthetic/test.pdf', $2, now())`,
             [customer, agent.agent_id],
         );
-        await client.query("SELECT set_config('app.current_user_id', $1, true)", [agent.agent_id]);
+        await client.query("SELECT set_config('app.current_user_id',$1,true),set_config('app.current_branch_id',$2,true),set_config('app.current_user_role','AGENT',true)",[agent.agent_id,agent.branch_id]);
         const opened = (await client.query(
             `CALL sp_open_savings_account($1::uuid, $2::uuid, $3::uuid, $4::jsonb, NULL, 1500.00::numeric, $5::uuid, $6::uuid, NULL, NULL, NULL)`,
             [adultPlanId, agent.branch_id, agent.agent_id, JSON.stringify([{ customer_id: customer, holder_type: "PRIMARY" }]), channelId, agent.agent_id],

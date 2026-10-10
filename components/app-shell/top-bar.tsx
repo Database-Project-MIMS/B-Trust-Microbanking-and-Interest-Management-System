@@ -10,11 +10,14 @@ interface TopBarProps {
 }
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
+  {href:'/my/accounts',label:'My accounts',roles:['CUSTOMER']},
+  {href:'/transactions/withdraw',label:'Withdraw',roles:['CUSTOMER']},
+  {href:'/transactions/transfer',label:'Transfers',roles:['AGENT','BRANCH_MANAGER']},
+  { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR", "CUSTOMER"] },
   { href: "/customers", label: "Customers", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/accounts", label: "Accounts", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/transactions/deposit", label: "Transactions", roles: ["BRANCH_MANAGER", "AGENT"] },
-  { href: "/fixed-deposits", label: "Fixed deposits", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
+  { href: "/fixed-deposits", label: "Fixed deposits", roles: ["CUSTOMER", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/reports/agent-transactions", label: "Reports", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
   { href: "/branches", label: "Branches", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
   { href: "/agents", label: "Agents", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER"] },

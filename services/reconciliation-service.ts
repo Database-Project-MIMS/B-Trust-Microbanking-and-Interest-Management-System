@@ -1,4 +1,7 @@
-import { pool } from "@/lib/db";
+import 'server-only';
+import { withTransaction, NotAuthorizedError } from "@/lib/db";
+import { setRlsContext } from '@/lib/db/rls-context';
+import type { TransactionActor } from './transaction-service';
 
 export interface AccountDiscrepancy {
   accountId: string;
@@ -26,9 +29,13 @@ export interface ReconciliationReport {
 /**
  * Transaction boundary: Read-only reconciliation snapshot.
  */
-export async function runReconciliationCheck(): Promise<ReconciliationReport> {
-  const client = await pool.connect();
-  try {
+export async function runReconciliationCheck(actor: TransactionActor): Promise<ReconciliationReport> {
+  if (!['ADMIN','CENTRAL_OPS','AUDITOR'].includes(actor.roleName)) throw new NotAuthorizedError();
+  return withTransaction(async client => {
+    const current=(await client.query(`SELECT r.role_name FROM app_user u JOIN role r ON r.role_id=u.role_id
+      WHERE u.user_id=$1 AND u.status='ACTIVE' AND r.status='ACTIVE'`,[actor.userId])).rows[0];
+    if (current?.role_name!==actor.roleName) throw new NotAuthorizedError();
+    await setRlsContext(client, actor);
     const accResult = await client.query(`
       SELECT account_id, account_number, stored_balance, computed_balance, discrepancy
       FROM vw_reconciliation_balance
@@ -63,7 +70,5 @@ export async function runReconciliationCheck(): Promise<ReconciliationReport> {
         discrepancy: r.discrepancy,
       })),
     };
-  } finally {
-    client.release();
-  }
+  }, { isolationLevel: 'REPEATABLE READ' });
 }

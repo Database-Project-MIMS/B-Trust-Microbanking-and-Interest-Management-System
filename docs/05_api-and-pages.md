@@ -272,7 +272,7 @@ T05 route/runtime/screen integration and security handoff:
 - **Roles** AGENT, BRANCH_MANAGER; CUSTOMER if an authorised holder
 - **Headers** `Idempotency-Key` (**required**)
 - **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, signerCustomerIds?, narration? }`
-- **Validation** strict body, UUIDs and decimal string; at most four signer IDs. Staff provide either `onBehalfOfCustomerId` or `signerCustomerIds` (not both). CUSTOMER resolves its active linked profile and can attest only its own customer UUID. Database checks account holders/mandate, active account, business calendar/hours and single/daily limits. Staff signer IDs represent collected attestations; physical evidence capture UI remains pending.
+- **Validation** strict body, UUIDs and decimal string; at most four signer IDs. Staff provide either `onBehalfOfCustomerId` or `signerCustomerIds` (not both). CUSTOMER resolves its active linked profile and can attest only its own customer UUID. Database checks account holders/mandate, active account, business calendar/hours and single/daily limits. Staff signer IDs represent collected physical attestations; the posting/transfer UI explicitly records the checked holders.
 - **SQL routine** Staff use `CALL sp_try_post_withdrawal(...)` (0363); CUSTOMER uses the guarded `sp_try_customer_withdrawal` wrapper (0627), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
 - **Success** `201` first posting, `200` successful replay: `{ data: { transactionId, referenceNumber, amount, balanceAfter, postedAt } }`
 - **Errors** `409 INSUFFICIENT_FUNDS` · `409 BELOW_MINIMUM_BALANCE` · `409 MANDATE_NOT_SATISFIED` · `409 LIMIT_EXCEEDED` · `409 ACCOUNT_NOT_ACTIVE`
@@ -337,7 +337,7 @@ Page `/fixed-deposits/new` requires an explicit SQL-preview confirmation.
 GET: ADMIN, CENTRAL_OPS, AUDITOR; newest 100 rows with actual totals/exceptions.
 POST: ADMIN/CENTRAL_OPS session plus CSRF, or authenticated scheduled worker.
 Body: `{ cycleDate, dryRun?: boolean }`; strict real calendar date.
-`interest-request-service` executes the **FD-only** cycle synchronously. Run creation
+`interest-request-service` executes the **FD, savings and maturity** cycle synchronously. Run creation
 commits separately, each locked FD distribution uses its own transaction, and final totals
 persist separately. Failed FD processing increments exception count without undoing
 successful distributions. SQL computes money; credits use `sp_post_interest_credit`.
@@ -348,7 +348,7 @@ Completed runs with exceptions also need review; replay does not retry their exc
 Page `/interest-runs` displays preview, explicit confirmation, results and history.
 
 Legacy owner/seed `sp_run_interest_cycle` is a function, not a procedure providing separate
-transactions. Application execution is revoked. ADR-0012 savings interest remains pending.
+transactions. Application execution is revoked. ADR-0012 savings interest runs through the controlled service and 0632 functions.
 
 ---
 
@@ -536,3 +536,41 @@ Live session reads follow role, branch, assignment and self-link changes on subs
 requests; session revocation/inactive identity fails closed. COMMIT/ROLLBACK clears
 local context on borrowed connections. No JavaScript filtering or broadened FD API.
 M5's global FD/report interfaces and M3's account panel retain their own ownership.
+
+## Predeployment contracts — 2026-10-10 / ADR-0027
+
+This section supersedes older prototype and FD-only status notes.
+
+| Endpoint | Roles and scope | Contract |
+|---|---|---|
+| `POST /api/customer-documents/{id}/verify` | AGENT assigned customer / BRANCH_MANAGER own branch | UUID path, CSRF, empty body; stored actor locks and sets paired verifier/date; `200` stable verification replay |
+| `POST /api/transactions/transfers` | AGENT / BRANCH_MANAGER within own branch | CSRF and Idempotency-Key; strict `{sourceAccountId,destinationAccountId,amount,signerCustomerIds,narration?}`; exact positive cents; `201` pair or `200` payload-identical replay |
+| `GET /api/admin/users` | ADMIN | Strict `q?`, `roleName?`, `page?`; repeated keys rejected; 25-row snapshot and role definitions; no password hashes |
+| `POST /api/admin/users` | ADMIN | `{username,password,roleName,profile?,customerId?}`; staff requires branch profile, customer requires active unlinked customer; Argon2id and profile creation atomic |
+| `PATCH /api/admin/users/{id}` | ADMIN | Strict status/password and bankwide role changes; profile roles cannot be changed implicitly; no self-demotion/deactivation or disabling assigned agents; revoke sessions |
+| `POST /api/admin/users/{id}/reset` | ADMIN + CSRF | Issues a private 30-minute token once; expires previous tokens; no email transmission |
+| `GET /api/auth/reset` | Public | Initializes CSRF cookie with no-store response |
+| `POST /api/auth/reset` | Token capability + CSRF | Strict token/password; expired, superseded or used token rejected; password update, consume and session revocation atomic |
+
+Transfer receipts contain transferGroupId, debitTransactionId, creditTransactionId,
+sourceBalance and destinationBalance. Manager reversal of either leg compensates both;
+normal single-posting reversals remain supported. System interest, FD funding and maturity
+postings expose `canReverse: false` and are denied by SQL if directly attempted.
+
+Interest execution now pays all due FD 30-day installments, savings daily-balance interest
+and mature FD principal. Dry run includes FD/savings counts and interest totals; maturity
+principal is not included in interest totals. Each distribution/maturity commits separately.
+Future cycles fail before audit/control; completed replay duplicates nothing. Exceptions
+remain visible and need operator review. The legacy seed cycle function is owner-only.
+
+Real pages: `/transactions/deposit`, `/transactions/withdraw`, `/transactions/transfer`,
+`/transactions/{id}`, `/accounts/{id}/statement`, `/my/accounts`, `/admin/users`,
+`/admin/roles`, `/admin/audit`, `/reset-password`. Financial forms use searchable account
+selection, holder authorization, review, stable retry keys, errors and real receipts.
+Customer list/withdrawal choices contain owned accounts only; transfer is never offered
+to customers. Legacy `/dashboard/transactions` and `/dashboard/fixed-deposits` redirect
+into real role-appropriate workflows. `/reconciliation` uses bankwide guarded SQL results.
+FD opening selection now searches/paginates instead of stopping at 100 accounts.
+Audit filters use `actorId` (not userId), explicit Colombo timestamps and bounded pages;
+unknown/repeated filters fail `400`. Protected pages authorize on the server as well as APIs.
+Reset tokens travel in a URL fragment and are removed from the address bar on capture.

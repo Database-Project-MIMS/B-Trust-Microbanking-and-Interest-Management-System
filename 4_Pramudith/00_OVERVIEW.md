@@ -15,11 +15,14 @@ transaction), and **idempotency as a database constraint**, not an in-memory cac
 
 ## 🗺️ Work Order Summary
 
-**Current summary reviewed 2026-10-09:** [task tracker](../docs/09_task-tracker.md)
-and [local closeout](../docs/20_final-local-closeout.md) supersede older status notes.
-M2 T01/T02 are merged (PR #88/#90). ADR-0026 dependencies and final docs are locally
-implemented, REVIEW awaiting user publication. Live HTTPS and general acceptance remain
-pending; accepted savings/transfer extensions are not implemented.
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
 
 
 **2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
@@ -38,11 +41,11 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~03~~ | ~~[Migration Runner Tests & Health Endpoint](03_P1-T03-T04_migration-runner-health-page.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~Rebuild proof, edited-migration rejection, `/admin/health` API~~ | ~~about 5~~ |
 | ~~04~~ | ~~[Transaction Schema & Immutability](04_P2-T01_transaction-schema-immutability.md)~~ | ~~P2~~ | ~~T01~~ | ~~`transaction` ledger table + `trg_financial_transaction_immutable`~~ | ~~about 5~~ |
 | ~~05~~ | ~~[Reference & Idempotency Indexes](05_P3-T01_reference-idempotency-indexes.md)~~ | ~~P3~~ | ~~T01~~ | ~~`reference_number UNIQUE`, `idempotency_key` partial unique index (G-04, G-05)~~ | ~~about 4~~ |
-| 06 | [sp_post_deposit](06_P3-T02_sp-post-deposit.md) | P3 | T02 | Lock, insert ledger, update balance, `balance_after`, audit | ~6 |
+| ~~06~~ | ~~[sp_post_deposit](06_P3-T02_sp-post-deposit.md)~~ | ~~P3~~ | ~~T02~~ | ~~Lock, insert ledger, update balance, `balance_after`, audit~~ | ~~~6~~ |
 | ~~07~~ | ~~[sp_post_withdrawal](07_P3-T03_sp-post-withdrawal.md)~~ | ~~P3~~ | ~~T03~~ | ~~Lock, re-validate status/mandate/limits/minimum, debit — consumes **I-4**~~ | ~~about 7~~ |
 | ~~08~~ | ~~[Transaction Reversal](08_P3-T04_transaction-reversal.md)~~ | ~~P3~~ | ~~T04~~ | ~~`transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02)~~ | ~~about 5~~ |
-| 09 | [Transaction APIs](09_P3-T05_transaction-api-pages.md) | P3 | T05 | `Idempotency-Key` header handling; deposit, withdrawal, reversal APIs | ~8 |
-| 10 | [Interest Credit Posting](10_P4_interest-credit-posting.md) | P4 | T01–T02 | `INTEREST_CREDIT` through the ledger routine — publishes **I-5**; statement display | ~6 |
+| ~~09~~ | ~~[Transaction APIs](09_P3-T05_transaction-api-pages.md)~~ | ~~P3~~ | ~~T05~~ | ~~`Idempotency-Key` header handling; deposit, withdrawal, reversal APIs~~ | ~~~8~~ |
+| ~~10~~ | ~~[Interest Credit Posting](10_P4_interest-credit-posting.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~`INTEREST_CREDIT` through the ledger routine — publishes **I-5**; statement display~~ | ~~~6~~ |
 | ~~11~~ | ~~[RPT-05 Customer Activity Report](11_P5-T01-T02_rpt05-report.md)~~ | ~~P5~~ | ~~T01–T02~~ | ~~Customer activity view, API, CSV~~ | ~~about 6~~ |
 | ~~12~~ | ~~[Reconciliation](12_P5-T03_reconciliation.md)~~ | ~~P5~~ | ~~T03~~ | ~~Ledger vs `current_balance` vs `balance_after` (D-1, D-2)~~ | ~~about 4~~ |
 | ~~13~~ | ~~[Rollback, Idempotency & Performance Tests](13_P6_rollback-idempotency-performance-tests.md)~~ | ~~P6~~ | ~~T01–T02~~ | ~~Partial-failure evidence; posting performance under load~~ | ~~about 5~~ |
@@ -176,7 +179,7 @@ Suggested approach:
 11. **You are a producer for I-2 and I-5** — write the handoff before the consuming
     member's task can move to `READY`
 
-Current frontend disposition: P03-M04-T05 and P04-M04-T02 are IN_PROGRESS because
-transaction/statement pages still use prototypes. Backend APIs/ledger checks pass; G-27
-manager-only reversal/key/control correction is a local M2 contribution. This does not
-count static prototype markup as completed financial UI. M4 retains stewardship.
+Current frontend disposition: P03-M04-T05 and P04-M04-T02 are REVIEW after real
+posting/holder authorization, receipts/reversal and statements plus browser/API evidence
+(ADR-0027). M4 retains stewardship; user controls publication. Transfer grouping/staff-only
+scope is implemented; lecturer OQ-14 and live HTTPS remain external acceptance gates.

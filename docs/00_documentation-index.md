@@ -1,6 +1,6 @@
 # 00 — Documentation Index
 
-**Current local closeout — 2026-10-09:** P06-M02-T01/T02 are merged through
+**Current local closeout — 2026-10-10:** P06-M02-T01/T02 are merged through
 PR #88/#90. Vibodha authorized T03 and necessary cross-owner completion in
 [ADR-0026](../.agent/decisions/ADR-0026-final-local-closeout.md).
 Branch `feat/p06-m02-final-documentation` is based on dev `053f6f6` (PR #91/#92
@@ -11,8 +11,9 @@ Read [implemented schema](18_implemented-database-catalog.md),
 [endpoint permissions](19_implemented-api-matrix.md) and
 [local closeout and remaining scope](20_final-local-closeout.md) for the current
 implementation. The original ERD and historical verification results below are reference
-material. Savings average-daily-balance interest and transfers remain accepted extensions
-awaiting implementation/remaining scope decisions; this is not general Phase 6 acceptance.
+material. Savings daily-balance interest, staff transfers and automatic FD maturity return
+are implemented. [Predeployment audit](21_predeployment-audit.md) records frontend checks,
+current evidence and remaining deployment/closure-policy limits; this is not general Phase 6 acceptance.
 
 Start here. This tells you what every document is for, which ones are authoritative, and
 what to read first.
@@ -141,3 +142,12 @@ Claude Code session.
 
 Documentation is updated **in the same PR** as the change (AGENTS.md §14). A PR that
 changes the schema without updating `04_database-schema.md` should not be approved.
+
+## Generated and verification closeout documents
+
+| File | Purpose |
+|---|---|
+| `18_implemented-database-catalog.md` | Current clean-rebuild physical objects, constraints, policies and grants |
+| `19_implemented-api-matrix.md` | Independent complete handler/role/input contract used by security tests |
+| `20_final-local-closeout.md` | Current delivery, scope and acceptance boundary |
+| `21_predeployment-audit.md` | Changes, requirement decisions, browser evidence, final tests and remaining limits |

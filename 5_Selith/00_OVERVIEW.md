@@ -8,11 +8,14 @@
 
 ## 🗺️ Work Order Summary
 
-**Current summary reviewed 2026-10-09:** [task tracker](../docs/09_task-tracker.md)
-and [local closeout](../docs/20_final-local-closeout.md) supersede older status notes.
-M2 T01/T02 are merged (PR #88/#90). ADR-0026 dependencies and final docs are locally
-implemented, REVIEW awaiting user publication. Live HTTPS and general acceptance remain
-pending; accepted savings/transfer extensions are not implemented.
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
 
 
 **Seed completion contribution, 2026-10-09:** Vibodha authorized M2 to complete
@@ -35,9 +38,9 @@ Closeout is merged into dev; the user retains all publication control.
 | ~~04~~ | ~~[Seed Data Sets 1–3](04_P2_seed-sets-1-3.md)~~ | ~~P2~~ | ~~T01~~ | ~~Branches, agents, customers, accounts, 2 joint accounts~~ | ~~about 6~~ |
 | ~~05~~ | ~~[Seed Data Set 4](05_P3_seed-set-4-transactions.md)~~ | ~~P3~~ | ~~T01~~ | ~~100+ mixed transactions across dates, branches, agents, plans~~ | ~~about 6~~ |
 | ~~06~~ | ~~[FD Schema & Opening](06_P4_fd-schema-opening.md)~~ | ~~P4~~ | ~~T01–T03~~ | ~~`fixed_deposit` table, `sp_open_fixed_deposit`, `fn_calculate_fd_interest`~~ | ~~about 10~~ |
-| 07 | [Interest Cycle](07_P4_interest-run-cycle.md) | P4 | T04–T05 | `interest_run`, `interest_payout`, `sp_run_interest_cycle` | ~8 |
-| 08 | [RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md) | P5 | T01–T04 | Active FDs view, interest distribution view, APIs, CSV, `EXPLAIN ANALYZE` | about 12 |
-| 09 | [Final Testing & Ops](09_P6_testing-ops-deployment.md) | P6 | T01–T02 | Interest re-run idempotency tests, backup/restore evidence, demo script | ~8 |
+| ~~07~~ | ~~[Interest Cycle](07_P4_interest-run-cycle.md)~~ | ~~P4~~ | ~~T04–T05~~ | ~~`interest_run`, `interest_payout`, `sp_run_interest_cycle`~~ | ~~~8~~ |
+| ~~08~~ | ~~[RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Active FDs view, interest distribution view, APIs, CSV, `EXPLAIN ANALYZE`~~ | ~~about 12~~ |
+| ~~09~~ | ~~[Final Testing & Ops](09_P6_testing-ops-deployment.md)~~ | ~~P6~~ | ~~T01–T02~~ | ~~Interest re-run idempotency tests, backup/restore evidence, demo script~~ | ~~~8~~ |
 
 ---
 

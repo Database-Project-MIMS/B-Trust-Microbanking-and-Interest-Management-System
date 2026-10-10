@@ -41,3 +41,13 @@ migration was changed during the 2026-10-05 closeout.
 `npm run db:verify` compares every migration filename and checksum with the ledger.
 `npm run verify:phase1` rebuilds/tests in a disposable local PostgreSQL cluster, then
 removes it; the existing development database is preserved by test commands.
+
+## Current predeployment load order
+
+The canonical migration command's final runtime binder restores 0621–0639 controls
+following legacy routine/view/role installation, including document verification, paired
+transfers, account-sourced interest, principal receipts, extended reports, funding/reversal,
+admin/reset and closure guards. Do not manually run old standalone core definitions after
+that binder: use `db:migrate` / `db:rebuild`. `sp_post_deposit.sql` is updated to the current
+0628 contract; merged migration definitions remain immutable. Generated docs/18 gives the
+exact 70-migration / 28-table inventory verified on 2026-10-10.

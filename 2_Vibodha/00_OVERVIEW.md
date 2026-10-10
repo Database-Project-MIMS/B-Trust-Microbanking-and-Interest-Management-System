@@ -11,11 +11,14 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
-**Current summary reviewed 2026-10-09:** [task tracker](../docs/09_task-tracker.md)
-and [local closeout](../docs/20_final-local-closeout.md) supersede older status notes.
-M2 T01/T02 are merged (PR #88/#90). ADR-0026 dependencies and final docs are locally
-implemented, REVIEW awaiting user publication. Live HTTPS and general acceptance remain
-pending; accepted savings/transfer extensions are not implemented.
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
 
 
 **Merged master-data verification:** PR #90 integrates T02 (ADR-0025);
@@ -53,7 +56,7 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
 | ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
 | ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
-| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01 DONE; T02 DONE (PR #90); T03 REVIEW (ADR-0026) | Seed/integrity merged; final docs and dependency repairs locally verified | ~6 |
+| ~~10~~ | ~~[Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md)~~ | ~~P6~~ | ~~T01 DONE; T02 DONE (PR #90); T03 REVIEW (ADR-0026)~~ | ~~Seed/integrity merged; final docs and dependency repairs locally verified~~ | ~~~6~~ |
 
 ---
 

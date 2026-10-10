@@ -1,44 +1,31 @@
 # 12 — Testing and Acceptance
 
-## Current local closeout evidence — 2026-10-09
+## Current predeployment evidence — 2026-10-10 / ADR-0027
 
-P06-M02-T03 / ADR-0026. Final-source evidence is recorded in the cross-owner
-[handoff](../.agent/handoffs/p06-m02-final-closeout.md) and docs/20. Scope is local;
-passing tests do not approve general phase entry or certify the missing accepted extensions.
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
 
-Full regression: **3,133 tests / 113 suites** pass (2,000 security plus 1,133 API/DB/e2e),
-zero failures, cancellations or skips. Final receipt-guard verification: **331 API tests /
-30 suites**, typecheck, lint and production build pass. Final migration-format verification:
-**11 operations checks**, clean **58-migration** rebuild/checksums and exact dump/restore
-pass. The API guard adds only a safe missing-receipt error; final SQL whitespace changes
-were verified in the fresh operations rebuild. Temporary clusters were stopped/removed;
-the development database was preserved. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+New API regressions cover real runtime deposit replay/concurrency, document verification,
+paired staff transfer/reversal/shared debit limits, strict statement/user/audit filters,
+Origin/Host normalization, profile creation/session revocation, single-use reset expiry/
+races, safe closure-interest denial and reconciliation scope. SQL regressions add funded
+open-day balances, delayed savings catch-up/nonoverlap, FD due-date catch-up, one-time
+principal return, partial-pair rejection, maturity fault rollback and closure guard.
 
-Security inventory: **41 exported handlers × 7 roles = 287 permission cases**,
-**212 declared input positions × 8 payloads = 1,696 injection probes**, independent
-handler coverage and valid free-text binding cases, nine direct-login RLS checks and
-six local deployment-configuration checks. Together: **2,000 security checks**.
-Denied requests preserve complete business/audit fingerprints; injection probes preserve
-business/financial rows. Valid-operation API suites separately exercise real success paths.
+Security inventory includes every exported handler and all seven roles, injection positions,
+valid free-text binding, nine direct-login RLS checks and six local deployment configuration
+checks. Denials preserve business/audit row fingerprints including new reset/maturity controls.
+Interactive browser evidence and its exact scope are recorded in [docs/21](21_predeployment-audit.md).
+The accepted savings/transfer implementation and operational financial frontend are present;
+live HTTPS, target-runtime acceptance and a fuller closing settlement policy remain separate.
 
-FD/API tests prove SQL-exact quotes, one debit/FD/receipt, stable-key replay, altered-payload
-conflict, concurrent opening, branch/role/CSRF/minimum/product/balance denial, exact scoped
-report/CSV totals and independent commit survival under payout/finalization faults.
-Withdrawal API tests verify linked customer UUIDs, explicit staff ALL_HOLDERS evidence, stable replay, scope/CSRF/input denial, durable rejection audits and complete unexpected-error rollback.
-Reversal tests enforce manager-only actor/branch scope, durable replay/concurrent keys, actual receipt UUID, overdraft and raw-link denial. DB tests additionally reject direct minimum/actor/receipt violations and overwrites of
-principal/opening-rate snapshots. Initial markup tests prove financial action restrictions
-and required preview; this is not a full interactive browser pass.
-
-`npm run verify:operations` proves full dump/restore and atomic migration behavior
-(11 checks). [Evidence](migration-rollback-evidence.md) compares all 26 tables, financial
-sums, constraints, policies, ownership and sequences. The full runner executes security
-before load fixtures, then API/DB/e2e in the same isolated cluster with no exclusions.
-
-Host verification uses Node 24.15.0/PostgreSQL 18.6; `.nvmrc` remains Node 22.
-The original criterion mapping below is a requirement map, not blanket completion evidence.
-Savings ADB interest, transfers, prototype transaction UI and live deployment remain pending.
-
-
+The original criterion mapping below is a requirement map, not blanket acceptance evidence.
+Historical verification receipts later in this document retain their original date/base.
 
 Every acceptance criterion maps to at least one test. A criterion without a test is not
 satisfied.

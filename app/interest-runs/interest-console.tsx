@@ -30,13 +30,13 @@ export function InterestConsole({canRun}:{canRun:boolean}){
         onChange={event=>{setDate(event.target.value);setPreview(null);}}/></label>
       <button className="btn btn-primary" disabled={busy}>{busy?'Processing…':'Preview distributions'}</button></form>}
     {preview && <section className="card confirmation-card space-y-4"><h2 className="section-heading">Confirm interest cycle</h2>
-      <p>{displayDate(preview.cycleDate)} · {preview.fdCount} due deposits · {reportMoney(preview.totalInterest)} estimated total credit</p>
+      <p>{displayDate(preview.cycleDate)} · {preview.fdCount} FD payouts · {preview.savingsCount??0} savings payouts · {reportMoney(preview.totalInterest)} estimated total credit</p>
       <p>Each distribution is checked again and committed independently. Failures are recorded for review.</p>
       <button className="btn btn-primary" disabled={busy} onClick={()=>void run(false)}>{busy?'Processing…':'Confirm and process'}</button></section>}
-    {result && <p className="card" role="status">{result.status} · {result.fdCount} distributions · {reportMoney(result.totalInterest)} credited · {result.exceptionCount} exceptions{result.replayed?' · Existing cycle returned':''}</p>}
+    {result && <p className="card" role="status">{result.status} · {result.fdCount} FD payouts · {result.savingsCount??0} savings payouts · {reportMoney(result.totalInterest)} credited · {result.exceptionCount} exceptions{result.replayed?' · Existing cycle returned':''}</p>}
     <section className="card table-wrap">{loading ? <p role="status">Loading run history…</p> :
       <table className="data-table"><caption className="sr-only">Interest run history</caption><thead><tr>{['Cycle','Status','Distributions','Interest','Exceptions'].map(label=><th scope="col" key={label}>{label}</th>)}</tr></thead>
-        <tbody>{rows.length ? rows.map(row=><tr key={row.runId}><th scope="row">{displayDate(row.cycleDate)}</th><td>{row.status}</td><td>{row.fdCount}</td>
+        <tbody>{rows.length ? rows.map(row=><tr key={row.runId}><th scope="row">{displayDate(row.cycleDate)}</th><td>{row.status}</td><td>{row.fdCount} FD · {row.savingsCount??0} savings</td>
           <td className="amount">{reportMoney(row.totalInterest)}</td><td>{row.exceptionCount}</td></tr>) : <tr><td colSpan={5}>No interest cycles recorded.</td></tr>}</tbody></table>}</section>
   </div>;
 }

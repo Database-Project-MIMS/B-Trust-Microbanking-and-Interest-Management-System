@@ -7,7 +7,7 @@ import { errorResponse } from "@/lib/http/error-response";
 export async function POST(request: NextRequest) {
     try {
         const origin = request.headers.get("origin");
-        if (origin && origin !== new URL(request.url).origin) {
+        if (origin && origin !== new URL(`${new URL(request.url).protocol}//${request.headers.get('host') ?? new URL(request.url).host}`).origin) {
             return NextResponse.json({ error: { code: "FORBIDDEN", message: "Request origin could not be verified." } }, { status: 403 });
         }
         if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {

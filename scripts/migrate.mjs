@@ -60,6 +60,7 @@ async function main() {
         console.log(`applied  ${file}`);
       } catch (error) {
         await client.query("ROLLBACK");
+        if (process.env.MIMS_ISOLATED_TEST === "1") console.error(`Disposable migration ${file}: ${error.message}`);
         throw error;
       }
     }

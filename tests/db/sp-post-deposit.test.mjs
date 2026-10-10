@@ -5,7 +5,7 @@ import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P03-M04-T02: sp_post_deposit routine', async (t) => {
   // Fetch existing seeded dependencies to satisfy FKs
-  const userRes = await query('SELECT user_id FROM app_user LIMIT 1');
+  const userRes = await query("SELECT u.user_id FROM app_user u JOIN role r ON r.role_id=u.role_id WHERE r.role_name='ADMIN' LIMIT 1");
   const channelRes = await query(`SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER' LIMIT 1`);
 
   const userId = userRes[0].user_id;
@@ -139,7 +139,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
           accountId: activeAccountId,
           amount: '300.00',
           idemKey,
-          narration: 'Retried deposit run'
+          narration: 'Idempotent deposit run'
         });
       });
 

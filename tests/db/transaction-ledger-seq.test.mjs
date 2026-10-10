@@ -47,7 +47,7 @@ describe("P05-M03-T01 / G-24: transaction.ledger_seq (posting order)", () => {
         await client.query("BEGIN");
         planId = (await client.query("SELECT plan_id FROM savings_plan WHERE plan_name = 'Adult'")).rows[0]?.plan_id;
         channelId = (await client.query("SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER'")).rows[0]?.channel_id;
-        agent = (await client.query("SELECT agent_id, branch_id FROM agent WHERE status = 'ACTIVE' ORDER BY employee_no LIMIT 1")).rows[0];
+        agent = (await client.query("SELECT a.agent_id,a.branch_id FROM agent a JOIN app_user u ON u.user_id=a.agent_id JOIN role r USING(role_id) JOIN branch b ON b.branch_id=a.branch_id WHERE a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' AND b.status='ACTIVE' AND r.role_name='AGENT' ORDER BY a.employee_no LIMIT 1")).rows[0];
         assert.ok(planId && channelId && agent, "seeded plan, channel and agent are required");
     });
 
@@ -101,8 +101,8 @@ describe("P05-M03-T01 / G-24: transaction.ledger_seq (posting order)", () => {
             assert.deepEqual(rows.map((r) => r.amount), ["100.00", "200.00"]);
             assert.ok(BigInt(rows[0].ledger_seq) < BigInt(rows[1].ledger_seq));
         } finally {
-            await client.query("RESET ROLE");
             await client.query("ROLLBACK TO SAVEPOINT as_app");
+            await client.query("RESET ROLE");
         }
     });
 

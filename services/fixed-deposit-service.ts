@@ -24,9 +24,17 @@ export async function quoteFixedDeposit(input:unknown,user:AuthenticatedUser){
   return withTransaction(async tx=>{
     await setRlsContext(tx,user);
     const account=(await tx.query(`SELECT account_number AS "accountNumber",current_balance AS "currentBalance",
-      (current_balance-$2::numeric)::text AS "balanceAfter" FROM account WHERE account_id=$1`,[value.accountId,value.principalAmount])).rows[0];
+      status,(current_balance-$2::numeric)::text AS "balanceAfter" FROM account WHERE account_id=$1`,[value.accountId,value.principalAmount])).rows[0];
     if(!account)throw new NotFoundError('Account');
-    return {...account,principalAmount:value.principalAmount};
+    const eligible=(await tx.query(`SELECT $2::numeric>=sp.param_value::numeric AND $2::numeric<=a.current_balance
+      AND a.status='ACTIVE' AND p.status='ACTIVE'
+      AND (p.effective_from IS NULL OR p.effective_from<=(clock_timestamp() AT TIME ZONE 'Asia/Colombo')::date)
+      AND (p.effective_to IS NULL OR p.effective_to>(clock_timestamp() AT TIME ZONE 'Asia/Colombo')::date)
+      AND NOT EXISTS(SELECT 1 FROM fixed_deposit f WHERE f.account_id=a.account_id AND f.status='ACTIVE') AS valid
+      FROM account a CROSS JOIN fd_plan p CROSS JOIN system_parameter sp
+      WHERE a.account_id=$1 AND p.fd_plan_id=$3 AND sp.param_key='MIN_FD_PRINCIPAL'`,[value.accountId,value.principalAmount,value.fdPlanId])).rows[0];
+    if(!eligible?.valid)throw new BusinessRuleError('FD_OPENING_REJECTED','Choose an active product and eligible account with sufficient funds and no active fixed deposit.');
+    return {accountNumber:account.accountNumber,currentBalance:account.currentBalance,balanceAfter:account.balanceAfter,principalAmount:value.principalAmount};
   });
 }
 /** One scoped read transaction supplies paginated FD rows and count. */

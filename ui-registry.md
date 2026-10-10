@@ -414,3 +414,22 @@ ReportShell/ReportTable, scoped metadata and snapshot CSV. No prototype data on 
 Current evidence includes initial rendered markup and financial API tests; full interactive
 browser verification remains pending. Prototype registry entries describe only remaining
 WorkflowScreen pages, not these completed runtime components.
+
+## Predeployment workflow imprint — 2026-10-10
+
+`AccountSelector` uses field/input tokens, active scoped search, 25-row pagination,
+loading/empty/error states and a retry control; blank search is omitted from API queries.
+Posting/TransferScreen use card/confirmation-card, page-header, eyebrow, page-title,
+page-description, btn-primary/secondary and exact displayMoney formatting. Holder evidence
+is explicit named checkboxes; review uses readable account numbers, never hidden UUIDs.
+Stable keys persist on failed confirmed requests; receipts link to real history/statement.
+StatementScreen/AuditScreen/UserScreen use table-wrap/data-table, server page guards,
+bounded page controls and inline role=alert/status, consistent with existing accounts/reports.
+Customer My accounts uses the shared Workspace; admin roles are read-only definitions.
+Reset uses field/input and matching confirmation, private fragment token held in memory.
+
+Interactive browser checks covered desktop 1280×800 and mobile 390×844 financial review,
+role navigation, scoped account choices and error states. Viewport restored after QA.
+MotionSurface now tests scoped target existence before GSAP animations, preserving reduced
+motion and cleanup without empty-target warnings on operational pages. Emerald tokens,
+card radii and existing controls remain the visual source of truth.

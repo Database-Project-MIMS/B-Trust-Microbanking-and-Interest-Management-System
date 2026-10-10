@@ -225,3 +225,17 @@ stolen database credentials. Live HTTPS verification remains pending by user ins
 in the reversal routine, role gates in route/service, and scoped reversal-link RLS. ADMIN
 is denied, including direct SQL. The guarded old signature remains for owner test/seed
 compatibility. Real API tests prove key replay and actual receipt UUIDs.
+
+## Predeployment capabilities — ADR-0027 / 2026-10-10
+
+Transfers are staff-only; route and stored actor/branch/source-assignment checks agree.
+Customer account UPDATE remains denied. Document verification and reset controls are
+execute-only guarded capabilities; neither creates a broad table UPDATE grant.
+Admin user/profile changes run atomically, reject disabling assigned agents or self access,
+revoke sessions and invalidate reset tokens. The last active administrator is protected by
+an advisory-serialized database trigger. Reset hashes/expiry/use are stored, raw token is
+returned only to the issuer once, private fragment link is removed on capture, and consume
+locks user then token before password update/session revocation. No email sender exists.
+Unknown SQL errors are mapped to generic client errors, never arbitrary raised text.
+All new state-changing routes enforce CSRF; public reset additionally requires its token.
+Production dependency audit is zero; unresolved build-tool and live HTTPS limits are docs/21.

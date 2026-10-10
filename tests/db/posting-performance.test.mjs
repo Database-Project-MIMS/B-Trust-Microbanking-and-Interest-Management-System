@@ -73,8 +73,8 @@ test('P06-M04-T02: Posting Performance Under Load (NFR-PERF-02, NFR-PERF-04)', a
 
     const agentRes = await ownerClient.query(`
       SELECT a.agent_id, a.branch_id FROM agent a
-      JOIN app_user u ON u.user_id = a.agent_id
-      WHERE u.status = 'ACTIVE' LIMIT 1
+      JOIN app_user u ON u.user_id = a.agent_id JOIN role r ON r.role_id=u.role_id JOIN branch b ON b.branch_id=a.branch_id
+      WHERE u.status='ACTIVE' AND a.status='ACTIVE' AND b.status='ACTIVE' AND r.role_name='AGENT' AND r.status='ACTIVE' LIMIT 1
     `);
     agentUserId = agentRes.rows[0].agent_id;
     branchId = agentRes.rows[0].branch_id;

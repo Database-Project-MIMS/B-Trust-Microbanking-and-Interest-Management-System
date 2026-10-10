@@ -192,3 +192,19 @@ migration stops the deploy and follows the documented rollback (SRS §9.1). Deta
 | Interest cycle | One transaction per FD | One per run | FR-INT-04 |
 
 Full records in `.agent/decisions/`.
+
+## Predeployment transaction ownership — 2026-10-10
+
+Route handlers remain parse/authenticate/authorize/CSRF/validate → service → safe JSON.
+All pg imports remain in lib/db. Financial values cross the boundary as decimal strings;
+SQL performs arithmetic. The new transfer, savings and maturity functions are execute-only
+stored-actor capabilities with pinned search paths; application table privilege is not widened
+for customer withdrawals, document verification or reset tokens.
+
+Service-owned boundaries: paired transfer; paired reversal; one FD due-period distribution;
+one savings-account distribution/cursor advance; one maturity principal/receipt/status return;
+one user/profile creation or access/session update; one reset consumption/password/session
+change. Dry-run quotes do not reserve funds. Run creation/finalization and persisted exception
+evidence are separate transactions, so earlier successful distributions remain committed.
+Statement/admin listing/report totals use repeatable-read snapshots where several queries
+must describe the same state. The live deployment environment remains separately verified.

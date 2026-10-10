@@ -9,6 +9,9 @@ export const GET = withAuth(async (request: NextRequest, user) => {
 
   
   const searchParams = request.nextUrl.searchParams;
+  if ([...searchParams.keys()].some(key => !['page', 'pageSize'].includes(key) || searchParams.getAll(key).length !== 1)) {
+    return NextResponse.json({ error: { code: 'VALIDATION_FAILED', message: 'Invalid statement filters.' } }, { status: 400 });
+  }
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("pageSize") ?? "20");
 

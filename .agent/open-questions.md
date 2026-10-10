@@ -491,3 +491,25 @@ G-27/G-28 local disposition (2026-10-09): RESOLVED by 0626/0627 and real runtime
 API/direct-SQL tests. Reversal actor/key/receipt and withdrawal identity/signers/rejection
 audit now match their contracts. Staff physical signature UI remains pending alongside
 prototype transaction pages; no live or lecturer acceptance is inferred.
+
+## Current predeployment disposition — 2026-10-10 / ADR-0027
+
+This section supersedes older implementation blockers. Document verification and staff
+physical holder-attestation UI are implemented (0629 and real posting forms). OQ-12 transfer
+types/grouping is resolved by paired TRANSFER_OUT/IN, and the user explicitly chose staff-only
+scope. OQ-06 maturity principal returns automatically, explicitly confirmed. OQ-13 savings
+pays actual funded/open days through the exclusive cycle date; delayed runs retain unpaid
+days, with current-plan rate snapshot and no overlapping cursor. ADR-0010/0012 implementations
+are present; OQ-14 lecturer acceptance remains a separate course decision.
+
+**Closure settlement policy remains open:** SRS zero-balance/no-active-FD closure is retained.
+A new DB guard denies positive unpaid interest. The user has not answered the optional final
+settlement questions. A funded plan cannot reach zero via a normal withdrawal that must
+preserve its minimum. A dedicated settlement transaction/minimum exception and accrued
+interest finalization need a clear product decision; neither forfeiture nor a new exception
+was inferred. This does not block verification of the retained closure rule.
+
+**External verification:** live HTTPS was explicitly deferred; production target URL, proxy
+configuration and pinned-runtime verification are unavailable here. Production dependency
+audit is zero; seven build-tool glob/braces advisory entries have no compatible patched
+release in the registry checked on this date. Full detail/evidence is in docs/21.

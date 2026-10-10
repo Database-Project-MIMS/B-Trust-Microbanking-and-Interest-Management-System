@@ -2,7 +2,7 @@
 
 Generated from the clean isolated rebuild; no customer rows or secrets are included.
 
-26 public tables; 58 immutable migration entries. Historical ERD and proposals are distinguished in [docs/04](04_database-schema.md).
+28 public tables; 70 immutable migration entries. Historical ERD and proposals are distinguished in [docs/04](04_database-schema.md).
 
 ## account
 
@@ -20,6 +20,7 @@ Owner: mims_owner. RLS: enabled.
 | current_balance | money_amount | yes | 0 |
 | created_at | timestamp with time zone | yes | now() |
 | updated_at | timestamp with time zone | yes | now() |
+| savings_interest_through | date | no | — |
 
 | Constraint | Definition |
 | --- | --- |
@@ -354,6 +355,29 @@ Owner: mims_owner. RLS: enabled.
 | fk_customer_document_customer | FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE RESTRICT |
 | fk_customer_document_verifier | FOREIGN KEY (verified_by) REFERENCES app_user(user_id) ON DELETE RESTRICT |
 
+## fd_maturity_receipt
+
+Owner: mims_owner. RLS: enabled.
+
+| Column | PostgreSQL type | Not null | Default |
+| --- | --- | --- | --- |
+| receipt_id | uuid | yes | gen_random_uuid() |
+| fd_id | uuid | yes | — |
+| transaction_id | uuid | yes | — |
+| created_at | timestamp with time zone | yes | now() |
+
+| Constraint | Definition |
+| --- | --- |
+| fd_maturity_receipt_created_at_not_null | NOT NULL created_at |
+| fd_maturity_receipt_fd_id_fkey | FOREIGN KEY (fd_id) REFERENCES fixed_deposit(fd_id) ON DELETE RESTRICT |
+| fd_maturity_receipt_fd_id_key | UNIQUE (fd_id) |
+| fd_maturity_receipt_fd_id_not_null | NOT NULL fd_id |
+| fd_maturity_receipt_pkey | PRIMARY KEY (receipt_id) |
+| fd_maturity_receipt_receipt_id_not_null | NOT NULL receipt_id |
+| fd_maturity_receipt_transaction_id_fkey | FOREIGN KEY (transaction_id) REFERENCES transaction(transaction_id) ON DELETE RESTRICT |
+| fd_maturity_receipt_transaction_id_key | UNIQUE (transaction_id) |
+| fd_maturity_receipt_transaction_id_not_null | NOT NULL transaction_id |
+
 ## fd_opening_request
 
 Owner: mims_owner. RLS: enabled.
@@ -430,6 +454,7 @@ Owner: mims_owner. RLS: enabled.
 | status | character varying(20) | yes | 'ACTIVE'::character varying |
 | created_at | timestamp with time zone | yes | now() |
 | updated_at | timestamp with time zone | no | — |
+| funding_transaction_id | uuid | no | — |
 
 | Constraint | Definition |
 | --- | --- |
@@ -441,6 +466,8 @@ Owner: mims_owner. RLS: enabled.
 | fixed_deposit_fd_id_not_null | NOT NULL fd_id |
 | fixed_deposit_fd_plan_id_fkey | FOREIGN KEY (fd_plan_id) REFERENCES fd_plan(fd_plan_id) ON DELETE RESTRICT |
 | fixed_deposit_fd_plan_id_not_null | NOT NULL fd_plan_id |
+| fixed_deposit_funding_transaction_id_fkey | FOREIGN KEY (funding_transaction_id) REFERENCES transaction(transaction_id) ON DELETE RESTRICT |
+| fixed_deposit_funding_transaction_id_key | UNIQUE (funding_transaction_id) |
 | fixed_deposit_interest_rate_at_opening_not_null | NOT NULL interest_rate_at_opening |
 | fixed_deposit_maturity_date_not_null | NOT NULL maturity_date |
 | fixed_deposit_next_interest_date_not_null | NOT NULL next_interest_date |
@@ -457,26 +484,34 @@ Owner: mims_owner. RLS: enabled.
 | Column | PostgreSQL type | Not null | Default |
 | --- | --- | --- | --- |
 | interest_id | uuid | yes | gen_random_uuid() |
-| fd_id | uuid | yes | — |
+| fd_id | uuid | no | — |
 | interest_run_id | uuid | yes | — |
 | transaction_id | uuid | no | — |
 | cycle_date | date | yes | — |
 | payout_date | date | yes | — |
 | interest_amount | numeric(15,2) | yes | — |
 | created_at | timestamp with time zone | yes | now() |
+| account_id | uuid | yes | — |
+| source_type | text | yes | 'FIXED_DEPOSIT'::text |
+| period_start | date | no | — |
+| period_end | date | no | — |
+| rate_at_payout | interest_rate | no | — |
 
 | Constraint | Definition |
 | --- | --- |
+| ck_interest_source | CHECK ((((source_type = 'FIXED_DEPOSIT'::text) AND (fd_id IS NOT NULL)) OR ((source_type = 'SAVINGS'::text) AND (fd_id IS NULL) AND (period_start IS NOT NULL) AND (period_end > period_start) AND (rate_at_payout IS NOT NULL)))) |
+| interest_payout_account_id_fkey | FOREIGN KEY (account_id) REFERENCES account(account_id) ON DELETE RESTRICT |
+| interest_payout_account_id_not_null | NOT NULL account_id |
 | interest_payout_created_at_not_null | NOT NULL created_at |
 | interest_payout_cycle_date_not_null | NOT NULL cycle_date |
 | interest_payout_fd_id_fkey | FOREIGN KEY (fd_id) REFERENCES fixed_deposit(fd_id) ON DELETE RESTRICT |
-| interest_payout_fd_id_not_null | NOT NULL fd_id |
 | interest_payout_interest_amount_not_null | NOT NULL interest_amount |
 | interest_payout_interest_id_not_null | NOT NULL interest_id |
 | interest_payout_interest_run_id_fkey | FOREIGN KEY (interest_run_id) REFERENCES interest_run(run_id) ON DELETE RESTRICT |
 | interest_payout_interest_run_id_not_null | NOT NULL interest_run_id |
 | interest_payout_payout_date_not_null | NOT NULL payout_date |
 | interest_payout_pkey | PRIMARY KEY (interest_id) |
+| interest_payout_source_type_not_null | NOT NULL source_type |
 | interest_payout_transaction_id_fkey | FOREIGN KEY (transaction_id) REFERENCES transaction(transaction_id) ON DELETE RESTRICT |
 | interest_payout_transaction_id_key | UNIQUE (transaction_id) |
 
@@ -496,6 +531,7 @@ Owner: mims_owner. RLS: enabled.
 | exception_count | integer | no | 0 |
 | initiated_by | uuid | no | — |
 | created_at | timestamp with time zone | yes | now() |
+| savings_count | integer | yes | 0 |
 
 | Constraint | Definition |
 | --- | --- |
@@ -505,6 +541,8 @@ Owner: mims_owner. RLS: enabled.
 | interest_run_initiated_by_fkey | FOREIGN KEY (initiated_by) REFERENCES app_user(user_id) |
 | interest_run_pkey | PRIMARY KEY (run_id) |
 | interest_run_run_id_not_null | NOT NULL run_id |
+| interest_run_savings_count_check | CHECK ((savings_count >= 0)) |
+| interest_run_savings_count_not_null | NOT NULL savings_count |
 | interest_run_started_at_not_null | NOT NULL started_at |
 | interest_run_status_check | CHECK (((status)::text = ANY ((ARRAY['RUNNING'::character varying, 'COMPLETED'::character varying, 'FAILED'::character varying])::text[]))) |
 | interest_run_status_not_null | NOT NULL status |
@@ -560,6 +598,32 @@ Owner: mims_owner. RLS: disabled.
 | login_attempt_pkey | PRIMARY KEY (attempt_id) |
 | login_attempt_success_not_null | NOT NULL success |
 | login_attempt_username_attempted_not_null | NOT NULL username_attempted |
+
+## password_reset_token
+
+Owner: mims_owner. RLS: enabled.
+
+| Column | PostgreSQL type | Not null | Default |
+| --- | --- | --- | --- |
+| reset_id | uuid | yes | gen_random_uuid() |
+| user_id | uuid | yes | — |
+| token_hash | character varying(64) | yes | — |
+| expires_at | timestamp with time zone | yes | — |
+| used_at | timestamp with time zone | no | — |
+| created_at | timestamp with time zone | yes | now() |
+
+| Constraint | Definition |
+| --- | --- |
+| password_reset_token_check | CHECK ((expires_at > created_at)) |
+| password_reset_token_created_at_not_null | NOT NULL created_at |
+| password_reset_token_expires_at_not_null | NOT NULL expires_at |
+| password_reset_token_pkey | PRIMARY KEY (reset_id) |
+| password_reset_token_reset_id_not_null | NOT NULL reset_id |
+| password_reset_token_token_hash_check | CHECK (((token_hash)::text ~ '^[0-9a-f]{64}$'::text)) |
+| password_reset_token_token_hash_key | UNIQUE (token_hash) |
+| password_reset_token_token_hash_not_null | NOT NULL token_hash |
+| password_reset_token_user_id_fkey | FOREIGN KEY (user_id) REFERENCES app_user(user_id) ON DELETE RESTRICT |
+| password_reset_token_user_id_not_null | NOT NULL user_id |
 
 ## role
 
@@ -685,9 +749,11 @@ Owner: mims_owner. RLS: enabled.
 | idempotency_key | character varying(80) | no | — |
 | balance_after | numeric(15,2) | no | — |
 | ledger_seq | bigint | yes | nextval('transaction_ledger_seq'::regclass) |
+| transfer_group_id | uuid | no | — |
 
 | Constraint | Definition |
 | --- | --- |
+| ck_transfer_group | CHECK ((((transaction_type)::text = ANY ((ARRAY['TRANSFER_OUT'::character varying, 'TRANSFER_IN'::character varying])::text[])) = (transfer_group_id IS NOT NULL))) |
 | fk_transaction_agent | FOREIGN KEY (agent_id) REFERENCES agent(agent_id) ON DELETE RESTRICT |
 | fk_transaction_branch | FOREIGN KEY (branch_id) REFERENCES branch(branch_id) ON DELETE RESTRICT |
 | transaction_account_id_fkey | FOREIGN KEY (account_id) REFERENCES account(account_id) ON DELETE RESTRICT |
@@ -704,8 +770,9 @@ Owner: mims_owner. RLS: enabled.
 | transaction_reference_number_not_null | NOT NULL reference_number |
 | transaction_transaction_date_not_null | NOT NULL transaction_date |
 | transaction_transaction_id_not_null | NOT NULL transaction_id |
-| transaction_transaction_type_check | CHECK (((transaction_type)::text = ANY ((ARRAY['DEPOSIT'::character varying, 'WITHDRAWAL'::character varying, 'INTEREST_CREDIT'::character varying, 'REVERSAL'::character varying])::text[]))) |
+| transaction_transaction_type_check | CHECK (((transaction_type)::text = ANY ((ARRAY['DEPOSIT'::character varying, 'WITHDRAWAL'::character varying, 'INTEREST_CREDIT'::character varying, 'REVERSAL'::character varying, 'TRANSFER_OUT'::character varying, 'TRANSFER_IN'::character varying, 'FD_MATURITY'::character varying])::text[]))) |
 | transaction_transaction_type_not_null | NOT NULL transaction_type |
+| trg_transfer_pair | TRIGGER DEFERRABLE INITIALLY DEFERRED |
 | ux_transaction_reference | UNIQUE (reference_number) |
 
 ## transaction_channel
@@ -756,6 +823,7 @@ Owner: mims_owner. RLS: enabled.
 | transaction_reversal_reversal_transaction_id_not_null | NOT NULL reversal_transaction_id |
 | transaction_reversal_reversed_at_not_null | NOT NULL reversed_at |
 | transaction_reversal_reversed_by_user_id_not_null | NOT NULL reversed_by_user_id |
+| trg_transfer_reversal_pair | TRIGGER DEFERRABLE INITIALLY DEFERRED |
 
 ## user_session
 
@@ -811,6 +879,7 @@ Owner: mims_owner. RLS: disabled.
 | fn_check_withdrawal_daily_limit | p_account_id uuid, p_amount numeric | function | INVOKER |
 | fn_check_withdrawal_mandate | p_account_id uuid, p_signer_customer_ids uuid[] | function | INVOKER |
 | fn_check_withdrawal_single_limit | p_amount numeric | function | INVOKER |
+| fn_consume_password_reset | p_token_hash character varying, p_password_hash text | function | DEFINER |
 | fn_customer_fd_actor_is_current |  | function | INVOKER |
 | fn_fd_control_actor_is_current |  | function | INVOKER |
 | fn_fd_funding_verdict | p_account_id uuid, p_principal numeric | function | INVOKER |
@@ -818,13 +887,22 @@ Owner: mims_owner. RLS: disabled.
 | fn_install_customer_fd_scope_guard |  | function | INVOKER |
 | fn_install_customer_fd_summary |  | function | INVOKER |
 | fn_install_fd_runtime_control |  | function | INVOKER |
+| fn_invalidate_password_resets |  | function | DEFINER |
 | fn_is_business_hour | check_ts timestamp with time zone | function | INVOKER |
+| fn_issue_password_reset | p_user uuid, p_token_hash character varying | function | DEFINER |
 | fn_mask_audit_values | p_table text, p_row jsonb | function | INVOKER |
 | fn_next_account_number | p_branch_code character varying | function | DEFINER |
 | fn_next_transaction_reference |  | function | INVOKER |
+| fn_password_reset_valid | p_token_hash character varying | function | DEFINER |
+| fn_payout_account |  | function | DEFINER |
+| fn_post_savings_interest | p_account uuid, p_run uuid, p_cycle date | function | DEFINER |
+| fn_post_staff_transfer | p_source uuid, p_destination uuid, p_amount numeric, p_actor uuid, p_signers uuid[], p_key character varying, p_narration character varying | function | DEFINER |
+| fn_preserve_active_administrator |  | function | DEFINER |
 | fn_prevent_account_branch_change |  | function | INVOKER |
 | fn_prevent_branch_deactivation_with_active_agents |  | function | INVOKER |
+| fn_return_fd_principal | p_fd uuid, p_cycle date | function | DEFINER |
 | fn_reversal_actor_is_current |  | function | INVOKER |
+| fn_reverse_transfer | p_original uuid, p_reason character varying, p_actor uuid, p_key character varying | function | DEFINER |
 | fn_rls_branch_id |  | function | INVOKER |
 | fn_rls_can_write | p_branch uuid | function | INVOKER |
 | fn_rls_in_branch | p_branch uuid | function | INVOKER |
@@ -834,10 +912,14 @@ Owner: mims_owner. RLS: disabled.
 | fn_rpt01_exclusions | p_from date, p_to date, p_branch uuid | function | DEFINER |
 | fn_rpt01_rows | p_from date, p_to date, p_branch uuid, p_agent uuid | function | DEFINER |
 | fn_rpt01_scope | p_branch uuid | function | INVOKER |
+| fn_savings_interest | p_account uuid, p_start date, p_end date, p_rate numeric | function | INVOKER |
 | fn_trg_account_holder_inserted |  | function | DEFINER |
 | fn_trg_account_holder_updated |  | function | DEFINER |
 | fn_validate_agent_active_branch |  | function | INVOKER |
 | fn_validate_joint_mandate_fit |  | function | DEFINER |
+| fn_validate_transfer_pair |  | function | DEFINER |
+| fn_validate_transfer_reversal |  | function | DEFINER |
+| fn_verify_customer_document | p_doc_id uuid, p_actor uuid | function | DEFINER |
 | fn_withdrawal_mandate_verdict | p_account_id uuid, p_signer_customer_ids uuid[] | function | INVOKER |
 | gen_random_bytes | integer | function | INVOKER |
 | gen_random_uuid |  | function | INVOKER |
@@ -951,10 +1033,14 @@ Owner: mims_owner. RLS: disabled.
 | customer_agent | ux_customer_agent_one_active | CREATE UNIQUE INDEX ux_customer_agent_one_active ON public.customer_agent USING btree (customer_id) WHERE is_active |
 | customer_document | customer_document_pkey | CREATE UNIQUE INDEX customer_document_pkey ON public.customer_document USING btree (doc_id) |
 | customer_document | ix_customer_document_customer | CREATE INDEX ix_customer_document_customer ON public.customer_document USING btree (customer_id) |
+| fd_maturity_receipt | fd_maturity_receipt_fd_id_key | CREATE UNIQUE INDEX fd_maturity_receipt_fd_id_key ON public.fd_maturity_receipt USING btree (fd_id) |
+| fd_maturity_receipt | fd_maturity_receipt_pkey | CREATE UNIQUE INDEX fd_maturity_receipt_pkey ON public.fd_maturity_receipt USING btree (receipt_id) |
+| fd_maturity_receipt | fd_maturity_receipt_transaction_id_key | CREATE UNIQUE INDEX fd_maturity_receipt_transaction_id_key ON public.fd_maturity_receipt USING btree (transaction_id) |
 | fd_opening_request | fd_opening_request_pkey | CREATE UNIQUE INDEX fd_opening_request_pkey ON public.fd_opening_request USING btree (request_id) |
 | fd_opening_request | uq_fd_opening_actor_key | CREATE UNIQUE INDEX uq_fd_opening_actor_key ON public.fd_opening_request USING btree (actor_user_id, idempotency_key) |
 | fd_plan | fd_plan_pkey | CREATE UNIQUE INDEX fd_plan_pkey ON public.fd_plan USING btree (fd_plan_id) |
 | fd_plan | fd_plan_plan_name_key | CREATE UNIQUE INDEX fd_plan_plan_name_key ON public.fd_plan USING btree (plan_name) |
+| fixed_deposit | fixed_deposit_funding_transaction_id_key | CREATE UNIQUE INDEX fixed_deposit_funding_transaction_id_key ON public.fixed_deposit USING btree (funding_transaction_id) |
 | fixed_deposit | fixed_deposit_pkey | CREATE UNIQUE INDEX fixed_deposit_pkey ON public.fixed_deposit USING btree (fd_id) |
 | fixed_deposit | ix_fd_due_interest | CREATE INDEX ix_fd_due_interest ON public.fixed_deposit USING btree (status, next_interest_date) WHERE ((status)::text = 'ACTIVE'::text) |
 | fixed_deposit | uq_one_active_fd_per_account | CREATE UNIQUE INDEX uq_one_active_fd_per_account ON public.fixed_deposit USING btree (account_id) WHERE ((status)::text = 'ACTIVE'::text) |
@@ -962,12 +1048,16 @@ Owner: mims_owner. RLS: disabled.
 | interest_payout | interest_payout_transaction_id_key | CREATE UNIQUE INDEX interest_payout_transaction_id_key ON public.interest_payout USING btree (transaction_id) |
 | interest_payout | ix_payout_cycle | CREATE INDEX ix_payout_cycle ON public.interest_payout USING btree (cycle_date) |
 | interest_payout | uq_payout_fd_cycle | CREATE UNIQUE INDEX uq_payout_fd_cycle ON public.interest_payout USING btree (fd_id, cycle_date) |
+| interest_payout | uq_savings_payout_cycle | CREATE UNIQUE INDEX uq_savings_payout_cycle ON public.interest_payout USING btree (account_id, cycle_date) WHERE (source_type = 'SAVINGS'::text) |
 | interest_run | interest_run_cycle_date_key | CREATE UNIQUE INDEX interest_run_cycle_date_key ON public.interest_run USING btree (cycle_date) |
 | interest_run | interest_run_pkey | CREATE UNIQUE INDEX interest_run_pkey ON public.interest_run USING btree (run_id) |
 | joint_mandate | joint_mandate_pkey | CREATE UNIQUE INDEX joint_mandate_pkey ON public.joint_mandate USING btree (mandate_id) |
 | joint_mandate | uq_joint_mandate_account | CREATE UNIQUE INDEX uq_joint_mandate_account ON public.joint_mandate USING btree (account_id) |
 | login_attempt | ix_login_attempt_user_time | CREATE INDEX ix_login_attempt_user_time ON public.login_attempt USING btree (username_attempted, attempted_at DESC) |
 | login_attempt | login_attempt_pkey | CREATE UNIQUE INDEX login_attempt_pkey ON public.login_attempt USING btree (attempt_id) |
+| password_reset_token | ix_password_reset_user | CREATE INDEX ix_password_reset_user ON public.password_reset_token USING btree (user_id) |
+| password_reset_token | password_reset_token_pkey | CREATE UNIQUE INDEX password_reset_token_pkey ON public.password_reset_token USING btree (reset_id) |
+| password_reset_token | password_reset_token_token_hash_key | CREATE UNIQUE INDEX password_reset_token_token_hash_key ON public.password_reset_token USING btree (token_hash) |
 | role | role_pkey | CREATE UNIQUE INDEX role_pkey ON public.role USING btree (role_id) |
 | role | role_role_name_key | CREATE UNIQUE INDEX role_role_name_key ON public.role USING btree (role_name) |
 | savings_plan | savings_plan_pkey | CREATE UNIQUE INDEX savings_plan_pkey ON public.savings_plan USING btree (plan_id) |
@@ -979,6 +1069,7 @@ Owner: mims_owner. RLS: disabled.
 | transaction | ix_txn_account_date | CREATE INDEX ix_txn_account_date ON public.transaction USING btree (account_id, transaction_date DESC) |
 | transaction | ix_txn_agent_date | CREATE INDEX ix_txn_agent_date ON public.transaction USING btree (agent_id, transaction_date) |
 | transaction | transaction_pkey | CREATE UNIQUE INDEX transaction_pkey ON public.transaction USING btree (transaction_id) |
+| transaction | uq_transfer_leg | CREATE UNIQUE INDEX uq_transfer_leg ON public.transaction USING btree (transfer_group_id, transaction_type) WHERE (transfer_group_id IS NOT NULL) |
 | transaction | ux_transaction_account_ledger_seq | CREATE UNIQUE INDEX ux_transaction_account_ledger_seq ON public.transaction USING btree (account_id, ledger_seq) |
 | transaction | ux_transaction_idempotency | CREATE UNIQUE INDEX ux_transaction_idempotency ON public.transaction USING btree (idempotency_key) WHERE (idempotency_key IS NOT NULL) |
 | transaction | ux_transaction_reference | CREATE UNIQUE INDEX ux_transaction_reference ON public.transaction USING btree (reference_number) |
@@ -1008,6 +1099,7 @@ Owner: mims_owner. RLS: disabled.
 | customer_agent | customer_agent_select_scope | SELECT | (EXISTS ( SELECT 1    FROM customer c   WHERE ((c.customer_id = customer_agent.customer_id) AND (fn_rls_is_bank_wide() OR fn_rls_in_branch(c.branch_id) OR ((fn_rls_role() = 'CUSTOMER'::text) AND (c.app_user_id = fn_rls_user_id())))))) | — |
 | customer_document | customer_document_insert_scope | INSERT | — | ((EXISTS ( SELECT 1    FROM customer c   WHERE ((c.customer_id = customer_document.customer_id) AND fn_rls_in_branch(c.branch_id)))) AND (verified_by IS NULL) AND (verified_date IS NULL)) |
 | customer_document | customer_document_select_scope | SELECT | (EXISTS ( SELECT 1    FROM customer c   WHERE ((c.customer_id = customer_document.customer_id) AND (fn_rls_is_bank_wide() OR fn_rls_in_branch(c.branch_id) OR ((fn_rls_role() = 'CUSTOMER'::text) AND (c.app_user_id = fn_rls_user_id())))))) | — |
+| fd_maturity_receipt | maturity_read | SELECT | (EXISTS ( SELECT 1    FROM fixed_deposit f   WHERE (f.fd_id = fd_maturity_receipt.fd_id))) | — |
 | fd_opening_request | fd_opening_request_insert | INSERT | — | ((actor_user_id = fn_rls_user_id()) AND (fn_rls_role() = ANY (ARRAY['AGENT'::text, 'BRANCH_MANAGER'::text, 'CENTRAL_OPS'::text]))) |
 | fd_opening_request | fd_opening_request_read | SELECT | (actor_user_id = fn_rls_user_id()) | — |
 | fixed_deposit | fixed_deposit_control_select | SELECT | fn_fd_control_actor_is_current() | — |
@@ -1015,8 +1107,8 @@ Owner: mims_owner. RLS: disabled.
 | fixed_deposit | fixed_deposit_customer_listing_select | SELECT | ((fn_rls_role() = ANY (ARRAY['AGENT'::text, 'BRANCH_MANAGER'::text, 'CENTRAL_OPS'::text, 'AUDITOR'::text, 'CUSTOMER'::text])) AND (EXISTS ( SELECT 1    FROM ((account a      JOIN account_holder ah ON ((ah.account_id = a.account_id)))      JOIN customer c ON ((c.customer_id = ah.customer_id)))   WHERE ((a.account_id = fixed_deposit.account_id) AND ((fn_rls_role() = ANY (ARRAY['CENTRAL_OPS'::text, 'AUDITOR'::text])) OR (fn_rls_in_branch(a.branch_id) AND fn_rls_in_branch(c.branch_id) AND ((fn_rls_role() = 'BRANCH_MANAGER'::text) OR (EXISTS ( SELECT 1            FROM customer_agent ca           WHERE ((ca.customer_id = c.customer_id) AND (ca.agent_id = fn_rls_user_id()) AND ca.is_active))))) OR ((fn_rls_role() = 'CUSTOMER'::text) AND (c.app_user_id = fn_rls_user_id()))))))) | — |
 | fixed_deposit | fixed_deposit_insert_scope | INSERT | — | ((fn_fd_control_actor_is_current() OR (fn_customer_fd_actor_is_current() AND (fn_rls_role() = ANY (ARRAY['AGENT'::text, 'BRANCH_MANAGER'::text])))) AND (EXISTS ( SELECT 1    FROM account a   WHERE (a.account_id = fixed_deposit.account_id)))) |
 | fixed_deposit | fixed_deposit_update_control | UPDATE | fn_fd_control_actor_is_current() | fn_fd_control_actor_is_current() |
-| interest_payout | interest_payout_insert | INSERT | — | (fn_fd_control_actor_is_current() AND (EXISTS ( SELECT 1    FROM fixed_deposit fd   WHERE (fd.fd_id = interest_payout.fd_id)))) |
-| interest_payout | interest_payout_read | SELECT | (EXISTS ( SELECT 1    FROM fixed_deposit fd   WHERE (fd.fd_id = interest_payout.fd_id))) | — |
+| interest_payout | interest_payout_insert | INSERT | — | (fn_fd_control_actor_is_current() AND (EXISTS ( SELECT 1    FROM account a   WHERE (a.account_id = interest_payout.account_id)))) |
+| interest_payout | interest_payout_read | SELECT | (EXISTS ( SELECT 1    FROM account a   WHERE (a.account_id = interest_payout.account_id))) | — |
 | interest_run | interest_run_insert | INSERT | — | fn_fd_control_actor_is_current() |
 | interest_run | interest_run_read | SELECT | (fn_fd_control_actor_is_current() OR (fn_rls_role() = 'AUDITOR'::text)) | — |
 | interest_run | interest_run_update | UPDATE | fn_fd_control_actor_is_current() | fn_fd_control_actor_is_current() |
@@ -1041,6 +1133,8 @@ Owner: mims_owner. RLS: disabled.
 | agent | trg_audit_agent | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | agent | trg_validate_agent_active_branch | INSERT, UPDATE | BEFORE | EXECUTE FUNCTION fn_validate_agent_active_branch() |
 | app_user | trg_audit_app_user | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
+| app_user | trg_invalidate_password_resets | UPDATE | AFTER | EXECUTE FUNCTION fn_invalidate_password_resets() |
+| app_user | trg_last_administrator | UPDATE | BEFORE | EXECUTE FUNCTION fn_preserve_active_administrator() |
 | audit_log | trg_audit_log_immutable | DELETE, UPDATE | BEFORE | EXECUTE FUNCTION fn_audit_log_immutable() |
 | branch | trg_audit_branch | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | branch | trg_branch_prevent_deactivation_with_active_agents | UPDATE | BEFORE | EXECUTE FUNCTION fn_prevent_branch_deactivation_with_active_agents() |
@@ -1049,12 +1143,15 @@ Owner: mims_owner. RLS: disabled.
 | customer | trg_customer_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | customer_agent | trg_customer_agent_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | customer_document | trg_customer_document_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
+| interest_payout | trg_payout_account | INSERT | BEFORE | EXECUTE FUNCTION fn_payout_account() |
 | joint_mandate | trg_joint_mandate_fit | INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_validate_joint_mandate_fit() |
 | joint_mandate | trg_joint_mandate_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | role | trg_audit_role | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | savings_plan | trg_savings_plan_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | system_parameter | trg_audit_system_parameter | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | transaction | trg_financial_transaction_immutable | DELETE, UPDATE | BEFORE | EXECUTE FUNCTION trg_fn_financial_transaction_immutable() |
+| transaction | trg_transfer_pair | INSERT | AFTER | EXECUTE FUNCTION fn_validate_transfer_pair() |
+| transaction_reversal | trg_transfer_reversal_pair | INSERT | AFTER | EXECUTE FUNCTION fn_validate_transfer_reversal() |
 
 ## Migration ledger
 
@@ -1116,3 +1213,15 @@ Owner: mims_owner. RLS: disabled.
 - 0625_p06_m02_interest_account_status.sql
 - 0626_p06_m02_controlled_reversal.sql
 - 0627_p06_m02_customer_withdrawal_control.sql
+- 0628_p06_m02_deposit_contract_repair.sql
+- 0629_p06_m02_document_verification.sql
+- 0630_p06_m02_reconciliation_order.sql
+- 0631_p06_m02_staff_transfers.sql
+- 0632_p06_m02_savings_interest_maturity.sql
+- 0633_p06_m02_extended_reports.sql
+- 0634_p06_m02_shared_debit_limit.sql
+- 0635_p06_m02_fd_funding_link.sql
+- 0636_p06_m02_lifecycle_reversal.sql
+- 0637_p06_m02_last_admin_guard.sql
+- 0638_p06_m02_password_reset.sql
+- 0639_p06_m02_interest_closure_guard.sql

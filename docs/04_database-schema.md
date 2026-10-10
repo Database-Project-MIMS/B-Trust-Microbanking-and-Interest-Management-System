@@ -1,5 +1,14 @@
 # 04 — Database Schema
 
+**ADR-0027 predeployment extension (2026-10-10, user authorized):** Add paired
+TRANSFER_OUT/TRANSFER_IN ledger types and nullable transfer_group_id; enforce two
+equal opposite legs. Add nullable savings_interest_through to account and savings_count
+to interest_run. Extend interest_payout with account_id/source_type and period/rate
+snapshots for savings payouts, preserving FD uniqueness. Add a unique FD maturity
+receipt linking principal return to its immutable ledger transaction. Existing ERD
+relationships are preserved; accepted ADR-0010/0012 and the user's maturity decision
+authorize these additions. The implemented catalog is regenerated after verification.
+
 **Baseline:** original `group_32_ERD2` (16 entities), retained as historical design.
 The current clean rebuild has **26 public tables and 58 migration entries**.
 [Implemented database catalog](18_implemented-database-catalog.md) lists exact columns,
@@ -779,8 +788,8 @@ execute-only scoped agent-activity aggregate retaining self history without broa
 access. 0625 rejects interest credits to inactive accounts after locking the account.
 
 Application execution of legacy owner/seed FD opening and cycle functions is revoked.
-Runtime cycle orchestration uses one transaction per FD distribution. The FD-only payout
-schema does not implement ADR-0012's savings source; ADR-0010 transfer groups are absent.
+Runtime cycle orchestration uses one transaction per FD distribution. The original payout
+schema is extended by 0631/0632 below for ADR-0010 transfers and ADR-0012 savings payouts.
 
 0626 restores the existing manager-only reversal rule using a stored active manager/branch
 guard, constrained reversal-link RLS, controlled key persistence/replay and a guarded legacy
@@ -795,3 +804,31 @@ context, exactly self signer and owned account are required. The existing 0363 c
 locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
 rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
 remains denied; staff continue through the invoker audited-attempt routine.
+
+## FR-AUTH-04 reset control (0638)
+
+SRS single-use reset tokens are implemented in `password_reset_token`: UUID PK,
+user FK RESTRICT, unique SHA-256 hash, expiry, used timestamp and created timestamp.
+ADMIN issues a 30-minute link. Guarded SQL consumes the token, changes the Argon2id
+hash and invalidates every session atomically. No email integration is assumed.
+
+## Current predeployment extensions — 0628–0639 (2026-10-10)
+
+This section supersedes older FD-only/no-transfer notes. The generated physical catalog
+in docs/18 is authoritative for exact SQL definitions: 70 migrations, 28 public tables.
+
+| Relation | Added or changed fields/invariants |
+|---|---|
+| `transaction` | `transfer_group_id uuid`; CHECK requires a group exactly for TRANSFER_OUT/IN; partial unique group/type and deferred equal two-leg/different-account constraint; types include FD_MATURITY |
+| `account` | `savings_interest_through date`: exclusive paid-through cursor, updated under account lock; closure rejects positive unpaid interest |
+| `interest_run` | `savings_count integer NOT NULL DEFAULT 0 CHECK >=0`; FD count represents distributions including catch-up periods |
+| `interest_payout` | nullable `fd_id`; `account_id uuid NOT NULL` RESTRICT FK; source FIXED_DEPOSIT/SAVINGS; `period_start`, exclusive `period_end`, `rate_at_payout`; source check and partial unique account/cycle for savings; FD-account trigger derives/checks compatibility |
+| `fixed_deposit` | `funding_transaction_id uuid UNIQUE` RESTRICT FK; controlled opening stores the principal debit; legacy funded rows may have NULL |
+| `fd_maturity_receipt` | UUID receipt PK; unique non-null FD and transaction RESTRICT FKs; created timestamp; scoped SELECT only, no runtime writes outside the capability |
+| `password_reset_token` | UUID PK, user RESTRICT FK, unique 64-hex SHA-256 hash, expiry > created timestamp, used/created timestamps, user lookup index; RLS and no runtime table grants |
+
+Customer documents retain their existing columns. 0629 enforces verifier/date pairing
+and exposes a scoped stored-actor verification capability instead of broader UPDATE
+privileges. 0637 prevents removal of the last active ADMIN login. 0638 invalidates reset
+controls on password, role or status changes. No plaintext passwords/tokens enter audit.
+New control tables each have a surrogate UUID PK and created timestamp.

@@ -9,6 +9,9 @@ function route(path, method, allowed, fields = [], body = {}) {
 }
 export const routes = [
   route('auth/login','POST',roles,['body.username','body.password','header.x-forwarded-for','header.user-agent']),
+  route('auth/reset','GET',roles,['query.probe']),
+  route('auth/reset','POST',roles,['body.token','body.password']),
+  route('admin/users/[id]/reset','POST',['ADMIN'],['path.id']),
   route('auth/logout','POST',roles,['cookie.mims_session']),
   route('health','GET',roles,['query.probe']),
   route('branches','GET',['ADMIN','CENTRAL_OPS','BRANCH_MANAGER','AUDITOR'],['query.status']),
@@ -22,6 +25,7 @@ export const routes = [
   route('customers','POST',['AGENT','BRANCH_MANAGER'],['body.fullName','body.nicPassportNo','body.dateOfBirth','body.gender','body.phone','body.address','body.email','body.branchId','body.agentId','body.documents.0.docType','body.documents.0.filePath']),
   route('customers/[id]','GET',detailRead,['path.id']),
   route('customers/[id]/fixed-deposits','GET',detailRead,['path.id','query.probe']),
+  route('customer-documents/[id]/verify','POST',['AGENT','BRANCH_MANAGER'],['path.id']),
   route('plans','GET',roles,['query.probe']),
   route('plans/[id]','PATCH',['ADMIN','CENTRAL_OPS'],['path.id','body.interestRate','body.minBalance','body.description','body.minAgeYears','body.maxAgeYears','body.minHolders','body.maxHolders','body.requiresAllAdult','body.status']),
   route('accounts','GET',staffRead,['query.q','query.status','query.planId','query.branchId','query.sortBy','query.sortDirection','query.page','query.pageSize']),
@@ -32,6 +36,7 @@ export const routes = [
   route('accounts/[id]/transactions','GET',ledger,['path.id','query.page','query.pageSize']),
   route('transactions/[id]','GET',ledger,['path.id']),
   route('transactions/deposits','POST',['AGENT','BRANCH_MANAGER'],['header.idempotency-key','body.accountId','body.amount','body.channelId','body.narration']),
+  route('transactions/transfers','POST',['AGENT','BRANCH_MANAGER'],['header.idempotency-key','body.sourceAccountId','body.destinationAccountId','body.amount','body.signerCustomerIds.0','body.narration']),
   route('transactions/withdrawals','POST',['AGENT','BRANCH_MANAGER','CUSTOMER'],['header.idempotency-key','body.accountId','body.amount','body.channelId','body.narration','body.onBehalfOfCustomerId','body.signerCustomerIds','body.signerCustomerIds.0']),
   route('transactions/[id]/reverse','POST',['BRANCH_MANAGER'],['path.id','header.idempotency-key','body.reason']),
   route('fd-products','GET',roles,['query.probe']),
@@ -41,9 +46,12 @@ export const routes = [
   route('fixed-deposits/quote','GET',['AGENT','BRANCH_MANAGER','CENTRAL_OPS'],['query.accountId','query.fdPlanId','query.principalAmount']),
   route('interest-runs','GET',['ADMIN','CENTRAL_OPS','AUDITOR'],['query.probe']),
   route('interest-runs','POST',['ADMIN','CENTRAL_OPS'],['body.cycleDate','body.dryRun','header.authorization']),
+  route('admin/users','GET',['ADMIN'],['query.q','query.roleName','query.page']),
+  route('admin/users','POST',['ADMIN'],['body.username','body.password','body.roleName','body.customerId','body.profile.branchId']),
+  route('admin/users/[id]','PATCH',['ADMIN'],['path.id','body.status','body.password','body.roleName']),
   route('admin/parameters','GET',['ADMIN'],['query.probe']),
   route('admin/parameters/[key]','PUT',['ADMIN'],['path.key','body.value']),
-  route('audit','GET',['ADMIN','AUDITOR'],['query.userId','query.entityType','query.entityId','query.action','query.from','query.to','query.page','query.pageSize']),
+  route('audit','GET',['ADMIN','AUDITOR'],['query.actorId','query.entityType','query.entityId','query.action','query.from','query.to','query.page','query.pageSize']),
   ...['agent-transactions','account-summary','customer-activity','active-fds','interest-distribution'].map(name =>
     route(`reports/${name}`,'GET',reports,['query.from','query.to','query.branchId','query.agentId','query.accountId','query.planId','query.status','query.format','query.page','query.pageSize','query.sort','query.direction'])),
 ];
