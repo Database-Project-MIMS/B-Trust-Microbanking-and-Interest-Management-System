@@ -1,5 +1,23 @@
 # Current state — predeployment local completion
 
+## Docker infrastructure supplement — 2026-10-10
+
+Current branch `feat/p06-m02-dockerize`, based on verified `8a2b9c2`.
+User requested Dockerization, then authorized a few local commits. Infrastructure,
+tests and documentation are committed separately; no push, PR or merge.
+ADR-0028 and `handoffs/p06-m02-docker-setup.md` record the contribution.
+Node 22 standalone multi-stage image, owner-only setup, private PostgreSQL 16,
+persistent volume, localhost-only app port and dedicated ignored environment are
+implemented. Instructions: docs/22. No existing migration/domain/UI changes.
+Verification passes: 3,401 tests /116 suites, zero failures/cancellations/skips;
+clean 70-migration rebuild/checksums, restore evidence, typecheck, lint and ordinary
+production build. Separate standalone build and 2/2 Compose checks also pass.
+The initial Windows test-process crash did not recur in the full run. Docker Linux
+engine unavailable, so actual image build/start remains unverified.
+Existing task statuses and live HTTPS gate remain unchanged.
+
+## Previous predeployment verification
+
 2026-10-10 · `feat/p06-m02-final-documentation` · base dev `053f6f6`.
 User authorizes cross-member fixes, documentation and commit on this branch;
 no push, PR or merge. Staff transfers only and automatic FD maturity principal return

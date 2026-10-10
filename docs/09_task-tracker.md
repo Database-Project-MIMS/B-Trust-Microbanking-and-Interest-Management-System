@@ -380,6 +380,14 @@ customer login provisioning/UI, rather than before the independent customer sche
 
 ## Predeployment integration receipt — 2026-10-10
 
+**Docker supplement (user-requested, ADR-0028):** Branch
+`feat/p06-m02-dockerize` adds local container infrastructure and its guide/tests.
+No task status changes: M1's live HTTPS task remains IN_PROGRESS, and M2 T03
+remains REVIEW. See [Docker guide](22_docker-setup.md) and
+[verification handoff](../.agent/handoffs/p06-m02-docker-setup.md).
+The user subsequently authorized separate local infrastructure, test and documentation
+commits. No push, PR or merge is performed for this request.
+
 Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
 2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
 Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**

@@ -2,6 +2,10 @@
 
 From a clean machine to a running MIMS with sample data.
 
+For Docker Desktop or Docker Engine, use [Docker setup](22_docker-setup.md):
+the app, PostgreSQL and owner-only setup run in containers with persistent data.
+The host-native instructions below remain available.
+
 ## Prerequisites
 
 | Tool | Version | Check |

@@ -11,6 +11,11 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Docker supplement (2026-10-10):** User-requested local infrastructure on
+`feat/p06-m02-dockerize`; [guide](../docs/22_docker-setup.md) and
+[handoff](../.agent/handoffs/p06-m02-docker-setup.md). Existing summary rows remain
+unchanged: this does not complete live HTTPS or approve a phase/publication gate.
+
 **Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
 and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
 Staff transfers, savings catch-up, automatic principal return, document verification,

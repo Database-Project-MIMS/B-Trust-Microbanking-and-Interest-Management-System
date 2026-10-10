@@ -1,5 +1,21 @@
 # Memory — predeployment local completion
 
+## Current Docker supplement — 2026-10-10
+
+Branch `feat/p06-m02-dockerize` starts at verified `8a2b9c2`. User requested Docker
+setup, then authorized a few local commits. Do not push, open a PR or merge. Container
+files, separate setup/runtime credentials, persistent private PostgreSQL and
+docs/22 are implemented. ADR-0028 and Docker handoff hold decisions/evidence.
+Generated local Docker configuration is ignored; never copy its values here.
+Full verification passes: 3,401 tests /116 suites, clean 70-migration rebuild,
+restore evidence, typecheck/lint/build. Separate standalone build and 2/2 Compose
+checks pass. Initial Windows test-process crash did not recur. Actual image
+build/start needs a working Docker Linux engine. Keep live HTTPS and existing
+phase/task acceptance pending.
+Prior implementation and requirement decisions below remain relevant.
+
+## Previous predeployment context
+
 Updated 2026-10-10 Asia/Colombo. Branch `feat/p06-m02-final-documentation`, base
 `053f6f6`. User authorized cross-owner fixes, docs and local commit; no push/PR/merge.
 Current delivery: ADR-0027, handoff p06-m02-predeployment-completion and docs/21.

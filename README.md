@@ -24,14 +24,26 @@ Next.js (App Router) · TypeScript · PostgreSQL 16 · `pg` with handwritten par
 | Reviewing the design | [`docs/03_architecture.md`](docs/03_architecture.md), [`docs/04_database-schema.md`](docs/04_database-schema.md) |
 | Demonstrating the system | [`docs/13_system-operation-guide.md`](docs/13_system-operation-guide.md) |
 
+## Run with Docker
+
+Start Docker Desktop in Linux-container mode (or Docker Engine with Compose), then:
+
+```sh
+node scripts/configure-docker.mjs
+docker compose --env-file .env.docker up --build -d
+```
+
+Open [MIMS](http://localhost:3000). PostgreSQL data persists in a named volume;
+the app starts after database setup succeeds. [Docker guide](docs/22_docker-setup.md)
+covers credentials, logs, updates and stopping the stack. This is a local synthetic-data demo.
+
 ## Project status
 
-The local implementation includes organization/customer/account APIs, ledger operations,
-FD opening and interest execution, reports, audit and security controls. The current rebuild
-has 26 tables and 58 migrations. [Current implementation and remaining scope](docs/20_final-local-closeout.md)
-distinguish verified local deliveries from general acceptance: savings interest/transfers,
-remaining prototype UI wiring, interactive browser checks and live HTTPS remain pending.
-M2 T01/T02 are merged; T03 and cross-owner closeout are local REVIEW work.
+The verified local implementation includes organization/customer/account APIs, ledger
+operations, staff transfers, savings interest, FD opening/maturity, reports and audit.
+The current rebuild has 28 tables and 70 migrations. [Predeployment audit](docs/21_predeployment-audit.md)
+records the verification and remaining deployment/settlement limits. M2 T01/T02 are merged;
+T03 and cross-owner closeout remain local REVIEW work. Live HTTPS remains pending.
 Current state: [`.agent/current-state.md`](.agent/current-state.md).
 
 ## Sample data notice
