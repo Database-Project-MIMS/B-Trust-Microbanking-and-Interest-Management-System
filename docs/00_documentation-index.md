@@ -151,3 +151,5 @@ changes the schema without updating `04_database-schema.md` should not be approv
 | `19_implemented-api-matrix.md` | Independent complete handler/role/input contract used by security tests |
 | `20_final-local-closeout.md` | Current delivery, scope and acceptance boundary |
 | `21_predeployment-audit.md` | Changes, requirement decisions, browser evidence, final tests and remaining limits |
+| `22_docker-setup.md` | Local Docker app/database stack, optional Neon app stack, credentials and verification |
+| `23_neon-migrations.md` | Automatic Neon migrations, environment secrets, validation and safe retries |

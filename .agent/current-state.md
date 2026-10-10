@@ -1,5 +1,74 @@
 # Current state — predeployment local completion
 
+## Neon CI fresh-checkout correction — 2026-10-10
+
+User supplied PR #94/run 38033232178's validation failure. RPT-01 runtime explain
+evidence failed with ENOENT because test-results was absent on a fresh runner.
+The test now creates its parent directory; DB/performance assertions unchanged.
+Verification starts with that directory absent and uses only a disposable local
+database. Previous ignored outputs preserved in scratch. Results/review are in
+`handoffs/p06-neon-ci-results-directory.md`. User subsequently authorized local
+commits for the Docker supplement and CI fix; no push/merge or live connection.
+Existing Docker work and task/phase acceptance retained.
+Fresh-output verification passes: 3,410 tests /116 suites, zero failures/skips;
+clean rebuild/restore, typecheck, lint and production build. Final marker:
+`LOCAL VERIFICATION: all checks passed.` Original outputs restored with backup
+retained; new explain evidence preserved. Hosted rerun needs the updated branch.
+User-authorized local commits: `f94fe86` Docker runtime/tests and `f47ccc8` CI fix;
+documentation/state form a third commit. No push performed.
+
+## Docker with Neon supplement — 2026-10-10
+
+Branch `feat/p06-m02-neon-migrations`, base `5e5dbb3`. User authorized necessary
+Docker updates. Separate app-only Compose stack uses restricted Neon mims_app,
+ignored `.env.neon` and port 3001. GitHub retains migration responsibility; no
+Docker setup/seeding in Neon mode. Original local PostgreSQL stack preserved.
+ADR-0030 and `handoffs/p06-docker-neon-runtime.md` record scope/review/evidence.
+The user reports the app connection configured; no credential values are recorded.
+Local private configuration and Compose validation, 8/8 operations checks, full
+lint/typecheck and standalone production build pass. Missing app secrets/settings
+generated locally, preserving the user's connection. Build passed outside sandbox
+after Windows EPERM; host Node 24, Linux Node 22 image remains unverified.
+Actual image/start verification needs a working Docker Linux engine. User
+subsequently authorized separate local commits; no push/PR creation/merge or live
+Neon connection. Task/phase acceptance unchanged.
+
+## Neon migration supplement — 2026-10-10
+
+Current branch `feat/p06-m02-neon-migrations`, based on clean Docker `1f183bb`.
+User requests an automatic Neon migration workflow and credential example cleanup.
+ADR-0029 records the scoped infrastructure contribution; ownership is unchanged.
+Workflow validates on disposable PostgreSQL, then deploys `dev` to neon-staging
+and `main` to neon-production using separate environment secrets. Deployment
+preserves data and never seeds/resets. Example database/security fields are empty.
+Current tracked files contain no Neon URL; history/remote branches are not certified.
+Verification/review evidence: `handoffs/p06-neon-migration-deployment.md`.
+Final local verification passes: 3,410 tests /116 suites, no failures/skips;
+clean 70-migration rebuild/checksums, backup/restore, typecheck, lint and build.
+Workflow YAML and credential-safe negative checks pass. Host Node 24/PG18;
+hosted Node 22/PG16 and Neon execution await external setup.
+Neon/GitHub environment setup and live deployment remain external actions.
+Task/phase acceptance stays unchanged. The user authorized separate local
+infrastructure, test and documentation commits. No push, PR or merge performed.
+
+## Docker infrastructure supplement — 2026-10-10
+
+Current branch `feat/p06-m02-dockerize`, based on verified `8a2b9c2`.
+User requested Dockerization, then authorized a few local commits. Infrastructure,
+tests and documentation are committed separately; no push, PR or merge.
+ADR-0028 and `handoffs/p06-m02-docker-setup.md` record the contribution.
+Node 22 standalone multi-stage image, owner-only setup, private PostgreSQL 16,
+persistent volume, localhost-only app port and dedicated ignored environment are
+implemented. Instructions: docs/22. No existing migration/domain/UI changes.
+Verification passes: 3,401 tests /116 suites, zero failures/cancellations/skips;
+clean 70-migration rebuild/checksums, restore evidence, typecheck, lint and ordinary
+production build. Separate standalone build and 2/2 Compose checks also pass.
+The initial Windows test-process crash did not recur in the full run. Docker Linux
+engine unavailable, so actual image build/start remains unverified.
+Existing task statuses and live HTTPS gate remain unchanged.
+
+## Previous predeployment verification
+
 2026-10-10 · `feat/p06-m02-final-documentation` · base dev `053f6f6`.
 User authorizes cross-member fixes, documentation and commit on this branch;
 no push, PR or merge. Staff transfers only and automatic FD maturity principal return

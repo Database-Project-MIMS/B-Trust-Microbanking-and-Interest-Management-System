@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Docker runs the traced server; ordinary npm start retains its existing output.
+  ...(process.env.MIMS_STANDALONE === "1" ? { output: "standalone" as const } : {}),
   // Keep production verification from overwriting the running dev server's bundles.
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   // `pg` must never be bundled into a browser build. It is server-only.

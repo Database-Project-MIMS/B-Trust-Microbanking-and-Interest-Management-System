@@ -1,7 +1,7 @@
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { createActivityFixture, pool, requireDisposableDatabase } from '../helpers/agent-activity.mjs';
 
 describe('P05-M02-T02 aggregate-only database authorization and accounting', () => {
@@ -132,6 +132,7 @@ describe('P05-M02-T02 aggregate-only database authorization and accounting', () 
       SELECT agent_id,deposit_total,net_total FROM fn_rpt01_rows('2026-09-01','2026-09-01',NULL,$1)`,[fixture.agentId])).rows[0]['QUERY PLAN'];
     assert.ok(plan[0]['Execution Time']<5000);
     assert.equal((await report())[0].deposit_total,'0.30');
+    await mkdir('test-results', { recursive: true });
     await writeFile('test-results/rpt01-runtime-explain.json',JSON.stringify(plan,null,2));
   });
 });

@@ -1,0 +1,84 @@
+name: Deploy Neon database migrations
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - 'database/**'
+      - 'lib/db/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.env.example'
+      - '.github/workflows/neon-migrations.yml'
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - 'database/**'
+      - 'lib/db/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.env.example'
+      - '.github/workflows/neon-migrations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Verify migrations and application on disposable PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PG_BIN: /usr/lib/postgresql/16/bin
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install PostgreSQL tools for isolated verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-16 postgresql-client-16
+      - name: Check deployment configuration
+        run: node --test tests/db/neon-configuration.test.mjs
+      - name: Clean rebuild, tests, typecheck, lint and production build
+        run: npm run verify:phase1
+
+  deploy:
+    name: Apply pending migrations to Neon
+    needs: validate
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: ${{ github.ref == 'refs/heads/main' && 'neon-production' || 'neon-staging' }}
+    concurrency:
+      group: neon-migrations-${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies without deployment credentials
+        run: npm ci
+      - name: Validate connection and deploy without resetting or seeding
+        env:
+          DATABASE_MIGRATION_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+        run: |
+          node scripts/check-neon-migration-env.mjs
+          node scripts/deploy-database.mjs

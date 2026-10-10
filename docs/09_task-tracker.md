@@ -380,6 +380,35 @@ customer login provisioning/UI, rather than before the independent customer sche
 
 ## Predeployment integration receipt — 2026-10-10
 
+**Neon CI correction (PR #94):** RPT-01 runtime evidence now creates its output
+directory on a fresh checkout. No database/performance assertion or task status
+changes. [Failure and regression receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
+
+**Docker with Neon supplement (user-requested, ADR-0030):** Separate app-only
+runtime on the current Neon migration branch; restricted app credentials and
+port 3001, with GitHub-owned migrations. Original local stack preserved. See
+[guide](22_docker-setup.md#run-the-docker-app-against-neon) and
+[handoff](../.agent/handoffs/p06-docker-neon-runtime.md). No task acceptance,
+live HTTPS status or publication changes.
+
+**Neon supplement (user-requested, ADR-0029):** Branch
+`feat/p06-m02-neon-migrations` adds automatic staging/production migration
+deployment and clears credential fields in `.env.example`. See
+[setup](23_neon-migrations.md) and
+[handoff](../.agent/handoffs/p06-neon-migration-deployment.md).
+This infrastructure contribution does not change task acceptance: M1's live
+HTTPS task remains IN_PROGRESS and M2 T03 remains REVIEW. The user authorized
+separate local infrastructure, test and documentation commits. No live deployment,
+push, PR or merge is performed.
+
+**Docker supplement (user-requested, ADR-0028):** Branch
+`feat/p06-m02-dockerize` adds local container infrastructure and its guide/tests.
+No task status changes: M1's live HTTPS task remains IN_PROGRESS, and M2 T03
+remains REVIEW. See [Docker guide](22_docker-setup.md) and
+[verification handoff](../.agent/handoffs/p06-m02-docker-setup.md).
+The user subsequently authorized separate local infrastructure, test and documentation
+commits. No push, PR or merge is performed for this request.
+
 Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
 2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
 Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
