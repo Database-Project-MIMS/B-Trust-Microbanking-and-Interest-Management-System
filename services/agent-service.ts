@@ -68,15 +68,8 @@ export async function getAgentActivity(agentId: string, range: AgentActivityRang
       throw new NotFoundError("Agent");
     }
     const { rows: totals } = await tx.query<{ type: AgentActivityType; count: string; total: string }>(
-      `SELECT t.transaction_type AS type, COUNT(*)::text AS count, SUM(t.amount)::text AS total
-       FROM transaction t
-       WHERE t.agent_id = $1
-         AND t.transaction_date >= ($2::date::timestamp AT TIME ZONE 'Asia/Colombo')
-         AND t.transaction_date < (($3::date + 1)::timestamp AT TIME ZONE 'Asia/Colombo')
-         AND ($4::uuid IS NULL OR t.branch_id = $4)
-         AND ($5::text <> 'AGENT' OR t.agent_id = $6)
-       GROUP BY t.transaction_type ORDER BY t.transaction_type`,
-      [agentId, dates.data.from, dates.data.to, branchId, caller.role_name, identity.data.userId],
+      `SELECT type,count,total FROM fn_agent_activity_scoped($1,$2,$3)`,
+      [agentId, dates.data.from, dates.data.to],
     );
     return {
       agentId, ...dates.data, timeZone: "Asia/Colombo",

@@ -52,7 +52,7 @@ export default function SignInPage() {
         <div className="brand-bottom" data-reveal><span>Made for the way you bank.</span><span>EST. IN SRI LANKA ↗</span></div>
       </aside>
       <main className="login-content">
-      <div className="login-top"><span>STAFF WORKSPACE</span><span className="secure-tag">◈ Secure access</span></div>
+      <div className="login-top"><span>B-TRUST WORKSPACE</span><span className="secure-tag">◈ Secure access</span></div>
       <section className="login-form" aria-labelledby="sign-in-title" data-reveal>
         <span className="welcome-icon" aria-hidden="true">↗</span>
         <p className="eyebrow">Welcome to your workspace</p>

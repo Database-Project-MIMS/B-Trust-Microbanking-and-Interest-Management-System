@@ -388,3 +388,48 @@ Files: `app/reports/account-summary/account-summary-screen.tsx`, `page.tsx`; sha
 
 No new class, token, radius or shadow. Wide tables stay inside `table-wrap`. CSV button comes from the shell and exports all filtered accounts.
 
+
+### Controlled FD, Interest and FD Report Components
+
+Files: `app/fixed-deposits/fd-list.tsx`, `app/fixed-deposits/new/fd-opening.tsx`,
+`app/interest-runs/interest-console.tsx`, `app/reports/fd-report.tsx`.
+Last updated: 2026-10-09, /imprint under ADR-0026.
+
+| Property | Class/pattern |
+| --- | --- |
+| Background/border/radius | Existing `card` token; no new raw colors |
+| Primary text | `page-title`, `section-heading` |
+| Secondary text | `page-description`, `eyebrow` |
+| Spacing | `space-y-6` outer; `space-y-4` cards |
+| Actions | `btn btn-primary`, `btn btn-secondary`, disabled while busy |
+| Inputs | `field`, `input`, `form-grid` |
+| Data | `table-wrap`, `data-table`, `amount`; exact-string money format |
+| Confirmation | `card confirmation-card`; explicit second action after SQL preview |
+| Feedback | `role=alert` errors; `role=status` loading/result |
+
+Use server role guards and real scoped APIs. A preview is read-only and final posting
+revalidates. Preserve an FD idempotency key during retry. Interest preview clears when
+date changes. Auditors see history without execution controls. RPT-03/RPT-04 reuse
+ReportShell/ReportTable, scoped metadata and snapshot CSV. No prototype data on these pages.
+Current evidence includes initial rendered markup and financial API tests; full interactive
+browser verification remains pending. Prototype registry entries describe only remaining
+WorkflowScreen pages, not these completed runtime components.
+
+## Predeployment workflow imprint — 2026-10-10
+
+`AccountSelector` uses field/input tokens, active scoped search, 25-row pagination,
+loading/empty/error states and a retry control; blank search is omitted from API queries.
+Posting/TransferScreen use card/confirmation-card, page-header, eyebrow, page-title,
+page-description, btn-primary/secondary and exact displayMoney formatting. Holder evidence
+is explicit named checkboxes; review uses readable account numbers, never hidden UUIDs.
+Stable keys persist on failed confirmed requests; receipts link to real history/statement.
+StatementScreen/AuditScreen/UserScreen use table-wrap/data-table, server page guards,
+bounded page controls and inline role=alert/status, consistent with existing accounts/reports.
+Customer My accounts uses the shared Workspace; admin roles are read-only definitions.
+Reset uses field/input and matching confirmation, private fragment token held in memory.
+
+Interactive browser checks covered desktop 1280×800 and mobile 390×844 financial review,
+role navigation, scoped account choices and error states. Viewport restored after QA.
+MotionSurface now tests scoped target existence before GSAP animations, preserving reduced
+motion and cleanup without empty-target warnings on operational pages. Emerald tokens,
+card radii and existing controls remain the visual source of truth.

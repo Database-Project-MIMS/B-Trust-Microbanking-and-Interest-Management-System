@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logout } from "@/services/auth-service";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import {errorResponse} from '@/lib/http/error-response';
 import { verifyCsrf } from "@/lib/auth/csrf";
 
 export async function POST(request: NextRequest) {
@@ -17,11 +18,10 @@ export async function POST(request: NextRequest) {
     }
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
-    if (token) {
-        await logout(token);
-    }
+    try {if (token) await logout(token);} catch(error){return errorResponse(error);}
 
     const response = new NextResponse(null, { status: 204 });
     response.cookies.delete(SESSION_COOKIE_NAME);
+    response.cookies.delete("mims_csrf");
     return response;
 }

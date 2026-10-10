@@ -1,6 +1,7 @@
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { setRlsContext } from '../../lib/db/rls-context.ts';
 import { readFileSync } from 'node:fs';
 import { createMigrationClient } from '../../lib/db/migration-client.mjs';
 
@@ -191,6 +192,7 @@ describe('P03-M02-T01: transaction attribution', () => {
 
   test('runtime role inserts attribution but retains no UPDATE/DELETE privileges', async () => {
     await client.query('SET LOCAL ROLE mims_app');
+    await setRlsContext(client, {userId:agentId,branchId,roleName:'AGENT'});
     await insert();
     const { rows } = await client.query(
       `SELECT has_table_privilege(current_user, 'transaction', 'UPDATE') AS upd,
@@ -226,6 +228,7 @@ describe('P03-M02-T01: transaction attribution', () => {
     )).rows[0];
     const sql = readFileSync(new URL('../../database/migrations/0320_p03_m02_transaction_attribution.sql',
       import.meta.url), 'utf8').replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, '');
+    await client.query("SET CONSTRAINTS ALL IMMEDIATE");
     await client.query(sql);
     const upgraded = (await client.query(
       `SELECT transaction_id, reference_number, amount, transaction_date, created_at, agent_id, branch_id

@@ -3,12 +3,17 @@ import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME, validateSession } from "@/lib/auth/session";
 
 const quickLinks = [
+  {href:'/my/accounts',title:'My savings accounts',description:'View your accounts, balances and statements.',roles:['CUSTOMER']},
+  {href:'/transactions/withdraw',title:'Withdraw savings',description:'Withdraw from your own eligible savings accounts.',roles:['CUSTOMER']},
+  {href:'/transactions/transfer',title:'Transfers',description:'Transfer funds between authorized accounts in your branch.',roles:['AGENT','BRANCH_MANAGER']},
+  {href:'/admin/users',title:'Users and roles',description:'Manage access and staff identities.',roles:['ADMIN']},
+  {href:'/interest-runs',title:'Interest cycle',description:'Preview and run savings interest, FD interest and maturity settlement.',roles:['ADMIN','CENTRAL_OPS']},
   { href: "/customers", title: "Customers", description: "Register, search and review customer profiles.", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/accounts", title: "Savings accounts", description: "Open individual or joint accounts and view balances.", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/transactions/deposit", title: "Transactions", description: "Post deposits and withdrawals through the controlled workflow.", roles: ["BRANCH_MANAGER", "AGENT"] },
-  { href: "/fixed-deposits", title: "Fixed deposits", description: "Open deposits and review maturity and interest dates.", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
+  { href: "/fixed-deposits", title: "Fixed deposits", description: "Review principal, maturity and interest dates.", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR", "CUSTOMER"] },
   { href: "/reports/agent-transactions", title: "Reports", description: "Run scoped operational and management reports.", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
-  { href: "/reconciliation", title: "Reconciliation", description: "Check ledger and account-balance control results.", roles: ["CENTRAL_OPS", "AUDITOR"] },
+  { href: "/reconciliation", title: "Reconciliation", description: "Check ledger and account-balance control results.", roles: ["ADMIN", "CENTRAL_OPS", "AUDITOR"] },
   { href: "/branches", title: "Branch administration", description: "View permitted branches and maintain branch master data.", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR"] },
   { href: "/agents", title: "Agent administration", description: "View branch-scoped agents and their status.", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER"] },
   { href: "/fd-products", title: "FD products", description: "View current fixed-deposit products and rate history.", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },

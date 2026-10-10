@@ -5,7 +5,7 @@ import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P03-M04-T02: sp_post_deposit routine', async (t) => {
   // Fetch existing seeded dependencies to satisfy FKs
-  const userRes = await query('SELECT user_id FROM app_user LIMIT 1');
+  const userRes = await query("SELECT u.user_id FROM app_user u JOIN role r ON r.role_id=u.role_id WHERE r.role_name='ADMIN' LIMIT 1");
   const channelRes = await query(`SELECT channel_id FROM transaction_channel WHERE channel_name = 'BRANCH_COUNTER' LIMIT 1`);
 
   const userId = userRes[0].user_id;
@@ -88,7 +88,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
       assert.equal(Number(acc.current_balance), 1200.00);
 
       // Verify ledger row exists with balance_after
-      const [txn] = await query('SELECT amount, balance_after, transaction_type FROM transaction WHERE transaction_id = $1', [postRes.p_transaction_id]);
+      const [txn] = await withTransaction(async tx=>{await setRlsContext(tx,{userId,branchId:null,roleName:'ADMIN'});return (await tx.query('SELECT amount,balance_after,transaction_type FROM transaction WHERE transaction_id=$1',[postRes.p_transaction_id])).rows;});
       assert.equal(Number(txn.amount), 200.00);
       assert.equal(Number(txn.balance_after), 1200.00);
       assert.equal(txn.transaction_type, 'DEPOSIT');
@@ -139,7 +139,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
           accountId: activeAccountId,
           amount: '300.00',
           idemKey,
-          narration: 'Retried deposit run'
+          narration: 'Idempotent deposit run'
         });
       });
 
@@ -157,7 +157,7 @@ test('P03-M04-T02: sp_post_deposit routine', async (t) => {
       assert.equal(Number(acc.current_balance), 1500.00);
 
       // Exactly 1 transaction row for this key
-      const ledgerRows = await query('SELECT * FROM transaction WHERE idempotency_key = $1', [idemKey]);
+      const ledgerRows = await withTransaction(async tx=>{await setRlsContext(tx,{userId,branchId:null,roleName:'ADMIN'});return (await tx.query('SELECT transaction_id FROM transaction WHERE idempotency_key=$1',[idemKey])).rows;});
       assert.equal(ledgerRows.length, 1);
     });
 

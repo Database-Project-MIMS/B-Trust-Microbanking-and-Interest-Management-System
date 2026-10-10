@@ -1,6 +1,13 @@
-import test from 'node:test';
+import test, {after} from 'node:test';
 import assert from 'node:assert/strict';
-import { query, withTransaction } from '../../lib/db/index.ts';
+import { withTransaction } from '../../lib/db/index.ts';
+import { createMigrationClient } from '../../lib/db/migration-client.mjs';
+if(process.env.MIMS_ISOLATED_TEST!=='1')throw new Error('Use the isolated database runner.');
+const owner=createMigrationClient(process.env.DATABASE_MIGRATION_URL);
+await owner.connect();
+after(()=>owner.end());
+// Constraint and owner-trigger tests intentionally bypass RLS; direct runtime coverage is separate.
+const query=async(sql,params)=>(await owner.query(sql,params)).rows;
 import { setRlsContext } from '../../lib/db/rls-context.ts';
 
 test('P03-M04-T01: Reference Number & Idempotency Indexes', async (t) => {

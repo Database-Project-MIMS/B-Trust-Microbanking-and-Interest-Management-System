@@ -36,6 +36,7 @@
     "test:api": "node scripts/verify-phase-01.mjs --tests-only --suite=api",
     "test:security": "node scripts/verify-phase-01.mjs --tests-only --suite=security",
     "verify:deployment": "node scripts/check-deployment-security.mjs",
+    "verify:operations": "node scripts/verify-phase-01.mjs --tests-only --operations",
     "db:seed-check": "node --env-file=.env scripts/seed-check.mjs"
   },
   "dependencies": {
@@ -55,9 +56,13 @@
     "autoprefixer": "^10.4.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
-    "postcss": "^8.4.0",
+    "postcss": "^8.5.29",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.23.13",
     "typescript": "^5.6.0"
+  },
+  "overrides": {
+    "postcss": "$postcss",
+    "postcss-selector-parser": "^7.1.6"
   }
 }

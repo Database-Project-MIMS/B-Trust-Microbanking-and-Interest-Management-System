@@ -9,8 +9,10 @@ export function MotionSurface({ children, className = "" }: { children: ReactNod
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
-        gsap.from("[data-reveal]", { y: 22, opacity: 0, duration: 0.75, stagger: 0.09, ease: "power3.out", clearProps: "all" });
-        gsap.to(".orbital-ring", { rotation: 360, duration: 100, repeat: -1, ease: "none" });
+        const reveals = root.current?.querySelectorAll('[data-reveal]');
+        const rings = root.current?.querySelectorAll('.orbital-ring');
+        if (reveals?.length) gsap.from(reveals, { y: 22, opacity: 0, duration: 0.75, stagger: 0.09, ease: "power3.out", clearProps: "all" });
+        if (rings?.length) gsap.to(rings, { rotation: 360, duration: 100, repeat: -1, ease: "none" });
       }, root);
       return () => context.revert();
     });

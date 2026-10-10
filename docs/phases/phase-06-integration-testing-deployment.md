@@ -1,5 +1,13 @@
 # Phase 06 — Integration, Testing & Deployment
 
+**Current scoped local delivery — 2026-10-09:** ADR-0026 authorizes M2 T03 and
+necessary owner contributions, not general phase entry. T01/T02 are merged through
+PR #88/#90. Security/FD/report/operations repairs are local REVIEW deliveries.
+[docs/20](../20_final-local-closeout.md) records current evidence and unresolved savings,
+transfer, UI/deployment and acceptance scope. Live HTTPS stays pending by user instruction.
+Earlier scoped-start sections below are historical; their publication states are superseded.
+
+
 **Status:** TODO · **Tasks:** 13 · **Effort:** 40 points · **Est.** ~1 week
 
 **M2 T02 scoped start (2026-10-09):** Vibodha instructed implementation and

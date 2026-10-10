@@ -3,7 +3,7 @@ export interface AgentActivityRange {
   to: string;
 }
 
-export type AgentActivityType = "DEPOSIT" | "WITHDRAWAL" | "INTEREST_CREDIT" | "REVERSAL";
+export type AgentActivityType = "DEPOSIT" | "WITHDRAWAL" | "INTEREST_CREDIT" | "REVERSAL" | "TRANSFER_IN" | "TRANSFER_OUT" | "FD_MATURITY";
 
 export interface AgentActivity extends AgentActivityRange {
   agentId: string;

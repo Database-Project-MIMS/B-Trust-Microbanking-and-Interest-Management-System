@@ -153,3 +153,13 @@ The database must always be reconstructible from empty with no manual table edit
 | `Module not found: pg` in a client component | `pg` imported outside `lib/db` | Only `lib/db` may import `pg`; the file needs `import "server-only"` |
 | Ports clash | 3000 in use | `PORT=3001 npm run dev` |
 | Wrong timezone in timestamps | Server not on Asia/Colombo | Values are `TIMESTAMPTZ`; format for display, do not change storage |
+
+## Disposable frontend QA
+
+`npm run verify:phase1 -- --preview` builds a temporary database and synthetic QA identities,
+then starts a localhost Next development server. Its URL is written to ignored
+`test-results/preview-url.json`; create `test-results/preview-stop` to terminate the server
+and clean up the cluster. Stop it before production build (shared .next directory).
+Use only disposable credentials in `tests/helpers/browser-fixture.mjs`, never real users.
+`--catalog` regenerates docs/18/19 from the clean rebuild; `--tap` requests diagnostic test
+output. The normal configured development database is preserved by these commands.

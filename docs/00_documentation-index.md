@@ -1,27 +1,19 @@
 # 00 — Documentation Index
 
-**2026-10-09 M2 integrity work:** Vibodha explicitly confirmed scoped
-P06-M02-T02 in [ADR-0025](../.agent/decisions/ADR-0025-master-data-integrity.md).
-Branch `feat/p06-m02-master-data-integrity` adds 100 DB and 16 API adversarial
-cases and repairs disposable verifier setup. Focused 309 tests /14 suites and
-full 1062 /98 suites (including security), 51-migration rebuild/checksums,
-typecheck/lint pass; T02 REVIEW pending user publication/review.
-[Coverage and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
-Local commits are authorized; publication/merge remain user actions. General
-Phase 6 entry and T03 remain separate.
+**Current local closeout — 2026-10-10:** P06-M02-T01/T02 are merged through
+PR #88/#90. Vibodha authorized T03 and necessary cross-owner completion in
+[ADR-0026](../.agent/decisions/ADR-0026-final-local-closeout.md).
+Branch `feat/p06-m02-final-documentation` is based on dev `053f6f6` (PR #91/#92
+included). Local commits are authorized; push, PR creation and merge remain user actions.
+Live HTTPS checks remain pending at the user's explicit instruction.
 
-**2026-10-09 current M2 work:** RPT-01 T02 is merged through PR #74. Vibodha
-authorized a scoped early start for P06-M02-T01 in
-[ADR-0024](../.agent/decisions/ADR-0024-seed-validation.md), then instructed completion
-of its blockers. All global AC-12 checks now pass: twelve funded FDs, three real
-cycles, thirty payouts and complete role/profile coverage. T01 is locally implemented,
-REVIEW awaiting user publication; see the
-[verification and M5 handoff](../.agent/handoffs/p06-m02-seed-validation.md).
-Reported integration failures are repaired under explicit cross-owner authorization:
-full865 tests on this branch and940 on latest-dev overlay pass; typecheck/lint pass.
-See the [integration repair handoff](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
-General Phase 6 entry, T03 and Git publication remain separate; T02 is now
-explicitly authorized by ADR-0025 above.
+Read [implemented schema](18_implemented-database-catalog.md),
+[endpoint permissions](19_implemented-api-matrix.md) and
+[local closeout and remaining scope](20_final-local-closeout.md) for the current
+implementation. The original ERD and historical verification results below are reference
+material. Savings daily-balance interest, staff transfers and automatic FD maturity return
+are implemented. [Predeployment audit](21_predeployment-audit.md) records frontend checks,
+current evidence and remaining deployment/closure-policy limits; this is not general Phase 6 acceptance.
 
 Start here. This tells you what every document is for, which ones are authoritative, and
 what to read first.
@@ -37,7 +29,7 @@ P04-M02-T01 read-side start against merged M5 0480;
 Customer FD view/API/profile panel is merged through PR #60 (dev e9291dc). Vibodha
 authorized scoped P04-M02-T02 implementation in
 [ADR-0019](../.agent/decisions/ADR-0019-customer-fd-branch-scope.md); broader FD paths
-remain with their owners. M5 opening remains partial. Phase 2/3 exit and
+remain with their owners. M5 opening was partial at that checkpoint; ADR-0026 supplies the controlled runtime and UI. Phase 2/3 exit and
 general Phase 3/4/5 entry remain pending. The user controls publication.
 
 P04-M02-T02 is DONE through merged PR #62 (dev 48f4185): current stored-actor FD guard
@@ -150,3 +142,12 @@ Claude Code session.
 
 Documentation is updated **in the same PR** as the change (AGENTS.md §14). A PR that
 changes the schema without updating `04_database-schema.md` should not be approved.
+
+## Generated and verification closeout documents
+
+| File | Purpose |
+|---|---|
+| `18_implemented-database-catalog.md` | Current clean-rebuild physical objects, constraints, policies and grants |
+| `19_implemented-api-matrix.md` | Independent complete handler/role/input contract used by security tests |
+| `20_final-local-closeout.md` | Current delivery, scope and acceptance boundary |
+| `21_predeployment-audit.md` | Changes, requirement decisions, browser evidence, final tests and remaining limits |

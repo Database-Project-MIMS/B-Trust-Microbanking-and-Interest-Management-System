@@ -9,8 +9,11 @@ export const GET = withAuth(async (request: NextRequest, user) => {
 
   
   const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const pageSize = parseInt(searchParams.get("pageSize") || "20", 10);
+  if ([...searchParams.keys()].some(key => !['page', 'pageSize'].includes(key) || searchParams.getAll(key).length !== 1)) {
+    return NextResponse.json({ error: { code: 'VALIDATION_FAILED', message: 'Invalid statement filters.' } }, { status: 400 });
+  }
+  const page = Number(searchParams.get("page") ?? "1");
+  const pageSize = Number(searchParams.get("pageSize") ?? "20");
 
   try {
     const scope = branchScope(user);

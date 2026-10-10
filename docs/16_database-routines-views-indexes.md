@@ -1,5 +1,13 @@
 # 16 — Database Routines, Views and Indexes
 
+**Current physical inventory:** [docs/18](18_implemented-database-catalog.md) lists
+routine signatures/kinds/security, views, indexes and triggers. Planned names below are
+historical design. Legacy FD opening/cycle functions are owner/seed-only. Runtime uses
+invoker `sp_open_fd_controlled` (0623), service-owned per-FD transactions, validated control
+policies (0622), `fn_agent_activity_scoped` (0624) and locked account-status checks (0625).
+Merged SQL files were preserved; corrections use new 0621–0627 migrations.
+
+
 Implementation inventory. Names are reconciled with our approved schema and the SRS §6.5
 routine table. The inventory contains both implemented Phase 1 objects and objects planned
 for later phases; the owning migration and task documentation record implementation state.
@@ -246,3 +254,46 @@ using the shared transaction-local RLS context. No routine, view or index is add
 L01 (introduction) and L12 (big data) are contextual; L12 is addressed in
 `12_testing-and-acceptance.md` under the one-million-row scalability target
 (NFR-PERF-04).
+
+### Controlled reversal — 0626 / G-27
+
+`fn_reversal_actor_is_current` validates stored active manager/branch identity.
+`sp_reverse_transaction_controlled` locks the account, validates/replays its ledger key,
+posts one compensating row and control/audit state. The old signature is a guarded wrapper.
+Both invoker procedures have no PUBLIC execution. Reversal-link INSERT RLS requires a
+current manager, matching actor and same-account REVERSAL row; SELECT inherits ledger scope.
+
+### Controlled customer withdrawal — 0627 / G-28
+
+`sp_try_customer_withdrawal` is a pinned-path SECURITY DEFINER wrapper, executable
+only by mims_app/owner. Stored active CUSTOMER role/profile and matching transaction
+context, exactly self signer and owned account are required. The existing 0363 core
+locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
+rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
+remains denied; staff continue through the invoker audited-attempt routine.
+
+## Predeployment object additions — 0628–0639
+
+Exact definitions/signatures/grants are generated in docs/18. Runtime orchestration uses
+`withTransaction`; none of these functions commits independently.
+
+| Migration | Principal objects and reason |
+|---|---|
+| 0628 | Replaces `sp_post_deposit`: safe exact money, stored actor/scope, locked decision, bound replay, correct timestamp and attribution |
+| 0629 | `fn_verify_customer_document`: execute-only scoped verifier; paired verifier/date constraint |
+| 0630 | Reconciliation views use ledger_seq and expanded signed totals; scoped SELECT grants |
+| 0631 | `fn_post_staff_transfer`, `fn_validate_transfer_pair`, deferred pair trigger; partial unique group/type index prevents duplicate legs |
+| 0632 | `fn_payout_account`, `fn_savings_interest`, `fn_post_savings_interest`, `fn_return_fd_principal`; savings cycle index prevents duplicate payout; unique maturity receipt prevents duplicate principal |
+| 0633 | RPT-01 guarded aggregates and RPT-02/04/05 views map extended types; RPT-04 labels savings products and regenerates scoped rollups |
+| 0634 | Withdrawal core counts TRANSFER_OUT in shared daily debit limit |
+| 0635 | Controlled FD opening captures unique funding transaction link; Colombo opening date |
+| 0636 | `fn_reverse_transfer`, deferred pair-reversal trigger and controlled reversal lifecycle protections |
+| 0637 | Last-active-ADMIN guard serialized by advisory lock |
+| 0638 | Issue/valid/consume reset capabilities and invalidation trigger; user index supports expiry/invalidation lookup without full token scan |
+| 0639 | Closure guard prevents abandonment of positive accrued savings interest |
+
+All SECURITY DEFINER mutation capabilities pin search_path and revoke PUBLIC execution;
+public-invoker savings calculation retains RLS. Transfer reversal takes both account locks
+in deterministic order. FD maturity takes FD then account, matching interest processing.
+Lecture coverage: relational constraints/partial unique indexes, deferred multi-row triggers,
+parameterized SQL, set-based daily balances, exact NUMERIC, locks/ACID, RLS and rollups.

@@ -8,6 +8,16 @@
 
 ## 🗺️ Work Order Summary
 
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
+
+
 **Seed completion contribution, 2026-10-09:** Vibodha authorized M2 to complete
 P06-M02-T01's missing seed coverage. Twelve funded FDs, three real cycles/thirty
 payouts, all seven roles and manager/customer profile links are implemented;
@@ -16,21 +26,21 @@ The checker and its fresh-database tests were corrected. This contribution is
 in M2's REVIEW delivery and does not independently close M5's other tasks.
 [Handoff](../.agent/handoffs/p06-m02-seed-completion-cross-owner.md).
 
-**Historical 2026-10-07:** Phase 1 T01–T03 retain DONE. The earlier account-opening seed blocker is superseded by the completed seed contribution above; user publication is still pending.
+**Historical 2026-10-07:** Phase 1 T01–T03 retain DONE. The earlier account-opening seed blocker is superseded by the completed seed contribution above; that seed contribution is now merged through PR #88.
 Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
 Closeout is merged into dev; the user retains all publication control.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| ~~01~~ | ~~[FD Product Schema](01_P1-T01_fd-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`fd_plan` table with effective-dating columns~~ | ~~~3~~ |
-| ~~02~~ | ~~[FD Product API](02_P1-T02_fd-product-api-admin.md)~~ | ~~P1~~ | ~~T02~~ | ~~`GET/PATCH /api/fd-products` with rate history~~ | ~~~3~~ |
-| ~~03~~ | ~~[Seed Framework](03_P1-T03_seed-framework.md)~~ | ~~P1~~ | ~~T03~~ | ~~Seed layout, fixed-UUID scheme, ordered load ⚡ **PUBLISHES I-8**~~ | ~~~2~~ |
-| 04 | [Seed Data Sets 1–3](04_P2_seed-sets-1-3.md) | P2 | T01 | Branches, agents, customers, accounts, 2 joint accounts | ~6 |
-| 05 | [Seed Data Set 4](05_P3_seed-set-4-transactions.md) | P3 | T01 | 100+ mixed transactions across dates, branches, agents, plans | ~6 |
-| 06 | [FD Schema & Opening](06_P4_fd-schema-opening.md) | P4 | T01–T03 | `fixed_deposit` table, `sp_open_fixed_deposit`, `fn_calculate_fd_interest` | ~10 |
-| 07 | [Interest Cycle](07_P4_interest-run-cycle.md) | P4 | T04–T05 | `interest_run`, `interest_payout`, `sp_run_interest_cycle` | ~8 |
-| 08 | [RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md) | P5 | T01–T04 | Active FDs view, interest distribution view, APIs, CSV, `EXPLAIN ANALYZE` | ~12 |
-| 09 | [Final Testing & Ops](09_P6_testing-ops-deployment.md) | P6 | T01–T02 | Interest re-run idempotency tests, backup/restore evidence, demo script | ~8 |
+| ~~01~~ | ~~[FD Product Schema](01_P1-T01_fd-plan-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`fd_plan` table with effective-dating columns~~ | ~~about 3~~ |
+| ~~02~~ | ~~[FD Product API](02_P1-T02_fd-product-api-admin.md)~~ | ~~P1~~ | ~~T02~~ | ~~`GET/PATCH /api/fd-products` with rate history~~ | ~~about 3~~ |
+| ~~03~~ | ~~[Seed Framework](03_P1-T03_seed-framework.md)~~ | ~~P1~~ | ~~T03~~ | ~~Seed layout, fixed-UUID scheme, ordered load ⚡ **PUBLISHES I-8**~~ | ~~about 2~~ |
+| ~~04~~ | ~~[Seed Data Sets 1–3](04_P2_seed-sets-1-3.md)~~ | ~~P2~~ | ~~T01~~ | ~~Branches, agents, customers, accounts, 2 joint accounts~~ | ~~about 6~~ |
+| ~~05~~ | ~~[Seed Data Set 4](05_P3_seed-set-4-transactions.md)~~ | ~~P3~~ | ~~T01~~ | ~~100+ mixed transactions across dates, branches, agents, plans~~ | ~~about 6~~ |
+| ~~06~~ | ~~[FD Schema & Opening](06_P4_fd-schema-opening.md)~~ | ~~P4~~ | ~~T01–T03~~ | ~~`fixed_deposit` table, `sp_open_fixed_deposit`, `fn_calculate_fd_interest`~~ | ~~about 10~~ |
+| ~~07~~ | ~~[Interest Cycle](07_P4_interest-run-cycle.md)~~ | ~~P4~~ | ~~T04–T05~~ | ~~`interest_run`, `interest_payout`, `sp_run_interest_cycle`~~ | ~~~8~~ |
+| ~~08~~ | ~~[RPT-03 & RPT-04 Reports](08_P5_reports-rpt03-rpt04.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Active FDs view, interest distribution view, APIs, CSV, `EXPLAIN ANALYZE`~~ | ~~about 12~~ |
+| ~~09~~ | ~~[Final Testing & Ops](09_P6_testing-ops-deployment.md)~~ | ~~P6~~ | ~~T01–T02~~ | ~~Interest re-run idempotency tests, backup/restore evidence, demo script~~ | ~~~8~~ |
 
 ---
 

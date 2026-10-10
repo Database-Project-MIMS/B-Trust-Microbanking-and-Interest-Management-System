@@ -1,5 +1,32 @@
 # 12 — Testing and Acceptance
 
+## Current predeployment evidence — 2026-10-10 / ADR-0027
+
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
+
+New API regressions cover real runtime deposit replay/concurrency, document verification,
+paired staff transfer/reversal/shared debit limits, strict statement/user/audit filters,
+Origin/Host normalization, profile creation/session revocation, single-use reset expiry/
+races, safe closure-interest denial and reconciliation scope. SQL regressions add funded
+open-day balances, delayed savings catch-up/nonoverlap, FD due-date catch-up, one-time
+principal return, partial-pair rejection, maturity fault rollback and closure guard.
+
+Security inventory includes every exported handler and all seven roles, injection positions,
+valid free-text binding, nine direct-login RLS checks and six local deployment configuration
+checks. Denials preserve business/audit row fingerprints including new reset/maturity controls.
+Interactive browser evidence and its exact scope are recorded in [docs/21](21_predeployment-audit.md).
+The accepted savings/transfer implementation and operational financial frontend are present;
+live HTTPS, target-runtime acceptance and a fuller closing settlement policy remain separate.
+
+The original criterion mapping below is a requirement map, not blanket acceptance evidence.
+Historical verification receipts later in this document retain their original date/base.
+
 Every acceptance criterion maps to at least one test. A criterion without a test is not
 satisfied.
 
@@ -183,20 +210,10 @@ with only a happy-path test is untested.
 
 ## Backup and Restore Evidence
 
-As required by AC-13, we have successfully run a backup and restore test against a fully seeded database instance using our automated `scripts/backup-restore-test.sh`.
-
-```text
-=== Step 1: Take a backup ===
-Backup size: 535K
-=== Step 2: Record checksums ===
-=== Step 3: Drop and restore ===
-NOTICE:  database "mims_test_restore" does not exist, skipping
-DROP DATABASE
-CREATE DATABASE
-=== Step 4: Compare checksums ===
-✅ Backup and restore produce identical data
-=== Step 5: Cleanup ===
-DROP DATABASE
-```
-
-This verifies that custom `pg_dump` format (`-Fc`) perfectly captures the schema, constraints, data, routines, and triggers, and that `pg_restore` perfectly rehydrates it without error or loss of referential integrity.
+Current evidence comes from the executable isolated dump/restore suite and
+[the migration/restore evidence](migration-rollback-evidence.md). It compares all
+26 tables by whole-row hashes, exact financial totals, constraints, RLS policies,
+ownership and sequence positions after a custom-format dump and restore.
+The generated source and restore databases are removed after verification; the
+normal development database is preserved. Historical example sizes/logs are not
+used as evidence for this branch. Live hosting backup verification remains pending.

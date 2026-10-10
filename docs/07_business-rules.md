@@ -82,7 +82,7 @@ branch comes from verified staff scope, or the locked account for an authorized
 bankwide/admin or linked customer operation. No NULL legacy row is backfilled.
 Amounts are positive finite exact cents; active channel, stored actor/context and
 branch/assignment/self scope are checked before posting. Customer self-service cannot
-claim another holder's signature. The future T05 service must validate signer evidence.
+claim another holder's signature. The implemented withdrawal service validates signer evidence.
 Calendar/hours use fn_is_business_hour; limits use WITHDRAWAL_SINGLE_LIMIT and
 WITHDRAWAL_DAILY_LIMIT per account, with Asia/Colombo half-open day bounds. Validation,
 configuration and unexpected SQL errors abort rather than becoming business rejections.
@@ -102,7 +102,7 @@ a negative balance (NFR-SAFE-01, AC-06).
 | ID | Rule | Enforced at | Implementation |
 |---|---|---|---|
 | BR-11 | An FD may only be opened against an **active** savings account | SRV, SP, FN, CON | `sp_open_fixed_deposit` reads the account under lock and requires `status = 'ACTIVE'`; the account-side check is published as I-6: `fn_check_account_fd_eligible(account_id)` (status) and `fn_fd_funding_verdict(account_id, principal)` (lock + status + active-FD + balance, with reason) in `database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql` (P04-M03-T01) |
-| BR-12 | Only one **active** FD per savings account | IDX | Partial unique index `ON fixed_deposit(account_id) WHERE status='ACTIVE'` (**G-01 — pending OQ-01**) |
+| BR-12 | Only one **active** FD per savings account | IDX | Partial unique index `ON fixed_deposit(account_id) WHERE status='ACTIVE'` (0480; ADR-0011) |
 | BR-13 | FD products: 6 months / 13%, 1 year / 14%, 3 years / 15% | CON | Three seeded `fd_plan` rows; `tenure_months > 0` |
 | BR-14 | FD interest is calculated every 30 days and credited to the linked savings account **as a separate transaction** | SP, CON | `sp_run_interest_cycle` posts an `INTEREST_CREDIT` through the ledger routine; `interest_payout.transaction_id UNIQUE` guarantees exactly one ledger row per distribution |
 | BR-15 | The **central system** performs interest calculations and records distributions and control totals | SP, CON | `interest_run` stores `fd_count`, `total_interest`, `exception_count`; `UNIQUE(cycle_date)` prevents a duplicate run (G-03) |
@@ -217,9 +217,9 @@ The owner-only invoker/barrier view exposes no live runtime report by itself.
 | SRS §7.1 Assumed operational rules | BR-08, BR-I2 |
 | ERD gap analysis | BR-12 (G-01), BR-10 (G-05), BR-19 (G-11), BR-E1 (G-13) |
 
-**Unresolved:** BR-12's exact form depends on **OQ-01**. Whether savings accounts accrue
-interest at all (**OQ-04**) would add rules BR-14a/BR-15a — see `17_erd-gap-analysis.md`
-G-12.
+**Remaining extensions:** BR-12 is implemented in 0480 (ADR-0011). ADR-0012
+accepts savings average-daily-balance interest but it is not implemented. ADR-0010 accepts
+transfers; OQ-12/OQ-14 retain typing/scope questions. Full financial acceptance remains pending.
 
 ## Customer FD read scope (P04-M02-T01)
 
@@ -251,3 +251,47 @@ worker authentication cannot override a supplied forbidden session. Validated
 request bodies precede audit writes; invalid requests add no initiation event.
 The audit reader validates bounded pagination/UUID/date filters and delegates
 parameterized SQL to its service. No financial routine or database rule is relaxed.
+
+### Controlled FD enforcement — 0621–0625
+
+FD opening checks actor, configured minimum, effective plan, active locked account,
+balance and unique active FD below the UI. The actor/key/hash receipt makes API retries
+return the original result. Each interest distribution commits credit, payout, next date
+and run counters together. 0625 rejects inactive accounts under lock. A failure rolls back
+that distribution completely. Current cycle processing is FD-only.
+
+### Reversal authorization and replay — 0626 / G-27
+
+Only an active stored BRANCH_MANAGER of the owning branch may reverse. Route/service
+role checks, procedure actor and explicit branch predicates, and reversal-link RLS enforce
+this existing requirement. The API requires CSRF and Idempotency-Key; the compensating
+ledger stores the key. Same actor/key/original/reason replays the original control/result;
+altered reuse or another key for an already reversed original conflicts with no effect.
+
+### Controlled customer withdrawal — 0627 / G-28
+
+`sp_try_customer_withdrawal` is a pinned-path SECURITY DEFINER wrapper, executable
+only by mims_app/owner. Stored active CUSTOMER role/profile and matching transaction
+context, exactly self signer and owned account are required. The existing 0363 core
+locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
+rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
+remains denied; staff continue through the invoker audited-attempt routine.
+
+## Predeployment enforcement — 2026-10-10 (ADR-0027)
+
+| Rule | Enforcement point |
+|---|---|
+| Staff-only transfer; current branch, assigned agent source, active accounts, holder mandate | `fn_post_staff_transfer`, stored actor/context check and locked account decisions; route role/CSRF/schema |
+| Equal two-leg transfer; no partial balance or audit effect | Deferred `trg_transfer_pair`, group/type unique index, service-owned transaction and deterministic account locks |
+| Transfer-out and cash withdrawals share single/daily debit limits and preserve minimum | 0631 transfer function and 0634 withdrawal core; Colombo business date and database parameters |
+| Transfer reversal compensates both legs; destination must repay; no system/funding reversal | 0636 `fn_reverse_transfer`, paired reversal constraint and controlled reversal core |
+| Savings pays actual funded/open days and never repeats or skips an unpaid interval | 0632 `fn_savings_interest`/`fn_post_savings_interest`; locked exclusive paid-through cursor, source check, unique account/cycle and rate snapshot |
+| Every due FD period paid before maturity; automatic principal returned once | Service catch-up, locked next date, FD/cycle unique payout, `fn_return_fd_principal` and unique maturity receipt |
+| Close only at zero with no ACTIVE FD and no positive unpaid interest | `fn_account_close_guard` in 0639; no approved minimum-waiving settlement operation |
+| Documents verified only by assigned/branch-authorized current staff | 0629 `fn_verify_customer_document`; paired verifier/date constraint; stable replay audit |
+| At least one active ADMIN; access/password changes revoke sessions and resets | 0637 trigger, admin service, 0638 reset invalidation/consume capability |
+| Reset capability finite, hashed, single-use, superseded by another issue | 0638 functions and user/token lock order; server CSRF and strict schema |
+
+The savings rate is the current mutable plan rate, snapshotted for the distribution.
+No effective-dated savings-rate history is invented. Ordinary closure settlement policy
+and live deployment acceptance remain recorded questions, not implicit rule exceptions.

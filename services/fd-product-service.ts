@@ -1,5 +1,7 @@
 import "server-only";
 import { query, withTransaction } from "@/lib/db/query";
+import { z } from 'zod';
+import { NotFoundError, ValidationError } from '@/lib/db/errors';
 
 export interface FdProduct {
   fdPlanId: string;
@@ -14,7 +16,14 @@ export interface FdProduct {
   updatedAt: Date | string | null;
 }
 
-function mapRow(row: any): FdProduct {
+interface FdProductRow {
+  fd_plan_id: string; plan_name: string; tenure_months: number; interest_rate: string;
+  description: string | null; status: string; effective_from: Date | string | null;
+  effective_to: Date | string | null; created_at: Date | string; updated_at: Date | string | null;
+}
+const columns = 'fd_plan_id,plan_name,tenure_months,interest_rate,description,status,effective_from,effective_to,created_at,updated_at';
+function mapRow(row: FdProductRow | undefined): FdProduct {
+  if (!row) throw new Error('Expected a product row.');
   return {
     fdPlanId: row.fd_plan_id,
     planName: row.plan_name,
@@ -31,7 +40,7 @@ function mapRow(row: any): FdProduct {
 
 /** Lists all FD products. Reads within a single query. */
 export async function listFdProducts(): Promise<FdProduct[]> {
-  const rows = await query(`
+  const rows = await query<FdProductRow>(`
     SELECT fd_plan_id, plan_name, tenure_months, interest_rate,
            description, status, effective_from, effective_to,
            created_at, updated_at
@@ -46,17 +55,18 @@ export async function updateFdProduct(
   id: string,
   updates: { interestRate?: string; status?: string; description?: string }
 ): Promise<FdProduct> {
+  if (!z.string().uuid().safeParse(id).success) throw new ValidationError('Invalid product identifier.');
   return withTransaction(async (tx) => {
-    const currentRows = await tx.query(
-      "SELECT * FROM fd_plan WHERE fd_plan_id = $1 FOR UPDATE",
+    const currentRows = await tx.query<FdProductRow>(
+      `SELECT ${columns} FROM fd_plan WHERE fd_plan_id = $1 FOR UPDATE`,
       [id]
     );
 
-    if (currentRows.rows.length === 0) {
-      throw new Error(`FD Product with id ${id} not found.`);
+    const current = currentRows.rows[0];
+    if (!current) {
+      throw new NotFoundError('FD product');
     }
 
-    const current = currentRows.rows[0];
 
     // Rate changes should create effective-dating records (set effective_to on old, insert new)
     if (updates.interestRate && updates.interestRate !== current.interest_rate) {
@@ -74,10 +84,10 @@ export async function updateFdProduct(
         [historicalName, id]
       );
 
-      const insertResult = await tx.query(
+      const insertResult = await tx.query<FdProductRow>(
         `INSERT INTO fd_plan (
            plan_name, tenure_months, interest_rate, description, status, effective_from
-         ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE) RETURNING *`,
+         ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE) RETURNING ${columns}`,
         [
           current.plan_name,
           current.tenure_months,
@@ -91,13 +101,13 @@ export async function updateFdProduct(
     }
 
     // If only updating status or description without rate change, update in place
-    const updateResult = await tx.query(
+    const updateResult = await tx.query<FdProductRow>(
       `UPDATE fd_plan
        SET status = COALESCE($1, status),
            description = COALESCE($2, description),
            updated_at = now()
        WHERE fd_plan_id = $3
-       RETURNING *`,
+       RETURNING ${columns}`,
       [updates.status ?? null, updates.description ?? null, id]
     );
 

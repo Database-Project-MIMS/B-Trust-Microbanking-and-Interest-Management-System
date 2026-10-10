@@ -1,7 +1,7 @@
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
-import pg from "pg";
+import { createMigrationClient } from "../../lib/db/migration-client.mjs";
 import * as branchCollectionRoute from "../../app/api/branches/route.ts";
 import * as branchItemRoute from "../../app/api/branches/[id]/route.ts";
 import * as agentCollectionRoute from "../../app/api/agents/route.ts";
@@ -43,7 +43,7 @@ describe("P01-M02-T04: branch and agent administration workflow", () => {
 
   before(async () => {
     assert.ok(connectionString, "DATABASE_URL or DATABASE_MIGRATION_URL is required");
-    client = new pg.Client({ connectionString });
+    client = createMigrationClient(connectionString);
     await client.connect();
 
     const role = await client.query(

@@ -1,42 +1,29 @@
-# Memory — P06-M02-T02 master-data integrity verified
+# Memory — predeployment local completion
 
-Last updated: 2026-10-09 (Asia/Colombo)
+Updated 2026-10-10 Asia/Colombo. Branch `feat/p06-m02-final-documentation`, base
+`053f6f6`. User authorized cross-owner fixes, docs and local commit; no push/PR/merge.
+Current delivery: ADR-0027, handoff p06-m02-predeployment-completion and docs/21.
+New M2 migrations 0628–0639 (block exhausted); no merged migration edits.
 
-## Current state
+Implemented staff-only paired transfers/reversal/shared debit limits; savings unpaid
+funded-day catch-up; automatic FD principal receipt; funding/system-reversal protection;
+deposit replay/actor/attribution; document verification; real posting/receipt/statement,
+customer accounts, admin user/role/reset/audit UI and searchable FD picker. Browser found
+Host/Origin normalization and blank account-search failures; both fixed. MotionSurface
+ignores absent scoped targets. Original stewardship retained; UI imprint saved.
 
-Branch `feat/p06-m02-master-data-integrity`, base `fe7034f` (user's completed
-PR #88/latest-dev conflict-resolution merge). T02 is REVIEW: implemented and
-verified locally, user publication/review pending. T01 remains REVIEW in the
-tracker; T03 TODO. General Phase 6 entry is not inferred.
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
 
-Vibodha instructed T02, explicitly confirmed its blueprint, then authorized
-fixing failures across owners and local commits. Do not push, create a PR or
-merge. Existing memory replacement was explicitly approved. ADR-0025 records
-scope. No cross-owner production repair was needed for this task.
-
-## Delivery and verification
-
-100 direct-SQL cases and 16 real mims_app API cases in master-data-integrity.test.mjs
-under tests/db and tests/api. All five M2 master tables covered: keys, NOT NULL,
-FKs/checks, partial assignment uniqueness, history, document verification,
-restrictive deletes, linked-login/customer-child/audit rollback and deactivation
-retention. Existing customer read routes are tested after owner SQL deactivation;
-no new customer PATCH/DELETE endpoint. The disposable verifier creates its own
-fixed database before calling db:rebuild; development DB preserved.
-
-Focused309 tests/14 suites; full1062/98 suites including security; zero failures,
-cancellations or skips. Clean51-migration rebuild/checksums, final-source typecheck
-and lint PASS. Temporary clusters stopped/removed. Host Node24.15.0/PostgreSQL18.6;
-Node22 pin retained. /architect and /review complete; no UI, /imprint N/A.
-
-Local test/tooling commit `a58112e`; documentation/state are a separate local
-commit (see git log -2). Tracker97:15 TODO,1 IN_PROGRESS,2 REVIEW,79 DONE. All five
-overviews reviewed; only M2's changed. Other owners' statuses retained.
-
-## Next session
-
-Read .agent/handoffs/p06-m02-master-data-integrity.md. User handles publication
-and review of the local commits. Do not automatically start T03: it depends on
-all project work. Do not copy stale historical pending-merge notes into current
-state. Run npm run verify:master-data-integrity for isolated focused verification;
-npm test is the full disposable integration/security suite.
+Production npm audit zero; full audit seven high unpatched braces/glob development entries.
+Live HTTPS was explicitly deferred. Node 22 pin remains; host verification used Node 24.
+Closure retains zero/no-active-FD and denies positive unpaid interest. Final funded-account
+settlement policy questions unanswered; do not waive plan minimum or forfeit interest.
+Tracker 97 tasks: 86 DONE, 10 REVIEW, 1 IN_PROGRESS. Next is user/peer review, explicit
+settlement decision, target-runtime/HTTPS checks and user-controlled publication.
+No actual deployment, push, PR creation or merge is authorized/performed.

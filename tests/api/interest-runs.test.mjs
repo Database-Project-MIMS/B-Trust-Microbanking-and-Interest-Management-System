@@ -49,7 +49,7 @@ describe('P04-M01-T01: Interest Run Worker Authentication', () => {
     const req = new NextRequest('http://localhost:3000/api/interest-runs', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ cycleDate: '2026-10-31', dryRun: false })
+      body: JSON.stringify({ cycleDate: '1899-12-31', dryRun: false })
     });
     return POST(req);
   }
@@ -100,7 +100,7 @@ describe('P04-M01-T01: Interest Run Worker Authentication', () => {
     const before = (await client.query("SELECT count(*)::text AS n FROM audit_log WHERE action='INTEREST_RUN_INITIATED'")).rows[0].n;
     const response = await POST(new NextRequest('http://localhost/api/interest-runs', {
       method: 'POST', headers: { cookie: `mims_session=${tokens.admin}` },
-      body: JSON.stringify({ cycleDate: '2026-10-31', dryRun: false }),
+      body: JSON.stringify({ cycleDate: '1899-12-31', dryRun: false }),
     }));
     assert.equal(response.status, 403);
     assert.equal((await client.query("SELECT count(*)::text AS n FROM audit_log WHERE action='INTEREST_RUN_INITIATED'")).rows[0].n, before);
@@ -109,14 +109,14 @@ describe('P04-M01-T01: Interest Run Worker Authentication', () => {
   test('a valid worker token cannot bypass a denied signed-in role', async () => {
     const response = await POST(new NextRequest('http://localhost/api/interest-runs', {
       method: 'POST', headers: { cookie: `mims_session=${tokens.agent}`, authorization: `Bearer ${process.env.INTEREST_WORKER_TOKEN}` },
-      body: JSON.stringify({ cycleDate: '2026-10-31', dryRun: false }),
+      body: JSON.stringify({ cycleDate: '1899-12-31', dryRun: false }),
     }));
     assert.equal(response.status, 403);
   });
 
   test('invalid body/date is rejected without writing an audit event', async () => {
     const before = (await client.query("SELECT count(*)::text AS n FROM audit_log WHERE action='INTEREST_RUN_INITIATED'")).rows[0].n;
-    for (const body of ['{', JSON.stringify({ cycleDate: '2026-02-30', dryRun: false }), JSON.stringify({ cycleDate: '2026-10-31', dryRun: 'false' })]) {
+    for (const body of ['{', JSON.stringify({ cycleDate: '2026-02-30', dryRun: false }), JSON.stringify({ cycleDate: '1899-12-31', dryRun: 'false' })]) {
       const response = await POST(new NextRequest('http://localhost/api/interest-runs', {
         method: 'POST', headers: { authorization: `Bearer ${process.env.INTEREST_WORKER_TOKEN}` }, body,
       }));

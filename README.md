@@ -26,7 +26,12 @@ Next.js (App Router) · TypeScript · PostgreSQL 16 · `pg` with handwritten par
 
 ## Project status
 
-**Phase 0 (initialization) complete.** No business features implemented yet.
+The local implementation includes organization/customer/account APIs, ledger operations,
+FD opening and interest execution, reports, audit and security controls. The current rebuild
+has 26 tables and 58 migrations. [Current implementation and remaining scope](docs/20_final-local-closeout.md)
+distinguish verified local deliveries from general acceptance: savings interest/transfers,
+remaining prototype UI wiring, interactive browser checks and live HTTPS remain pending.
+M2 T01/T02 are merged; T03 and cross-owner closeout are local REVIEW work.
 Current state: [`.agent/current-state.md`](.agent/current-state.md).
 
 ## Sample data notice

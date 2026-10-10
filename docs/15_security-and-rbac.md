@@ -9,7 +9,7 @@ even if the server has a bug.** Hiding a button is not access control (FR-AUTH-0
 
 ## Roles
 
-Seven roles, matching SRS §2.4. One role per user (`app_user.role_id` — see gap **G-09**).
+Seven implemented roles: six interactive roles plus internal SYSTEM; SRS user-class mapping remains G-09. One role per user (`app_user.role_id` — see gap **G-09**).
 `AGENT` and `BRANCH_MANAGER` are different authorization roles but share the `agent`
 branch-staff profile. The profile holds employment data and `branch_id`; `role_name`
 determines which operations the authenticated user may perform.
@@ -21,32 +21,16 @@ determines which operations the authenticated user may perform.
 | `BRANCH_MANAGER` | Own branch | Branch agents, approve exceptions, joint mandates, **reversals**, branch reports |
 | `AGENT` | Own branch, assigned customers | Register customers, open accounts, post deposits and withdrawals |
 | `AUDITOR` | Bank-wide, **read-only** | Reports, ledger history, audit search |
-| `CUSTOMER` | Own accounts only, when optional login is provisioned | View own accounts, balances and transactions linked through the customer profile (ADR-0007) |
-| `QA_TESTER` | Configurable | Exercise workflows against synthetic data |
+| `CUSTOMER` | Own accounts only, when optional login is provisioned | View own linked accounts/balances/transactions; controlled own-holder withdrawal with self signer only (docs/05, 0627). No direct account UPDATE |
+| `SYSTEM` | Internal controlled worker | Posting identity; QA uses existing roles with synthetic data |
 
 ## Permission matrix
 
-| Operation | ADMIN | CENTRAL_OPS | BRANCH_MGR | AGENT | AUDITOR | CUSTOMER |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|
-| Sign in | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Manage users and roles | ✅ | — | — | — | — | — |
-| Manage system parameters | ✅ | — | — | — | — | — |
-| Manage branches | ✅ | — | — | — | — | — |
-| Manage agents | ✅ | — | own branch | — | — | — |
-| Register customers | ✅ | — | own branch | own branch | — | — |
-| View customers | ✅ | ✅ | own branch | assigned | ✅ read | self |
-| Open savings account | ✅ | — | own branch | own branch | — | — |
-| Close account | ✅ | — | own branch | — | — | — |
-| Post deposit | ✅ | — | own branch | own branch | — | — |
-| Post withdrawal | ✅ | — | own branch | own branch | — | own, if holder |
-| **Reverse a transaction** | ✅ | — | **own branch** | ❌ | — | ❌ |
-| Manage FD products | ✅ | ✅ | — | — | — | — |
-| Open fixed deposit | ✅ | ✅ | own branch | own branch | — | — |
-| **Run interest cycle** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Run reports | ✅ | ✅ | own branch | ❌ | ✅ | ❌ |
-| Search audit log | ✅ | — | — | — | ✅ | — |
-
-`—` not applicable · `❌` explicitly denied and tested.
+[docs/19](19_implemented-api-matrix.md) is the independent role-by-handler contract.
+The security suite compares it with every exported handler. ADMIN is not a universal
+financial operator. Customer registration/account opening/deposits are staff operations;
+reversals require BRANCH_MANAGER; FD opening requires AGENT, BRANCH_MANAGER or
+CENTRAL_OPS. Product mutation is ADMIN-only.
 
 ## Branch scope
 
@@ -105,14 +89,21 @@ when the application layer is wrong.
 
 | Role | Grants |
 |---|---|
-| `mims_owner` | Owns the schema. Used **only** by migrations. Never in `DATABASE_URL`. |
+| `mims_owner` | Owns the schema. Used by migrations, seeds and isolated verification tooling; never the application runtime connection. |
 | `mims_app` | `SELECT`, `INSERT`, `UPDATE` on operational tables. **No `UPDATE` or `DELETE` on `transaction`. No `DELETE` on `audit_log`. No `DROP`, no `CREATE`.** |
-| `mims_readonly` | `SELECT` only — auditors and reporting |
 
-`mims_app` writes ledger rows only through the posting routines, which run
-`SECURITY DEFINER` where a targeted extra privilege is genuinely required. This is what
-makes "posted transactions are immutable" true at the database level rather than by
-convention (FR-TXN-02, BR-16).
+Posting cores are SECURITY INVOKER. The sole customer posting wrapper in 0627 is
+pinned-path SECURITY DEFINER: stored active CUSTOMER/context/profile and exactly self
+signer are checked, ownership is verified, then the existing locked audited withdrawal
+core runs. Direct customer account UPDATE remains denied by RLS. `mims_app` retains RLS-constrained ledger INSERT,
+with no UPDATE/DELETE. Immutability triggers additionally reject owner edits. Narrow
+SECURITY DEFINER report/activity functions expose aggregates only with actor/scope checks.
+
+
+AUDITOR is an application role using the RLS context on `mims_app`; no separate
+`mims_readonly` database role is provisioned by the current rebuild. FD UPDATE grants
+are limited to lifecycle columns; principal and opening-rate snapshots cannot be updated
+by the runtime role.
 
 ## Passwords
 
@@ -218,3 +209,33 @@ carry a correlation id; the detail stays server-side (NFR-SEC-05).
 - [ ] Sensitive fields excluded from responses and logs
 - [ ] Financial or security-sensitive actions write an audit event
 - [ ] Negative authorization tests exist for the new route
+
+## Local P06 evidence — ADR-0026
+
+0621 enables transaction RLS alongside customer/account policies. Ledger visibility follows
+account scope, including unattributed legacy rows. 0624 preserves agent-self history using
+an execute-only aggregate with stored-actor/target/date checks. Direct runtime login tests
+prove non-owner/non-superuser/non-BYPASSRLS behavior, unset-scope denial, customer held
+accounts, branch isolation and denied ledger mutation/policy disabling. Endpoint tests cover
+all seven roles and eight injection payloads at declared input positions. Valid-operation
+suites separately prove successful processing. This does not claim protection against
+stolen database credentials. Live HTTPS verification remains pending by user instruction.
+
+0626 closes G-27: manager-only stored-actor validation and explicit owning-branch predicate
+in the reversal routine, role gates in route/service, and scoped reversal-link RLS. ADMIN
+is denied, including direct SQL. The guarded old signature remains for owner test/seed
+compatibility. Real API tests prove key replay and actual receipt UUIDs.
+
+## Predeployment capabilities — ADR-0027 / 2026-10-10
+
+Transfers are staff-only; route and stored actor/branch/source-assignment checks agree.
+Customer account UPDATE remains denied. Document verification and reset controls are
+execute-only guarded capabilities; neither creates a broad table UPDATE grant.
+Admin user/profile changes run atomically, reject disabling assigned agents or self access,
+revoke sessions and invalidate reset tokens. The last active administrator is protected by
+an advisory-serialized database trigger. Reset hashes/expiry/use are stored, raw token is
+returned only to the issuer once, private fragment link is removed on capture, and consume
+locks user then token before password update/session revocation. No email sender exists.
+Unknown SQL errors are mapped to generic client errors, never arbitrary raised text.
+All new state-changing routes enforce CSRF; public reset additionally requires its token.
+Production dependency audit is zero; unresolved build-tool and live HTTPS limits are docs/21.

@@ -43,6 +43,7 @@ const RULES: Readonly<Record<string, Rule>> = {
   ck_close_account_not_active: { code: "ACCOUNT_NOT_ACTIVE", message: "Only an active account can be closed.", status: 409 },
   ck_close_account_balance: { code: "BALANCE_NOT_ZERO", message: "An account can only be closed with a zero balance.", status: 409 },
   ck_close_account_active_fd: { code: "ACTIVE_FD_EXISTS", message: "An account with an active fixed deposit cannot be closed.", status: 409 },
+  ck_close_interest_settled: {code:"UNSETTLED_SAVINGS_INTEREST",message:"Settle accrued savings interest before closing this account.",status:409},
   ck_close_account_actor: { code: "INTERNAL_ERROR", message: "An unexpected error occurred.", status: 500 },
   uq_account_holder_account_customer: { code: "DUPLICATE_HOLDER", message: "This customer already holds the account.", status: 409 },
 };

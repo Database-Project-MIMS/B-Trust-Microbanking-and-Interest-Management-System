@@ -1,5 +1,12 @@
 # 13 — System Operation Guide
 
+**Current local guide (2026-10-10):** follow the verified-role
+[demonstration script](demonstration-script.md) and [audit evidence](21_predeployment-audit.md).
+Financial posting, receipts, statements, transfers, document verification, admin users/roles,
+audit search, FD opening and interest/maturity execution are real scoped workflows.
+Historical proposed flows below are reference material. Live HTTPS and fuller funded-account
+closing settlement policy remain separate; see docs/20/21.
+
 How to operate and demonstrate MIMS. Written so a QA tester or an examiner can follow it
 without asking anyone.
 

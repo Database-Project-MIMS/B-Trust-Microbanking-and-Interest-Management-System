@@ -824,45 +824,45 @@ BEGIN
     -- Reversal on 2025-08-01
     v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0001');
     IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
-        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        SELECT a.agent_id,a.branch_id INTO v_agent_id,v_branch_id FROM transaction t JOIN account acc ON acc.account_id=t.account_id JOIN agent a ON a.branch_id=acc.branch_id JOIN app_user u ON u.user_id=a.agent_id JOIN role r ON r.role_id=u.role_id WHERE t.transaction_id=v_tx_id AND r.role_name='BRANCH_MANAGER' AND a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' ORDER BY u.username LIMIT 1;
         PERFORM set_config('app.current_user_id', v_agent_id::text, true);
-        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_user_role', 'BRANCH_MANAGER', true);
         PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;
     -- Reversal on 2025-08-01
     v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0002');
     IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
-        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        SELECT a.agent_id,a.branch_id INTO v_agent_id,v_branch_id FROM transaction t JOIN account acc ON acc.account_id=t.account_id JOIN agent a ON a.branch_id=acc.branch_id JOIN app_user u ON u.user_id=a.agent_id JOIN role r ON r.role_id=u.role_id WHERE t.transaction_id=v_tx_id AND r.role_name='BRANCH_MANAGER' AND a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' ORDER BY u.username LIMIT 1;
         PERFORM set_config('app.current_user_id', v_agent_id::text, true);
-        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_user_role', 'BRANCH_MANAGER', true);
         PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;
     -- Reversal on 2025-08-01
     v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0003');
     IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
-        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        SELECT a.agent_id,a.branch_id INTO v_agent_id,v_branch_id FROM transaction t JOIN account acc ON acc.account_id=t.account_id JOIN agent a ON a.branch_id=acc.branch_id JOIN app_user u ON u.user_id=a.agent_id JOIN role r ON r.role_id=u.role_id WHERE t.transaction_id=v_tx_id AND r.role_name='BRANCH_MANAGER' AND a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' ORDER BY u.username LIMIT 1;
         PERFORM set_config('app.current_user_id', v_agent_id::text, true);
-        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_user_role', 'BRANCH_MANAGER', true);
         PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;
     -- Reversal on 2025-08-01
     v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0004');
     IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
-        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        SELECT a.agent_id,a.branch_id INTO v_agent_id,v_branch_id FROM transaction t JOIN account acc ON acc.account_id=t.account_id JOIN agent a ON a.branch_id=acc.branch_id JOIN app_user u ON u.user_id=a.agent_id JOIN role r ON r.role_id=u.role_id WHERE t.transaction_id=v_tx_id AND r.role_name='BRANCH_MANAGER' AND a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' ORDER BY u.username LIMIT 1;
         PERFORM set_config('app.current_user_id', v_agent_id::text, true);
-        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_user_role', 'BRANCH_MANAGER', true);
         PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;
     -- Reversal on 2025-08-01
     v_tx_id := (SELECT transaction_id FROM transaction WHERE idempotency_key = 'seed-txn-0005');
     IF NOT EXISTS (SELECT 1 FROM transaction_reversal WHERE original_transaction_id = v_tx_id) THEN
-        SELECT ca.agent_id, a.branch_id INTO v_agent_id, v_branch_id FROM transaction t JOIN account_holder ah ON ah.account_id = t.account_id JOIN customer_agent ca ON ca.customer_id = ah.customer_id JOIN agent a ON a.agent_id = ca.agent_id WHERE t.transaction_id = v_tx_id LIMIT 1;
+        SELECT a.agent_id,a.branch_id INTO v_agent_id,v_branch_id FROM transaction t JOIN account acc ON acc.account_id=t.account_id JOIN agent a ON a.branch_id=acc.branch_id JOIN app_user u ON u.user_id=a.agent_id JOIN role r ON r.role_id=u.role_id WHERE t.transaction_id=v_tx_id AND r.role_name='BRANCH_MANAGER' AND a.status='ACTIVE' AND u.status='ACTIVE' AND r.status='ACTIVE' ORDER BY u.username LIMIT 1;
         PERFORM set_config('app.current_user_id', v_agent_id::text, true);
-        PERFORM set_config('app.current_user_role', 'AGENT', true);
+        PERFORM set_config('app.current_user_role', 'BRANCH_MANAGER', true);
         PERFORM set_config('app.current_branch_id', v_branch_id::text, true);
         CALL sp_reverse_transaction(v_tx_id, 'Seed reversal'::varchar, v_agent_id, v_out_tx_id, v_out_ref, v_out_bal);
     END IF;

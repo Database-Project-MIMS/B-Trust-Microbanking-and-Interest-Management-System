@@ -39,9 +39,9 @@ WITH bounds AS (
        FILTER (WHERE v.transaction_id IS NOT NULL AND v.transaction_date >= b.lo))[1] AS first_before,
     (array_agg(v.balance_after_effective ORDER BY v.ledger_seq DESC)
        FILTER (WHERE v.transaction_id IS NOT NULL AND v.transaction_date < b.hi))[1] AS last_after,
-    COUNT(*) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.transaction_type = 'DEPOSIT') AS deposit_count,
+    COUNT(*) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.transaction_type IN ('DEPOSIT','TRANSFER_IN','FD_MATURITY')) AS deposit_count,
     COALESCE(SUM(v.effective_amount) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.activity_type = 'DEPOSIT'), 0.00) AS deposit_total,
-    COUNT(*) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.transaction_type = 'WITHDRAWAL') AS withdrawal_count,
+    COUNT(*) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.transaction_type IN ('WITHDRAWAL','TRANSFER_OUT')) AS withdrawal_count,
     COALESCE(SUM(v.effective_amount) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.activity_type = 'WITHDRAWAL'), 0.00) AS withdrawal_total,
     COUNT(*) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.transaction_type = 'INTEREST_CREDIT') AS interest_count,
     COALESCE(SUM(v.effective_amount) FILTER (WHERE v.transaction_date >= b.lo AND v.transaction_date < b.hi AND v.activity_type = 'INTEREST_CREDIT'), 0.00) AS interest_total,

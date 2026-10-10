@@ -1,5 +1,38 @@
 # 17 — ERD Gap Analysis
 
+**Current disposition (2026-10-09):** G-01 is implemented in 0480/ADR-0011;
+G-03 has FD/cycle uniqueness in 0482; G-05 reference uniqueness is in 0360 but transfers
+remain unimplemented. G-10 is in 0221. G-12/ADR-0012 accepts savings interest; current
+schema/runtime are FD-only. OQ-12/OQ-13/OQ-14 retain typing/mid-cycle/scope decisions.
+G-25 transaction RLS and G-26 FD/API/cycle execution are addressed by ADR-0026 and
+0621–0627. Historical findings below explain decisions, not current implementation evidence.
+
+
+## G-26 — FD/interest runtime delivery gap (2026-10-09)
+
+FD pages are prototypes; no FD opening/list API exists. The interest endpoint only
+records STARTED in audit, while its documented contract promises execution. Existing
+SQL routines are callable by the owner but runtime FD writes have neither grants nor
+RLS policies. The legacy cycle function uses one transaction with subtransactions,
+rather than FR-INT-04's independently committed distributions.
+
+User-authorized ADR-0026 completes the missing service/API/UI with 0622 runtime
+policies, an insert-only `fd_opening_request` idempotency receipt, and a service-owned
+cycle runner. Each FD locks its row and posts ledger/payout/date/audit in one explicit
+transaction, independently of earlier distributions. The original merged routine
+remains for seed/backward-compatible SQL tests and is documented as legacy.
+The receipt adds UUID PK, actor/key uniqueness, payload fingerprint, FD FK and
+created_at; it is control metadata, never another source of financial balance.
+
+## G-25 — documented transaction RLS absent (2026-10-09)
+
+NFR-SEC-07 and docs/15 require RLS on the ledger. Integrated dev has no policy;
+`getTransaction` relies on it and therefore permits a direct cross-branch read.
+User-authorized ADR-0026 adds 0621: SELECT inherits account visibility; INSERT
+requires a writing role and a visible account. No original ERD column is changed.
+Direct mims_app tests must prove missing context, cross-branch and unheld customer
+reads fail closed, while bank-wide and legitimate posting contexts keep working.
+
 **RPT-05 interpretation (ADR-0022):** The user confirmed one activity attribution
 per joint-account holder. Summing customer totals can therefore exceed a bankwide
 distinct-ledger total. This report's grand total is labelled holder-attributed; use
@@ -799,3 +832,55 @@ account is the posting order. Existing rows are numbered in physical insertion o
 **Database impact** — One sequence, one column, one unique index; migration `0542` (M3 block, table owned by M4).
 No posting routine changes. `ledger_seq` is internal and never displayed.
 
+## G-27 — Reversal authorization and API key drift
+
+Docs/05 and the M4 task require BRANCH_MANAGER-only reversal. The legacy route/service
+also allowed ADMIN, and the procedure lacked a stored-actor guard. The API did not persist
+an idempotency key or return its actual reversal-link UUID. ADR-0026 authorizes correcting
+these dependencies in new 0626; merged 0363 remains unchanged. This restores the specified
+rule, rather than expanding financial privileges. Real API and direct SQL probes cover it.
+
+## G-28 withdrawal adapter correction
+
+Final comparison found the service using login UUIDs as customer IDs and the throwing
+legacy routine, losing known-rejection audits. Before M4-owned adapter edits: resolve
+the active linked customer under RLS, accept explicit staff signer evidence, and use
+existing sp_try_post_withdrawal, committing its rejection audit before mapping the
+HTTP error. User authorization covers these changes; no ownership transfer or merged
+migration edit. Real runtime API tests must cover self-signing, ALL_HOLDERS, key replay,
+scope and durable rejection evidence. Physical signature capture UI remains pending.
+
+G-28 root cause found by real CUSTOMER API tests: account UPDATE RLS prevents
+SELECT FOR UPDATE, so the invoker path cannot implement the specifically documented
+customer withdrawal contract. Proposal 0627: a pinned-path SECURITY DEFINER wrapper
+checks stored active CUSTOMER/profile/context, own account and exactly self signer;
+then reuses the existing audited locked core. No customer UPDATE policy/grant change.
+Direct app UPDATE and forged wrapper calls must remain denied.
+
+G-27/G-28 local disposition (2026-10-09): RESOLVED by 0626/0627 and real runtime
+API/direct-SQL tests. Reversal actor/key/receipt and withdrawal identity/signers/rejection
+audit now match their contracts. Staff physical signature UI remains pending alongside
+prototype transaction pages; no live or lecturer acceptance is inferred.
+
+## FR-AUTH-04 reset control (0638)
+
+SRS single-use reset tokens are implemented in `password_reset_token`: UUID PK,
+user FK RESTRICT, unique SHA-256 hash, expiry, used timestamp and created timestamp.
+ADMIN issues a 30-minute link. Guarded SQL consumes the token, changes the Argon2id
+hash and invalidates every session atomically. No email integration is assumed.
+
+## Current gap disposition — 2026-10-10 / ADR-0027
+
+Older absent-transfer/FD-only/prototype statements describe earlier snapshots. G-28 physical
+holder-attestation UI and the document-verification opening blocker now have working paths.
+0628 fixes deposit replay/actor/attribution; 0629 resolves document verification without
+broadening child-table UPDATE; 0630 uses ledger order for reconciliation. ADR-0010 adds paired
+transfer groups/types (0631); ADR-0012 adds account payout source/cursor/rate/interval (0632).
+Automatic maturity uses a separate immutable principal credit and unique receipt; 0635/0636
+link FD funding and disallow isolated reversal of lifecycle/system postings. FR-AUTH-04 is
+implemented by 0638 controls. 0639 closes the earned-interest-forfeiture hole conservatively.
+
+Remaining requirement conflict: zero-balance closure and withdrawal minimum mean a funded
+minimum-bearing plan needs a separately approved final settlement flow. Do not weaken the
+ordinary minimum rule or forfeit accrued interest silently. Lecturer acceptance of the
+accepted extensions, live HTTPS and target-runtime verification remain external gates.
