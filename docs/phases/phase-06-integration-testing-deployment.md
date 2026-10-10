@@ -1,5 +1,12 @@
 # Phase 06 — Integration, Testing & Deployment
 
+**Scoped live audit corrections — 2026-10-10:** the user authorized a new branch,
+fixes for the audit findings, and editing other members' files. ADR-0031 records the
+report/withdrawal/statement/plan navigation, period labels and nonce CSP corrections.
+Original ownership remains unchanged. Local verification and a disposable production
+preview precede deployment; this does not approve general phase entry or financial
+posting on the live database. [Handoff](../../.agent/handoffs/p06-live-audit-fixes.md).
+
 **Current scoped local delivery — 2026-10-09:** ADR-0026 authorizes M2 T03 and
 necessary owner contributions, not general phase entry. T01/T02 are merged through
 PR #88/#90. Security/FD/report/operations repairs are local REVIEW deliveries.

@@ -51,7 +51,10 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice }
   }
 
   const header = <div className="page-header"><div><p className="eyebrow">Savings account</p><h1 className="page-title">{account?.accountNumber ?? "Account"}</h1></div>
-    {canBrowse && <Link className="btn btn-secondary" href="/accounts">Back to accounts</Link>}</div>;
+    <div className="flex flex-wrap gap-2">
+      {account && <Link className="btn btn-secondary" href={`/accounts/${encodeURIComponent(account.accountId)}/statement`}>View statement</Link>}
+      {canBrowse && <Link className="btn btn-secondary" href="/accounts">Back to accounts</Link>}
+    </div></div>;
   if (error) return <>{header}<div role="alert" className="card mt-6"><p>{error}</p><button className="btn btn-secondary" onClick={() => setAttempt(value => value + 1)}>Retry</button></div></>;
   if (!account) return <>{header}<p role="status" className="mt-6">Loading account…</p></>;
 

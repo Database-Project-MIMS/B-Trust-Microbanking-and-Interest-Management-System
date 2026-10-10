@@ -354,6 +354,16 @@ transactions. Application execution is revoked. ADR-0012 savings interest runs t
 
 ## Reports — framework M1, each report by its owner
 
+**Live audit corrections (2026-10-10, local branch):** `/reports` is the guarded
+catalogue for RPT-01–05, permitted to ADMIN, CENTRAL_OPS, BRANCH_MANAGER and AUDITOR.
+The dashboard and shared shell point Reports to this catalogue; every report includes
+All reports and RPT-01–05 crosslinks with the active report identified. Existing APIs
+and server role/branch restrictions remain authoritative. Open-ended report metadata
+shows All dates, or Any date for an omitted bound; supplied bounds remain inclusive.
+Staff navigation exposes savings plans, separate Deposits/Withdraw links, and account
+details show View statement after successful loading. Customer withdrawals remain
+reachable; customers do not get the staff plans/report links.
+
 **RPT-01 live delivery (2026-10-08, ADR-0022):**
 `GET /api/reports/agent-transactions` and `/reports/agent-transactions` consume I-7.
 Allowed roles: BRANCH_MANAGER (current own branch), ADMIN, CENTRAL_OPS, AUDITOR.
@@ -468,7 +478,7 @@ ADMIN permissions are not inferred from a universal financial super-role.
 | `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/agents/{id}/activity` | `GET /api/agents/{id}/activity` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER (own branch), AGENT (self) | M2 (live T02) |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
-| `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; no nav link yet — shell is M1's) |
+| `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; shell/dashboard links added by local audit correction) |
 | `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder, fixed-deposit panel with an "Open a fixed deposit" link to `/fixed-deposits/new?accountId=…` for AGENT, BRANCH_MANAGER, CENTRAL_OPS) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
 | `/transactions/deposit` | `POST /api/transactions/deposits` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/withdraw` | `POST /api/transactions/withdrawals` | AGENT, BRANCH_MANAGER | M4 |
@@ -485,6 +495,7 @@ deactivation. Deactivation preserves the record and its history.
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |
 | `/reports/agent-transactions` | RPT-01 | manager+, auditor | M2 |
+| `/reports` | Catalogue and navigation for RPT-01–05 (no new API) | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M1 framework contribution |
 | `/reports/account-summary` | RPT-02 (live, `GET /api/reports/account-summary`) | BRANCH_MANAGER (own branch), CENTRAL_OPS, AUDITOR, ADMIN | M3 |
 | `/reports/customer-activity` | RPT-05 | manager+, auditor | M4 |
 | `/reports/active-fds` | RPT-03 | manager+, auditor | M5 |
