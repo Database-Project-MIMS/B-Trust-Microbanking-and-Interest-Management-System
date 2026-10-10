@@ -208,3 +208,11 @@ change. Dry-run quotes do not reserve funds. Run creation/finalization and persi
 evidence are separate transactions, so earlier successful distributions remain committed.
 Statement/admin listing/report totals use repeatable-read snapshots where several queries
 must describe the same state. The live deployment environment remains separately verified.
+
+## Request-time CSP rendering — ADR-0031 / 2026-10-10
+
+Middleware creates a fresh script nonce and sends one CSP to both Next.js rendering and
+the HTTP response. Root `connection()` requires request-time HTML rendering, including
+sign-in; static HTML/ISR caching cannot reuse a nonce. Static JS/CSS assets keep their
+normal caching. CSP tests and the disposable production preview cover trusted header
+replacement and interactive hydration. This is a local correction awaiting deployment.

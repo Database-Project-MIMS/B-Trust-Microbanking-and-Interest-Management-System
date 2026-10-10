@@ -355,7 +355,7 @@ Current evidence and implemented savings/transfer scope are in
 | P06-M01-T01 | 1 | SQL-injection test suite against every endpoint | Tests | Phase 5 | REVIEW (ADR-0026: all handlers/input positions, eight injection strings plus valid bound-text cases) |
 | P06-M01-T02 | 1 | Authorization matrix tests: every role × every route | Tests | Phase 5 | REVIEW (ADR-0026: seven-role matrix and denial state fingerprints; handler completeness guard) |
 | P06-M01-T03 | 1 | RLS verification: policies hold when the app layer is bypassed | DB + tests | P02-M01-T01 | REVIEW (ADR-0026: direct mims_app login, non-owner/non-BYPASSRLS, fail-closed scope; 0621) |
-| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — | IN_PROGRESS (local checks only; live HTTPS pending by explicit user instruction) |
+| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — | IN_PROGRESS (2026-10-10 live HTTPS/cookies/role checks pass; ADR-0031 CSP/navigation fixes on `feat/p06-m02-live-audit-fixes`; deployment/retest and consequential final-action acceptance pending; see `.agent/handoffs/p06-live-audit-fixes.md`) |
 | P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests + seed completion | P03-M05-T01; scoped start/completion ADR-0024 | DONE (PR #88 merged; AC-12 and exact ledger/payout/reseed evidence) |
 | P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | DONE (PR #90 merged; a58112e/226c439; 100 DB and 16 API integrity cases) |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | REVIEW (ADR-0026: current catalogs/contracts/state reconciled; local commits only; full phase acceptance pending) |

@@ -1,4 +1,35 @@
-# Current state — predeployment local completion
+# Current state — live audit corrections
+
+## Local fixes verified — 2026-10-10
+
+User requested a new branch and audit fixes, then explicitly authorized cross-owner
+edits. Branch: `feat/p06-m02-live-audit-fixes`; ADR-0031/handoff live-audit-fixes record
+the contribution without ownership transfer. Report catalogue/crosslinks, staff withdrawal
+and plan navigation, statement link, period labels and enforced nonce CSP are implemented.
+Root HTML is dynamic for fresh nonces; no schema, financial routine or permission change.
+Full disposable verification: 3,415 tests /117 suites, clean 70-migration rebuild,
+typecheck/lint/build. Production browser checks pass across all six human roles,
+desktop/mobile, report navigation/export, staff statement and denied report access.
+Four raw HTML probes prove matching fresh script nonces and no-store. Browser console
+has no warnings/errors. Preview signed out/closed/stopped; existing databases preserved.
+User subsequently authorized a local commit of these changes. Push, PR and deployment
+remain user actions. Next: publication/deployment, then live retest.
+P06-M01-T04 remains IN_PROGRESS; previous consequential final-action acceptance pending.
+Existing memory.md is preserved; this section/handoff hold the latest continuation state.
+
+## Live Vercel / Neon audit — 2026-10-10
+
+User authorized live deployment and frontend button testing after login/config and
+synthetic seed setup. Safe checks: 759/760 HTTP/API assertions pass (CSP absent),
+329 role/endpoint combinations, 51 page routes without detected render exceptions,
+26/26 direct Neon checks and browser control testing across banking/admin/reports.
+Reconciliation agrees for 10 accounts and 191 ledger entries. Navigation gaps:
+RPT-02–05, staff withdrawals, staff statement link and savings-plan catalogue.
+No application code/migrations/publication changed. All-row Manage/Edit and
+deactivation dialogs were exercised without final changes. Financial posting and
+privileged final buttons remain unverified; automatic review rejected non-dry-run
+interest replay. P06-M01-T04 and phase acceptance remain pending. Details/owner
+findings/evidence: `handoffs/p06-live-deployment-audit-2026-10-10.md`.
 
 ## Neon CI fresh-checkout correction — 2026-10-10
 

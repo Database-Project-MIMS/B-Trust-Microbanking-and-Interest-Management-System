@@ -19,4 +19,10 @@ describe('P06 controlled financial UI initial rendering',()=>{
   test('report blocks filter submission while loading and does not render prototype financial values',()=>{
     assert.match(output.report,/<fieldset disabled/);assert.match(output.report,/Generating report/);assert.doesNotMatch(output.report,/Sample Customer|999999/);
   });
+  test('report metadata describes unbounded, one-sided and inclusive bounded periods',()=>{
+    assert.match(output.allDates,/<dd>All dates<\/dd>/);
+    assert.match(output.fromDate,/<dd>2026-03-01 to Any date<\/dd>/);
+    assert.match(output.toDate,/<dd>Any date to 2026-03-31<\/dd>/);
+    assert.match(output.dateRange,/<dd>2026-03-01 to 2026-03-31<\/dd>/);
+  });
 });

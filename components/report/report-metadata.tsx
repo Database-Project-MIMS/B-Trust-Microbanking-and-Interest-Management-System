@@ -10,7 +10,8 @@ export default function ReportMetadata({ generatedAt, requestedBy, filters, scop
   return <dl className="flex flex-wrap gap-4 text-sm text-[var(--text-muted)]">
     <div><dt>Generated · Asia/Colombo</dt><dd>{generated}</dd></div>
     <div><dt>Requested by</dt><dd>{requestedBy}</dd></div>
-    {filters && <div><dt>Applied period · inclusive</dt><dd>{filters.from} to {filters.to}</dd></div>}
+    {filters && <div><dt>Applied period · inclusive</dt><dd>{!filters.from && !filters.to
+      ? "All dates" : `${filters.from || "Any date"} to ${filters.to || "Any date"}`}</dd></div>}
     {scopeLabel && <div><dt>Applied scope</dt><dd>{scopeLabel}</dd></div>}
     {agentLabel && <div><dt>Applied agent</dt><dd>{agentLabel}</dd></div>}
     {filters?.sort && <div><dt>Applied order</dt><dd>{
