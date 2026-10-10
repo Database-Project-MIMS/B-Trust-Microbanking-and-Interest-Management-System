@@ -1,0 +1,58 @@
+name: mims
+
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: mims_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MIMS_POSTGRES_PASSWORD:?Generate .env.docker with node scripts/configure-docker.mjs}
+      MIMS_OWNER_PASSWORD: ${MIMS_OWNER_PASSWORD:?MIMS_OWNER_PASSWORD is required}
+      MIMS_APP_PASSWORD: ${MIMS_APP_PASSWORD:?MIMS_APP_PASSWORD is required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-roles.sql:/docker-entrypoint-initdb.d/10-mims-roles.sql:ro
+    healthcheck:
+      # The bootstrap server uses a Unix socket; TCP becomes ready after role init.
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U postgres -d mims_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  setup:
+    build:
+      context: .
+      target: tooling
+    environment:
+      DATABASE_MIGRATION_URL: postgresql://mims_owner:${MIMS_OWNER_PASSWORD:?MIMS_OWNER_PASSWORD is required}@db:5432/mims_dev
+      MIMS_SEED_DEMO: '1'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://mims_app:${MIMS_APP_PASSWORD:?MIMS_APP_PASSWORD is required}@db:5432/mims_dev
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      CSRF_SECRET: ${CSRF_SECRET:?CSRF_SECRET is required}
+      INTEREST_WORKER_TOKEN: ${INTEREST_WORKER_TOKEN:?INTEREST_WORKER_TOKEN is required}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      BANK_TIMEZONE: Asia/Colombo
+      PGPOOL_MAX: ${PGPOOL_MAX:-10}
+    ports:
+      - '127.0.0.1:${MIMS_HTTP_PORT:-3000}:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

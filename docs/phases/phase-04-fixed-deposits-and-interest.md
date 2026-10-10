@@ -5,10 +5,9 @@
 ## Entry criteria
 
 - [ ] Phase 3 exit criteria met
-- [ ] **OQ-01 resolved** (G-01 — one active FD vs one FD ever). Determines whether
-      `fixed_deposit` uses a partial unique index or the ERD's plain `UNIQUE`.
-- [ ] **OQ-04 resolved** (G-12 — do savings accounts accrue interest?). Determines the size
-      of `sp_run_interest_cycle` and the meaning of RPT-04.
+- [x] **OQ-01 resolved** by ADR-0011: one active FD, partial unique index
+- [x] **OQ-04 resolved** by ADR-0012: savings interest uses average daily balance
+- [ ] OQ-13 mid-cycle interest and OQ-14 lecturer scope acceptance resolved
 - [ ] G-11 (rate snapshot) and G-23 (`maturity_date`) approved
 
 ## Tasks by member
@@ -66,3 +65,24 @@ fails on the constraint rather than relying on a procedural check that a crash c
 | Interest computed in JavaScript | The function is PL/pgSQL with `NUMERIC`; tests assert exact values |
 | Rounding drift across many payouts | Round once, at the end, in the database (SRS §7.1) |
 | M5 overloaded in this phase (18 pts) | M3 and M4 own the account-side and ledger-side halves |
+
+## Scoped M2 read-side start — 2026-10-08
+
+Vibodha authorized P04-M02-T01 early after the incomplete M5-T02 dependency and
+general gate were explained (ADR-0018). 0480 supplies the merged FD schema; disposable
+fixtures validate customer linkage without money-moving opening calls. Implementation
+is verified locally, REVIEW on feat/p04-m02-customer-fd-linkage: 612 tests /57 suites,
+clean 29-migration rebuild/checksums, typecheck/lint/build and browser checks pass.
+T01 is now DONE through merged PR #60 (dev e9291dc). This does not approve Phase 3
+exit, general Phase 4 entry, OQ-13/OQ-14, or M5/M3 completion. Baseline SQL/RLS scope
+is required for the T01 listing itself.
+
+Vibodha subsequently said “do it now” for P04-M02-T02 after the pending gate was
+explained. ADR-0019 authorizes its focused M2 FD read-scope completion: current-actor
+restrictive SELECT guard plus direct SQL/live-session regression tests. No general
+phase approval, FD financial writer or another member's read-path completion is
+inferred. Existing M2 UI/API shape is unchanged; M1/M5 policy review remains.
+
+T02 verified locally, REVIEW: 630 tests /60 suites, clean isolated 31-migration
+rebuild/checksums, typecheck/lint/build pass. User publication and policy review
+remain; the phase's entry/exit criteria above are not checked by this read task.

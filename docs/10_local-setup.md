@@ -2,6 +2,15 @@
 
 From a clean machine to a running MIMS with sample data.
 
+For Docker Desktop or Docker Engine, use [Docker setup](22_docker-setup.md):
+the app, PostgreSQL and owner-only setup run in containers with persistent data.
+The host-native instructions below remain available.
+
+For automatic deployment of SQL migrations to Neon, see
+[Neon migration setup](23_neon-migrations.md). The tracked example leaves all
+connection and security secrets empty; supply them only in ignored local files
+or the appropriate deployment environment.
+
 ## Prerequisites
 
 | Tool | Version | Check |
@@ -64,18 +73,25 @@ Fill in `.env` (never commit it — it is gitignored):
 **No `NEXT_PUBLIC_*` variable may contain a secret** — anything with that prefix is shipped
 to the browser.
 
+For production, provide `DATABASE_MIGRATION_URL` only to the migration job, never
+to the Next.js runtime. Set `APP_BASE_URL` to the public HTTPS origin and run
+`npm run verify:deployment` in the runtime environment before starting the app.
+The reverse proxy must terminate TLS and redirect HTTP to HTTPS; a successful
+local `npm run build` does not prove that the deployed site uses HTTPS.
+
 ## 4. Build the schema
 
 ```bash
 npm run db:migrate       # apply migrations in order
 npm run db:status        # show applied vs pending
+npm run db:grants        # apply runtime permissions using the owner connection
 ```
 
 `db:rebuild` runs everything in the documented order (`database/README.md`): migrations →
 routines → triggers → views → indexes → roles → seed.
 
 ```bash
-npm run db:rebuild       # DESTRUCTIVE: drops and recreates mims_dev
+npm run db:rebuild       # rebuild an empty configured database
 ```
 
 ## 5. Seed sample data
@@ -84,9 +100,10 @@ npm run db:rebuild       # DESTRUCTIVE: drops and recreates mims_dev
 npm run db:seed
 ```
 
-Loads 3 branches, 6 agents, 18 customers, 22 accounts (3 joint), 12 FDs and 140+
-transactions — deterministic, so report totals are reproducible
-(`06_seed-data-spec.md`).
+Currently loads the Phase 1 foundation: 3 branches, 6 ordinary agents, 5 savings plans
+and 3 FD products. The full planned target of 18 customers, 22 accounts (3 joint),
+12 FDs and 140+ transactions depends on future schema/routine tasks
+(`06_seed-data-spec.md`); it is not yet delivered.
 
 ## 6. Verify
 
@@ -94,7 +111,7 @@ transactions — deterministic, so report totals are reproducible
 npm run db:verify
 ```
 
-Checks PostgreSQL ≥ 15, migrations applied, shared domains present, **no floating-point
+Checks PostgreSQL ≥ 15, every migration filename/checksum matches, shared domains present, **no floating-point
 money column**, and a primary key on every table. All checks must pass.
 
 ## 7. Run
@@ -113,12 +130,19 @@ npm run test:db          # SQL constraints, routines, concurrency
 npm run test:api         # route handlers, authorization, injection
 npm run typecheck
 npm run lint
+npm run verify:phase1    # isolated rebuild + all tests + typecheck/lint/build
 ```
+
+Test commands create and remove a disposable PostgreSQL cluster using synthetic data;
+they do not reset the configured development database. Local PostgreSQL binaries must
+be available. On Windows versions 18/17/16/15 are discovered under Program Files;
+otherwise set `PG_BIN` to the installation's bin directory or put binaries on PATH.
+An owner role with CREATEDB is created only inside the disposable cluster.
 
 ## Resetting
 
 ```bash
-npm run db:rebuild       # full clean rebuild + seed
+npm run db:rebuild -- --reset  # explicit nonempty mims_dev/mims_test_* reset + seed
 ```
 
 The database must always be reconstructible from empty with no manual table editing
@@ -138,3 +162,13 @@ The database must always be reconstructible from empty with no manual table edit
 | `Module not found: pg` in a client component | `pg` imported outside `lib/db` | Only `lib/db` may import `pg`; the file needs `import "server-only"` |
 | Ports clash | 3000 in use | `PORT=3001 npm run dev` |
 | Wrong timezone in timestamps | Server not on Asia/Colombo | Values are `TIMESTAMPTZ`; format for display, do not change storage |
+
+## Disposable frontend QA
+
+`npm run verify:phase1 -- --preview` builds a temporary database and synthetic QA identities,
+then starts a localhost Next development server. Its URL is written to ignored
+`test-results/preview-url.json`; create `test-results/preview-stop` to terminate the server
+and clean up the cluster. Stop it before production build (shared .next directory).
+Use only disposable credentials in `tests/helpers/browser-fixture.mjs`, never real users.
+`--catalog` regenerates docs/18/19 from the clean rebuild; `--tap` requests diagnostic test
+output. The normal configured development database is preserved by these commands.

@@ -1,19 +1,16 @@
-import { NextResponse } from "next/server";
-import { queryOne } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth/rbac";
+import { getHealthStatus } from "@/services/health-service";
 
-/**
- * GET /api/health — liveness and database connectivity check (NFR-REL-06).
- *
- * Public, but returns no schema detail, no version string and no driver error
- * text (NFR-SEC-05). Owned by Member 4 from Phase 1.
- */
-export async function GET() {
+export async function GET(request: NextRequest): Promise<Response> {
   try {
-    const row = await queryOne<{ ok: number }>("SELECT 1 AS ok");
-    return NextResponse.json({ data: { status: row?.ok === 1 ? "ok" : "degraded" } });
-  } catch {
+    const user = await requireUser(request);
+    const data = await getHealthStatus(user);
+    return NextResponse.json({ data }, { status: data.status === "ok" ? 200 : 503 });
+  } catch (error) {
+    if (error instanceof Response) return error;
     return NextResponse.json(
-      { error: { code: "DB_UNAVAILABLE", message: "Service unavailable." } },
+      { error: { code: "SERVICE_UNAVAILABLE", message: "Health check unavailable." } },
       { status: 503 },
     );
   }

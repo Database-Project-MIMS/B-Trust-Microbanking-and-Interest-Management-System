@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser, requireRole } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
 import { updateFdProduct } from "@/services/fd-product-service";
+import { z } from 'zod';
+import { errorResponse } from '@/lib/http/error-response';
+
+const updateSchema = z.object({
+  interestRate: z.string().optional(), status: z.string().optional(),
+  description: z.string().max(255).optional(),
+}).strict().refine(value => Object.keys(value).length > 0);
 
 export async function PATCH(
   request: NextRequest,
@@ -13,13 +20,13 @@ export async function PATCH(
     requireRole(user, "ADMIN");
     verifyCsrf(request);
 
-    const body = await request.json();
+    const body = updateSchema.parse(await request.json());
     const { interestRate, status, description } = body;
 
     // Validate interestRate if provided (must be a fraction between 0 and 1, exclusive of 0, inclusive of 1)
     if (interestRate !== undefined && interestRate !== null) {
-      const rateNum = parseFloat(interestRate);
-      if (isNaN(rateNum) || rateNum <= 0 || rateNum > 1) {
+      const rate = typeof interestRate === "string" ? interestRate : "";
+      if (!/^0\.(?=.*[1-9])\d{1,4}$|^1(?:\.0{1,4})?$/.test(rate)) {
         return NextResponse.json(
           { error: { code: "BAD_REQUEST", message: "Interest rate must be a fraction between 0 and 1 (e.g. 0.1300)." } },
           { status: 400 }
@@ -43,21 +50,6 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedProduct });
   } catch (error) {
-    if (error instanceof Response) {
-      return error;
-    }
-    
-    const msg = error instanceof Error ? error.message : "An unexpected error occurred.";
-    if (msg.includes("not found")) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: msg } },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred." } },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }

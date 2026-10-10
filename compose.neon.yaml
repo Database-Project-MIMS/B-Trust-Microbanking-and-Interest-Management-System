@@ -1,0 +1,21 @@
+# Standalone app-only stack. Use this file alone, not as a local-DB override.
+name: mims-neon
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${NEON_DATABASE_URL:?Set NEON_DATABASE_URL to the Neon mims_app connection in .env.neon}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      CSRF_SECRET: ${CSRF_SECRET:?CSRF_SECRET is required}
+      INTEREST_WORKER_TOKEN: ${INTEREST_WORKER_TOKEN:?INTEREST_WORKER_TOKEN is required}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3001}
+      BANK_TIMEZONE: Asia/Colombo
+      PGPOOL_MAX: ${PGPOOL_MAX:-10}
+    command: [sh, -c, 'node scripts/check-neon-app-env.mjs && exec node server.js']
+    ports:
+      - '127.0.0.1:${MIMS_NEON_HTTP_PORT:-3001}:3000'
+    restart: unless-stopped

@@ -54,3 +54,10 @@ opening needs to insert the first `transaction` row, owned by M4). This is expec
 that's what a **handoff** is for (`handoffs/README.md`): the owning member publishes the
 interface (a function signature, a service method) and the calling member uses it without
 editing the owner's files directly.
+
+## Predeployment cross-owner contribution — 2026-10-10
+
+ADR-0027 and the user authorize required cross-member fixes on the current branch.
+Original owners/stewards above retain ownership; this is a contribution, not a transfer.
+New capabilities and touched-owner paths are recorded in
+[handoff](handoffs/p06-m02-predeployment-completion.md). No PR/push/merge is authorized.

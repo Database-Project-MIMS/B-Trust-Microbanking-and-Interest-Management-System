@@ -11,18 +11,73 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Neon CI correction (2026-10-10):** Fresh-checkout explain-output directory
+fixed for PR #94. [Receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
+No new task acceptance or strikethrough changes; prior overview review retained.
+
+**Docker with Neon supplement (2026-10-10):** Separate app-only stack on the
+current migration branch; [guide](../docs/22_docker-setup.md#run-the-docker-app-against-neon)
+and [handoff](../.agent/handoffs/p06-docker-neon-runtime.md). All five member tables
+reviewed; no task acceptance/strikethrough changes. Container execution remains
+pending a working Docker Linux engine.
+
+**Neon supplement (2026-10-10):** User-requested migration workflow on
+`feat/p06-m02-neon-migrations`; [guide](../docs/23_neon-migrations.md) and
+[handoff](../.agent/handoffs/p06-neon-migration-deployment.md). All five member
+summary tables were reviewed; no existing task newly reaches acceptance, so
+their rows/strikethroughs remain unchanged. Live HTTPS and publication are pending.
+
+**Docker supplement (2026-10-10):** User-requested local infrastructure on
+`feat/p06-m02-dockerize`; [guide](../docs/22_docker-setup.md) and
+[handoff](../.agent/handoffs/p06-m02-docker-setup.md). Existing summary rows remain
+unchanged: this does not complete live HTTPS or approve a phase/publication gate.
+
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
+
+
+**Merged master-data verification:** PR #90 integrates T02 (ADR-0025);
+focussed 309/full 1062 checks were historical pre-T03 evidence. PR #88 integrates T01.
+T03 is locally verified REVIEW under ADR-0026, awaiting user publication/review.
+
+**2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
+reported integration failures in other members' code. Full current865/latest940
+tests pass; original stewardship and unfinished task statuses remain.
+[Repairs and review](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
+
+**Reconciled 2026-10-07:** M2 Phase 1 T01–T04 and Phase 2 T01–T05 technically DONE.
+T05 API/screens, migration 0223 and RLS/audit integration are verified locally;
+365 tests pass and the 19-migration rebuild/typecheck/lint/build pass.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+T05 is merged through PR #41; user controls publication.
+[Current handoff](../.agent/handoffs/p02-m02-t05-customer-api-ui.md).
+
+**2026-10-08:** T01 is DONE, merged through PR #49 (dev c2bce7c). T02 is implemented
+on feat/p03-m02-agent-daily-activity under the extended scoped start in ADR-0017:
+live activity API/page, exact SQL totals, inclusive Colombo dates and transfer-safe
+branch scope. T02 is DONE, merged through PR #53 (dev 6583463).
+529 tests / 48 suites, clean 24-migration rebuild, TypeScript/lint/build and browser
+QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
+[Handoff and review](../.agent/handoffs/p03-m02-agent-daily-activity.md).
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| 01 | [Branch Schema](01_P1-T01_branch-schema.md) | P1 | T01 | `branch` table + `branch_code UNIQUE` | ~3 |
-| 02 | [Agent Schema](02_P1-T02_agent-schema.md) | P1 | T02 | `agent` as a subtype of `app_user`; one-active-branch rule | ~3 |
-| 03 | [Branch & Agent API + Admin UI](03_P1-T03-T04_branch-agent-api-ui.md) | P1 | T03–T04 | `/api/branches`, `/api/agents`, admin pages, deactivate-not-delete | ~8 |
-| 04 | [Customer Schema](04_P2-T01_customer-schema.md) | P2 | T01 | `customer` table, identity uniqueness, trigram search index | ~4 |
-| 05 | [Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md) | P2 | T02–T03 | `customer_agent` (one-active-assignment), `customer_document` | ~6 |
-| 06 | [Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md) | P2 | T04–T05 | Registration transaction, form, search, profile pages | ~10 |
-| 07 | [Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md) | P3 | T01–T02 | `agent_id`/`branch_id` on `transaction`, agent activity API & page | ~6 |
-| 08 | [Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md) | P4 | T01–T02 | FD linkage view, customer FD listing, branch-scoped FD access | ~5 |
-| 09 | [RPT-01 Agent Transactions Report](09_P5_rpt01-report.md) | P5 | T01–T02 | Agent-wise transaction view, API, page, CSV | ~7 |
-| 10 | [Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md) | P6 | T01–T03 | Seed validation, master-data integrity tests, doc pass | ~6 |
+| ~~01~~ | ~~[Branch Schema](01_P1-T01_branch-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`branch` table + `branch_code UNIQUE`~~ | ~~about 3~~ |
+| ~~02~~ | ~~[Agent Schema](02_P1-T02_agent-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`agent` as a subtype of `app_user`; one-active-branch rule~~ | ~~about 3~~ |
+| ~~03~~ | ~~[Branch & Agent API and UI](03_P1-T03-T04_branch-agent-api-ui.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~`/api/branches`, `/api/agents`, deactivate-not-delete and admin UI~~ | ~~about 8~~ |
+| ~~04~~ | ~~[Customer Schema](04_P2-T01_customer-schema.md)~~ | ~~P2~~ | ~~T01~~ | ~~`customer` table, identity uniqueness, trigram search index~~ | ~~4~~ |
+| ~~05~~ | ~~[Customer Agent & Document Schema](05_P2-T02-T03_customer-agent-document-schema.md)~~ | ~~P2~~ | ~~T02–T03~~ | ~~`customer_agent` (one-active-assignment), `customer_document`~~ | ~~6~~ |
+| ~~06~~ | ~~[Customer Registration Service & UI](06_P2-T04-T05_customer-registration-service-ui.md)~~ | ~~P2~~ | ~~T04–T05~~ | ~~Registration/search/profile services, authenticated APIs and live screens~~ | ~~10~~ |
+| ~~07~~ | ~~[Agent Attribution & Daily Activity](07_P3_agent-attribution-daily-activity.md)~~ | ~~P3~~ | ~~T01~~ DONE; ~~T02~~ DONE | ~~Immutable attribution and reporting indexes; live activity API/page~~ | ~~6~~ |
+| ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
+| ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
+| ~~10~~ | ~~[Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md)~~ | ~~P6~~ | ~~T01 DONE; T02 DONE (PR #90); T03 REVIEW (ADR-0026)~~ | ~~Seed/integrity merged; final docs and dependency repairs locally verified~~ | ~~~6~~ |
 
 ---
 
@@ -56,11 +111,14 @@ consume from M1 and M4)*
 | **I-2** | `withTransaction()` and SQLSTATE → domain error mapping | M4 | P1 |
 | **I-7** | Report framework: filters, scope, CSV, access audit | M1 | P5 |
 
-Blocking gate: **OQ-05** (G-20 — is a customer login required?) must be resolved before
-`P02-M02-T01` can start. Check `.agent/open-questions.md` before beginning Phase 2.
+Identity gate OQ-05 is resolved by ADR-0007. M2 T01–T05 are verified locally; current
+dev includes customer registration, M3 holder and M1 parent RLS/audit. T05 supplies
+scoped child access and live customer routes/screens (ADR-0015).
+P03-M02-T01 and T02 have user-authorized early-start exceptions (ADR-0016/0017).
+Other Phase 3 work still waits for Phase 2 exit and its entry/decision gates.
+Historical PR #35/#36 evidence remains in dated handoffs, not the current status.
 
 ---
-
 ## 🗄️ Database Objects You Own
 
 ### Tables (5)
@@ -75,7 +133,7 @@ Blocking gate: **OQ-05** (G-20 — is a customer login required?) must be resolv
 - `agent.employee_no`, `agent.nic_passport_no`, `agent.email` — `UNIQUE`; `(branch_id, status)`
 - `customer.nic_passport_no` — `UNIQUE`; trigram index on `full_name`; `(branch_id)`
 - One-active-assignment partial unique index: `ON customer_agent(customer_id) WHERE is_active`
-- `transaction(agent_id, posted_at)`, `transaction(branch_id, posted_at)` — reporting indexes (Phase 3, G-07)
+- `transaction(agent_id, transaction_date)`, `transaction(branch_id, transaction_date)` — implemented reporting indexes (0320, G-07)
 
 ### Report Views (1)
 - `vw_rpt01_agent_transactions` — agent-wise transaction counts and values by type
@@ -105,9 +163,8 @@ policies both depend on your `customer` table. Suggested approach:
 2. ✅ Do T01 (`customer` schema) first — resolves the identity gap, unblocks M3
 3. ✅ Do T02 (`customer_agent`) and T03 (`customer_document`) — both pure DB, can be
    done back-to-back
-4. ⚡ Do T04 (registration service) — the hardest task: customer + documents +
-   assignment + audit in **one transaction**
-5. ✅ Do T05 (registration form, search, profile pages) last
+4. ✅ T04 service is verified: customer + documents + assignment + audit in **one transaction**
+5. T05 API/screen integration follows M1 runtime security integration
 
 ---
 
@@ -128,3 +185,17 @@ policies both depend on your `customer` table. Suggested approach:
    0520–0539 (P5), 0620–0639 (P6)** — never collide with others
 8. **Never edit a merged migration** — write a new one
 9. **Don't modify files owned by another member** — write a handoff instead
+
+## Current scoped start — 2026-10-08
+
+P04-M02-T01 is implemented and verified on feat/p04-m02-customer-fd-linkage under
+ADR-0018. M5's merged 0480 table supplies the read-side schema; M5 opening remains
+partial. 612 tests /57 suites, clean isolated 29-migration rebuild/checksums,
+typecheck/lint/build and populated/empty/error/retry/mobile browser checks pass.
+T01 is DONE through merged PR #60 (dev e9291dc). No general phase gate is approved.
+The user authorized T02's scoped start; see ADR-0019 and the FD scope handoff.
+
+T02 is implemented and verified locally: 0421 restrictive stored-actor SELECT guard,
+DB/API scope-transition tests. Full 630 tests /60 suites, clean isolated 31-migration
+rebuild/checksums, typecheck/lint/build pass. Local REVIEW awaits user publication
+and M1/M5 policy review. No new UI/financial writer or general phase approval.

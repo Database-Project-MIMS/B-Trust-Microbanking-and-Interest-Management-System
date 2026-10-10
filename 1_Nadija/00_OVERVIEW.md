@@ -8,17 +8,36 @@
 
 ## 🗺️ Work Order Summary
 
+**Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
+and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
+Staff transfers, savings catch-up, automatic principal return, document verification,
+real financial/admin/audit UI and reset controls are locally verified under ADR-0027.
+3,397 tests/116 suites, clean 70-migration rebuild/28-table restore and type/lint/build pass.
+Local delivery is REVIEW pending user publication; live HTTPS remains IN_PROGRESS.
+Strikethroughs on newly completed local work mark implementation completion, not merger.
+Remaining product/external limits and unchanged stewardship are recorded in the handoff.
+
+
+**2026-10-09 integration contribution:** Vibodha authorized M2 to repair the
+reported integration failures in other members' code. Full current865/latest940
+tests pass; original stewardship and unfinished task statuses remain.
+[Repairs and review](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
+
+**Reconciled 2026-10-07:** Phase 1 T01–T05 and Phase 2 T01/T02 are DONE in the tracker and merged dev. T03 remains the owner's broader customer/account route task; M2 T05 now supplies customer endpoints for review.
+Phase 2 entry approved: [checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+Closeout is merged into dev; the user retains all publication control.
+
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
-| ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~~3~~ |
-| ~~02~~ | ~~[Authentication](02_P1-T02_authentication.md)~~ | ~~P1~~ | ~~T02~~ | ~~Password hashing, login/logout APIs, session management~~ | ~~~3~~ |
-| ~~03~~ | ~~[RBAC & Scope](03_P1-T03_rbac-branch-scope-csrf.md)~~ | ~~P1~~ | ~~T03~~ | ~~`requireRole()`, `branchScope()`, CSRF ⚡ **CRITICAL PATH**~~ | ~~~3~~ |
-| 04 | [Sign-in & Shell](04_P1-T04_sign-in-app-shell.md) | P1 | T04 | Sign-in page, app shell, role-aware nav | ~2 |
-| 05 | [Params & Audit](05_P1-T05_parameters-audit.md) | P1 | T05 | `system_parameter`, `business_calendar`, `audit_log`, triggers | ~2 |
-| 06 | [RLS & Scope](06_P2_rls-audit-branchscope.md) | P2 | T01–T03 | Row Level Security, audit coverage, branch scope on routes | ~6 |
-| 07 | [Hours & Reversals](07_P3_business-hours-reversal-audit.md) | P3 | T01–T03 | Business hours enforcement, reversal auth, financial audit | ~8 |
-| 08 | [Worker Auth](08_P4_worker-auth-cycle-config.md) | P4 | T01–T02 | Interest run auth, cycle configuration | ~6 |
-| 09 | [Report Framework](09_P5_report-framework-csv-audit-search.md) | P5 | T01–T04 | Report framework (I-7), CSV export, audit search | ~12 |
+| ~~01~~ | ~~[Identity Schema](01_P1-T01_identity-schema.md)~~ | ~~P1~~ | ~~T01~~ | ~~`role`, `app_user`, `user_session`, `login_attempt` tables~~ | ~~about 3~~ |
+| ~~02~~ | ~~[Authentication](02_P1-T02_authentication.md)~~ | ~~P1~~ | ~~T02~~ | ~~Password hashing, login/logout APIs, session management~~ | ~~about 3~~ |
+| ~~03~~ | ~~[RBAC & Scope](03_P1-T03_rbac-branch-scope-csrf.md)~~ | ~~P1~~ | ~~T03~~ | ~~`requireRole()`, `branchScope()`, CSRF ⚡ **CRITICAL PATH**~~ | ~~about 3~~ |
+| ~~04~~ | ~~[Sign-in & Shell](04_P1-T04_sign-in-app-shell.md)~~ | ~~P1~~ | ~~T04~~ | ~~Sign-in page, app shell, role-aware nav~~ | ~~about 2~~ |
+| ~~05~~ | ~~[Params & Audit](05_P1-T05_parameters-audit.md)~~ | ~~P1~~ | ~~T05~~ | ~~`system_parameter`, `business_calendar`, `audit_log`, triggers~~ | ~~about 2~~ |
+| 06 | [RLS & Scope](06_P2_rls-audit-branchscope.md) | P2 | ~~T01–T03~~ | ~~Row Level Security, audit coverage, branch scope enforcement~~ | ~6 |
+| ~~07~~ | ~~[Hours & Reversals](07_P3_business-hours-reversal-audit.md)~~ | ~~P3~~ | ~~T01–T03~~ | ~~Business hours enforcement, reversal auth, financial audit~~ | ~~about 8~~ |
+| ~~08~~ | ~~[Worker Auth](08_P4_worker-auth-cycle-config.md)~~ | ~~P4~~ | ~~T01–T02~~ | ~~Interest run auth, cycle configuration~~ | ~~about 6~~ |
+| ~~09~~ | ~~[Report Framework](09_P5_report-framework-csv-audit-search.md)~~ | ~~P5~~ | ~~T01–T04~~ | ~~Report framework (I-7), CSV export, audit search~~ | ~~about 12~~ |
 | 10 | [Security & Deploy](10_P6_security-testing-deployment.md) | P6 | T01–T04 | SQL injection tests, auth matrix, RLS verification, deployment | ~9 |
 
 ---

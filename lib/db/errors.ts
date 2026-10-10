@@ -122,6 +122,7 @@ export class DatabaseError extends DomainError {
   constructor(
     code = "DATABASE_ERROR",
     message = "A database error occurred.",
+    readonly sqlstate?: string,
   ) {
     super(code, message, 500);
   }
@@ -169,6 +170,9 @@ export function isRetryable(err: unknown): boolean {
  * NFR-SEC-05: Driver text, raw SQL, parameters, and stack traces are NEVER
  * returned in the mapped domain error message.
  */
+const SAFE_ROUTINE_CODES=new Set(['ACCOUNT_NOT_ACTIVE','OUTSIDE_BUSINESS_HOURS','IDEMPOTENCY_KEY_REUSED',
+ 'TRANSACTION_NOT_FOUND','WITHDRAWAL_NOT_AUTHORIZED','CHANNEL_UNAVAILABLE','INVALID_WITHDRAWAL_AMOUNT','ALREADY_REVERSED',
+ 'CANNOT_REVERSE_A_REVERSAL','REVERSAL_WOULD_OVERDRAFT','DEPOSIT_NOT_AUTHORIZED']);
 export function mapDatabaseError(err: unknown): Error {
   if (err instanceof DomainError) {
     return err;
@@ -189,16 +193,12 @@ export function mapDatabaseError(err: unknown): Error {
       case PG_ERROR.DEADLOCK_DETECTED:
         return new DeadlockDetectedError();
       case PG_ERROR.RAISE_EXCEPTION:
-        return new BusinessRuleError(
+        return Object.assign(new BusinessRuleError(
           "BUSINESS_RULE_VIOLATION",
-          typeof err.message === "string" &&
-            !err.message.includes("SELECT") &&
-            !err.message.includes("FROM")
-            ? err.message
-            : "The operation was rejected by business logic rules.",
-        );
+          SAFE_ROUTINE_CODES.has(err.message?.split(":")[0]??"") ? err.message!.split(":")[0]! : "The operation was rejected by business logic rules.",
+        ), { sqlstate: PG_ERROR.RAISE_EXCEPTION });
       default:
-        return new DatabaseError("UNEXPECTED_DB_ERROR", "A database error occurred.");
+        return new DatabaseError("UNEXPECTED_DB_ERROR", "A database error occurred.", /^[0-9A-Z]{5}$/.test(err.code) ? err.code : undefined);
     }
   }
 

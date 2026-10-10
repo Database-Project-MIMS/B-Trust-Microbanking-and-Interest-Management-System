@@ -43,7 +43,7 @@ Anything still likely to change, so the dependent member doesn't build on sand.
 |---|---|---|---|
 | I-1 | M1 | all | `requireUser()`, `requireRole()`, `branchScope()` |
 | I-2 | M4 | all | `withTransaction()`, SQLSTATE → domain error mapping |
-| I-4 | M3 | M4 | plan-minimum check callable from the withdrawal path |
+| I-4 | M3 | M4 | plan-minimum check callable from the withdrawal path — **published** (`fn_check_plan_minimum`, [handoff](i-4-fn-check-plan-minimum.md)); mandate check follows in P03-M03-T02 |
 | I-5 | M4 | M5 | posting `INTEREST_CREDIT` through the ledger routine |
 | I-6 | M3 | M5 | account-side FD eligibility read under lock |
 | I-7 | M1 | M2, M3, M4, M5 | report framework (filters, scope, metadata) |
@@ -53,6 +53,10 @@ The core I-1 implementation now resolves branch scope through `agent.branch_id` 
 closed when a branch-scoped user lacks that profile. The accepted contract and remaining
 quality follow-ups are recorded in `p01-branch-staff-scope-decision.md`. The remaining
 rows are a forward-looking checklist, not a status report.
+
+The 2026-10-05 [Phase 1 closeout handoff](phase-01-closeout-2026-10-05.md) supersedes
+the earlier pending quality-check notes. Updated I-1 signatures/behavior are in
+`i1-rbac-helpers.md`; review and approval evidence is in the Phase 1 checkpoint.
 
 P01-M02-T03's cross-owner completion work is recorded in
 `p01-m02-t03-audit-and-grants.md`: Member 1 must add least-privilege organisation-table

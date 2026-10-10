@@ -1,6 +1,6 @@
 # ⚫ Phase 6 — Tasks 01–03: Seed Validation, Master-Data Integrity & Final Docs
-**Task IDs:** `P06-M02-T01`, `P06-M02-T02`, `P06-M02-T03` · **Branch:** `feat/p06-m02-final-testing-docs`
-**Status:** TODO
+**Task IDs:** `P06-M02-T01`, `P06-M02-T02`, `P06-M02-T03` · **T01 branch:** `p06-m02-seed-validation`; **T02:** `feat/p06-m02-master-data-integrity`; T03 future
+**Status:** T01 REVIEW; T02 REVIEW under ADR-0025 (verified locally, publication pending); T03 TODO
 **Depends on:** `P03-M05-T01` (seed set 4), Phase 2 (your own tables), all (for T03)
 **Story Points:** ~2 + ~2 + ~2 = ~6 · **Layer:** Tests + Docs
 
@@ -8,7 +8,7 @@
 
 ## What This Task Is
 
-No new schema. This phase closes out your slice: prove the seed data meets its minimum
+No new tables are required. Completion adds corrective routine migration 0620. This phase closes out your slice: prove the seed data meets its minimum
 counts, prove the master-data constraints you built across Phases 1–2 actually hold
 under adversarial tests, and do a documentation consistency pass. This is the task that
 makes the project demonstrable and gradeable.
@@ -17,31 +17,64 @@ makes the project demonstrable and gradeable.
 
 ## T01 — Seed Validation (AC-12)
 
-Confirm every minimum count from `docs/06_seed-data-spec.md` that touches your tables is
-actually met after M5's full seed run:
+**Completed locally, 2026-10-09 (ADR-0024):** Vibodha authorized completion of
+the reported seed blockers. Thirty-nine strict seed tests cover minimums, missing
+evidence, current assignments, role/profile links, real funding, FD audits,
+signed-ledger balances, payout formulas/control totals, duplicate FD/cycle credits,
+CLI failure behavior and restoration of custom hours/limits. Seed checks own a
+fresh disposable database, so other suites' fixtures cannot inflate counts.
 
-| Entity | Minimum required | Requirement |
-|---|---|---|
-| Branches | ≥ 3 | FR-ORG-01 |
-| Agents | ≥ 5 | FR-ORG-01 |
-| Customers | ≥ 15 | FR-CUS-05 |
+The seed has three branches, six ordinary agents plus three managers, fifteen
+customers, ten accounts/two valid joint mandates, twelve funded FDs, three
+nonempty successful cycles/thirty payouts, 191 postings and fourteen users
+covering seven roles. All global minima and financial invariants pass. Sum of
+balances is `1582020.52`; payouts and run totals each sum to `66020.52`.
+Reseeding preserves measured counts and exact totals. M5 stewardship remains.
 
-Create `tests/db/seed-validation-org-customers.test.mjs`:
-1. ✅ `SELECT COUNT(*) FROM branch` ≥ 3
-2. ✅ `SELECT COUNT(*) FROM agent` ≥ 5
-3. ✅ `SELECT COUNT(*) FROM customer` ≥ 15
-4. ✅ Every active agent has exactly one active branch (trivially true by schema, but
-   assert it anyway as a regression guard)
-5. ✅ Every customer has exactly one active `customer_agent` row (re-assert
-   `ux_customer_agent_one_active` holds across the full seeded dataset, not just a
-   single test insert)
+Migration 0620 fixes shared-prefix interest reference collisions without editing
+merged migrations. Opening balances are actual idempotent deposits; FD funding,
+principal returns and interest use posting routines, with same-transaction FD
+audit. Operational timestamps/UUIDs are routine-generated; exact totals and
+fixed master/business dates are reproducible, not byte-identical posting history.
+The specification records this distinction and actual data counts.
 
-Run after `npm run seed` (or whatever M5's seed command ends up being):
-```bash
-npm run db:rebuild && npm run seed && npm test -- seed-validation
-```
+186 focused tests /15 suites, clean current46/latest51-migration rebuilds,
+checksums, reseeding, typecheck and lint pass. After explicit authorization to
+repair other members' integration failures, current full865/87 suites and
+latest-dev full940/95 suites all pass, with zero failures/cancellations/skips.
+The repairs include real session/RLS/role fixtures, SQL dates/overloads, audit
+contracts and safe audit/interest request authorization/service boundaries.
+T01 is REVIEW awaiting user publication; general Phase 6 gates remain separate.
+No UI change; /imprint N/A.
+[Evidence and review](../.agent/handoffs/p06-m02-seed-validation.md).
+
+`npm run verify:seed-validation -- --global` proves the delivery inside a new
+temporary PostgreSQL cluster. Add `--all-tests` for full integration diagnostics.
+`npm run db:seed-validate` is strict and read-only; organization-only scope
+explicitly disclaims global AC-12. `npm run db:seed-check` also reruns the seed
+on the configured database and compares actual counts/exact totals. The loader
+fails a missing ordered seed stage before writing. No developer DB is rebuilt
+by the disposable harness. The user has now authorized grouped local commits;
+push, PR creation and merge remain with the user.
+
+T02 is separately authorized in ADR-0025 below; T03 remains future work.
 
 ## T02 — Master-Data Integrity Tests
+
+**Implemented 2026-10-09 (ADR-0025):** 100 database cases cover every Phase 1–2
+M2 key/check/FK/required field, direct INSERT/UPDATE attacks, inactive-history
+deletion restrictions and deactivation retention. 16 API cases prove exact
+master-row/audit rollback, normalized duplicates, actual mims_app authorization
+and both ADMIN/manager deactivation paths. Customer status retention uses direct
+SQL plus its existing profile/search routes; no customer PATCH/DELETE is added.
+
+Run `npm run verify:master-data-integrity` for the new suites plus the original
+organization/customer/registration regressions inside a freshly initialized
+disposable cluster. Focused 309 tests, 51-migration rebuild/checksums, typecheck
+and lint pass. Full 1062 tests /98 suites (including security) pass with zero
+failures/cancellations/skips. /review passes; local commits authorized, user
+publication/review pending. General Phase 6 entry and T03 remain separate.
+[Coverage, review and handoff](../.agent/handoffs/p06-m02-master-data-integrity.md).
 
 Adversarial tests against every constraint you added in Phases 1–2. This is not new
 coverage of new features — it's a stress pass on what already exists, written as if
@@ -89,7 +122,7 @@ Read every doc your slice touches end-to-end and fix contradictions:
 ### Step 1 — Run the Full Seed and Test Suite
 ```bash
 npm run db:rebuild
-npm run seed
+npm run db:seed
 npm run db:verify
 npm run typecheck
 npm test
@@ -109,9 +142,11 @@ database/migrations/032*.sql database/migrations/042*.sql database/migrations/05
 Run `/review` one last time across your whole slice, not just the last task, to catch
 anything that fell through between phases.
 
-### Step 5 — Update Docs
+### Step 5 — Update Docs (future combined closeout)
 - All of §T03 above
-- Update task statuses in `docs/09_task-tracker.md` → `DONE` for T01, T02, T03
+- Update only completed, accepted task statuses. T01 is REVIEW with global AC-12
+  passing; T02 is independently verified under ADR-0025; T03 remains TODO.
+  Do not mark all three DONE together merely because organization seed checks pass.
 - Update `.agent/current-state.md`
 
 ---
@@ -122,5 +157,5 @@ anything that fell through between phases.
 - [ ] No `DELETE` succeeds against a referenced `branch`, `agent`, or `customer`
 - [ ] All documentation listed in T03 is internally consistent with the merged
       migrations
-- [ ] `npm run db:rebuild && npm run seed && npm test` all pass from empty
+- [ ] `npm run db:rebuild && npm run db:seed && npm test` all pass from empty
 - [ ] All 18 of Member 2's rows in `docs/09_task-tracker.md` show `DONE`

@@ -1,93 +1,558 @@
+# Current state — predeployment local completion
+
+## Neon CI fresh-checkout correction — 2026-10-10
+
+User supplied PR #94/run 38033232178's validation failure. RPT-01 runtime explain
+evidence failed with ENOENT because test-results was absent on a fresh runner.
+The test now creates its parent directory; DB/performance assertions unchanged.
+Verification starts with that directory absent and uses only a disposable local
+database. Previous ignored outputs preserved in scratch. Results/review are in
+`handoffs/p06-neon-ci-results-directory.md`. User subsequently authorized local
+commits for the Docker supplement and CI fix; no push/merge or live connection.
+Existing Docker work and task/phase acceptance retained.
+Fresh-output verification passes: 3,410 tests /116 suites, zero failures/skips;
+clean rebuild/restore, typecheck, lint and production build. Final marker:
+`LOCAL VERIFICATION: all checks passed.` Original outputs restored with backup
+retained; new explain evidence preserved. Hosted rerun needs the updated branch.
+User-authorized local commits: `f94fe86` Docker runtime/tests and `f47ccc8` CI fix;
+documentation/state form a third commit. No push performed.
+
+## Docker with Neon supplement — 2026-10-10
+
+Branch `feat/p06-m02-neon-migrations`, base `5e5dbb3`. User authorized necessary
+Docker updates. Separate app-only Compose stack uses restricted Neon mims_app,
+ignored `.env.neon` and port 3001. GitHub retains migration responsibility; no
+Docker setup/seeding in Neon mode. Original local PostgreSQL stack preserved.
+ADR-0030 and `handoffs/p06-docker-neon-runtime.md` record scope/review/evidence.
+The user reports the app connection configured; no credential values are recorded.
+Local private configuration and Compose validation, 8/8 operations checks, full
+lint/typecheck and standalone production build pass. Missing app secrets/settings
+generated locally, preserving the user's connection. Build passed outside sandbox
+after Windows EPERM; host Node 24, Linux Node 22 image remains unverified.
+Actual image/start verification needs a working Docker Linux engine. User
+subsequently authorized separate local commits; no push/PR creation/merge or live
+Neon connection. Task/phase acceptance unchanged.
+
+## Neon migration supplement — 2026-10-10
+
+Current branch `feat/p06-m02-neon-migrations`, based on clean Docker `1f183bb`.
+User requests an automatic Neon migration workflow and credential example cleanup.
+ADR-0029 records the scoped infrastructure contribution; ownership is unchanged.
+Workflow validates on disposable PostgreSQL, then deploys `dev` to neon-staging
+and `main` to neon-production using separate environment secrets. Deployment
+preserves data and never seeds/resets. Example database/security fields are empty.
+Current tracked files contain no Neon URL; history/remote branches are not certified.
+Verification/review evidence: `handoffs/p06-neon-migration-deployment.md`.
+Final local verification passes: 3,410 tests /116 suites, no failures/skips;
+clean 70-migration rebuild/checksums, backup/restore, typecheck, lint and build.
+Workflow YAML and credential-safe negative checks pass. Host Node 24/PG18;
+hosted Node 22/PG16 and Neon execution await external setup.
+Neon/GitHub environment setup and live deployment remain external actions.
+Task/phase acceptance stays unchanged. The user authorized separate local
+infrastructure, test and documentation commits. No push, PR or merge performed.
+
+## Docker infrastructure supplement — 2026-10-10
+
+Current branch `feat/p06-m02-dockerize`, based on verified `8a2b9c2`.
+User requested Dockerization, then authorized a few local commits. Infrastructure,
+tests and documentation are committed separately; no push, PR or merge.
+ADR-0028 and `handoffs/p06-m02-docker-setup.md` record the contribution.
+Node 22 standalone multi-stage image, owner-only setup, private PostgreSQL 16,
+persistent volume, localhost-only app port and dedicated ignored environment are
+implemented. Instructions: docs/22. No existing migration/domain/UI changes.
+Verification passes: 3,401 tests /116 suites, zero failures/cancellations/skips;
+clean 70-migration rebuild/checksums, restore evidence, typecheck, lint and ordinary
+production build. Separate standalone build and 2/2 Compose checks also pass.
+The initial Windows test-process crash did not recur in the full run. Docker Linux
+engine unavailable, so actual image build/start remains unverified.
+Existing task statuses and live HTTPS gate remain unchanged.
+
+## Previous predeployment verification
+
+2026-10-10 · `feat/p06-m02-final-documentation` · base dev `053f6f6`.
+User authorizes cross-member fixes, documentation and commit on this branch;
+no push, PR or merge. Staff transfers only and automatic FD maturity principal return
+were explicitly confirmed. New migrations 0628–0639 implement the accepted extensions
+and audit fixes; 0621–0627 remain previous local deliveries. M2 block is now exhausted.
+Original ownership unchanged; merged SQL unchanged. Contracts/catalogs/evidence:
+docs/04/05/07/16/18/19/20/21, ADR-0027 and predeployment handoff.
+
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
+
+Tracker: 97 tasks, 86 DONE, 10 REVIEW, 1 IN_PROGRESS (live HTTPS, explicitly deferred).
+REVIEW financial UI and statement are locally implemented, not published. Production
+dependency audit zero; seven high dev-tool glob/braces entries remain upstream limits.
+Closure protects positive unpaid savings interest under zero/no-active-FD baseline;
+final funded settlement policy questions received no answer and remain recorded.
+Next: user/peer review, funded settlement decision, target-runtime/live HTTPS verification
+and user-controlled publication. No production-perfect certification or deploy inferred.
+
+
+## Historical session records — superseded snapshots
+
+# Current State — P06-M02-T03 local closeout
+
+2026-10-09. Branch `feat/p06-m02-final-documentation`, base dev `053f6f6`.
+User authorizes necessary other-owner code/task completion and local commits; no push,
+PR creation or merge. Live verification explicitly deferred. PR #88/#90 merged T01/T02;
+PR #91/#92 merged M3/M4 tests. ADR-0026 and cross-owner handoff define this scope.
+
+Current physical/API catalogs: docs/18 and docs/19; final scope/evidence: docs/20.
+New 0621–0627 and FD/report/security/ops delivery are REVIEW until user publication.
+Savings ADB interest and transfers are accepted-but-unimplemented extensions; prototype
+transaction pages and live/browser/general phase acceptance remain pending. No overall
+SRS certification is inferred.
+
+Full regression: **3,133 tests / 113 suites** pass (2,000 security plus 1,133 API/DB/e2e),
+zero failures, cancellations or skips. Final receipt-guard verification: **331 API tests /
+30 suites**, typecheck, lint and production build pass. Final migration-format verification:
+**11 operations checks**, clean **58-migration** rebuild/checksums and exact dump/restore
+pass. The API guard adds only a safe missing-receipt error; final SQL whitespace changes
+were verified in the fresh operations rebuild. Temporary clusters were stopped/removed;
+the development database was preserved. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+
+Local implementation commits: `f4ea972`, `d78b045`; documentation/state/memory follow.
+Tracker: 97 total, 86 DONE, 8 REVIEW, 3 IN_PROGRESS. T03 is ready for user/peer review;
+local delivery does not mark incomplete UI/extensions/deployment accepted.
+
+
+## Historical session records — superseded status snapshots
+
 # Current State
 
-**Last updated:** 2026-09-25 · **Updated by:** Member 4 (Pramudith) after P01-M04-T01
+## M3 P06-M03-T01 + T02 — concurrency and constraint suites (2026-10-09)
 
-## Phase
+Test-only; no schema, routine or migration changes. Both tasks DONE per tracker.
 
-**Phase 1 — Foundation, Master Data & Security.** Work is in progress.
+- `tests/db/concurrent-withdrawals.test.mjs` (8 tests): 2–5 racers on separate pooled
+  connections through `sp_try_post_withdrawal`; exact winners/balances, plan-minimum race,
+  cent-exact amounts, deposits mixed in, 10 repeated rounds, and a lock-held test that
+  proves via `pg_stat_activity` the racers really queue. Every case reconciles ledger SUM,
+  `balance_after` chain (`ledger_seq` order) and audited rejections. Mutation-checked: with
+  `FOR UPDATE` removed from `sp_post_withdrawal` (scratch DB only, restored) all 8 fail.
+  M4's routine needed no change.
+- `tests/db/constraint-suite-plans-accounts.test.mjs` (29 tests): every CHECK/UNIQUE/FK on
+  `savings_plan`, `account`, `account_holder`, `joint_mandate`, the interest_rate domain,
+  RESTRICT deletes and `trg_validate_joint_mandate` 1/5-holder rejections; rolled-back
+  transactions; completeness guard against `pg_constraint` and unique indexes.
+- Docs: `docs/12_testing-and-acceptance.md`, tracker, `3_Nisith/00_OVERVIEW.md`.
+- Env note: on macOS `npm test` needs `LC_ALL=en_US.UTF-8` or the isolated postgres
+  cluster will not start. The local `mims_dev` is stale (23 migrations); a scratch
+  `mims_test_customer_schema` database was created and rebuilt for these tests.
+## M2 P06-M02-T02 — verified master-data integrity (2026-10-09)
 
-## What exists right now
+**Checkout:** `feat/p06-m02-master-data-integrity` · **Base:** `fe7034f`
+**Status:** REVIEW; implemented/verified locally, awaiting user publication/review.
+Vibodha explicitly confirmed the T02 blueprint (ADR-0025), then authorized failure
+repairs across owners and local commits. Push, PR creation and merge remain prohibited.
+The prior PR #88 conflict-resolution merge was already committed by the user at
+fe7034f before this task started; the following older pending-merge notes are historical.
 
-- PostgreSQL 16.15 (Homebrew) is installed and active locally, with `mims_dev` database rebuilt and verified cleanly (`db:rebuild`, `db:verify`).
-- Applied migrations include the shared foundation (`0000`), identity (`0100`), branch
-  schema (`0120`), agent schema (`0121`), savings plan schema (`0140`) and FD plan schema
-  (`0180`).
-- **P01-M04-T01 is complete** (on branch `feat/p01-m04-lib-db-hardening`):
-  - Hardened `lib/db/with-transaction.ts` with automatic retry on `40001` (serialization failure) and `40P01` (deadlock detected) using exponential backoff + jitter (up to 3 attempts). Complete rollback on any failure.
-  - Hardened `lib/db/errors.ts` translating SQLSTATE codes into typed domain errors (`UniqueViolationError`, `ForeignKeyViolationError`, `CheckViolationError`, `NotNullViolationError`, `SerializationFailureError`, `DeadlockDetectedError`, `DatabaseError`) while completely scrubbing raw SQL text, driver messages, and passwords (NFR-SEC-05).
-  - Redacted query logging in `lib/db/logger.ts` tracking duration and operation tags without parameter leakage.
-  - Pool metrics (`getPoolMetrics()`) exposed in `lib/db/pool.ts` for health endpoints.
-  - Published handoff `.agent/handoffs/i-2-lib-db.md` (unblocking backend work across all members).
-  - 19/19 tests passing in `tests/db/lib-db-hardening.test.mjs`. Full test suite passing (120/120 tests).
-- P01-M02-T01 and P01-M02-T02 are complete and merged into `dev`, including their
-  database constraints, integrity triggers, indexes, tests and documentation.
-- P01-M01-T01, P01-M01-T02 and P01-M01-T03 are recorded as complete. The reconciliation
-  brings I-1's `agent.branch_id` session resolution and fail-closed profile guard from
-  `main` into the integration work.
-- P01-M05-T01 and P01-M05-T02 are complete; the reconciliation brings the FD product API
-  work from `main` into the integration work.
-- **P01-M03-T01 is complete and merged into `dev`** (PR #12): `savings_plan` table with
-  the five G-13 eligibility columns (`min_age_years`, `max_age_years`, `min_holders`,
-  `max_holders`, `requires_all_adult`), three named `CHECK` constraints, and the five
-  BR-03…BR-07 seeded plans. `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing.
-  G-13 marked resolved in `docs/17_erd-gap-analysis.md`.
-- **P01-M03-T02 is complete** (not yet merged — on branch
-  `feat/p01-m03-plan-eligibility-function`): `fn_check_plan_eligibility(plan_id,
-  date_of_birth, holder_count)` in `database/routines/`, a `STABLE` PL/pgSQL function
-  checking the primary applicant's age and holder count against `savings_plan`'s data
-  columns. Deliberately checks the primary applicant only — the full "every Joint holder
-  is an adult" rule is Phase 2's `trg_validate_joint_mandate` (`P02-M03-T03`), since this
-  function's signature carries one `date_of_birth`, not one per holder (see
-  `docs/specs/0002-plan-eligibility-function.md`). `docs/07_business-rules.md`'s BR-07
-  row corrected to reflect this boundary. `tests/db/plan-eligibility-function.test.mjs`
-  — 10/10 passing, including a boundary test proving age is computed as whole completed
-  years, not naive year subtraction. `db:rebuild`, `db:verify` and the full `npm test`
-  suite (120/120) all pass.
-- ADR-0006 defines `agent` as the shared branch-staff profile for `AGENT` and
-  `BRANCH_MANAGER`; permissions come from `role`, and current scope comes from
-  `agent.branch_id`.
-- P01-M02-T03's six branch/agent route handlers, service layer, validation and 23 API
-  tests are implemented. Least-privilege `mims_app` grants for `branch` and `agent` are
-  present and the API suite passes through the normal application connection.
+100 database/16 API cases prove all five M2 master tables' keys, required fields,
+FKs/checks, assignment history, document pairing, referenced-row deletion restrictions,
+atomic failure rollback and deactivation retention through existing runtime routes.
+The helper now creates its disposable database before rebuilding; no production
+schema, service, authorization, UI or merged migration change was needed.
 
-## What does NOT exist yet
+Focused 309 tests /14 suites and full 1062 tests /98 suites (including security)
+PASS with zero failures/cancellations/skips. Clean 51-migration rebuild/checksums,
+final-source typecheck/lint PASS. Host Node 24.15.0/PostgreSQL 18.6; Node 22 pin retained.
+All temporary clusters stopped/removed; normal development DB preserved.
+Test/tooling commit: `a58112e`; documentation/state are a separate local commit.
+/architect, /review and approved /remember save complete; no UI, /imprint N/A.
+All five overview summaries reviewed; only M2 summary changes. Tracker97:
+15 TODO /1 IN_PROGRESS /2 REVIEW /79 DONE, retaining other owners' statuses.
+General Phase 6 entry and T03 remain separate; T01 remains REVIEW in the tracker.
+[Coverage, review and next steps](handoffs/p06-m02-master-data-integrity.md).
 
-Member 2's branch/agent administration pages have not been implemented. P01-M02-T03 is
-waiting only for the shared audit contract from P01-M01-T05; P01-M02-T04 remains the UI
-follow-up. Member 3's plan API/admin page (P01-M03-T03) has not been started.
+---
 
-## Task status snapshot
+## PR #88 conflict resolution — 2026-10-09
 
-| Phase | Tasks | Status |
-|---|---|---|
-| P0 | 6 | DONE |
-| P1 | 18 | IN PROGRESS — 10 DONE, 8 READY |
-| P2 | 16 | TODO (blocked on OQ-05) |
-| P3 | 14 | TODO (blocked on OQ-08) |
-| P4 | 14 | TODO (blocked on OQ-01, OQ-04) |
-| P5 | 15 | TODO |
-| P6 | 13 | TODO |
+Branch `p06-m02-seed-validation` remains at feature HEAD f323516. Latest dev78aae1e
+is prepared with --no-commit --no-ff; the user completes the merge commit and push.
+The five conflicts preserve tested code and both owners' task histories. The
+tracker has 97 tasks:16 TODO,1 IN_PROGRESS,1 REVIEW,79 DONE; seed T01 is REVIEW,
+M2 RPT-01 is DONE, incoming M3/M5 DONE and M1 deployment IN_PROGRESS are retained.
+General phase gates remain separate. The M5 ops note/tracker discrepancy is
+recorded without changing its TODO status. Actual resolved-tree verification passes:
+940 full tests,186 focused,6 security;51-migration rebuild/reseed/typecheck/lint.
+The resolution is staged for the user; see the [resolution handoff](handoffs/p06-m02-pr88-conflict-resolution.md).
+The development DB is preserved. No new commit, push or completed merge.
 
-Full detail: `../docs/09_task-tracker.md`.
+---
 
-## Blocking items before Phase 1 can finish
+## Historical delivery evidence before latest-dev preparation
 
-No unresolved product question blocks Phase 1. The core I-1 dependency needed by
-P01-M02-T03 is present in this reconciliation. Remaining I-1 quality follow-ups include
-strict malformed-CSRF rejection, returning `branchId` in the login DTO, refreshing the
-I-1 handoff, and adding a true request/SQL cross-branch test. P01-M02-T03 additionally
-waits for P01-M01-T05's shared audit table and trigger contract.
 
-## Known process note
+## M2 P06-M02-T01 — seed acceptance completed locally (2026-10-09)
 
-The reconciled full suite passes 56/56, database verification and TypeScript checks pass,
-and FD API tests leave no fixture rows behind. The remaining native-Windows `db:create`
-setup issue is recorded in `.agent/handoffs/p01-cross-member-test-blockers.md`.
+**Checkout:** `p06-m02-seed-validation` · **Base:** dev 095ea9c
+**Integration tested:** exported dev 78aae1e (PR #87), with this delivery overlaid.
+**Status:** REVIEW; implementation and global AC-12 pass, user publication pending.
 
-## Next session should start with
+Vibodha said “complete this” after the missing seed coverage was reported.
+ADR-0024 records the scoped start and authorized M5/M4 contributions; it was
+renumbered because latest dev already uses ADR-0023 for ledger ordering.
+M5 retains seed stewardship; M4 retains posting; M3 retains its eligibility tests.
 
-1. Member 1: complete P01-M01-T05 and publish the shared audit contract.
-2. Integrate and test branch/agent audit coverage, then move P01-M02-T03 to `DONE`.
-3. Member 3: open a PR for `feat/p01-m03-plan-eligibility-function` into `dev`, then
-   start P01-M03-T03 (plan API and admin page) — depends on T02 (done) and I-1 (RBAC
-   helpers, already merged).
+Twelve funded FDs (ten active/two matured), three real interest cycles/thirty
+payouts, 191 ledger postings, fourteen users/seven roles, manager staff profiles
+and a linked customer login are delivered. Every account reconciles to signed
+ledger entries, every payout matches its credit/formula/run total, and all
+active balances satisfy plan minimums. Reseeding preserves exact financial totals
+and custom posting configuration. Opening cash now has actual ledger entries.
+New 0620 makes full FD/cycle references unique; merged migrations are unchanged.
+
+Strict checker/loader, 39 seed cases, original checker compatibility, interest
+credit/FD-opening/assigned-agent fixture regressions, customer FD API tests,
+typecheck and lint pass. Current branch: 186 focused tests /15 suites and clean
+46-migration rebuild/checksums; full suite 865 tests /87 suites, all pass.
+Latest-dev overlay: matching focused proof and 51-migration rebuild/checksums;
+full suite 940 tests /95 suites, all pass. Zero failures, cancellations or skips.
+Vibodha explicitly authorized repairs in other members' code after the earlier
+29 failures were reported. Production session fixtures, RLS setup, stored-role
+selection, date boundaries, audit contracts, SQL overloads and CSV assertions
+are repaired. Audit/interest request routes now return safe role denials;
+interest session requests enforce CSRF and validate bodies before audit writes.
+Original ownership remains. See the integration failure repair handoff.
+
+The development DB is preserved. The user subsequently authorized a few local commits; no Git merge, push or PR is authorized.
+User integrates latest dev and handles remote publication. General Phase 6 and T02/T03 remain
+separate. Tracker97:23 TODO /1 REVIEW /73 DONE, retaining other owners' branch
+statuses rather than silently copying an unmerged tracker. /architect and /review
+complete; no UI, /imprint N/A; /remember saved. All five overview tables reviewed.
+[Delivery, review and evidence](handoffs/p06-m02-seed-validation.md).
+
+---
+
+## Historical M4 RPT-05 update (2026-10-08)
+
+P05-M04-T01/T02 are in local REVIEW on the current dirty M4 checkout. Migration
+0560, the report service/API, and the live report page implement holder-attributed
+activity with reversal adjustment, SQL scope, CSV and access audit. The user
+confirmed every-holder joint attribution (ADR-0022). RPT-05 tests pass 8/8 and
+the disposable 43-migration rebuild/checksum checks pass. The combined suite
+still has 27 failures outside RPT-05; typecheck, lint and production build pass.
+Do not mark DONE yet.
+[Details](handoffs/p05-m04-rpt05.md). No assistant Git publication.
+
+**Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-api-ui · base dev93a82f8
+**Work:** P05-M02-T02 implemented locally, REVIEW; user publication/integration review pending.
+
+The user explicitly approved T02 and M1 framework repairs (ADR-0022). T01 and
+corrective M4 withdrawal are DONE through PR #67; I-7 restored by PR #69 and
+M4 interest posting merged in PR #68. 0521 adds guarded aggregate-only readers;
+scoped API/page, exact totals, snapshot CSV/access audit and cleanup are delivered.
+
+Relevant72 tests /7 suites, clean40-migration disposable rebuild/checksums, typecheck,
+lint/build and browser checks pass. Full suite767:729 pass,27 fail,11 cancelled;
+legacy M1 fixtures/audit expectations and M4 withdrawal overload calls are recorded
+in the handoff. Broader raw transaction RLS is still M1/M4 integration work. Do not
+claim full-suite acceptance or mark T02 DONE. General phase gates remain pending.
+
+Tracker97 tasks:31 TODO /1 REVIEW /65 DONE; incoming M4 Phase4 DONE rows included
+in the recount. All five overview tables reviewed. /review, /imprint and /remember
+saved. Normal database preserved. The user subsequently authorized several local
+commits for this delivery. Push, PR creation and merge remain user-controlled.
+[Delivery and review](handoffs/p05-m02-rpt01-api-ui.md).
+
+---
+# Historical state before RPT-01 runtime delivery
+
+**Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-view · HEAD 41e2e76 · pending integration of dev d466866
+**Work:** PR #67 task-tracker conflict resolved locally; user commit/push/merge pending.
+
+Preserved incoming Member 1 Phase 3/4/5 and Member 4 reversal/API DONE statuses,
+M2's merged FD tasks, and REVIEW for RPT-01 / corrective withdrawal in PR #67.
+Recounted all 97 task IDs: **34 TODO /2 REVIEW /61 DONE**. I-7/CSV/report auditing
+is published by PR #65; M2 T02 still awaits T01 integration and start authorization.
+General phase gates remain pending. Files are left unstaged; no assistant commit,
+push or completed merge. The 663-test result below predates this dev integration;
+this conflict fix checks documentation consistency, not the combined code suite.
+[Conflict resolution handoff](handoffs/p05-m02-pr67-conflict-resolution.md).
+
+---
+
+## Historical RPT-01 and withdrawal verification before integration
+
+**Updated:** 2026-10-08 · **Owner:** M2
+**Checkout:** feat/p05-m02-rpt01-view · base dev/HEAD 48f4185
+**Work:** P05-M02-T01 and user-authorized P03-M04-T03 correction verified locally, REVIEW; T02/I-7 pending
+
+0520 implements the owner-only invoker/barrier RPT-01 view, with exact totals by
+agent/posting branch/type/timestamp and a tested range-specific roster outer join.
+The user subsequently authorized M4 correction and its documents (ADR-0021). New
+0363 preserves merged 0362, repairs audits/real limits, validates actor/scope, captures
+trusted attribution, supports I-4 array signers and safe serialized replay. Its audited
+attempt rolls back inner financial work and returns a rejection code with one outer
+audit; the future service commits the audit-only result before mapping an error.
+
+Final full verification PASS: **663 tests /62 suites**, zero failures/skips, no
+exclusions, clean isolated **34-migration** rebuild/checksums, typecheck/lint/production
+build. RPT-01 12 and withdrawal 21 SQL cases cover negative/precision/scope/timezone/
+concurrent/rollback contracts. Index probe uses ix_transaction_agent_date without
+planner forcing. Prior failed/supplementary runs are superseded by the corrected full
+run; fixture/diagnostic handoff retained. /review three layers and /remember complete.
+No UI changed, so /imprint is not applicable. All five overview tables reviewed;
+M2 and explicitly authorized M4 docs updated. Tracker: **46 TODO /2 REVIEW /49 DONE (97)**.
+No normal development database change; disposable clusters cleaned up. PR #62 merged
+P04-M02-T02; its REVIEW notes below are historical. General phase approvals remain
+pending. M2 T02 waits for I-7/CSV/access auditing; future M4 T04/T05 remain separate.
+Changes unstaged/uncommitted on HEAD 48f4185. User owns commit/push/PR/merge.
+[RPT-01 handoff](handoffs/p05-m02-rpt01-view.md) ·
+[M4 correction](handoffs/p03-m04-withdrawal-contract-repair.md).
+
+---
+
+## Historical customer FD scope delivery (subsequently merged PR #62)
+
+**Updated:** 2026-10-08 · **Owner:** M2 (current FD scope work supersedes historical checkout notes)
+**Checkout:** feat/p04-m02-fd-branch-scope · base dev e9291dc
+**Work:** P04-M02-T02 verified locally, REVIEW under ADR-0019; T01 DONE through PR #60
+
+## Customer FD scope implementation evidence
+
+Migration 0421 adds a stable SECURITY INVOKER stored-actor check and additive
+RESTRICTIVE SELECT-only FD policy. Direct base/view reads require current active
+stored user/role; staff profile/branch must be active and match branch context.
+Existing 0420 assignment/customer/account/self predicates remain ANDed. An owner-only
+installer binds immediately on an existing schema, or after 0420 in the existing
+post-migration views step. No merged migration, runtime write access, financial
+writer, table columns, DTO, route or UI is changed.
+
+Full verification PASS: **630 tests /60 suites**, zero failures/skips, clean isolated
+**31-migration** rebuild/checksums, typecheck/lint/production build. 14 new cases
+(DB10/API4) cover direct SQL context and live-session scope transitions plus context
+cleanup. An initial file-level branch-test failure was not reproduced: unchanged
+file passed 4/4 alone and the repeat combined run passed; recorded in the handoff.
+No new UI, so T01 browser/imprint evidence retained; /review and /remember complete.
+
+The user's “do it now” authorizes only this T02 read-side start (ADR-0019). General
+phase gates/OQ-13/OQ-14 remain pending. M1/M5 review the additive policy; future
+M5/M3 FD read paths retain owner responsibility. All five overviews reviewed, only
+M2 updated. Tracker: **48 TODO /1 REVIEW /48 DONE (97)**. Normal development database
+not migrated/reset; disposable verification clusters cleaned up. Changes unstaged/
+uncommitted on HEAD e9291dc; user retains commit/push/PR/merge control.
+[Handoff and review](handoffs/p04-m02-fd-branch-scope.md).
+
+---
+
+## Historical customer FD listing delivery (T01 subsequently merged PR #60)
+
+Caller-security `vw_customer_fd_summary`, authenticated
+`GET /api/customers/{id}/fixed-deposits` and the customer profile's Fixed Deposits
+panel are implemented. M2 migration 0420 binds after merged M5 0480 in the existing
+views stage; existing schemas bind during migration. SQL enforces assignment,
+customer/account branch and login-linked self scope; selective FD SELECT grants/RLS
+add no write access. Exact amount/rate strings, all statuses and opening snapshots.
+
+Verification PASS: **612 tests /57 suites**, zero failures/skips, clean isolated
+**29-migration** rebuild/checksums, typecheck/lint/production build. Browser populated,
+empty, safe error/retry and 375px internal table scrolling pass; no console errors.
+Existing shell animation/slow-query warnings recorded in the handoff. /review,
+/imprint and /remember complete. All five overview tables reviewed; only M2's
+status/work changed. Tracker: **49 TODO /1 REVIEW /47 DONE (97)**.
+
+ADR-0018 records the user's read-side early start, not a general phase approval.
+M5 opening is partial; T02 and OQ-13/OQ-14 remain pending. M1/M5 review the additive
+FD read policy through the [handoff](handoffs/p04-m02-customer-fd-listing.md).
+Normal development database preserved; disposable preview/cluster cleaned up.
+Changes unstaged/uncommitted on HEAD c5fed03; user controls commit/push/PR/merge.
+
+---
+
+## Historical Phase 3 delivery and integration notes
+
+## Delivered work
+
+GET /api/agents/{id}/activity and live /agents/{id}/activity supply exact type counts
+and amount strings for inclusive Asia/Colombo calendar dates. Agent-directory names
+link to activity; AGENT has My daily activity in Customers. Date filters, Today,
+loading/empty/safe error/retry and responsive internal table scrolling are complete.
+No new migration: dependency 0320 is reused. T01 is DONE through merged PR #49
+(dev c2bce7c), correcting M2's stale REVIEW label.
+
+The service revalidates stored active caller identity in one read-only REPEATABLE READ
+transaction, sets existing RLS context, and scopes in SQL. AGENT reads only itself;
+BRANCH_MANAGER targets current own-branch ordinary agents and additionally filters
+immutable transaction.branch_id. ADMIN/CENTRAL_OPS read bankwide. NULL agent rows
+are excluded; managers also exclude NULL branch rows. No net balance, attribution
+backfill, ledger/account mutation or producer change is inferred.
+
+## Verification and review
+
+Original T02 delivery verify:phase1 PASS: 529 tests / 48 suites, zero failures/skips; clean isolated
+24-migration rebuild and checksum verification; TypeScript, lint and production build.
+28 T02 cases (API 19, DB-backed service 7, pure calendar 2) cover real mims_app/session
+reads, exact huge sums, local midnight microseconds, final-day bounds, alternate DB
+timezone, transfers/NULL rows, stale/forged identity, invalid input and unchanged
+ledger/balance/audit. Log: test-results/agent-daily-activity-verification.log (ignored).
+
+Manual browser PASS: manager directory and agent self links, populated/historical/
+empty/Today views, cross-branch safe denial and retry; narrow viewport has no document
+overflow. No browser console errors. Screenshots are in ignored test-results/t02-activity-\*.png.
+The temporary browser tab, preview server and PostgreSQL cluster were closed/cleaned up.
+The normal development database was not reset or migrated.
+
+/review completed in three layers; findings fixed (bankwide users with retained
+staff profiles, UUID spelling, Today across midnight). /imprint saved in ui-registry.md;
+/remember saved in memory.md. All five overview tables reviewed; only M2's new
+implementation/status changed. Other members retain ownership of their stale labels.
+[Handoff and review](handoffs/p03-m02-agent-daily-activity.md).
+
+## Authorization and integration limits
+
+Vibodha explicitly authorized T02 after the general phase restriction was explained;
+ADR-0017 extends the scoped early-start exception. No Phase 2 exit/general Phase 3
+entry, OQ-12/OQ-14 or unrelated task approval is recorded. Historical Phase 2 entry
+approval remains valid. Overall tracker: 50 TODO / 1 REVIEW / 46 DONE (97 tasks).
+
+M4/M3 still need to populate trusted attribution inside posting transactions;
+existing opening deposits remain unattributed. M1 owns future transaction RLS;
+explicit service predicates enforce scope now. Apply 0320 through the ordinary
+runner if the development database has not received the merged dependency.
+
+Browser QA found seeded manager logins without required branch-staff profiles.
+Authentication correctly fails closed. Only disposable QA fixtures were supplemented;
+M5/M1 handoff: handoffs/p03-m02-activity-seed-manager-profile.md. No steward-owned
+seed, authentication code or another member's status was altered. Existing Phase 2
+seed-versus-exit targets also remain an owner reconciliation item in open-questions.md.
+
+## M3 update (2026-10-08)
+
+P02-M03-T03–T06 are DONE and merged into dev (PRs #42/#45/#46/#47): `0242` joint mandate,
+`0243` `sp_open_savings_account`, `0244`/`0245` accounts APIs and `sp_add_account_holder`,
+and the account screens plus real plans page. A partial browser pass found no defects; the
+successful opening and `/accounts/{id}` pages were untested because no verified document
+can exist yet. Handoffs: `handoffs/p02-m03-t03-joint-mandate.md`, `…t04-…`, `…t05-…`, `…t06-…`.
+
+P03-M03-T01 DONE (early, at its user's direction; ADR-0016 remains M2-T01 only): `database/routines/fn_check_plan_minimum.sql`
+publishes I-4, `fn_check_plan_minimum(account_id, resulting_balance)`; `tests/db/fn-check-plan-minimum.test.mjs`
+11/11 in one rolled-back transaction; `/review` findings resolved. No migration (routine file, like
+`fn_check_plan_eligibility`). M4's `sp_post_withdrawal` is unblocked on the minimum check; the mandate
+check is P03-M03-T02. [Handoff](handoffs/i-4-fn-check-plan-minimum.md).
+
+Open coordination raised by M3 (recheck after the PR #48 seeds):
+
+1. **Document verification is not exposed (M2).** `customer_document.verified_*` can only be set outside the
+   app, so `DOCUMENTS_NOT_VERIFIED` can never clear for app-registered customers. See `open-questions.md`.
+2. **Seeded branch managers cannot sign in (M1/M5).** `bm_*` users had no `agent` row while `validateSession`
+   requires an ACTIVE agent row for BRANCH_MANAGER. Confirm whether PR #48 changed this. See `open-questions.md`.
+
+## PR #53 conflict resolution (2026-10-08)
+
+Prepared origin/dev af07af8 with --no-commit --no-ff against feature HEAD d2901b7.
+Preserved T02 implementation/review evidence and M3/M4 merged statuses, corrected
+summary counts from task rows, and retained all general phase gates. M4 T01/T02
+are DONE through dev (0360/0361, PR #52); the new deposit producer still omits
+agent_id/branch_id, so the activity attribution follow-up remains necessary.
+Combined verification PASS: 554 tests /49 suites, zero failures/skips;
+clean isolated 26-migration rebuild and checksum checks; TypeScript, lint and
+production build PASS. The normal development database was preserved.
+Log: test-results/p03-activity-pr53-conflict-verification.log (ignored).
+
+The user already committed/pushed T02 and opened PR #53. This assistant session
+performs only local resolution and staging; no commit, push, PR creation or
+completed merge. The pending merge commit and subsequent push remain with the user.
+
+## M3 update — P03-M03-T02 (2026-10-08)
+
+P03-M03-T02 DONE (early, at the user's direction; same scoped basis as T01): `database/routines/fn_check_withdrawal_mandate.sql`
+publishes the mandate half of I-4, `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[]) → boolean`
+(STABLE, SECURITY INVOKER, never raises, fails closed). `tests/db/fn-check-withdrawal-mandate.test.mjs` 16/16 in one
+rolled-back transaction; companion `fn_withdrawal_mandate_verdict` returns the rejection reason. `/review` findings fixed.
+Migration `0246_p02_m03_account_number_skip_existing.sql` (M3 block) fixes `fn_next_account_number` colliding with seeded
+account numbers (5 `sp-open-savings-account` tests failed on a seeded DB). Full isolated `test:db`: 348/349; the one failure is
+`seed-validation` ("transaction: expected >= 100, got 93") — M5's seed-set-4 target, not part of this change. Typecheck, lint, build clean. M4's `sp_post_withdrawal` (P03-M04-T03) now has both checks it needs.
+**Open for M4:** `docs/05` withdrawal body has only `onBehalfOfCustomerId`; `ALL_HOLDERS` accounts need a multi-signer
+field. [Handoff](handoffs/i-4-fn-check-withdrawal-mandate.md).
+
+## M3 update — P03-M03-T03 (2026-10-08)
+
+P03-M03-T03 DONE (early, at the user's direction; same scoped basis as T01/T02): `GET /api/accounts/{id}` adds
+`availableToWithdraw` (SQL, `numeric(15,2)`), `lastTransaction` and `mandate.state` (Asia/Colombo date); `/accounts/{id}`
+shows the available amount, last transaction, who can authorise withdrawals and a non-ACTIVE notice, plus an Authority
+column. No migration. Full isolated suite 580/580 (incl. seed-validation, so its earlier dev-DB failure was dev-data only),
+typecheck, lint, build clean. **Browser pass not yet run.** M3's Phase 3 tasks are all DONE.
+[Handoff](handoffs/p03-m03-t03-balance-panel.md).
+
+## Historical M2 work — customer FD listing (2026-10-08; subsequently merged PR #60)
+
+Vibodha requested implementation after the partial M5 opening dependency and
+general Phase 4 gate were explained. ADR-0018 authorizes T01's read-side only.
+View/API/profile panel implemented; baseline assignment/branch/self SQL scope,
+caller-RLS view and SELECT-only FD policy/column grants; no financial writes.
+0420 owner-only installer binds after 0480 in the existing rebuild view step.
+Full isolated verification (612 tests /57 suites, 29 migrations) and browser QA pass.
+Local REVIEW awaits user publication and teammate review. The normal database
+is not reset or migrated. M1/M5 security coordination is in the outgoing handoff.
+All five overview tables reviewed; only M2 status/work is updated. Other member
+rows, partial opening routine, auth, shared grants, seeds and merged migrations
+are unchanged. User retains commit/push/PR/merge control; no assistant publication.
+
+## M1 update (2026-10-08)
+
+P02-M01-T03 (Branch-scope enforcement on routes) has been verified and marked as DONE.
+Scope is correctly applied within the SQL queries by M2 (customers) and M3 (accounts), and tests confirm that URL tampering and spoofing attempts correctly yield 403 or 404, matching the acceptance criteria. No new code was needed, just verification.
+
+## M3 update (2026-10-08, later)
+
+P03-M03-T02/T03 are DONE (merged / on dev). P04-M03-T01 DONE as an early start at the user's direction
+(no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval): I-6 published as
+`database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql` (`fn_check_account_fd_eligible`, `fn_fd_funding_verdict`),
+`tests/db/fn-check-account-fd-eligible.test.mjs` 20/20. Full isolated suite on the tree merged with dev 93a82f8: 755 tests /
+728 pass / 27 fail / 0 cancelled. A clean export of origin/dev fails the same 27 tests (735 tests, 11 more cancelled in M1's
+`business-rules` and `business-hours-limits`, which M3's fixture repairs fix), so none come from M3's change; they are listed in
+`open-questions.md`. The withdrawal defect M3 reported against merged `0362` was repaired upstream by 0363 (ADR-0021), and
+`sp-post-withdrawal.test.mjs` passes. Use the tracker header above for current task counts.
+[Handoff](handoffs/i-6-fn-check-account-fd-eligible.md). The unresolved merge-conflict markers from the "phase 7" merge were removed (both sections kept).
+
+## M3 update — P04-M03-T02 (2026-10-08)
+
+P04-M03-T02 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14
+approval), backend only: migration `0441_p04_m03_sp_close_account.sql` (`sp_close_account`, `trg_account_close_guard`),
+`closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` live (BRANCH_MANAGER; was a 501 stub).
+`tests/db/sp-close-account.test.mjs` 17/17 (incl. two-connection races against an in-flight FD insert) and 6 new API tests. Full isolated suite 777 tests / 750 pass / 27 fail: the same
+27 failures already on dev 93a82f8 (open-questions.md). `tsc --noEmit`, `eslint .`, `next build` clean. No UI built; T03 (FD
+panel) is next. [Handoff](handoffs/p04-m03-t02-account-closure.md).
+
+## M3 update — P04-M03-T03 (2026-10-08)
+
+P04-M03-T03 DONE as an early start at the user's direction (no Phase 3 exit, general Phase 4 entry, OQ-13 or OQ-14 approval), tests only:
+`GET /api/accounts/{id}` gains `fixedDeposits`, and `/accounts/{id}` has a read-only Fixed deposits panel (table, closure-blocked note, link to
+`/fixed-deposits/new?accountId=…`). No migration. Full isolated suite on the tree merged with dev 81fd25c: 828 tests / 801 pass / 27 fail, the same 27 failures that already occur on dev. `fixedDeposits` is `null` when the list cannot be read; the panel's rendered markup is tested.
+`tsc --noEmit`, `eslint .`, `next build` clean; `/imprint` saved. All three Phase 4 tasks on M3's card (T01–T03) are done.
+[Handoff](handoffs/p04-m03-t03-fd-panel.md).
+
+## M3 update — P05-M03-T01 (2026-10-08)
+
+P05-M03-T01 DONE as an early start at the user's direction (no general Phase 5 entry approval): migration `0540_p05_m03_rpt02_view.sql`
+(`vw_rpt02_account_summary`) and `0541_p05_m03_sp_open_account_balance_after.sql` (opening deposit now records `balance_after`).
+`tests/db/rpt02-view.test.mjs` 13/13. Full isolated suite 852 tests / 824 pass / 28 fail: the failures that already occur on dev
+(a clean export of the committed HEAD fails 29). `tsc --noEmit` and `eslint .` clean. T02 (service, API, CSV, page) not started.
+[Handoff](handoffs/p05-m03-t01-rpt02-view.md).
+
+## M3 update — RPT-02 view hardening and ledger order (2026-10-08)
+
+Review of P05-M03-T01 found the view's ordering wrong on the seeded ledger. Fixed at the user's direction (ADR-0023, gap G-24):
+`0542_p05_m03_transaction_ledger_seq.sql` adds `transaction.ledger_seq` (posting order per account, M4's table, additive, handoff
+`handoffs/p05-m03-ledger-seq-for-m4.md`) and `0543_p05_m03_rpt02_view_v2.sql` replaces the view (ordered by `ledger_seq`, no overflow
+cast, no whole-ledger window). On the pure seed: balance-chain breaks 86 → 0, last-row mismatches 6 → 0. `tests/db/rpt02-view.test.mjs` 18/18,
+`tests/db/transaction-ledger-seq.test.mjs` 7/7. Full isolated suite 865 tests / 837 pass / 28 fail: the failures that already occur on dev.
+`tsc --noEmit` and `eslint .` clean. Open for other owners: seed dates are all one day (M5); M4 to review the new column.
+
+## M3 update — P05-M03-T02 (2026-10-08)
+
+P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 entry approval), tests only: `GET /api/reports/account-summary` (JSON and all-rows CSV,
+identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
+`tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
+already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).

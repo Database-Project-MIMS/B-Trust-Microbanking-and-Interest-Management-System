@@ -2,7 +2,11 @@
 
 **Project:** Microbanking and Interest Management System (MIMS) — B-Trust Microfinance Bank
 **Course:** CS3043 Database Systems · Semester Project · **Group 32**
-**Team:** 5 members · **Current phase:** Phase 0 complete, awaiting approval for Phase 1
+**Team:** 5 members · **Current phase:** Phase 1 verified; Phase 2 entry approved 2026-10-05
+
+Approval applies to the local verified working tree; see
+`.agent/checkpoints/phase-01-checkpoint.md`. The user's prohibition on assistant commits,
+merges and PR creation overrides the routine Git publication steps below.
 
 This file is the single development contract for every team member and every Claude
 session. If something here conflicts with your own assumption, **this file wins**.
@@ -358,11 +362,12 @@ A task is `DONE` only when **all** of the following are true:
 4. Confirm your task is `READY` and its dependencies are `DONE`.
 5. Run `/architect` for anything non-trivial. Do not write code until the important
    decisions are resolved.
+6. Review all `00_OVERVIEW.md` files and update their `## 🗺️ Work Order Summary` tables, adding strikethroughs (`~~`) to any newly completed tasks.
 
 **End**
 
 1. Run tests. Run `/review`. Run `/imprint` if UI changed.
-2. Update `docs/09_task-tracker.md`, `.agent/current-state.md`, and write a handoff if needed.
+2. Update `docs/09_task-tracker.md`, `.agent/current-state.md`, all `00_OVERVIEW.md` summary tables, and write a handoff if needed.
 3. Run `/remember save`.
 4. Commit, push, open the PR.
 

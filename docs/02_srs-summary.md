@@ -13,7 +13,7 @@ SRS — it maps the requirements that change what we write.
 | FR-AUTH-01 | Authenticate active users over HTTPS; create a secure session | `POST /api/auth/login`, `user_session` |
 | FR-AUTH-02 | Enforce role and branch scope before reading or changing protected data | `requireRole()`, `branchScope()` in SQL, RLS |
 | FR-AUTH-03 | Throttle repeated failed sign-ins | `login_attempt` table + rate limit |
-| FR-AUTH-04 | Reset tokens single-use, time-limited, invalidate existing sessions | `user_session.revoked_at` |
+| FR-AUTH-04 | Reset tokens single-use, time-limited, invalidate existing sessions | `password_reset_token`, guarded reset consume + atomic session invalidation (0638) |
 
 ### Organisation (FR-ORG) — M2
 FR-ORG-01 ≥ 3 branches, ≥ 5 agents · FR-ORG-02 each active agent in one active branch ·
@@ -41,7 +41,8 @@ FR-WD-03 reject overdraft or minimum-balance breach · FR-WD-04 debit, balance a
 commit or roll back together · FR-WD-05 rejection stores a reason with **no ledger effect**.
 
 ### Transactions and reversal (FR-TXN) — M4
-FR-TXN-01 types `DEPOSIT`, `WITHDRAWAL`, `INTEREST_CREDIT`, `REVERSAL` · FR-TXN-02 posted
+FR-TXN-01 base types `DEPOSIT`, `WITHDRAWAL`, `INTEREST_CREDIT`, `REVERSAL`; accepted
+extensions add paired `TRANSFER_OUT`/`TRANSFER_IN` and `FD_MATURITY` (ADR-0027) · FR-TXN-02 posted
 rows not updated or deleted by normal roles · FR-TXN-03 every reversal references its
 original and is reversible **once** · FR-TXN-04 history shows running balance ·
 FR-TXN-05 customers see only their own accounts.
@@ -110,10 +111,17 @@ The SRS itself flags six TBDs. Their status here:
 | SRS TBD | Question | Our position |
 |---|---|---|
 | TBD-01 | PostgreSQL or MySQL | **Settled: PostgreSQL 16** (ADR-0001) |
-| TBD-02 | Customer login mandatory? | **OQ-05 — blocking**, drives ERD gap G-20 |
+| TBD-02 | Customer login mandatory? | **Resolved:** no; customer login is optional (ADR-0007, G-20) |
 | TBD-03 | Exact withdrawal limits and approval threshold | **OQ-07** — defaults adopted, confirmable |
 | TBD-04 | FD maturity: return principal or renew | **OQ-06** — return principal assumed |
 | TBD-05 | Hosting provider and public production URL | **OQ-09** |
 | TBD-06 | Required submission artifacts | **OQ-10** |
 
 Full list with recommendations: `../.agent/open-questions.md`.
+
+## Accepted extension disposition — 2026-10-10
+
+ADR-0010/0012 are implemented in 0631/0632 and current services/UI. The user specifically
+confirmed staff-only transfers and automatic FD principal return. Savings interest covers
+funded days from opening/unpaid cursor to the exclusive cycle date. Current controls,
+frontend evidence and remaining deployment/closure-policy limits are in docs/21.

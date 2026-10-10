@@ -1,10 +1,14 @@
 # 🟠 Phase 4 — Tasks 01–03: FD Eligibility, Account Closure & FD Panel
 **Task IDs:** `P04-M03-T01`, `P04-M03-T02`, `P04-M03-T03`
 **Branch:** `feat/p04-m03-fd-eligibility-closure-panel`
-**Status:** TODO
+**Status:** T01 DONE (`fn_check_account_fd_eligible`, I-6) · T02 DONE (`sp_close_account`, backend only) · T03 DONE (FD panel on `/accounts/{id}`)
 **Depends on:** `P04-M05-T02` (M5's `sp_open_fixed_deposit`, for T01);
 `P04-M05-T03` (M5's `fn_calculate_fd_interest`, context for T03)
-**Story Points:** ~3 + ~2 + ~2 = ~7 · **Layer:** Database + Backend + Frontend
+**Story Points:** ~3 + ~2 + ~2 = ~7 · **Layer:** Database + Backend
+
+> ⚡ **UI COMPLETE** — The account detail and FD panel screens are pre-built in
+> `app/dashboard/**`. Your job is to implement the **database functions and account
+> closure API**. Do not rebuild any UI component.
 
 ---
 

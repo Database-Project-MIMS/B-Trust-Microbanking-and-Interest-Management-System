@@ -1,107 +1,75 @@
 #!/usr/bin/env node
-/**
- * Minimal migration runner. No ORM, no migration framework — just ordered SQL.
- *
- *   node scripts/migrate.mjs up      apply pending migrations
- *   node scripts/migrate.mjs status  show applied / pending
- *   node scripts/migrate.mjs seed    apply database/seed/*.sql
- *
- * Uses DATABASE_MIGRATION_URL (owner role), never DATABASE_URL (app role).
- *
- * Enforces AGENTS.md §8: a migration that has already been applied is immutable.
- * If its checksum changes, this runner refuses to continue.
- */
-import { readFileSync, readdirSync, existsSync } from "node:fs";
-import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import pg from "pg";
-
-const MIGRATIONS_DIR = "database/migrations";
-const SEED_DIR = "database/seed";
+import { createMigrationClient } from "../lib/db/migration-client.mjs";
+import { checksumMatches, migrationChecksum, migrationFiles, verifyMigrationLedger } from "./migration-ledger.mjs";
 
 if (!process.env.DATABASE_URL && !process.env.DATABASE_MIGRATION_URL) {
-  try { process.loadEnvFile(); } catch {}
+  try { process.loadEnvFile(); } catch { /* Environment may be supplied by the caller. */ }
 }
 
+const command = process.argv[2] ?? "status";
+const directory = process.env.MIMS_MIGRATIONS_DIR ?? "database/migrations";
 const url = process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL;
-if (!url) {
-  console.error("DATABASE_MIGRATION_URL is not set. Copy .env.example to .env.");
-  process.exit(1);
-}
-
-const sqlFiles = (dir) =>
-  existsSync(dir)
-    ? readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()
-    : [];
-
-const checksum = (text) => createHash("sha256").update(text).digest("hex");
 
 async function main() {
-  const command = process.argv[2] ?? "status";
-  const client = new pg.Client({ connectionString: url });
+  if (!url) throw new Error("DATABASE_MIGRATION_URL is not set.");
+  if (!["up", "status", "verify"].includes(command)) throw new Error("Use up, status or verify.");
+  const client = createMigrationClient(url);
   await client.connect();
-
   try {
-    if (command === "seed") {
-      for (const file of sqlFiles(SEED_DIR)) {
-        process.stdout.write(`seed  ${file} ... `);
-        await client.query(readFileSync(join(SEED_DIR, file), "utf8"));
-        console.log("ok");
-      }
+    if (command === "verify") {
+      const count = await verifyMigrationLedger(client, directory);
+      console.log(`verify ok: ${count} migrations, filenames and checksums match`);
       return;
     }
-
-    const hasLedger = await client.query(
-      "SELECT to_regclass('public.schema_migration') IS NOT NULL AS present",
-    );
+    const { rows: present } = await client.query("SELECT to_regclass('public.schema_migration') IS NOT NULL AS present");
     const applied = new Map();
-    if (hasLedger.rows[0].present) {
-      const rows = await client.query("SELECT filename, checksum FROM schema_migration");
-      for (const r of rows.rows) applied.set(r.filename, r.checksum);
+    if (present[0].present) {
+      const { rows } = await client.query("SELECT filename, checksum FROM schema_migration");
+      for (const row of rows) applied.set(row.filename, row.checksum);
     }
-
-    const files = sqlFiles(MIGRATIONS_DIR);
-    if (files.length === 0) console.warn(`No migrations found in ${MIGRATIONS_DIR}`);
-
+    const files = migrationFiles(directory);
+    for (const file of applied.keys()) {
+      if (!files.includes(file)) throw new Error(`Applied migration is missing from disk: ${file}`);
+    }
+    // Validate ALL applied files before allowing any new migration to run.
     for (const file of files) {
-      const text = readFileSync(join(MIGRATIONS_DIR, file), "utf8");
-      const sum = checksum(text);
-      const previous = applied.get(file);
-
-      if (previous !== undefined) {
-        // 'bootstrap' is the self-recorded value from migration 0000.
-        if (previous !== "bootstrap" && previous !== sum) {
-          console.error(
-            `\nERROR: ${file} was already applied but its contents changed.\n` +
-              "A merged migration is immutable (AGENTS.md §8).\n" +
-              "Add a NEW migration in your reserved block instead of editing this one.",
-          );
-          process.exit(1);
-        }
+      if (applied.has(file) && !checksumMatches(applied.get(file), readFileSync(join(directory, file), "utf8"))) {
+        throw new Error(`${file} was already applied but its contents changed. A merged migration is immutable.`);
+      }
+    }
+    for (const file of files) {
+      if (applied.has(file)) {
         if (command === "status") console.log(`applied  ${file}`);
         continue;
       }
-
       if (command === "status") {
         console.log(`PENDING  ${file}`);
         continue;
       }
-
-      process.stdout.write(`apply ${file} ... `);
-      await client.query(text);
-      await client.query(
-        `INSERT INTO schema_migration (filename, checksum) VALUES ($1, $2)
-         ON CONFLICT (filename) DO UPDATE SET checksum = EXCLUDED.checksum`,
-        [file, sum],
-      );
-      console.log("ok");
+      const text = readFileSync(join(directory, file), "utf8");
+      // DDL and its ledger entry share a boundary without editing merged SQL.
+      const body = text.replace(/(^|\n)[ \t]*BEGIN;[ \t]*\r?\n/, "$1")
+        .replace(/(^|\n)[ \t]*COMMIT;\s*$/, "$1");
+      await client.query("BEGIN");
+      try {
+        await client.query(body);
+        await client.query("INSERT INTO schema_migration (filename, checksum) VALUES ($1, $2)", [file, migrationChecksum(text)]);
+        await client.query("COMMIT");
+        console.log(`applied  ${file}`);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        if (process.env.MIMS_ISOLATED_TEST === "1") console.error(`Disposable migration ${file}: ${error.message}`);
+        throw error;
+      }
     }
   } finally {
     await client.end();
   }
 }
 
-main().catch((err) => {
-  console.error("\nMigration failed:", err.message);
-  process.exit(1);
+main().catch((error) => {
+  console.error(error.code ? `Migration failed (SQLSTATE ${error.code}).` : error.message);
+  process.exitCode = 1;
 });

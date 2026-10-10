@@ -1,63 +1,94 @@
-# Memory — MIMS
+# Memory — predeployment local completion
 
-> Maintained by the `/remember` skill. This is **current state**, not a log.
-> Overwrite stale content. Do not append endlessly.
-> `/remember save` at the end of a session · `/remember restore` at the start of the next.
+## Neon CI correction — 2026-10-10
 
-**Last updated:** Phase 0 initialization
-**Current phase:** Phase 0 — complete, awaiting approval to begin Phase 1
+User supplied PR #94/run 38033232178 log: 1,169 API/DB/e2e passes, one RPT-01
+explain-output ENOENT failure. Missing ignored test-results folder caused it;
+Neon deployment was skipped. Added recursive mkdir in the evidence-producing
+test without weakening assertions/workflow. Verify with output directory absent,
+preserving prior ignored artifacts in scratch. Receipt/review: CI-directory
+handoff. No credentials needed; user subsequently authorized local commits for
+these changes. Existing Docker changes retained; push/publication remains a
+user action. Update PR branch through the user's publication process after checks.
+Full fresh-output verification passes: 3,410 tests /116 suites, zero failures/skips,
+clean rebuild/restore, typecheck/lint/build. Original outputs restored without
+overwriting new plans; backup retained in scratch. Hosted rerun still pending.
+Authorized local commits: `f94fe86` Docker runtime/tests, `f47ccc8` CI fix and
+separate documentation/state commit. No push performed.
 
----
+## Docker with Neon supplement — 2026-10-10
 
-## What was built
+User requested necessary Docker changes on `feat/p06-m02-neon-migrations` at
+`5e5dbb3`. Added app-only `compose.neon.yaml`, separate ignored `.env.neon`,
+generator --neon mode and safe runtime guard; local Compose behavior preserved.
+Use port 3001 and restricted mims_app TLS connection (pooled or direct). GitHub
+deploys migrations; Docker Neon mode never seeds or runs setup. Bootstrap users
+are a separate prerequisite. User reports connection configured locally; never
+copy its value here. No additional password or Neon API key needed by the agent.
+Missing app secrets/settings generated locally; complete private configuration
+and Compose checks pass. 8/8 operations checks, full lint/typecheck and standalone
+production build pass. Build required an approved run outside the sandbox after
+Windows EPERM failures; no code workaround introduced.
+See ADR-0030, docs/22 and Docker-Neon handoff for evidence/next steps. Docker Linux
+engine unavailable; actual container execution and live Neon remain unverified.
+User subsequently authorized separate local commits; no push/PR creation/merge.
+Prior task/phase acceptance remains unchanged.
 
-Phase 0 only — planning, documentation and shared foundation. **No business features
-have been implemented.**
+## Neon migration supplement — 2026-10-10
 
-- Repository scaffolded: Next.js App Router + TypeScript structure, no business code
-- Agent skills installed from `JavaScript-Mastery-Pro/jsm-agent-skill` (MIT) into `.claude/skills/`
-- `AGENTS.md` development contract, thin `CLAUDE.md`, `ui-registry.md`, this file
-- `.agent/` project-state directory with per-member context and ownership map
-- `docs/` — 18 numbered documents, 7 phase documents, 5 member prompts
-- ERD gap analysis completed against the brief and SRS — 20 findings recorded
-- Shared database foundation: migration `0000` (extensions, `schema_migration`,
-  shared domains, `set_updated_at()` trigger function) and `lib/db` pool + `withTransaction`
+Branch `feat/p06-m02-neon-migrations` starts at clean Docker `1f183bb`.
+User requested automatic Neon migration deployment and `.env.example` cleanup.
+Workflow validates a disposable database before deploying dev/staging or main/production;
+separate GitHub environment owner secrets are required. Deployment never resets/seeds.
+Example credential fields are empty. ADR-0029, docs/23 and the Neon handoff record
+decisions, verification and external setup. The user subsequently authorized
+separate local infrastructure, test and documentation commits. No push/PR/merge
+or live deployment performed.
+Final local verification: 3,410 tests /116 suites, clean rebuild/restore and
+typecheck/lint/build pass. Hosted Actions/Neon remains unverified.
+Task acceptance and previous context below remain unchanged. Next session starts
+with the Neon handoff; do not put connection values or credentials in this memory.
 
-## Decisions made
+## Current Docker supplement — 2026-10-10
 
-See `.agent/decisions/` for the full ADRs. The load-bearing ones:
+Branch `feat/p06-m02-dockerize` starts at verified `8a2b9c2`. User requested Docker
+setup, then authorized a few local commits. Do not push, open a PR or merge. Container
+files, separate setup/runtime credentials, persistent private PostgreSQL and
+docs/22 are implemented. ADR-0028 and Docker handoff hold decisions/evidence.
+Generated local Docker configuration is ignored; never copy its values here.
+Full verification passes: 3,401 tests /116 suites, clean 70-migration rebuild,
+restore evidence, typecheck/lint/build. Separate standalone build and 2/2 Compose
+checks pass. Initial Windows test-process crash did not recur. Actual image
+build/start needs a working Docker Linux engine. Keep live HTTPS and existing
+phase/task acceptance pending.
+Prior implementation and requirement decisions below remain relevant.
 
-- **ADR-0001** PostgreSQL 16, `pg` driver, handwritten parameterized SQL. No ORM.
-- **ADR-0002** Vertical slices, not layer-based division. Every member owns DB + backend + frontend.
-- **ADR-0003** Money is `NUMERIC(15,2)`; rates are `NUMERIC(6,4)` fractions. Never floats.
-- **ADR-0004** `account.current_balance` is a documented denormalisation, protected by a
-  `CHECK (>= 0)`, row locking and the posting routines. The ledger remains authoritative.
-- **ADR-0005** Migration numbers are allocated in reserved per-phase, per-member blocks so
-  no two members can collide.
+## Previous predeployment context
 
-## Problems solved
+Updated 2026-10-10 Asia/Colombo. Branch `feat/p06-m02-final-documentation`, base
+`053f6f6`. User authorized cross-owner fixes, docs and local commit; no push/PR/merge.
+Current delivery: ADR-0027, handoff p06-m02-predeployment-completion and docs/21.
+New M2 migrations 0628–0639 (block exhausted); no merged migration edits.
 
-- Migration-number collisions between five parallel members → reserved numeric blocks (ADR-0005).
-- Ambiguity between "one FD ever" (ERD unique key) and "one *active* FD" (SRS) → recorded
-  as gap **G-01**, escalated for human decision. Not silently changed.
-- job_pilot reference contains prohibited technologies → only its workflow pattern
-  (`AGENTS.md` / `CLAUDE.md` / `memory.md` / docs / skills) was adopted.
+Implemented staff-only paired transfers/reversal/shared debit limits; savings unpaid
+funded-day catch-up; automatic FD principal receipt; funding/system-reversal protection;
+deposit replay/actor/attribution; document verification; real posting/receipt/statement,
+customer accounts, admin user/role/reset/audit UI and searchable FD picker. Browser found
+Host/Origin normalization and blank account-search failures; both fixed. MotionSurface
+ignores absent scoped targets. Original stewardship retained; UI imprint saved.
 
-## Current state
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
 
-- Nothing is running yet. `npm install` has not been executed; there is no database.
-- `database/migrations/` contains only the shared `0000` foundation migration.
-- No table from the ERD has been created yet — that begins in Phase 1.
-- All Phase 1 tasks are `READY`; all later phases are `TODO`.
-
-## Next session starts with
-
-1. Obtain approval for the Phase 0 checkpoint and the ERD gap decisions (G-01, G-05,
-   G-12, G-20 are blocking — see `.agent/open-questions.md`).
-2. Then Phase 1 tasks `P01-M01-T01` … `P01-M05-T03` can start in parallel.
-
-## Open questions
-
-Tracked in `.agent/open-questions.md`. Four are blocking for Phase 2+:
-OQ-01 (one active FD vs one FD ever), OQ-04 (savings-account interest in scope?),
-OQ-05 (customer login required?), OQ-08 (account-to-account transfers in scope?).
+Production npm audit zero; full audit seven high unpatched braces/glob development entries.
+Live HTTPS was explicitly deferred. Node 22 pin remains; host verification used Node 24.
+Closure retains zero/no-active-FD and denies positive unpaid interest. Final funded-account
+settlement policy questions unanswered; do not waive plan minimum or forfeit interest.
+Tracker 97 tasks: 86 DONE, 10 REVIEW, 1 IN_PROGRESS. Next is user/peer review, explicit
+settlement decision, target-runtime/HTTPS checks and user-controlled publication.
+No actual deployment, push, PR creation or merge is authorized/performed.

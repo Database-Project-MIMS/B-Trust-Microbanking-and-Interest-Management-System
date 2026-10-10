@@ -1,157 +1,124 @@
 # 06 — Seed Data Specification
 
-**Owner:** Member 5 (integration) · each member supplies their own tables' rows (I-8).
-**Rule:** synthetic Sri Lankan-style data only. Never real customer data (BR-20,
-NFR-PRIV-02).
+**Steward:** Member 5 · **Completion contribution:** Member 2, authorized by Vibodha
+on 2026-10-09 for P06-M02-T01. See ADR-0024 and the cross-owner handoff.
+Only synthetic data is used (BR-20, NFR-PRIV-02).
 
----
+## Required minimums and implemented clean seed
 
-## Minimum targets
-
-From the brief and SRS Appendix B.2. These are **minimums**; the seed exceeds several so
-reports have enough variety to be interesting.
-
-| Data set | Required | Seeded | Requirement |
-|---|---|---|---|
-| Branches | 3 | **3** | FR-ORG-01 |
-| Agents | 5 | **6** | FR-ORG-01 |
-| Customers | 15 | **18** | FR-CUS-05 |
-| Joint accounts | 2 | **3** | brief |
-| Savings accounts | — | **22** | — |
-| Fixed deposits | 10 | **12** | FR-FD-05 |
-| Transactions | 100 | **140** | brief, SRS B.2 |
-| Application users | one per role | **9** (7 roles) | SRS B.2 |
-| Interest runs | 2, incl. an idempotent re-run test | **3** | SRS B.2 |
-
-## Determinism
-
-Report totals must be reproducible, so nothing may be random at load time.
-
-1. **Fixed UUIDs.** Every seeded row uses a hardcoded UUID with the structural pattern `00000000-0000-0000-XXYY-ZZZZZZZZZZZ0` defined in `database/seed/_uuids.sql`. Cross-references are
-   then stable and human-readable in test failures.
-2. **Fixed dates.** All dates are relative to a single anchor constant
-   `SEED_ANCHOR_DATE = 2026-01-01`, so re-seeding next month does not change any total.
-3. **No `random()`, no `now()`** in seed files. Timestamps are literals.
-4. **Ordered load**, matching FK dependencies according to `database/seed/_load-order.txt`:
-
-```
-00_roles.sql
-01_branches.sql
-02_users.sql
-03_agents.sql
-04_customers.sql
-05_customer_agents.sql
-06_customer_documents.sql
-10_accounts.sql
-11_account_holders.sql
-12_joint_mandates.sql
-13_transactions.sql
-14_fixed_deposits.sql
-15_interest_runs.sql
-```
-
-5. **Re-runnable.** Seeding twice produces identical counts and totals (`scripts/seed-check.mjs`).
-
-## Branches
-
-| Code | Name | District |
+| Data set | Required | Implemented |
 |---|---|---|
-| `BR-COL` | Colombo Main | Colombo |
-| `BR-KAN` | Kandy City | Kandy |
-| `BR-GAL` | Galle Fort | Galle |
+| Branches | 3 | 3 |
+| Ordinary AGENT profiles | 5 | 6; managers excluded |
+| Customers | 15 | 15; exactly one active same-branch assignment each |
+| Joint accounts | 2 | 2; two/three adult holders, ANY_ONE/ALL_HOLDERS |
+| Savings accounts | No numeric minimum | 10 |
+| Fixed deposits | 10 | 12; ten ACTIVE, two MATURED |
+| Transactions | 100 | 191 |
+| Users | At least one active user per role | 14 users covering seven roles |
+| Interest runs | 2 plus repeat-run evidence | 3 nonempty completed cycles; zero exceptions |
+| Interest payouts | Linked consistent credits | 30; ten per cycle |
 
-Six agents: 3 at Colombo, 2 at Kandy, 1 at Galle — deliberately uneven so RPT-01 shows a
-real distribution rather than identical rows.
+All three branches have ordinary agents and a manager staff profile. Colombo,
+Kandy and Galle each have two ordinary agents; the earlier planned 3/2/1 distribution
+was not the implemented seed. Manager accounts share the `agent` subtype, as required
+by the session/RBAC contract. `customer_adult_one` is linked to Adult One.
+Actual usernames are documented in `13_system-operation-guide.md`.
 
-## Customers
+## Ordered loading and determinism
 
-18 customers with Sri Lankan names, NIC-format identifiers and Asia/Colombo addresses,
-spread across branches. Ages are chosen to exercise **every** plan boundary:
+`database/seed/_load-order.txt` is authoritative. The order is roles, branches,
+users, staff, customers, assignments, documents, accounts, holders, mandates,
+transactions, fixed deposits, interest runs. A missing listed file fails before
+database writes; the entire SQL seed is one caller-owned transaction.
 
-| Age band | Count | Exercises |
-|---|---|---|
-| Under 13 | 3 | Children plan (12%, no minimum) |
-| 13–17 | 3 | Teen plan (11%, LKR 500) |
-| 18–59 | 9 | Adult plan (10%, LKR 1,000) and joint holders |
-| 60+ | 3 | Senior plan (13%, LKR 1,000) |
+Explicitly seeded identities and FD business dates are fixed. Active FDs start
+2026-01-02; the three cycles are 2026-02-01, 2026-03-03 and 2026-04-02, exactly
+thirty days apart. Two historical three-year FDs start 2022-01-02, mature
+2025-01-02, and share accounts with active FDs. Those two accounts open
+2022-01-01; other seeded accounts open 2026-01-02.
 
-Includes at least one customer whose age sits exactly on a boundary (12, 13, 17, 18, 59,
-60) so eligibility tests have real edge cases.
+Financial postings use production routines, which generate operational UUIDs,
+references, audit timestamps and posting timestamps at execution time. Historical
+date comments in the older transaction fixture are annotations, not backdated
+ledger timestamps. Immutable ledger rows are never rewritten to simulate dates.
+Counts, business dates, rates and exact financial totals are reproducible across
+clean rebuilds; operational history is not promised to be byte-identical.
+The sample is a historical fixture, not a live overdue-FD maturity demonstration.
 
-## Accounts
+The SQL seed temporarily widens posting hours/limits, then restores their actual
+previous values. It never disables constraints, audit or ledger immutability.
+Use a disposable database for rebuild/test evidence. Updating an old database
+with unledgered opening balances requires a clean authorized rebuild; the seed
+fails rather than double-crediting that cash.
 
-22 accounts: 19 individual across the four age plans, plus **3 joint accounts** — two with
-2 holders, one with 3 — all under the Joint plan (7%, LKR 5,000 minimum), each with a
-stored mandate (two `ANY_ONE`, one `ALL_HOLDERS`) so both mandate paths are demonstrable.
+## Account cash and principal
 
-Balances are spread from just above the plan minimum to LKR 500,000, including at least
-one account sitting **exactly at** its minimum balance — the boundary case a withdrawal
-test needs.
+Accounts start at zero. `13_transactions.sql` posts the former opening balances
+as ten idempotent deposits, followed by the existing mixed transaction fixture.
+This fixes the former off-ledger starting cash without altering a posted row.
 
-## Fixed deposits
-
-12 FDs across all three products:
+`14_fixed_deposits.sql` loads twelve fixed FD master IDs and rate snapshots:
 
 | Product | Count | Principal range |
 |---|---|---|
-| 6 months / 13% | 4 | LKR 50,000 – 200,000 |
-| 1 year / 14% | 5 | LKR 100,000 – 500,000 |
-| 3 years / 15% | 3 | LKR 250,000 – 1,000,000 |
+| 6 months / 13% | 4 | LKR 50,000–200,000 |
+| 1 year / 14% | 5 | LKR 100,000–500,000 |
+| 3 years / 15% | 3 | LKR 250,000–1,000,000 |
 
-Staggered `start_date` values so `next_interest_date` falls on different cycles. Includes
-**one `MATURED` FD on an account that also has an `ACTIVE` FD** — the case that only works
-if G-01 (partial unique index) is approved. If the team instead keeps the ERD's hard
-`UNIQUE`, this row must be removed and the seed target drops to 11.
+The historical seed-import path uses explicit FD master dates/IDs. It posts required
+funding deposits, principal withdrawals and two matured-principal returns through
+existing routines, with current assigned-agent context, joint signers and locked
+accounts. Each principal debit, FD row and FD_OPENED audit share the seed transaction. No financial
+transaction is hand-inserted. This does not replace the runtime FD-opening API.
 
-## Transactions
+## Transactions and interest
 
-140 rows, deliberately mixed (the brief requires "a realistic mixture"):
-
-| Type | Count | Share |
-|---|---|---|
-| `DEPOSIT` | 62 | 44% |
-| `WITHDRAWAL` | 45 | 32% |
-| `INTEREST_CREDIT` | 30 | 21% |
-| `REVERSAL` | 3 | 2% |
-
-Spread across all 3 branches, all 6 agents, all 5 plans and a 6-month date range so every
-report filter returns non-trivial rows. The 3 reversals each link to an original
-transaction so RPT-02 and RPT-05 must handle compensating entries correctly.
-
-`INTEREST_CREDIT` rows are **not** hand-written — they are produced by running
-`sp_run_interest_cycle` during seeding, which proves the interest path works and keeps
-`interest_payout` consistent with the ledger.
-
-## Interest runs
-
-Three cycles at `SEED_ANCHOR_DATE + 30/60/90` days. The seed then **re-runs cycle 2** and
-asserts that no additional `interest_payout` or `INTEREST_CREDIT` row appears — the
-idempotency evidence required by SRS B.2 and AC-08, built into the seed rather than left
-to a manual test.
-
-## Expected report totals
-
-`scripts/seed-check.mjs` asserts these after seeding. They are the regression baseline —
-if a change to a routine alters a total, the check fails.
-
-| Check | Expectation |
+| Posted type | Count |
 |---|---|
-| Sum of all `current_balance` | equals the signed ledger sum (D-1 reconciliation) |
-| `transaction` row count | ≥ 140 |
-| `INTEREST_CREDIT` count | equals `interest_payout` count |
-| Every `interest_payout` | has exactly one linked `INTEREST_CREDIT` |
-| RPT-01 grand total | equals the sum of all transaction amounts by type |
-| RPT-05 net movement | equals `deposits − withdrawals + interest` per customer |
-| Accounts below plan minimum | **0** |
-| Negative balances | **0** |
-| FDs with 2 active rows on one account | **0** |
-| Duplicate `(fd_id, cycle_date)` | **0** |
+| DEPOSIT | 92 |
+| WITHDRAWAL | 64 |
+| INTEREST_CREDIT | 30 |
+| REVERSAL | 5 |
+| Total | 191 |
 
-Exact numeric values are filled in by M5 once the seed is written (P01-M05-T03), then
-frozen.
+All interest credits are generated by `sp_run_interest_cycle` through
+`sp_post_interest_credit`. Each run must record ten successful FDs, zero exceptions
+and totals matching its payouts. Every payout must link to a matching credit for
+the correct account and exact snapshot-rate formula. The second cycle is attempted
+again; SQLSTATE 23505 is required and counts/balances/payout totals must stay unchanged.
 
-## Users
+Migration 0620 corrects interest references to include the full FD UUID and cycle
+date. Shared fixed-UUID prefixes cannot collide, and repeated direct credits for
+the same FD/cycle are rejected by reference uniqueness.
 
-Nine application users covering all seven roles, with documented development-only
-passwords in `docs/13_system-operation-guide.md`. Passwords are argon2id hashes in the
-seed file — never plaintext, even in synthetic data.
+## Exact financial baseline
+
+| Metric | Expected after a clean seed |
+|---|---|
+| Sum of account balances | `1582020.52` |
+| Sum of unsigned transaction amounts | `10190147.52` |
+| Total interest / sum of run controls | `66020.52` |
+| Payouts / linked INTEREST_CREDIT rows | `30` / `30` |
+| Account discrepancies against signed ledger | `0` |
+| Active accounts below plan minimum | `0` |
+| Invalid current assignments / branch-staff logins / customer logins | `0` |
+| Invalid payouts / run controls / unresolved reversals | `0` |
+
+Unsigned transaction totals are reseeding evidence, not a balance reconciliation.
+Balances are compared account by account against deposits + interest − withdrawals,
+with reversal direction determined by the original linked entry. Joint-holder
+report attribution is not a distinct-ledger total.
+
+## Verification commands
+
+`npm run verify:seed-validation -- --global` initializes and cleans up an isolated
+PostgreSQL cluster, rebuilds from empty, verifies migration checksums, compares real
+before/after seed evidence and runs focused regressions/typecheck/lint.
+Add `--all-tests` for the complete integration suite; record its failures separately.
+
+`npm run db:seed-validate` is read-only and fails on any missing required data or
+financial invariant. `--scope=organization` explicitly certifies only that subset.
+`npm run db:seed-check` additionally reruns the seed and compares actual counts and
+exact totals; use it only when reseeding the configured development database is intended.
+Neither checker skips empty datasets or guesses a nonexistent account mandate column.

@@ -1,7 +1,45 @@
 # 17 — ERD Gap Analysis
 
+**Current disposition (2026-10-09):** G-01 is implemented in 0480/ADR-0011;
+G-03 has FD/cycle uniqueness in 0482; G-05 reference uniqueness is in 0360 but transfers
+remain unimplemented. G-10 is in 0221. G-12/ADR-0012 accepts savings interest; current
+schema/runtime are FD-only. OQ-12/OQ-13/OQ-14 retain typing/mid-cycle/scope decisions.
+G-25 transaction RLS and G-26 FD/API/cycle execution are addressed by ADR-0026 and
+0621–0627. Historical findings below explain decisions, not current implementation evidence.
+
+
+## G-26 — FD/interest runtime delivery gap (2026-10-09)
+
+FD pages are prototypes; no FD opening/list API exists. The interest endpoint only
+records STARTED in audit, while its documented contract promises execution. Existing
+SQL routines are callable by the owner but runtime FD writes have neither grants nor
+RLS policies. The legacy cycle function uses one transaction with subtransactions,
+rather than FR-INT-04's independently committed distributions.
+
+User-authorized ADR-0026 completes the missing service/API/UI with 0622 runtime
+policies, an insert-only `fd_opening_request` idempotency receipt, and a service-owned
+cycle runner. Each FD locks its row and posts ledger/payout/date/audit in one explicit
+transaction, independently of earlier distributions. The original merged routine
+remains for seed/backward-compatible SQL tests and is documented as legacy.
+The receipt adds UUID PK, actor/key uniqueness, payload fingerprint, FD FK and
+created_at; it is control metadata, never another source of financial balance.
+
+## G-25 — documented transaction RLS absent (2026-10-09)
+
+NFR-SEC-07 and docs/15 require RLS on the ledger. Integrated dev has no policy;
+`getTransaction` relies on it and therefore permits a direct cross-branch read.
+User-authorized ADR-0026 adds 0621: SELECT inherits account visibility; INSERT
+requires a writing role and a visible account. No original ERD column is changed.
+Direct mims_app tests must prove missing context, cross-branch and unheld customer
+reads fail closed, while bank-wide and legitimate posting contexts keep working.
+
+**RPT-05 interpretation (ADR-0022):** The user confirmed one activity attribution
+per joint-account holder. Summing customer totals can therefore exceed a bankwide
+distinct-ledger total. This report's grand total is labelled holder-attributed; use
+the reconciliation report for a distinct-ledger control total.
+
 **Compares:** `Project 4` assignment brief · `Group 32 SRS v1.1` · `group_32_ERD2`
-**Status:** Phase 0 analysis complete; updated during Phase 1. **21 findings.** 4 are blocking.
+**Status:** Phase 0 analysis complete; updated during Phase 1. **22 tracked findings** (G-22/G-23 are referenced from other documents). 3 remain blocking.
 
 ---
 
@@ -31,13 +69,13 @@ structure and contradicts nothing — a member may implement it directly.
 | ID | Finding | Severity | Approval |
 |---|---|---|---|
 | G-01 | One FD *ever* per account vs one *active* FD | HIGH | **YES — blocking** |
-| G-02 | No reversal support in the ledger | HIGH | YES |
+| G-02 | No reversal support in the ledger | HIGH | **YES — resolved; implemented in `0363`** |
 | G-03 | No central interest-run tracking | HIGH | YES |
-| G-04 | No idempotency key on transactions | HIGH | YES |
-| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — blocking** |
-| G-06 | Accounts have no owning branch | HIGH | YES |
-| G-07 | Transactions have no agent or branch attribution | HIGH | YES |
-| G-08 | Joint operating mandate not modelled | HIGH | YES |
+| G-04 | No idempotency key on transactions | HIGH | **YES — resolved; implemented in `0360`** (and `0244` for accounts) |
+| G-05 | `reference_number` uniqueness contradicts the transfer assumption | HIGH | **YES — resolved (ADR-0010); implemented in `0360`** |
+| G-06 | Accounts have no owning branch | HIGH | **YES — resolved; implemented in `0240`** |
+| G-07 | Transaction agent/branch attribution — schema implemented in 0320; posting integration remains | HIGH | User-authorized T01, ADR-0016; M4/team review retained |
+| G-08 | Joint operating mandate not modelled | HIGH | **YES — resolved; implemented in `0241`/`0242`** |
 | G-09 | Single role per user vs `user_role` many-to-many | MEDIUM | YES |
 | G-10 | Nothing prevents two active customer–agent assignments | MEDIUM | NO |
 | G-11 | Product rates not effective-dated; FD does not snapshot its rate | HIGH | YES |
@@ -47,10 +85,11 @@ structure and contradicts nothing — a member may implement it directly.
 | G-15 | No parameter store for business hours and withdrawal limits | MEDIUM | YES |
 | G-16 | No session table for server-side invalidation | MEDIUM | YES |
 | G-17 | No store for failed sign-in throttling | LOW | NO |
-| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO |
+| G-18 | `current_balance` denormalisation undocumented and unconstrained | HIGH | NO — implemented in `0240` |
 | G-19 | Monetary and rate columns lack precision | MEDIUM | NO |
-| G-20 | Every customer is forced to have a login | HIGH | **YES — blocking** |
+| G-20 | Every customer is forced to have a login | HIGH | **YES — resolved** |
 | G-21 | Branch managers have no defined branch-assignment source | HIGH | **YES — accepted** |
+| G-24 | Ledger rows have no posting-order key; `transaction_date` ties and inverts | MEDIUM | **YES — resolved; implemented in `0542` (ADR-0023)** |
 
 ---
 
@@ -178,7 +217,7 @@ The posting routine catches SQLSTATE `23505` on this index and returns the origi
 **Database impact** — One nullable column, one partial unique index. Nullable because
 seeded and system-generated interest credits do not carry a client key.
 
-**Approval needed — YES.**
+**Approval needed — YES — resolved.** Implemented in `0360_p03_m04_transaction_reference_idempotency.sql` (and `0244` for accounts).
 
 ---
 
@@ -214,7 +253,7 @@ both BR-10 and Assumption 4's intent.
 **Database impact** — Either one `UNIQUE` constraint (recommended), or one `UNIQUE`
 constraint plus one nullable grouping column and a fifth transaction type.
 
-**Approval needed — YES, blocking.** Tracked as **OQ-08**.
+**Approval needed — YES — resolved.** Resolved by [ADR-0010](../.agent/decisions/ADR-0010-transfers-with-transfer-group.md) (OQ-08). Implemented in `0360_p03_m04_transaction_reference_idempotency.sql`.
 
 ---
 
@@ -241,11 +280,27 @@ fixed at account opening, not a derivable one.
 **Database impact** — One `NOT NULL` FK, one index `(branch_id, status)`, and it becomes
 the RLS anchor column. Record in the denormalisation register in `04_database-schema.md`.
 
-**Approval needed — YES.**
+**Approved — 2026-10-01.** Accounts store their owning branch as a fixed historical
+snapshot and branch-scope anchor. Recorded in ADR-0008.
 
 ---
 
 ## G-07 · Transactions have no agent or branch attribution
+
+**Implementation — 2026-10-08:** Vibodha authorized the prescribed G-07 schema
+and an early start for P03-M02-T01 after the phase restriction was explained.
+ADR-0016 records that limited authorization. Migration 0320 adds both nullable UUID
+FKs with ON DELETE RESTRICT and B-tree reporting indexes on `transaction_date`,
+the actual ledger column (the SRS/card's `posted_at` name is stale). Existing rows
+are preserved with NULL attribution. Future posting producers must capture trusted
+values inside their transaction; this schema task does not complete that integration.
+No general Phase 3 entry or OQ-12/OQ-14 approval is inferred.
+
+**Read-side follow-up — T02, 2026-10-08:** ADR-0017 authorizes the separate early
+start for the live daily activity API/page. Exact SQL aggregates use the T01 indexes
+and immutable attribution; manager scope requires both current target branch and
+posting branch. NULL attribution is excluded, not backfilled or derived. Producer
+integration remains with M4/M3; this does not complete the Phase 5 RPT-01 report.
 
 **Current ERD design** — `transaction` has `initiated_by_user_id` and `channel_id` only.
 
@@ -295,7 +350,8 @@ statement-level trigger.
 cannot be a row-level `CHECK` (they span rows), which makes this a good demonstration of
 statement-level triggers with transition tables (L08).
 
-**Approval needed — YES.**
+**Approved — 2026-10-01.** Add `holder_type`, `joint_mandate`, and database validation
+for the two-to-four-adult-holder rule. Recorded in ADR-0009.
 
 ---
 
@@ -344,6 +400,22 @@ CREATE UNIQUE INDEX ux_customer_agent_one_active
 models exactly this intent.
 
 **Approval needed — NO.** Pure integrity hardening of an existing ERD design.
+
+**Implemented 2026-10-05 — P02-M02-T02, migration 0221.** The index enforces
+at most one active assignment, not existence. Implemented P02-M02-T04 registration
+provides exactly one current row at successful commit. Reassignment remains future
+work; direct owner inserts can still omit assignments. Historical rows are retained.
+The assignment/document task-card timestamps were abbreviated: AGENTS.md §8 requires
+created_at on every table and updated_at on mutable rows. 0221/0222 include those with
+the shared timestamp trigger; uploaded_date remains a distinct document field. No new
+business entity or identity decision is introduced. docs/04 B.4a records the exact shape.
+
+**2026-10-07 — P02-M02-T05:** session-authenticated HTTP tests now prove the same
+assignment-at-registration-commit and duplicate/child-failure rollback contract under
+the migrated application role. New 0223 adds child RLS/SELECT/INSERT scope, without
+changing the ERD entities. ADR-0015 reconciles T04's explicit audit with M1's merged
+customer trigger (one sanitized event); the ADMIN permission-document discrepancy
+remains recorded in open questions, with the narrower mutation contract retained.
 
 ---
 
@@ -621,7 +693,9 @@ A customer with self-service gets a linked user; one without does not. `agent` k
 **before Phase 2 begins**. Also removes ERD Assumption 2's side effect ("a customer is
 recorded only if an account is open") as a schema-level requirement.
 
-**Approval needed — YES, blocking.** Depends on the answer to TBD-02. Tracked as **OQ-05**.
+**Approved — 2026-09-29.** Customer login is optional. `customer` uses an independent
+surrogate key and an optional unique `app_user_id` relationship. OQ-05 and TBD-02 are
+resolved by ADR-0007.
 
 ---
 
@@ -672,7 +746,7 @@ No ERD table is removed. Every proposal is additive except G-01 (constraint form
 
 ## What happens next
 
-1. The team reviews this document and decides **OQ-01, OQ-04, OQ-05, OQ-08** (see
+1. The team reviews this document and decides **OQ-01, OQ-04 and OQ-08** (see
    `.agent/open-questions.md`). OQ-04 and OQ-08 are good lecturer questions.
 2. Approved changes are folded into `docs/04_database-schema.md` under **PROPOSED**, and
    an ADR is written in `.agent/decisions/`.
@@ -681,3 +755,132 @@ No ERD table is removed. Every proposal is additive except G-01 (constraint form
 
 Findings marked **Approval needed: NO** (G-10, G-17, G-18, G-19) may be implemented as part
 of their owning member's Phase 1/2 task without further discussion.
+
+## P04-M02-T01 read-side binding (2026-10-08)
+
+The task card's illustrative fd.opened_date differs from the merged 0480 start_date;
+use start_date. M2's reserved 0420 precedes M5's 0480 in clean migration order. ADR-0018
+resolves binding through an owner-only installer and the existing post-migration views
+stage, preserving both immutable numbering blocks. Customer FD reads require runtime
+column SELECT plus SELECT-only RLS because 0480 supplied neither; new 0420 owns this
+additive read contract with M1/M5 handoff. No write/opening dependency is declared DONE.
+
+## P04-M02-T02 context consistency (2026-10-08)
+
+0420 scopes rows using trusted context; its bankwide role clause alone could return
+FD rows if context identity was missing or the stored role/branch had changed. T01's
+service already revalidated these values. ADR-0019 extends that backstop to direct
+SQL using a restrictive SELECT-only stored-actor guard in new 0421. No ERD/table
+shape change or M1 context-helper rewrite. Cross-owner policy review is in the M1/M5
+handoff. The user authorized T02's scoped start; general phase gates remain pending.
+
+## P05-M02-T01 report illustration corrections (2026-10-08)
+
+**T02 follow-up (ADR-0022, 0521):** The baseline transaction table has no active RLS
+policy despite NFR-SEC-07. Broadly changing its visibility would alter M4 writers
+and is not included in this report task. Narrow, fixed SECURITY DEFINER aggregates
+instead revalidate stored actor/context and immutable posting-branch scope in SQL,
+revoke PUBLIC EXECUTE and keep the 0520 view private. Record broader transaction
+RLS with M1/M4; do not claim this reader resolves the raw-table requirement.
+Signed net now follows transaction_reversal original type/account/amount; invalid
+links yield unresolved net and NULL-agent exclusions are disclosed independently.
+
+The task card's COUNT(*) on a LEFT JOIN counted an empty agent as one. Its all-time
+aggregation discarded the timestamp needed for a selected range, and `posted_at` /
+`idx_transaction_agent_posted` do not exist: the merged names are `transaction_date`
+and `ix_transaction_agent_date`. Grouping by current agent branch would also relabel
+history after a transfer. ADR-0020 resolves these as a timestamp/type/posting-branch
+aggregate view with COUNT(transaction_id), exact NUMERIC sums and a tested filtered
+roster outer-join contract. No ERD/table change or index is added. Include every
+agent-table attribution profile, preserving inactive/promoted staff history. Runtime
+0521 now supplies guarded report scope and linked-reversal net; broader raw-table
+RLS and malformed legacy-link cleanup remain M1/M4 responsibilities.
+
+## P03-M04-T03 merged routine correction (2026-10-08, ADR-0021)
+
+The merged 0362 used non-existent audit `after_value` (actor_type exists), PERFORM on
+a procedure and wrong SINGLE_WITHDRAWAL_LIMIT/DAILY_WITHDRAWAL_LIMIT parameter names.
+Its test expected an audit to survive an exception/rollback in the same transaction.
+Vibodha authorized M4 corrective work and documentation; new 0363 uses new_values,
+CALL and the actual WITHDRAWAL_SINGLE_LIMIT/WITHDRAWAL_DAILY_LIMIT keys. An audited
+attempt returns a known rejection code after rolling back inner financial work,
+allowing the outer audit to commit before the future service maps an error. Array
+signers support the published I-4 ALL_HOLDERS function. No ERD/table change or edit
+to merged 0362. Per-account limits follow BR-I2/SRS §7.1; the old parameter description
+saying per-customer does not redefine that rule. All arithmetic remains exact SQL.
+
+---
+
+## G-24 · Ledger rows have no posting-order key
+
+**Current design** — `transaction` is ordered by `transaction_date`. `sp_post_deposit` and `sp_open_savings_account`
+stamp it with `now()` (the transaction's start time); `sp_post_withdrawal` uses `clock_timestamp()`.
+
+**Project requirement** — RPT-02 reports an opening and a closing balance per account for a date range (FR-ACC-05 /
+REP-02), and the ledger carries running-balance evidence (`balance_after`, G-14). Reading those balances needs the
+FIRST and LAST row of an account in the range, so the order of an account's rows must be exact.
+
+**Why they conflict** — Postings made inside one transaction share a timestamp, and a deposit that waits for the account
+lock behind a later-starting transaction is stamped EARLIER than the row posted before it. On the pure seed 73 of 125
+rows tie, the balance chain breaks 86 times by timestamp order, and 6 of 10 accounts' last row disagrees with
+`current_balance`.
+
+**Approved resolution (ADR-0023)** — Add `transaction.ledger_seq bigint NOT NULL DEFAULT nextval('transaction_ledger_seq')`
+with `UNIQUE (account_id, ledger_seq)`. Rows are written under the account row lock, so the sequence order within an
+account is the posting order. Existing rows are numbered in physical insertion order by the table rewrite.
+
+**Database impact** — One sequence, one column, one unique index; migration `0542` (M3 block, table owned by M4).
+No posting routine changes. `ledger_seq` is internal and never displayed.
+
+## G-27 — Reversal authorization and API key drift
+
+Docs/05 and the M4 task require BRANCH_MANAGER-only reversal. The legacy route/service
+also allowed ADMIN, and the procedure lacked a stored-actor guard. The API did not persist
+an idempotency key or return its actual reversal-link UUID. ADR-0026 authorizes correcting
+these dependencies in new 0626; merged 0363 remains unchanged. This restores the specified
+rule, rather than expanding financial privileges. Real API and direct SQL probes cover it.
+
+## G-28 withdrawal adapter correction
+
+Final comparison found the service using login UUIDs as customer IDs and the throwing
+legacy routine, losing known-rejection audits. Before M4-owned adapter edits: resolve
+the active linked customer under RLS, accept explicit staff signer evidence, and use
+existing sp_try_post_withdrawal, committing its rejection audit before mapping the
+HTTP error. User authorization covers these changes; no ownership transfer or merged
+migration edit. Real runtime API tests must cover self-signing, ALL_HOLDERS, key replay,
+scope and durable rejection evidence. Physical signature capture UI remains pending.
+
+G-28 root cause found by real CUSTOMER API tests: account UPDATE RLS prevents
+SELECT FOR UPDATE, so the invoker path cannot implement the specifically documented
+customer withdrawal contract. Proposal 0627: a pinned-path SECURITY DEFINER wrapper
+checks stored active CUSTOMER/profile/context, own account and exactly self signer;
+then reuses the existing audited locked core. No customer UPDATE policy/grant change.
+Direct app UPDATE and forged wrapper calls must remain denied.
+
+G-27/G-28 local disposition (2026-10-09): RESOLVED by 0626/0627 and real runtime
+API/direct-SQL tests. Reversal actor/key/receipt and withdrawal identity/signers/rejection
+audit now match their contracts. Staff physical signature UI remains pending alongside
+prototype transaction pages; no live or lecturer acceptance is inferred.
+
+## FR-AUTH-04 reset control (0638)
+
+SRS single-use reset tokens are implemented in `password_reset_token`: UUID PK,
+user FK RESTRICT, unique SHA-256 hash, expiry, used timestamp and created timestamp.
+ADMIN issues a 30-minute link. Guarded SQL consumes the token, changes the Argon2id
+hash and invalidates every session atomically. No email integration is assumed.
+
+## Current gap disposition — 2026-10-10 / ADR-0027
+
+Older absent-transfer/FD-only/prototype statements describe earlier snapshots. G-28 physical
+holder-attestation UI and the document-verification opening blocker now have working paths.
+0628 fixes deposit replay/actor/attribution; 0629 resolves document verification without
+broadening child-table UPDATE; 0630 uses ledger order for reconciliation. ADR-0010 adds paired
+transfer groups/types (0631); ADR-0012 adds account payout source/cursor/rate/interval (0632).
+Automatic maturity uses a separate immutable principal credit and unique receipt; 0635/0636
+link FD funding and disallow isolated reversal of lifecycle/system postings. FR-AUTH-04 is
+implemented by 0638 controls. 0639 closes the earned-interest-forfeiture hole conservatively.
+
+Remaining requirement conflict: zero-balance closure and withdrawal minimum mean a funded
+minimum-bearing plan needs a separately approved final settlement flow. Do not weaken the
+ordinary minimum rule or forfeit accrued interest silently. Lecturer acceptance of the
+accepted extensions, live HTTPS and target-runtime verification remain external gates.

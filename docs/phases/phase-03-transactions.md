@@ -1,15 +1,38 @@
 # Phase 03 — Financial Transactions
 
-**Status:** TODO · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
+**Status:** General entry pending; M2 T01/T02 and M4 T03 correction merged · **Tasks:** 14 · **Effort:** 44 points · **Est.** ~1 week
 
 The most important phase for the grade. Everything here is about **ACID under
 concurrency**.
 
+**Scoped exception — 2026-10-08:** Vibodha authorized P03-M02-T01 to start early
+with the G-07 schema specified in ADR-0016. This database-only exception does not
+approve Phase 2 exit or general Phase 3 entry. Other tasks keep their existing gates.
+
+**Extension — 2026-10-08:** PR #49 merged T01 (dev c2bce7c). Vibodha explicitly
+authorized T02 implementation on feat/p03-m02-agent-daily-activity (ADR-0017).
+This read-only API/page exception retains all general entry criteria below.
+
+T02 implementation is verified: 529 tests / 48 suites, clean 24-migration rebuild,
+TypeScript/lint/build and manual browser QA pass; no new migration or posting workflow.
+See the [handoff and review](../../.agent/handoffs/p03-m02-agent-daily-activity.md).
+
+**M4 correction — 2026-10-08:** the user explicitly authorized correcting the merged
+T03 implementation and updating its documentation (ADR-0021). New 0363 repairs
+audit columns/calls, real limit keys, caller-owned rejection-audit boundaries,
+array signers, trusted attribution and safe retries. Merged through PR #67;
+historical pre-integration verification:663 tests /62 suites, clean34-migration
+rebuild/checksums and typecheck/lint/build pass, no exclusions. Current legacy caller
+ambiguities are recorded in the RPT-01 T02 handoff. General entry remains pending.
+[Corrected contract and review](../../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
+
 ## Entry criteria
 
 - [ ] Phase 2 exit criteria met
-- [ ] **OQ-08 resolved** (G-05 — reference-number uniqueness and whether transfers exist)
-- [ ] G-04 (idempotency key), G-07 (agent/branch attribution), G-14 (`balance_after`) approved
+- [x] **OQ-08 resolved** by ADR-0010: unique references and linked transfer legs
+- [ ] OQ-12 transfer typing and OQ-14 lecturer scope acceptance resolved
+- [x] G-07 schema authorized for P03-M02-T01 only (ADR-0016; M4/team review retained)
+- [ ] G-04 (idempotency key) and G-14 (`balance_after`) approved
 
 ## Tasks by member
 

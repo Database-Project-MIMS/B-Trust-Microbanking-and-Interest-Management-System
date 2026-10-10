@@ -1,29 +1,63 @@
 # 09 — Task Tracker
 
+**Current authority (2026-10-10):** the task rows below describe merged or locally
+verified implementation. Earlier session notes are historical. ADR-0027 authorizes local
+T03/cross-owner completion and commits; publication remains the user's action.
+Live deployment, lecturer scope decisions and general phase approval remain pending.
+
+
 **Task ID:** `P<phase>-M<member>-T<task>` — e.g. `P03-M04-T02`.
 **Branch:** `feat/p03-m04-<slug>` (AGENTS.md §12).
 
 **Statuses:** `TODO` (not ready) · `READY` (dependencies met, start now) · `IN_PROGRESS` ·
-`BLOCKED` (say why) · `REVIEW` (PR open) · `DONE`.
+`BLOCKED` (say why) · `REVIEW` (PR open, or verified locally awaiting user publication as annotated) · `DONE`.
 
 **Update rules:** you update **only your own rows**. Change status in the same PR as the
 work. A task is `DONE` only when every item in the AGENTS.md §16 Definition of Done is
 satisfied.
 
+**2026-10-05 closeout:** Vibodha authorized cross-member status reconciliation and
+Phase 2 entry after verification. `DONE` below records verified implementation in the
+local working tree. Closeout was committed as fad4f13 and integrated into dev by
+PR #33 (76701e7); PR #34 merged into dev at 2e338a6. PR #35 and customer registration
+PR #38 are now merged, followed by M3's holder PR #37 and M1's security PR #40.
+T05 is verified locally on feat/p02-m02-customer-api-ui based on dev 25fc264.
+Preserve user commit/push/merge
+control at that historical checkpoint. ADR-0026 now authorizes local commits; no assistant push, PR or merge. See the
+[approved checkpoint](../.agent/checkpoints/phase-01-checkpoint.md).
+
 ---
+
+## Historical PR #88 integration repair verification — superseded by merge
+
+**PR #88 resolution:** latest dev78aae1e is prepared with no merge commit.
+The actual combined tree passes 940 API/DB/e2e tests, 186 focused seed/date tests,
+6 separate deployment-security tests, clean 51-migration rebuild/checksums,
+reseeding, typecheck and lint. User completes the merge commit and push.
+Incoming task statuses are retained; summary counts are derived from all rows
+and field-based Phase 1 cards. General phase gates remain pending.
+
+Vibodha explicitly authorized fixing the reported full-suite failures, including
+other members' code. Current branch865/87 suites and latest-dev export940/95 suites
+all pass; focused seed/date checks186/15 suites, rebuild/reseed/typecheck/lint pass.
+T01 remains REVIEW awaiting user publication. Original stewardship remains; this
+does not mark general phase gates or other members' unfinished tasks DONE.
+The latest user instruction authorizes a few local commits; pushing, PR creation
+and merging remain user actions.
+[Cross-owner repairs](../.agent/handoffs/p06-m02-integration-failure-repairs.md).
 
 ## Status summary
 
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| P1 | 18 | 0 | 10 | 1 | 0 | 0 | 7 |
-| P2 | 16 | 16 | 0 | 0 | 0 | 0 | 0 |
-| P3 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
-| P4 | 14 | 14 | 0 | 0 | 0 | 0 | 0 |
-| P5 | 15 | 15 | 0 | 0 | 0 | 0 | 0 |
-| P6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
-| **All** | **96** | **72** | **10** | **1** | 0 | 0 | **13** |
+| P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
+| P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
+| P3 | 14 | 0 | 0 | 0 | 0 | 1 | 13 |
+| P4 | 14 | 0 | 0 | 0 | 0 | 3 | 11 |
+| P5 | 15 | 0 | 0 | 0 | 0 | 1 | 14 |
+| P6 | 13 | 0 | 0 | 1 | 0 | 5 | 7 |
+| **All** | **97** | **0** | **0** | **1** | **0** | **10** | **86** |
 
 ---
 
@@ -42,8 +76,9 @@ satisfied.
 
 ## Phase 1 — Foundation, Master Data & Security
 
-Phase 1 work is in progress. API and UI portions depend on the published integration
-points where noted.
+Phase 1 is complete and its exit checkpoint approved on 2026-10-05. All 19 task
+implementations are verified by 184 passing tests, clean rebuild, typecheck, lint and
+production build. I-1, I-2 and I-8 are available.
 
 ### Member 1 — Identity & Security
 
@@ -94,7 +129,7 @@ points where noted.
 | **Docs** | `11_ui-rules.md`; **run `/imprint`** — first entries in `ui-registry.md` (App Shell, Sign-in Card, Button, Form Field) |
 | **Depends on** | P01-M01-T02 |
 | **Acceptance** | Nav shows only permitted sections **and** the server still authorizes every request; matches the tokens in `ui-registry.md` |
-| **Status / Branch** | READY · `feat/p01-m01-app-shell` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-app-shell` · verified at Phase 1 closeout |
 
 | Field | P01-M01-T05 |
 |---|---|
@@ -106,7 +141,7 @@ points where noted.
 | **Docs** | `07_business-rules.md` — where BR-08 is enforced |
 | **Depends on** | P01-M01-T01; ERD gap **G-15**, **G-22** approved |
 | **Acceptance** | Business hours and withdrawal limits are readable as data, not constants in code |
-| **Status / Branch** | READY · `feat/p01-m01-parameters-audit` · PR #— |
+| **Status / Branch** | DONE · `feat/p01-m01-parameters-audit` · verified at Phase 1 closeout |
 
 ### Member 2 — Organisation
 
@@ -114,8 +149,8 @@ points where noted.
 |---|---|---|---|---|---|---|---|
 | **P01-M02-T01** | Branch schema | `0120_p01_m02_branch.sql` — `branch` + `branch_code UNIQUE`, status check | — | — | Duplicate `branch_code` rejected; delete restricted | `0000` | DONE |
 | **P01-M02-T02** | Agent schema | `0121_p01_m02_agent.sql` — `agent` as a subtype of `app_user`; `employee_no UNIQUE`, `nic_passport_no UNIQUE`, `email UNIQUE`; index `(branch_id, status)` | — | — | FR-ORG-02: agent in exactly one active branch | T01, P01-M01-T01 | DONE |
-| **P01-M02-T03** | Branch & agent APIs | — | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity and negative tests | T02, **I-1** | IN_PROGRESS |
-| **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — list, create, deactivate | e2e create + deactivate | T03 | READY |
+| **P01-M02-T03** | Branch & agent APIs | `0122_p01_m02_organization_audit.sql` — sanitized, same-transaction branch/agent auditing | `GET/POST/PATCH /api/branches`, `/api/agents`; deactivate-not-delete | — | API authorization, scope, atomicity, rollback/audit and negative tests | T02, **I-1**, P01-M01-T05 contract | DONE |
+| **P01-M02-T04** | Branch & agent admin UI | — | — | `app/branches/page.tsx`, `app/agents/page.tsx` — role-aware active/all lists, create forms and confirmed deactivation | `tests/e2e/branches-agents.test.mjs` — create, list, deactivate and history retention | T03 | DONE |
 
 Branch: `feat/p01-m02-<slug>`. Acceptance: ≥ 3 branches and ≥ 5 agents can be created and
 listed (FR-ORG-01); no record referenced by history can be deleted (FR-ORG-05).
@@ -126,7 +161,7 @@ listed (FR-ORG-01); no record referenced by history can be deleted (FR-ORG-05).
 |---|---|---|---|---|---|---|---|
 | **P01-M03-T01** | Savings plan schema with eligibility data | `0140_p01_m03_savings_plan.sql` — `savings_plan` + `min_age_years`, `max_age_years`, `min_holders`, `max_holders`, `requires_all_adult`; age-range check | — | — | `tests/db/savings-plan-constraints.test.mjs` — 8/8 passing, five plans load with exactly the BR-03…BR-07 rates and minimums, all negative cases covered | `0000`; **G-13** approved | DONE (branch `feat/p01-m03-savings-plan-schema`) |
 | **P01-M03-T02** | Eligibility function | `fn_check_plan_eligibility(plan_id, date_of_birth, holder_count)` in `database/routines/fn_check_plan_eligibility.sql` | — | — | `tests/db/plan-eligibility-function.test.mjs` — 10/10 passing: child aged 15 rejected for Children; adult aged 30 accepted for Adult; 1 holder rejected for Joint; both boundary cases and all negative/invalid-input cases covered | T01 | DONE (branch `feat/p01-m03-plan-eligibility-function`) |
-| **P01-M03-T03** | Plan API and administration page | — | `GET /api/plans`, `PATCH /api/plans/{id}` | `app/plans/page.tsx` — read-mostly product view | Non-admin role cannot edit a plan | T02, **I-1** | READY |
+| **P01-M03-T03** | Plan API and administration page | — | `GET /api/plans`, `PATCH /api/plans/{id}` | `app/plans/page.tsx` + `SavingsPlanClient.tsx` | `tests/api/plans.test.mjs` — 9/9 passing: any role reads, ADMIN/CENTRAL_OPS edit, AGENT gets 403 (client-hidden and server-enforced), CSRF required, zod + DB CHECK both reject bad age/holder ranges | T02, **I-1** | DONE (branch `feat/p01-m03-plan-api-page`) |
 
 Acceptance: eligibility is a **data-driven join**, not `IF plan_name = 'Children'`
 hardcoded in TypeScript.
@@ -136,9 +171,9 @@ hardcoded in TypeScript.
 | ID | Title | DB | Backend | Frontend | Tests | Depends | Status |
 |---|---|---|---|---|---|---|---|
 | **P01-M04-T01** | Harden `lib/db` — **publishes I-2** | — | Retry on `40001`/`40P01`, SQLSTATE → domain error mapping, query timing log with value redaction, pool metrics | — | `withTransaction` rolls back on throw; no secret or SQL text appears in a mapped error | Phase 0 scaffold | DONE |
-| **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | READY |
-| **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs` | — | Rebuild from empty succeeds; **editing an applied migration is rejected**; `npm run db:verify` passes | T02 | READY |
-| **P01-M04-T04** | Database health page | — | Extend `/api/health` with pool stats (authenticated) | `app/admin/health/page.tsx` | Unauthenticated request gets no internal detail | T01, **I-1** | READY |
+| **P01-M04-T02** | Transaction channel schema | `0160_p01_m04_transaction_channel.sql` — `transaction_channel`; seeds `BRANCH_COUNTER`, `ONLINE`, `SYSTEM` | — | — | `channel_name` unique | `0000` | DONE |
+| **P01-M04-T03** | Migration runner tests & rebuild proof | — | Harden `scripts/migrate.mjs`; isolated verification harness | — | Clean rebuild, checksum/pending/missing-file rejection, failed-DDL rollback and verification pass | T02 | DONE |
+| **P01-M04-T04** | Database health page | — | Validated session; ADMIN/CENTRAL_OPS infrastructure details through service | `app/admin/health/page.tsx` | Forged, missing, expired and revoked sessions denied; safe DB failure | T01, **I-1** | DONE |
 
 ### Member 5 — FD products & seed framework
 
@@ -150,108 +185,186 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 tasks, TODO)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 DONE; general entry pending)
 
-**Gate:** OQ-05 (G-20 customer identity) must be resolved before `P02-M02-T01` starts.
+**Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
+The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 |
-| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05 |
-| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 |
-| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | **OQ-05**, P01-M02-T02 |
-| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 |
-| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 |
-| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T03 |
-| P02-M02-T05 | 2 | Customer registration form, search and profile pages | FE | P02-M02-T04 |
-| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, **G-06** |
-| P02-M03-T02 | 3 | `account_holder` + `holder_type`; 2–4 adult holder rule | DB | P02-M03-T01, P02-M02-T01 |
-| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) | DB | P02-M03-T02, **G-08** |
-| P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic | DB | P02-M03-T03, P02-M04-T01 |
-| P02-M03-T05 | 3 | Accounts and holders APIs | BE | P02-M03-T04, **I-1** |
-| P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages | FE | P02-M03-T05 |
-| P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 |
-| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 |
+**Progress:** P02-M03-T01 and P02-M04-T01 are DONE (`0240` account and `0260`
+immutable transaction migrations). M2 T01–T04 are technically DONE in this PR's tree:
+0220 customer, 0221 assignment history, 0222 documents/verification and registration,
+search/profile/validation services. Historical focused T04 evidence: 181 tests and
+clean 14-migration rebuild/reapply/verify/typecheck/lint. PR #36 combines this work
+with dev's closeout; its earlier verification passed 328 tests with no failures/skips,
+clean 14-migration rebuild, TypeScript/lint/production build, recorded in the
+[resolution handoff](../.agent/handoffs/p02-m02-t04-pr36-conflict-resolution.md).
 
-## Phase 3 — Financial Transactions (14 tasks, TODO)
+The refresh against PR #35's updated 888b983 includes dev 2e338a6 and keeps T04 DONE;
+fresh verification passed 328 tests and clean 14-migration rebuild/typecheck/lint/build;
+evidence and user publication order are in the
+[dependency handoff](../.agent/handoffs/p02-m02-t04-pr36-after-pr35.md).
 
-**Gate:** OQ-08 (G-05 reference-number uniqueness) resolved before `P03-M04-T01`.
+**2026-10-07 T05:** the preceding conflict-resolution evidence is historical. Current
+dev 25fc264 contains customer registration, real account_holder and M1 RLS/audit.
+T05 connects authenticated customer routes and live registration/search/profile screens,
+reuses the shared RLS context and sanitized customer trigger, and adds M2 migration 0223
+for scoped child SELECT/INSERT. 365 tests (35 suites) pass, with a clean 19-migration
+rebuild, typecheck, lint and production build. Browser registration/search/profile and
+duplicate handling also pass. [T05 handoff](../.agent/handoffs/p02-m02-t05-customer-api-ui.md)
+and ADR-0015 record scope/security review. M1-T03 remains its owner's broader route
+task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` account-opening routine) is DONE. M3-T05 (accounts and holders APIs, `0244`/`0245`) is DONE and merged into dev; M3-T06 (account screens, 486 tests passing) is DONE and merged into dev; its browser pass is partial (happy path blocked by missing document verification and the branch-manager seed gap, see open-questions). User controls publication. No Phase 2 exit/Phase 3 entry approval.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` | DB + BE | P01-M01-T05 |
-| P03-M01-T02 | 1 | Manager-only authorization for reversals | BE + tests | P03-M04-T04 |
-| P03-M01-T03 | 1 | Audit events for every financial operation | BE + tests | P03-M04-T02 |
-| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, **G-07** |
-| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01 |
-| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) | DB | P02-M03-T01 |
-| P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path | DB | P02-M03-T03 |
-| P03-M03-T03 | 3 | Account balance panel and holder authority display | FE | P03-M04-T02 |
-| P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** |
-| P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 |
-| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4** |
-| P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 |
-| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** |
-| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 |
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P02-M01-T01 | 1 | RLS policies on `customer` and `account` | DB + tests | P01-M01-T03, P02-M02-T01, P02-M03-T01 | DONE |
+| P02-M01-T02 | 1 | Audit coverage for customer and account creation | DB + BE | P01-M01-T05, P02-M02-T01, P02-M03-T01 | DONE |
+| P02-M01-T03 | 1 | Branch-scope enforcement on customer and account routes | BE + tests | P02-M02-T02 | DONE |
+| P02-M02-T01 | 2 | `customer` schema + identity uniqueness + trigram search index | DB | ADR-0007 approved, P01-M02-T02 | DONE |
+| P02-M02-T02 | 2 | `customer_agent` + one-active-assignment partial index (G-10) | DB | P02-M02-T01 | DONE |
+| P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
+| P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
+| P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | DONE |
+| P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
+| P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
+| P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) — `0242_p02_m03_joint_mandate.sql`, `tests/db/joint-mandate-trigger.test.mjs` 32/32 (incl. concurrency, UPDATE paths, `mims_app` under RLS); full isolated suite 397/397; `/review` findings resolved | DB | P02-M03-T02, ADR-0009 approved | DONE (merged into dev) |
+| P02-M03-T04 | 3 | `sp_open_savings_account` — account + holders + mandate + optional initial deposit, atomic — `0243_p02_m03_sp_open_savings_account.sql` (+ `fn_next_account_number`), `tests/db/sp-open-savings-account.test.mjs` 29/29 (incl. locks, hours, malformed input, `mims_app` atomicity); full isolated suite 426/426; `/review` findings resolved | DB | P02-M03-T03, P02-M04-T01 | DONE |
+| P02-M03-T05 | 3 | Accounts and holders APIs — `POST/GET /api/accounts`, `GET /api/accounts/{id}`, `POST …/holders`, `POST …/close` (501 stub); migrations `0244` (idempotency table) and `0245` (`sp_add_account_holder`); `services/account-service.ts`; `tests/api/accounts.test.mjs` 23/23, DB tests 15; full isolated suite 464/464; typecheck, lint, build clean | BE + DB | P02-M03-T04, **I-1** | DONE (merged into dev) |
+| P02-M03-T06 | 3 | Account opening wizard, account detail, holder management pages — live `/accounts`, `/accounts/new` (review step, idempotent submit), `/accounts/{id}` (add holder), real `/plans`; pure-logic tests `tests/e2e/accounts-ui-model.test.mjs` 12/12 and `tests/e2e/plan-edit-ui-model.test.mjs` 10/10; `/review` important findings fixed (focus trap, NaN age guard, review-step error); full isolated suite 486/486; typecheck, lint, build clean; browser pass partial (happy path blocked by missing document verification) | FE | P02-M03-T05 | DONE (merged into dev) |
+| P02-M04-T01 | 4 | `transaction` schema + immutability trigger (`UPDATE`/`DELETE` rejected) | DB | P01-M04-T02, P02-M03-T01 | DONE |
+| P02-M05-T01 | 5 | Seed sets 1–3: branches, agents, customers, accounts, 2 joint accounts | DB | P02-M03-T04, P01-M05-T03 | DONE |
 
-## Phase 4 — Fixed Deposits & Interest (14 tasks, TODO)
+## Phase 3 — Financial Transactions (13 DONE, 1 REVIEW; general entry pending)
 
-**Gates:** OQ-01 (G-01 one active FD) and OQ-04 (G-12 savings interest) resolved first.
+**Gate:** Phase 2 exit approval; OQ-12 transfer typing and OQ-14 lecturer scope acceptance.
+OQ-08 was resolved by ADR-0010; it is not an open blocker.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P04-M01-T01 | 1 | Worker authentication for interest runs; run authorization and audit | BE + tests | P04-M05-T04 |
-| P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 |
-| P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing page | DB + FE | P04-M05-T02 |
-| P04-M02-T02 | 2 | Branch-scoped FD access | BE + tests | P04-M02-T01 |
-| P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) | DB | P04-M05-T02 |
-| P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) | DB + BE | P04-M03-T01 |
-| P04-M03-T03 | 3 | FD panel on the account detail page | FE | P04-M05-T03 |
-| P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 |
-| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 |
-| P04-M05-T01 | 5 | `fixed_deposit` schema: partial unique active index (G-01), `maturity_date` (G-23), `interest_rate_at_opening` (G-11) | DB | **OQ-01** |
-| P04-M05-T02 | 5 | `sp_open_fixed_deposit` — eligibility, debit principal, create FD, atomic | DB | P04-M05-T01, **I-6** |
-| P04-M05-T03 | 5 | `fn_calculate_fd_interest` — exact `principal × rate × 30 / 365`, rounded to 2dp | DB | P04-M05-T01 |
-| P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** |
-| P04-M05-T05 | 5 | FD opening page, FD list, interest run console | BE + FE | P04-M05-T04, **I-1** |
+**Scoped exception (2026-10-08):** Vibodha authorized P03-M02-T01 to start early
+and its prescribed G-07 schema (ADR-0016). M4 transaction schema is merged.
+This does not approve Phase 2 exit, general Phase 3 entry, or OQ-12/OQ-14.
+T01 is merged through PR #49 (dev c2bce7c). Vibodha subsequently authorized an
+early start for P03-M02-T02 (ADR-0017); its dependency is satisfied. This extends
+the scoped exception to T02 only. T02 is published in PR #53 against dev;
+PR #53 is merged into dev at 6583463; stale REVIEW wording is superseded.
 
-## Phase 5 — Reports, Audit & Reconciliation (15 tasks, TODO)
+T01's 0320 migration and 15 attribution tests are verified locally: clean
+24-migration rebuild, 501 tests in 45 suites, TypeScript/lint/build all pass.
+[Handoff and review](../.agent/handoffs/p03-m02-transaction-attribution.md).
+T02 is DONE through merged PR #53; this does not approve general phase entry.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P05-M01-T01 | 1 | Report framework: filters, scope, generation metadata (**publishes I-7**) | BE + FE | P01-M01-T03 |
-| P05-M01-T02 | 1 | CSV export utility — same query, same totals (REP-COM-04) | BE | P05-M01-T01 |
-| P05-M01-T03 | 1 | Report access auditing (REP-COM-06) | BE + DB | P05-M01-T01 |
-| P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 |
-| P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01 |
-| P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7** |
-| P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance | DB | P03-M04-T02 |
-| P05-M03-T02 | 3 | RPT-02 API, page and CSV | BE + FE | P05-M03-T01, **I-7** |
-| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 |
-| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** |
-| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 |
-| P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 |
-| P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 |
-| P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** |
-| P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 |
+T02 is implemented and verified on feat/p03-m02-agent-daily-activity: live scoped
+GET/page, exact SQL type totals and inclusive Colombo dates. Final isolated checks
+pass 529 tests / 48 suites, clean 24-migration rebuild/checksums, TypeScript, lint,
+production build and manual browser QA. /review findings resolved; /imprint saved.
+[T02 handoff and integration limits](../.agent/handoffs/p03-m02-agent-daily-activity.md).
+PR #53 conflict resolution against dev af07af8 passes 554 tests /49 suites, a clean
+26-migration rebuild/checksum check, TypeScript, lint and production build.
+[Resolution evidence](../.agent/handoffs/p03-m02-t02-pr53-conflict-resolution.md).
 
-## Phase 6 — Integration, Testing & Deployment (13 tasks, TODO)
+**M3 early start (2026-10-08):** P03-M03-T01 (`fn_check_plan_minimum`, I-4) and P03-M03-T02
+(`fn_check_withdrawal_mandate`, I-4) and P03-M03-T03 (balance panel) were started at the user's direction and are DONE. ADR-0016 covers only P03-M02-T01, so this does not
+extend that exception; it likewise does not approve Phase 2 exit or general Phase 3 entry.
 
-| ID | M | Title | Layers | Depends on |
-|---|---|---|---|---|
-| P06-M01-T01 | 1 | SQL-injection test suite against every endpoint | Tests | Phase 5 |
-| P06-M01-T02 | 1 | Authorization matrix tests: every role × every route | Tests | Phase 5 |
-| P06-M01-T03 | 1 | RLS verification: policies hold when the app layer is bypassed | DB + tests | P02-M01-T01 |
-| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — |
-| P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests | P03-M05-T01 |
-| P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2 |
-| P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all |
-| P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 |
-| P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 |
-| P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 |
-| P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 |
-| P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 |
-| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all |
+**M3 Phase 4 early start (2026-10-08):** P04-M03-T01 (`fn_check_account_fd_eligible`, I-6) was started at the
+user's direction and is DONE; P04-M03-T02 (`sp_close_account`, BR-18) and P04-M03-T03 (account FD panel) followed on the same basis and are DONE. Neither approves general Phase 4 entry, Phase 3 exit, OQ-13 or OQ-14.
+
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P03-M01-T01 | 1 | Business-hours and withdrawal-limit enforcement from `system_parameter` — migration `0300` (`fn_get_parameter`, `fn_check_business_hours`, `fn_check_withdrawal_single_limit`, `fn_check_withdrawal_daily_limit`); `services/business-rules-service.ts` (`enforceBusinessHours`, `enforceWithdrawalLimits`, `getParameter`); `tests/db/business-hours-limits.test.mjs`; `tests/api/business-rules.test.mjs`; handoff [`p03-m01-t01`](../.agent/handoffs/p03-m01-t01-business-rules.md) | DB + BE + tests | P01-M01-T05 | DONE |
+| P03-M01-T02 | 1 | Manager-only authorization for reversals — `app/api/transactions/[id]/reverse/route.ts` created with RBAC checks | BE + tests | P03-M04-T04 | DONE |
+| P03-M01-T03 | 1 | Audit events for every financial operation — `services/audit-service.ts` updated with `auditDeposit`, `auditWithdrawal`, `auditRejectedWithdrawal`, `auditReversal`, `auditInterestCredit`; `tests/api/financial-audit.test.mjs` added | BE + tests | P03-M04-T02 | DONE |
+| P03-M02-T01 | 2 | `agent_id` / `branch_id` attribution on `transaction` (G-07) + reporting indexes | DB | P02-M04-T01, G-07 authorized by ADR-0016 | DONE (merged PR #49, dev c2bce7c) |
+| P03-M02-T02 | 2 | Agent daily activity API and page | BE + FE | P03-M02-T01; scoped start ADR-0017 | DONE (merged PR #53, dev 6583463) |
+| P03-M03-T01 | 3 | `fn_check_plan_minimum` — post-withdrawal minimum-balance rule (**publishes I-4**) — `database/routines/fn_check_plan_minimum.sql`, `tests/db/fn-check-plan-minimum.test.mjs` 11/11; handoff [i-4](../.agent/handoffs/i-4-fn-check-plan-minimum.md) | DB | P02-M03-T01 | DONE |
+| P03-M03-T02 | 3 | Joint-mandate validation callable from the withdrawal path — `fn_check_withdrawal_mandate(account_id, signer_customer_ids uuid[])` in `database/routines/fn_check_withdrawal_mandate.sql`, `tests/db/fn-check-withdrawal-mandate.test.mjs` 16/16 (+ `fn_withdrawal_mandate_verdict`; migration `0246` makes `fn_next_account_number` skip seeded numbers); handoff [i-4 mandate](../.agent/handoffs/i-4-fn-check-withdrawal-mandate.md) | DB | P02-M03-T03 | DONE |
+| P03-M03-T03 | 3 | Account balance panel and holder authority display — `GET /api/accounts/{id}` gains `availableToWithdraw`, `lastTransaction`, `mandate.state`; `/accounts/{id}` shows available amount, last transaction, who can authorise withdrawals and a status notice; `tests/e2e/accounts-ui-model.test.mjs` +6, `tests/api/accounts.test.mjs` +4; full isolated suite 580/580; handoff [t03](../.agent/handoffs/p03-m03-t03-balance-panel.md) | FE | P03-M04-T02 | DONE |
+| P03-M04-T01 | 4 | Reference-number generation + `UNIQUE`; `idempotency_key` partial unique index (G-04) | DB | **OQ-08** (ADR-0010) | DONE (migration `0360`, branch `feat/p03-m04-reference-idempotency-indexes`) |
+| P03-M04-T02 | 4 | `sp_post_deposit` — lock, insert ledger, update balance, `balance_after`, audit | DB | P03-M04-T01 | DONE (migration `0361`, branch `feat/p03-m04-sp-post-deposit`) |
+| P03-M04-T03 | 4 | `sp_post_withdrawal` — lock, re-validate status/mandate/limits/minimum, debit | DB | P03-M04-T02, **I-4**; user-authorized repair ADR-0021 | DONE (original PR #61 and corrective 0363 PR #67 merged; current legacy caller ambiguities recorded in T02 handoff) |
+| P03-M04-T04 | 4 | `transaction_reversal` + `sp_reverse_transaction`, reversible once (G-02) | DB | P03-M04-T03 | DONE (branch `feat/p03-m04-transaction-reversal`) |
+| P03-M04-T05 | 4 | Transaction APIs with `Idempotency-Key`; deposit, withdrawal, receipt, statement, reversal pages | BE + FE | P03-M04-T04, **I-1** | REVIEW (ADR-0027: real scoped posting, holder authorization, receipts/reversal, statements and browser/API evidence; local publication pending) |
+| P03-M05-T01 | 5 | Seed set 4: 100+ mixed transactions across dates, branches, agents and plans | DB | P03-M04-T02 | DONE |
+
+## Phase 4 — Fixed Deposits & Interest (11 DONE, 3 REVIEW; general entry pending)
+
+**Gates:** Phase 3 exit approval; OQ-13 mid-cycle interest and OQ-14 scope acceptance.
+OQ-01/OQ-04 were resolved by ADR-0011/ADR-0012; they are not open blockers.
+
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P04-M01-T01 | 1 | Worker authentication for interest runs; run authorization and audit | BE + tests | P04-M05-T04 | DONE |
+| P04-M01-T02 | 1 | Cycle configuration via `system_parameter` | DB + BE | P01-M01-T05 | DONE |
+| P04-M02-T01 | 2 | Customer↔FD linkage view; customer FD listing API/profile panel | DB + BE + FE | P04-M05-T02 (partial); read-side exception ADR-0018 | DONE (PR #60 merged into dev e9291dc) |
+| P04-M02-T02 | 2 | Branch-scoped FD access; current-actor RLS backstop and regression tests | DB + BE + tests | P04-M02-T01; scoped start ADR-0019 | DONE (PR #62 merged into dev 48f4185) |
+| P04-M03-T01 | 3 | Account-side FD eligibility: account `ACTIVE`, sufficient balance, read under lock (**I-6**) — `fn_check_account_fd_eligible(account_id)` (card contract) and `fn_fd_funding_verdict(account_id, principal)` in `database/migrations/0440_p04_m03_fn_check_account_fd_eligible.sql`, `tests/db/fn-check-account-fd-eligible.test.mjs` 20/20; handoff [i-6](../.agent/handoffs/i-6-fn-check-account-fd-eligible.md). The listed dependency on P04-M05-T02 is circular (I-6 flows M3 → M5) and was not needed to build it | DB | P04-M05-T02 (circular, see handoff) | DONE (early start at the user's direction; no phase approval) |
+| P04-M03-T02 | 3 | Account closure rule: zero balance and no active FD (BR-18) — `0441_p04_m03_sp_close_account.sql` (`sp_close_account` + `trg_account_close_guard`), `closeAccount()` in `services/account-service.ts`, `POST /api/accounts/{id}/close` now live (was a 501 stub); `tests/db/sp-close-account.test.mjs` 17/17, `tests/api/accounts.test.mjs` +6; handoff [t02](../.agent/handoffs/p04-m03-t02-account-closure.md). Backend only; no UI | DB + BE | P04-M03-T01 | DONE (early start at the user's direction; no phase approval) |
+| P04-M03-T03 | 3 | FD panel on the account detail page — `GET /api/accounts/{id}` gains `fixedDeposits` (read under RLS from `fixed_deposit`); `/accounts/{id}` shows the FDs, an "Open a fixed deposit" link to `/fixed-deposits/new?accountId=…` and a note when an active FD blocks closing; `fixedDepositPanel` in `account-format.ts`; `fixedDeposits` is `null` if the list cannot be read (rest of the page still loads); `tests/api/accounts.test.mjs` +4, `tests/e2e/accounts-ui-model.test.mjs` +7, `tests/e2e/account-fixed-deposits-panel.test.mjs` 8 (rendered markup); `/imprint` saved; handoff [t03](../.agent/handoffs/p04-m03-t03-fd-panel.md). No browser pass | FE | P04-M03-T02 (`fn_calculate_fd_interest` was context only) | DONE (early start at the user's direction; no phase approval) |
+| P04-M04-T01 | 4 | `INTEREST_CREDIT` posting path through the ledger routine (**I-5**) | DB | P03-M04-T02 | DONE |
+| P04-M04-T02 | 4 | Interest credits visible in the statement with correct running balance | BE + FE | P04-M04-T01 | REVIEW (ADR-0027: real paginated statement, exact balances and posting-order/browser evidence; local publication pending) |
+| P04-M05-T01 | 5 | `fixed_deposit` schema: partial unique active index (G-01), `maturity_date` (G-23), `interest_rate_at_opening` (G-11) | DB | **OQ-01** | DONE (0480; ADR-0011 active-FD index) |
+| P04-M05-T02 | 5 | `sp_open_fixed_deposit` — eligibility, debit principal, create FD, atomic | DB | P04-M05-T01, **I-6** | DONE |
+| P04-M05-T03 | 5 | `fn_calculate_fd_interest` — exact `principal × rate × 30 / 365`, rounded to 2dp | DB | P04-M05-T01 | DONE (0481; exact SQL actual/365 FD formula) |
+| P04-M05-T04 | 5 | `interest_run` + `interest_payout` cycle key + `sp_run_interest_cycle`, one transaction per FD | DB | P04-M05-T03, **I-5** | REVIEW (ADR-0027: service-owned FD catch-up, savings daily-balance distributions and automatic principal return; legacy seed function retained) |
+| P04-M05-T05 | 5 | FD opening page, FD list, interest run console | BE + FE | P04-M05-T04, **I-1** | REVIEW (ADR-0026: real FD list/opening/quote and interest preview/console; local publication pending) |
+
+## Phase 5 — Reports, Audit & Reconciliation (14 DONE, 1 REVIEW; general entry pending)
+
+**Scoped start/repair (2026-10-08):** ADR-0020 authorizes M2's T01 database-only
+view; ADR-0021 records the user's explicit authorization for M4's T03 correction
+and its documentation. Both passed verification before the current dev integration:
+663 tests /62 suites, clean 34-migration rebuild/checksums, typecheck/lint/build,
+no exclusions. PR #67 has merged both deliveries. PR #69 restores Member 1's I-7
+on dev 93a82f8. The user explicitly approved T02 and the required shared repairs
+(ADR-0022). T02 is merged through PR #74: 0521 readers, scoped API/page,
+exact totals and snapshot CSV/access audit. Relevant checks pass; the current full
+suite has unrelated legacy failures recorded in the T02 handoff. General entry
+remains pending. Unannotated statuses below remain TODO. The earlier full result
+is historical and must not be substituted for current verification.
+**M3 early start (2026-10-08):** P05-M03-T01 (RPT-02 view) and P05-M03-T02 (RPT-02 API, page, CSV) were started at the user's direction and are DONE; neither approves general Phase 5 entry.
+[RPT-01 handoff](../.agent/handoffs/p05-m02-rpt01-view.md) ·
+[M4 correction](../.agent/handoffs/p03-m04-withdrawal-contract-repair.md).
+
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P05-M01-T01 | 1 | Report framework: filters, scope, generation metadata (**publishes I-7**) | BE + FE | P01-M01-T03 | DONE |
+| P05-M01-T02 | 1 | CSV export utility — same query, same totals (REP-COM-04) | BE | P05-M01-T01 | DONE |
+| P05-M01-T03 | 1 | Report access auditing (REP-COM-06) | BE + DB | P05-M01-T01 | DONE |
+| P05-M01-T04 | 1 | Audit search API and page | BE + FE | P01-M01-T05 | DONE |
+| P05-M02-T01 | 2 | **RPT-01** view: agent-wise counts and values by type | DB | P03-M02-T01; scoped start ADR-0020 | DONE (0520, PR #67 merged at 4095b38) |
+| P05-M02-T02 | 2 | RPT-01 API, page and CSV | BE + FE | P05-M02-T01, **I-7**; approved ADR-0022 | DONE (PR #74 merged; focused verification accepted; full-suite integration failures repaired in P06-M02-T01) |
+| P05-M03-T01 | 3 | **RPT-02** view: account-wise summary, opening/closing balance — `0540_p05_m03_rpt02_view.sql` (`vw_rpt02_account_summary`: per ledger event, `balance_before`/`balance_after_effective` from the stored `balance_after`, reversals net into their original category) and `0541_p05_m03_sp_open_account_balance_after.sql` (the opening deposit now records `balance_after`; it was NULL since 0243), `0542_p05_m03_transaction_ledger_seq.sql` (posting-order key `transaction.ledger_seq`, G-24/ADR-0023: timestamps tie and invert, 86 chain breaks on the seed → 0) and `0543_p05_m03_rpt02_view_v2.sql` (view ordered by `ledger_seq`, no overflow cast, no whole-ledger window); `tests/db/rpt02-view.test.mjs` 18/18, `tests/db/transaction-ledger-seq.test.mjs` 7/7; handoff [t01](../.agent/handoffs/p05-m03-t01-rpt02-view.md). The card's SQL used `posted_at`/`status`, which do not exist | DB | P03-M04-T02 | DONE (early start at the user's direction; no phase approval) |
+| P05-M03-T02 | 3 | RPT-02 API, page and CSV — `services/account-summary-report-service.ts` (one REPEATABLE READ transaction: actor re-check, totals, page, page subtotal, access audit), `GET /api/reports/account-summary` (JSON and all-rows CSV with identical totals), real `/reports/account-summary` on the shared report shell; `tests/api/rpt02-report.test.mjs` 16/16, `tests/e2e/account-summary-report-screen.test.mjs` 7/7; handoffs [t02](../.agent/handoffs/p05-m03-t02-rpt02-report.md) and [shell props for M1](../.agent/handoffs/p05-m03-report-shell-props-for-m1.md). Tests only, no browser pass | BE + FE | P05-M03-T01, **I-7** | DONE (early start at the user's direction; no phase approval) |
+| P05-M04-T01 | 4 | **RPT-05** view: customer activity (deposits, withdrawals, interest, net) | DB | P03-M04-T02 | DONE (0560, PR #78 merged) |
+| P05-M04-T02 | 4 | RPT-05 API, page and CSV | BE + FE | P05-M04-T01, **I-7** | DONE (PR #78 merged) |
+| P05-M04-T03 | 4 | Reconciliation: ledger vs `current_balance` vs `balance_after` (D-1, D-2) | DB + FE | P05-M04-T01 | DONE (0561, PR #78 merged) |
+| P05-M05-T01 | 5 | **RPT-03** view: active FDs and next payout dates | DB | P04-M05-T02 | DONE |
+| P05-M05-T02 | 5 | **RPT-04** view: monthly interest distribution by account type | DB | P04-M05-T04 | DONE |
+| P05-M05-T03 | 5 | RPT-03 and RPT-04 APIs, pages and CSV | BE + FE | P05-M05-T02, **I-7** | REVIEW (ADR-0026: safe scoped APIs, SQL-exact totals, filtered ROLLUP, real pages and CSV) |
+| P05-M05-T04 | 5 | Index review: `EXPLAIN ANALYZE` before/after for every report | DB | P05-M05-T03 | DONE |
+
+## Phase 6 — Integration, Testing & Deployment (scoped local closeout; general entry pending)
+
+**Current 2026-10-09:** PR #88/#90 merged M2 T01/T02; PR #91/#92 supply M3/M4
+verification on dev `053f6f6`. Vibodha authorized T03 and necessary cross-owner code,
+verification and local commits (ADR-0026). New deliveries remain REVIEW until user
+publication/team review. No push, PR creation or merge. Live HTTPS explicitly pending.
+Current evidence and implemented savings/transfer scope are in
+[docs/20](20_final-local-closeout.md). Historical counts elsewhere retain their date/base.
+
+| ID | M | Title | Layers | Depends on | Status |
+|---|---|---|---|---|---|
+| P06-M01-T01 | 1 | SQL-injection test suite against every endpoint | Tests | Phase 5 | REVIEW (ADR-0026: all handlers/input positions, eight injection strings plus valid bound-text cases) |
+| P06-M01-T02 | 1 | Authorization matrix tests: every role × every route | Tests | Phase 5 | REVIEW (ADR-0026: seven-role matrix and denial state fingerprints; handler completeness guard) |
+| P06-M01-T03 | 1 | RLS verification: policies hold when the app layer is bypassed | DB + tests | P02-M01-T01 | REVIEW (ADR-0026: direct mims_app login, non-owner/non-BYPASSRLS, fail-closed scope; 0621) |
+| P06-M01-T04 | 1 | Deployment secrets, HTTPS and security headers | Config | — | IN_PROGRESS (local checks only; live HTTPS pending by explicit user instruction) |
+| P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests + seed completion | P03-M05-T01; scoped start/completion ADR-0024 | DONE (PR #88 merged; AC-12 and exact ledger/payout/reseed evidence) |
+| P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | DONE (PR #90 merged; a58112e/226c439; 100 DB and 16 API integrity cases) |
+| P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | REVIEW (ADR-0026: current catalogs/contracts/state reconciled; local commits only; full phase acceptance pending) |
+| P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
+| P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
+| P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | DONE (2026-10-09; 6 tests in `tests/db/rollback-idempotency-evidence.test.mjs`; mid-transaction fault triggers prove zero partial state on deposit, withdrawal, reversal; live HTTP POST idempotency replay tested) |
+| P06-M04-T02 | 4 | Posting performance under load (NFR-PERF-02, NFR-PERF-04) | Tests | P06-M04-T01 | DONE (2026-10-09; 3 tests in `tests/db/posting-performance.test.mjs`; sequential baseline p95=8.4ms << 3s target; concurrent load under contention p95=14.2ms; query plans verified via EXPLAIN ANALYZE) |
+| P06-M05-T01 | 5 | Interest re-run idempotency test; report totals reconcile (AC-09) | Tests | P05-M05-T03 | DONE |
+| P06-M05-T02 | 5 | Backup, restore, migration rollback evidence; demonstration script | Ops + Docs | all | REVIEW (ADR-0026: isolated dump/restore of all tables, constraints, policies, ownership, sequences and exact totals; migration atomicity and demo guide) |
 
 ---
 
@@ -259,10 +372,53 @@ hardcoded in TypeScript.
 
 | Task | Blocked by | Owner of the decision |
 |---|---|---|
-| P02-M02-T01 | **OQ-05** — customer identity / login (G-20) | Team + lecturer |
-| P03-M04-T01 | **OQ-08** — reference-number uniqueness / transfers (G-05) | Team |
-| P04-M05-T01 | **OQ-01** — one active FD vs one FD ever (G-01) | Team |
-| P04-M05-T04, P05-M05-T02 | **OQ-04** — savings-account interest in scope? (G-12) | **Lecturer** |
+| Course acceptance of extensions | **OQ-14** — lecturer scope acceptance; transfer typing/staff-only scope implemented | Team / Lecturer |
+| Funded account final settlement | SRS minimum/zero-balance closure conflict; unpaid-interest guard implemented, final settlement policy unanswered | User / Team |
 
-These four decisions are the highest-priority item after Phase 0 approval. Everything in
-Phase 1 can proceed in parallel while they are being settled.
+These future-phase decisions do not block P02-M02-T01. OQ-11 is needed before optional
+customer login provisioning/UI, rather than before the independent customer schema.
+
+## Predeployment integration receipt — 2026-10-10
+
+**Neon CI correction (PR #94):** RPT-01 runtime evidence now creates its output
+directory on a fresh checkout. No database/performance assertion or task status
+changes. [Failure and regression receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
+
+**Docker with Neon supplement (user-requested, ADR-0030):** Separate app-only
+runtime on the current Neon migration branch; restricted app credentials and
+port 3001, with GitHub-owned migrations. Original local stack preserved. See
+[guide](22_docker-setup.md#run-the-docker-app-against-neon) and
+[handoff](../.agent/handoffs/p06-docker-neon-runtime.md). No task acceptance,
+live HTTPS status or publication changes.
+
+**Neon supplement (user-requested, ADR-0029):** Branch
+`feat/p06-m02-neon-migrations` adds automatic staging/production migration
+deployment and clears credential fields in `.env.example`. See
+[setup](23_neon-migrations.md) and
+[handoff](../.agent/handoffs/p06-neon-migration-deployment.md).
+This infrastructure contribution does not change task acceptance: M1's live
+HTTPS task remains IN_PROGRESS and M2 T03 remains REVIEW. The user authorized
+separate local infrastructure, test and documentation commits. No live deployment,
+push, PR or merge is performed.
+
+**Docker supplement (user-requested, ADR-0028):** Branch
+`feat/p06-m02-dockerize` adds local container infrastructure and its guide/tests.
+No task status changes: M1's live HTTPS task remains IN_PROGRESS, and M2 T03
+remains REVIEW. See [Docker guide](22_docker-setup.md) and
+[verification handoff](../.agent/handoffs/p06-m02-docker-setup.md).
+The user subsequently authorized separate local infrastructure, test and documentation
+commits. No push, PR or merge is performed for this request.
+
+Final `npm run verify:phase1 -- --catalog --tap` passed **3,397 tests / 116 suites**:
+2,240 security checks plus 1,157 API/DB/e2e tests; zero failures, cancellations or skips.
+Typecheck, ESLint and Next 15.5.27 production build passed. Clean **70-migration / 28-table**
+rebuild/checksums and exact pg_dump/pg_restore (all tables, money, constraints, RLS,
+ownership and sequences) passed within the same full run. Existing development data
+was preserved. Temporary test/preview clusters and browser tab were cleaned up.
+Host: Node 24.15.0 / PostgreSQL 18.6; `.nvmrc` retains Node 22.
+
+P03-M04-T05 and P04-M04-T02 are locally complete and REVIEW. Accepted extensions,
+reset/admin/document/reconciliation corrections are included in authorized P06-M02-T03
+cross-owner delivery (ADR-0027). Status totals: 97 tasks, 86 DONE, 10 REVIEW,
+1 IN_PROGRESS (live deployment). REVIEW preserves user publication/peer acceptance;
+no push, PR or merge was performed. Remaining product/external limits: docs/21.
