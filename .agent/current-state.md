@@ -1,5 +1,38 @@
 # Current state — predeployment local completion
 
+## Neon CI fresh-checkout correction — 2026-10-10
+
+User supplied PR #94/run 38033232178's validation failure. RPT-01 runtime explain
+evidence failed with ENOENT because test-results was absent on a fresh runner.
+The test now creates its parent directory; DB/performance assertions unchanged.
+Verification starts with that directory absent and uses only a disposable local
+database. Previous ignored outputs preserved in scratch. Results/review are in
+`handoffs/p06-neon-ci-results-directory.md`. User subsequently authorized local
+commits for the Docker supplement and CI fix; no push/merge or live connection.
+Existing Docker work and task/phase acceptance retained.
+Fresh-output verification passes: 3,410 tests /116 suites, zero failures/skips;
+clean rebuild/restore, typecheck, lint and production build. Final marker:
+`LOCAL VERIFICATION: all checks passed.` Original outputs restored with backup
+retained; new explain evidence preserved. Hosted rerun needs the updated branch.
+User-authorized local commits: `f94fe86` Docker runtime/tests and `f47ccc8` CI fix;
+documentation/state form a third commit. No push performed.
+
+## Docker with Neon supplement — 2026-10-10
+
+Branch `feat/p06-m02-neon-migrations`, base `5e5dbb3`. User authorized necessary
+Docker updates. Separate app-only Compose stack uses restricted Neon mims_app,
+ignored `.env.neon` and port 3001. GitHub retains migration responsibility; no
+Docker setup/seeding in Neon mode. Original local PostgreSQL stack preserved.
+ADR-0030 and `handoffs/p06-docker-neon-runtime.md` record scope/review/evidence.
+The user reports the app connection configured; no credential values are recorded.
+Local private configuration and Compose validation, 8/8 operations checks, full
+lint/typecheck and standalone production build pass. Missing app secrets/settings
+generated locally, preserving the user's connection. Build passed outside sandbox
+after Windows EPERM; host Node 24, Linux Node 22 image remains unverified.
+Actual image/start verification needs a working Docker Linux engine. User
+subsequently authorized separate local commits; no push/PR creation/merge or live
+Neon connection. Task/phase acceptance unchanged.
+
 ## Neon migration supplement — 2026-10-10
 
 Current branch `feat/p06-m02-neon-migrations`, based on clean Docker `1f183bb`.

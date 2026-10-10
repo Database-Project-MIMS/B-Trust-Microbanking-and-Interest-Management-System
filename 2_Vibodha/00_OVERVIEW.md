@@ -11,6 +11,16 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Neon CI correction (2026-10-10):** Fresh-checkout explain-output directory
+fixed for PR #94. [Receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
+No new task acceptance or strikethrough changes; prior overview review retained.
+
+**Docker with Neon supplement (2026-10-10):** Separate app-only stack on the
+current migration branch; [guide](../docs/22_docker-setup.md#run-the-docker-app-against-neon)
+and [handoff](../.agent/handoffs/p06-docker-neon-runtime.md). All five member tables
+reviewed; no task acceptance/strikethrough changes. Container execution remains
+pending a working Docker Linux engine.
+
 **Neon supplement (2026-10-10):** User-requested migration workflow on
 `feat/p06-m02-neon-migrations`; [guide](../docs/23_neon-migrations.md) and
 [handoff](../.agent/handoffs/p06-neon-migration-deployment.md). All five member

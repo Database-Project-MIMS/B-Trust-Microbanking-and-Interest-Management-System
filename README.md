@@ -37,6 +37,11 @@ Open [MIMS](http://localhost:3000). PostgreSQL data persists in a named volume;
 the app starts after database setup succeeds. [Docker guide](docs/22_docker-setup.md)
 covers credentials, logs, updates and stopping the stack. This is a local synthetic-data demo.
 
+To connect the Docker app to Neon, use the separate `compose.neon.yaml` stack and
+an ignored `.env.neon` containing the restricted `mims_app` connection. Follow
+[Docker with Neon](docs/22_docker-setup.md#run-the-docker-app-against-neon).
+GitHub Actions handles schema deployment; this app-only stack does not migrate or seed.
+
 ## Project status
 
 The verified local implementation includes organization/customer/account APIs, ledger

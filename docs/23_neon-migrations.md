@@ -3,6 +3,11 @@
 The workflow `.github/workflows/neon-migrations.yml` validates changes and deploys
 the database using the existing SQL runner. It does not deploy the Next.js app.
 
+For the existing Docker app, use the optional [app-only Neon stack](22_docker-setup.md#run-the-docker-app-against-neon).
+Its ignored `.env.neon` maps `NEON_DATABASE_URL` to the app's `DATABASE_URL` using
+the restricted `mims_app` role. It never receives the migration connection or runs
+database setup. The original local PostgreSQL Docker stack remains available.
+
 | Event | Validation | Deployment target |
 |---|---|---|
 | Pull request to `dev` or `main` affecting database/tooling paths | Disposable PostgreSQL 16 rebuild, full tests, typecheck, lint, build | None; no Neon secrets |
@@ -80,6 +85,15 @@ The current tracked checkout was checked without printing credentials; no Neon U
 was found. This check does not cover remote branches or certify historical commits.
 
 ## Local verification — 2026-10-10
+
+Hosted run `38033232178` on PR #94 exposed a fresh-checkout test-output issue:
+the RPT-01 runtime test wrote its explain plan before creating `test-results`.
+It now creates that directory recursively, matching the adjacent view test.
+The performance/accounting assertions and validation-before-deployment gate are
+unchanged. The failed run skipped deployment; it did not test Neon connectivity.
+Clean-checkout regression evidence: [handoff](../.agent/handoffs/p06-neon-ci-results-directory.md).
+The corrected runner passes all 3,410 tests /116 suites, rebuild/restore,
+typecheck, lint and production build with `test-results` initially absent.
 
 3,410 tests /116 suites pass, including fresh deployment without seeding, preserved
 financial/audit state on two reruns, safe connection rejection and runtime SQL
