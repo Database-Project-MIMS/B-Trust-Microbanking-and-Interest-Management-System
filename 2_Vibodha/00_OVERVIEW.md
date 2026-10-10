@@ -11,6 +11,12 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**Neon supplement (2026-10-10):** User-requested migration workflow on
+`feat/p06-m02-neon-migrations`; [guide](../docs/23_neon-migrations.md) and
+[handoff](../.agent/handoffs/p06-neon-migration-deployment.md). All five member
+summary tables were reviewed; no existing task newly reaches acceptance, so
+their rows/strikethroughs remain unchanged. Live HTTPS and publication are pending.
+
 **Docker supplement (2026-10-10):** User-requested local infrastructure on
 `feat/p06-m02-dockerize`; [guide](../docs/22_docker-setup.md) and
 [handoff](../.agent/handoffs/p06-m02-docker-setup.md). Existing summary rows remain

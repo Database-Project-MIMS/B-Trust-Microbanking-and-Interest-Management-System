@@ -6,6 +6,11 @@ For Docker Desktop or Docker Engine, use [Docker setup](22_docker-setup.md):
 the app, PostgreSQL and owner-only setup run in containers with persistent data.
 The host-native instructions below remain available.
 
+For automatic deployment of SQL migrations to Neon, see
+[Neon migration setup](23_neon-migrations.md). The tracked example leaves all
+connection and security secrets empty; supply them only in ignored local files
+or the appropriate deployment environment.
+
 ## Prerequisites
 
 | Tool | Version | Check |

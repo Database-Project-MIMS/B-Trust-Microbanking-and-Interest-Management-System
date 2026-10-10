@@ -380,6 +380,16 @@ customer login provisioning/UI, rather than before the independent customer sche
 
 ## Predeployment integration receipt — 2026-10-10
 
+**Neon supplement (user-requested, ADR-0029):** Branch
+`feat/p06-m02-neon-migrations` adds automatic staging/production migration
+deployment and clears credential fields in `.env.example`. See
+[setup](23_neon-migrations.md) and
+[handoff](../.agent/handoffs/p06-neon-migration-deployment.md).
+This infrastructure contribution does not change task acceptance: M1's live
+HTTPS task remains IN_PROGRESS and M2 T03 remains REVIEW. The user authorized
+separate local infrastructure, test and documentation commits. No live deployment,
+push, PR or merge is performed.
+
 **Docker supplement (user-requested, ADR-0028):** Branch
 `feat/p06-m02-dockerize` adds local container infrastructure and its guide/tests.
 No task status changes: M1's live HTTPS task remains IN_PROGRESS, and M2 T03

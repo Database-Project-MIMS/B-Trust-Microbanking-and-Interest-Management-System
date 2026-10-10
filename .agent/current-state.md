@@ -1,5 +1,23 @@
 # Current state — predeployment local completion
 
+## Neon migration supplement — 2026-10-10
+
+Current branch `feat/p06-m02-neon-migrations`, based on clean Docker `1f183bb`.
+User requests an automatic Neon migration workflow and credential example cleanup.
+ADR-0029 records the scoped infrastructure contribution; ownership is unchanged.
+Workflow validates on disposable PostgreSQL, then deploys `dev` to neon-staging
+and `main` to neon-production using separate environment secrets. Deployment
+preserves data and never seeds/resets. Example database/security fields are empty.
+Current tracked files contain no Neon URL; history/remote branches are not certified.
+Verification/review evidence: `handoffs/p06-neon-migration-deployment.md`.
+Final local verification passes: 3,410 tests /116 suites, no failures/skips;
+clean 70-migration rebuild/checksums, backup/restore, typecheck, lint and build.
+Workflow YAML and credential-safe negative checks pass. Host Node 24/PG18;
+hosted Node 22/PG16 and Neon execution await external setup.
+Neon/GitHub environment setup and live deployment remain external actions.
+Task/phase acceptance stays unchanged. The user authorized separate local
+infrastructure, test and documentation commits. No push, PR or merge performed.
+
 ## Docker infrastructure supplement — 2026-10-10
 
 Current branch `feat/p06-m02-dockerize`, based on verified `8a2b9c2`.

@@ -1,5 +1,20 @@
 # Memory — predeployment local completion
 
+## Neon migration supplement — 2026-10-10
+
+Branch `feat/p06-m02-neon-migrations` starts at clean Docker `1f183bb`.
+User requested automatic Neon migration deployment and `.env.example` cleanup.
+Workflow validates a disposable database before deploying dev/staging or main/production;
+separate GitHub environment owner secrets are required. Deployment never resets/seeds.
+Example credential fields are empty. ADR-0029, docs/23 and the Neon handoff record
+decisions, verification and external setup. The user subsequently authorized
+separate local infrastructure, test and documentation commits. No push/PR/merge
+or live deployment performed.
+Final local verification: 3,410 tests /116 suites, clean rebuild/restore and
+typecheck/lint/build pass. Hosted Actions/Neon remains unverified.
+Task acceptance and previous context below remain unchanged. Next session starts
+with the Neon handoff; do not put connection values or credentials in this memory.
+
 ## Current Docker supplement — 2026-10-10
 
 Branch `feat/p06-m02-dockerize` starts at verified `8a2b9c2`. User requested Docker
