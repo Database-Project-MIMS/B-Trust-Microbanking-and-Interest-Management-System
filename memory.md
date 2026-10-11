@@ -1,5 +1,11 @@
 # Memory — predeployment local completion
 
+## Agent menu follow-up — 2026-10-11
+
+On the existing live-audit-fixes branch, Dashboard now leads shared desktop/mobile
+navigation before Transfers. Six-role rendered ordering, lint and typecheck pass.
+UI registry/docs/05/live-audit handoff updated; publication remains a user action.
+
 ## PR #97 Vercel build supplement — 2026-10-11
 
 Branch `feat/p06-m02-live-audit-fixes`; prior head `5253f6d`. The user reported

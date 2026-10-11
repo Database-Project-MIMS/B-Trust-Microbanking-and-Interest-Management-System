@@ -115,7 +115,7 @@ pages reuse the existing authenticated shell; role-aware links supplement server
 ### App shell
 
 File: `components/app-shell/app-shell.tsx`, `components/app-shell/top-bar.tsx`
-Last updated: 27 Sep 2026
+Last updated: 11 Oct 2026 · navigation order captured with `/imprint`.
 
 | Property | Pattern |
 | --- | --- |
@@ -126,6 +126,8 @@ Last updated: 27 Sep 2026
 | Active navigation | `bg-[var(--primary)] text-white` |
 
 Role-aware links are for convenience only; the server still authorizes every request.
+Dashboard is the first menu item, including for agents, before Withdraw and Transfers.
+Desktop and mobile use the same ordered, role-filtered navigation list.
 
 ### Card, form field, and button
 

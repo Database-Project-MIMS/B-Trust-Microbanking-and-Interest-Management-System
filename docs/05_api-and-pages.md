@@ -364,6 +364,9 @@ Staff navigation exposes savings plans, separate Deposits/Withdraw links, and ac
 details show View statement after successful loading. Customer withdrawals remain
 reachable; customers do not get the staff plans/report links.
 
+**Menu ordering (2026-10-11):** Dashboard is first in the shared desktop/mobile
+menu, before Withdraw and Transfers for agents and branch managers.
+
 **RPT-01 live delivery (2026-10-08, ADR-0022):**
 `GET /api/reports/agent-transactions` and `/reports/agent-transactions` consume I-7.
 Allowed roles: BRANCH_MANAGER (current own branch), ADMIN, CENTRAL_OPS, AUDITOR.
