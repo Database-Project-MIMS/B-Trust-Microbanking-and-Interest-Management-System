@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { CustomerSearchResult } from "@/services/customer-service";
 import { customerRequest } from "./customer-client";
+import { RecordActions } from "@/components/mims/record-actions";
 
 export function CustomerList({ canRegister, branches, agents }: {
   canRegister: boolean; branches: { id: string; name: string }[]; agents: { id: string; name: string }[];
@@ -43,7 +44,7 @@ export function CustomerList({ canRegister, branches, agents }: {
     <section aria-busy={loading} aria-label="Customer results" className="card mt-6">
       <p role="status">{loading ? "Loading customers…" : result ? `${result.total} customers found` : "Search unavailable."}</p>
       {result && <><div className="table-wrap mt-4"><table className="data-table"><caption className="sr-only">Customers you are permitted to view</caption><thead><tr><th scope="col">Name</th><th scope="col">Customer number</th><th scope="col">NIC / passport number</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody>
-        {result.customers.map(customer => <tr key={customer.customerId}><th scope="row" className="font-normal"><Link href={`/customers/${customer.customerId}`}>{customer.fullName}</Link></th><td>{customer.customerNumber}</td><td>{customer.nicPassportNo}</td><td>{customer.email}</td><td><span className="status-pill">{customer.status}</span></td><td><Link className="btn btn-secondary whitespace-nowrap" href={`/customers/${customer.customerId}`} aria-label={`View details for ${customer.fullName}`}>View details</Link></td></tr>)}
+        {result.customers.map(customer => <tr key={customer.customerId}><th scope="row" className="font-normal"><Link href={`/customers/${customer.customerId}`}>{customer.fullName}</Link></th><td>{customer.customerNumber}</td><td>{customer.nicPassportNo}</td><td>{customer.email}</td><td><span className="status-pill">{customer.status}</span></td><td><RecordActions href={`/customers/${customer.customerId}`} name={customer.fullName} canEdit={canRegister} /></td></tr>)}
         {!result.customers.length && <tr><td colSpan={6}>No customers match your search.</td></tr>}
       </tbody></table></div><div className="flex items-center gap-4 mt-6"><button className="btn btn-secondary" disabled={result.page === 1} onClick={() => changePage(result.page - 1)}>Previous</button>
         <span>Page {result.page}</span><button className="btn btn-secondary" disabled={result.page * result.pageSize >= result.total} onClick={() => changePage(result.page + 1)}>Next</button></div></>}

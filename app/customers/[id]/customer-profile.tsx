@@ -6,8 +6,15 @@ import type { CustomerProfile as Profile } from "@/services/customer-service";
 import { customerRequest, displayDate, displayMoney } from "../customer-client";
 import { CustomerFixedDepositsPanel } from "./customer-fixed-deposits";
 import { accountRequest, csrfToken } from '@/app/accounts/account-client';
+import { useRouter } from "next/navigation";
+import { RecordEditForm, type EditField } from "@/components/mims/record-edit-form";
 
-export function CustomerProfile({ id, canSearch, canVerify = false }: { id: string; canSearch: boolean; canVerify?: boolean }) {
+export function CustomerProfile({ id, canSearch, canVerify = false, canEdit = false, canEditEmail = false, editing = false }: {
+  id: string; canSearch: boolean; canVerify?: boolean; canEdit?: boolean; canEditEmail?: boolean; editing?: boolean;
+}) {
+  const router = useRouter();
+  const href = `/customers/${encodeURIComponent(id)}`;
+  const [notice, setNotice] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -28,14 +35,30 @@ export function CustomerProfile({ id, canSearch, canVerify = false }: { id: stri
       .catch(error => { if (!controller.signal.aborted) setError(error instanceof Error ? error.message : "Unable to load customer."); });
     return () => controller.abort();
   }, [id, attempt]);
+  const fields: EditField[] = profile ? [
+    { name: "fullName", label: "Full name", value: profile.customer.fullName, required: true, maxLength: 150 },
+    { name: "gender", label: "Gender", value: profile.customer.gender ?? "", nullable: true,
+      options: [...new Set(["", "MALE", "FEMALE", ...(profile.customer.gender ? [profile.customer.gender] : [])])]
+        .map(value => ({ value, label: value === "" ? "Not recorded" : value === "MALE" ? "Male" : value === "FEMALE" ? "Female" : value })) },
+    { name: "phone", label: "Phone", value: profile.customer.phone ?? "", type: "tel", nullable: true, maxLength: 20 },
+    { name: "address", label: "Address", value: profile.customer.address ?? "", type: "textarea", nullable: true, maxLength: 255 },
+  ] : [];
+  if (profile && canEditEmail) fields.push({ name: "email", label: "Email", value: profile.customer.email, type: "email", required: true, maxLength: 150 });
   return <>
-    <div className="page-header"><div><p className="eyebrow">Customers</p><h1 className="page-title">Customer profile</h1></div>{canSearch && <Link className="btn btn-secondary" href="/customers">Back to search</Link>}</div>
+    <div className="page-header"><div><p className="eyebrow">Customers</p><h1 className="page-title">Customer profile</h1></div><div className="flex flex-wrap gap-2">
+      {profile && canEdit && !editing && <Link className="btn btn-secondary" href={`${href}?edit=1`}>Edit</Link>}
+      {canSearch && <Link className="btn btn-secondary" href="/customers">Back to search</Link>}</div></div>
+    {notice && <p role="status" className="card mt-6">{notice}</p>}
     {error ? <div role="alert" className="card mt-6"><p>{error}</p><button className="btn btn-secondary" onClick={() => setAttempt(value => value + 1)}>Retry</button></div> : !profile ? <p role="status" className="mt-6">Loading customer…</p> : <>
       <section className="card mt-6"><h2>{profile.customer.fullName}</h2><dl>
         {Object.entries({ "Customer number": profile.customer.customerNumber, "NIC / passport number": profile.customer.nicPassportNo, Email: profile.customer.email,
           "Date of birth": displayDate(profile.customer.dateOfBirth), Gender: profile.customer.gender === "MALE" ? "Male" : profile.customer.gender === "FEMALE" ? "Female" : profile.customer.gender ?? "—",
-          Phone: profile.customer.phone ?? "—", Address: profile.customer.address ?? "—", Status: profile.customer.status }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+          Phone: profile.customer.phone ?? "—", Address: profile.customer.address ?? "—", Status: profile.customer.status,
+          Branch: `${profile.branch.branchCode} — ${profile.branch.branchName}`, Registered: displayDate(profile.customer.createdAt) }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
       </dl></section>
+      {canEdit && editing && <RecordEditForm key={attempt} title="Edit customer" fields={fields} endpoint={`/api${href}`}
+        description="Update profile and contact information. Registered identity, birth date, branch and account ownership stay fixed."
+        onCancel={() => router.replace(href)} onSaved={() => { setNotice("Customer changes saved."); router.replace(href); setAttempt(value => value + 1); }} />}
       <section className="card mt-6"><h2>Assignment history</h2><div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Agent</th><th>Assigned</th><th>Ended</th><th>Status</th></tr></thead><tbody>
         {profile.assignmentHistory.map(row => <tr key={row.assignmentId}><td>{row.agentName}</td><td>{displayDate(row.assignedDate)}</td><td>{displayDate(row.endDate)}</td><td>{row.isActive ? "Current" : "Previous"}</td></tr>)}
         {!profile.assignmentHistory.length && <tr><td colSpan={4}>No assignment history.</td></tr>}

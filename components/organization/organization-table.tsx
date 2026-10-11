@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { RecordActions } from "@/components/mims/record-actions";
 
 type RecordStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
@@ -368,9 +369,21 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
       {loading ? <p className="text-sm text-[var(--text-muted)]">Loading {resource}…</p> : (
         <div className="overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]">
           <table className="data-table min-w-[760px]">
-            <thead><tr>{isBranch ? <><th>Code</th><th>Branch</th><th>District</th><th>Phone</th></> : <><th>Employee no.</th><th>Agent</th><th>Branch</th><th>Phone</th></>}<th>Status</th>{canManage ? <th className="text-right">Actions</th> : null}</tr></thead>
+            <thead><tr>{isBranch ? <><th>Code</th><th>Branch</th><th>District</th><th>Phone</th></> : <><th>Employee no.</th><th>Agent</th><th>Branch</th><th>Phone</th></>}<th>Status</th><th>Actions</th></tr></thead>
             <tbody>
-              {isBranch ? branchRows.length ? branchRows.map((row) => <tr key={row.branchId}><td className="font-mono text-sm">{row.branchCode}</td><td className="font-medium">{row.branchName}</td><td>{row.district}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>{canManage ? <td className="text-right">{row.status === "ACTIVE" ? <button className="text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button> : <span className="text-[var(--text-muted)]">—</span>}</td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={canManage ? 6 : 5}>No branches match this status filter.</td></tr> : agentRows.length ? agentRows.map((row) => <tr key={row.agentId}><td className="font-mono text-sm">{row.employeeNo}</td><td><Link className="font-medium text-[var(--primary)] underline" href={`/agents/${row.agentId}/activity`} aria-label={`Daily activity for ${row.fullName}`}>{row.fullName}</Link><span className="block text-xs text-[var(--text-muted)]">{row.email}</span></td><td>{row.branchCode} — {row.branchName}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>{canManage ? <td className="text-right">{row.status === "ACTIVE" ? <button className="text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button> : <span className="text-[var(--text-muted)]">—</span>}</td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={canManage ? 6 : 5}>No agents match this status filter.</td></tr>}
+              {isBranch ? branchRows.length ? branchRows.map(row => <tr key={row.branchId}>
+                <td className="font-mono text-sm">{row.branchCode}</td><td className="font-medium"><Link href={`/branches/${row.branchId}`}>{row.branchName}</Link></td>
+                <td>{row.district}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>
+                <td><RecordActions href={`/branches/${row.branchId}`} name={row.branchName} canEdit={canManage} />
+                  {canManage && row.status === "ACTIVE" && <button className="mt-2 text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button>}</td>
+              </tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={6}>No branches match this status filter.</td></tr> :
+                agentRows.length ? agentRows.map(row => <tr key={row.agentId}>
+                  <td className="font-mono text-sm">{row.employeeNo}</td><td><Link className="font-medium text-[var(--primary)] underline" href={`/agents/${row.agentId}`}>{row.fullName}</Link><span className="block text-xs text-[var(--text-muted)]">{row.email}</span></td>
+                  <td>{row.branchCode} — {row.branchName}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>
+                  <td><RecordActions href={`/agents/${row.agentId}`} name={row.fullName} canEdit={canManage} />
+                    <Link className="mt-2 block text-[var(--primary)] underline" href={`/agents/${row.agentId}/activity`} aria-label={`Daily activity for ${row.fullName}`}>Daily activity</Link>
+                    {canManage && row.status === "ACTIVE" && <button className="mt-2 text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button>}</td>
+                </tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={6}>No agents match this status filter.</td></tr>}
             </tbody>
           </table>
         </div>

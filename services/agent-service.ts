@@ -167,8 +167,8 @@ async function selectAgent(
 ): Promise<AgentRow | null> {
   const result = await executor.query<AgentRow>(
     `SELECT a.agent_id, u.username, a.branch_id, b.branch_code, b.branch_name,
-            a.employee_no, a.nic_passport_no, a.full_name, a.date_of_birth,
-            a.gender, a.phone, a.address, a.email, a.hired_date, a.status,
+            a.employee_no, a.nic_passport_no, a.full_name, a.date_of_birth::text AS date_of_birth,
+            a.gender, a.phone, a.address, a.email, a.hired_date::text AS hired_date, a.status,
             a.created_at, a.updated_at
        FROM agent a
        JOIN app_user u ON u.user_id = a.agent_id
@@ -224,6 +224,15 @@ async function assertScopedAgentExists(
   throw new NotFoundError("Agent");
 }
 
+/** Reads one ordinary-agent profile in one branch-scoped transaction; never selects secrets. */
+export async function getAgent(agentId: string, scopeBranchId: string | null): Promise<Agent> {
+  return withTransaction(async tx => {
+    const row = await selectAgent(tx, agentId, scopeBranchId);
+    if (!row) throw new NotFoundError("Agent");
+    return mapAgent(row);
+  });
+}
+
 function resolveTargetBranch(
   requestedBranchId: string | undefined,
   scopeBranchId: string | null,
@@ -249,8 +258,8 @@ export async function listAgents(
 ): Promise<Agent[]> {
   const rows = await query<AgentRow>(
     `SELECT a.agent_id, u.username, a.branch_id, b.branch_code, b.branch_name,
-            a.employee_no, a.nic_passport_no, a.full_name, a.date_of_birth,
-            a.gender, a.phone, a.address, a.email, a.hired_date, a.status,
+            a.employee_no, a.nic_passport_no, a.full_name, a.date_of_birth::text AS date_of_birth,
+            a.gender, a.phone, a.address, a.email, a.hired_date::text AS hired_date, a.status,
             a.created_at, a.updated_at
        FROM agent a
        JOIN app_user u ON u.user_id = a.agent_id

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FdProduct } from "@/services/fd-product-service";
+import { RecordPreview } from "@/components/mims/record-preview";
 
 interface FdProductClientProps {
   initialProducts: FdProduct[];
@@ -85,7 +86,15 @@ export default function FdProductClient({ initialProducts, isAdmin }: FdProductC
   }
 
   function renderTable(list: FdProduct[], history: boolean): ReactNode {
-    return <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]"><table className="data-table"><thead><tr><th>Plan name</th><th>Tenure</th><th className="text-right">Interest rate</th><th>Status</th><th>Effective from</th><th>Effective to</th>{!history && isAdmin ? <th className="text-right">Actions</th> : null}</tr></thead><tbody>{list.length ? list.map((product) => <tr key={product.fdPlanId}><td className="font-medium">{product.planName}</td><td>{product.tenureMonths} months</td><td className="amount text-[var(--credit)]">{formatRate(product.interestRate)}</td><td>{product.status}</td><td>{formatDate(product.effectiveFrom)}</td><td>{formatDate(product.effectiveTo)}</td>{!history && isAdmin ? <td className="amount"><button className="mr-3 text-[var(--primary)] underline" onClick={() => startEdit(product)} type="button">Edit rate</button><button className="text-[var(--danger)] underline" onClick={() => { setPendingChange({ kind: "deactivate", product }); setNotice(null); }} type="button">Deactivate</button></td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={isAdmin && !history ? 7 : 6}>No products found.</td></tr>}</tbody></table></div>;
+    return <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]"><table className="data-table"><thead><tr><th>Plan name</th><th>Tenure</th><th className="text-right">Interest rate</th><th>Status</th><th>Effective from</th><th>Effective to</th><th>Actions</th></tr></thead><tbody>{list.length ? list.map(product => <tr key={product.fdPlanId}><td className="font-medium">{product.planName}</td><td>{product.tenureMonths} months</td><td className="amount text-[var(--credit)]">{formatRate(product.interestRate)}</td><td>{product.status}</td><td>{formatDate(product.effectiveFrom)}</td><td>{formatDate(product.effectiveTo)}</td>
+      <td><div className="flex flex-wrap gap-2"><RecordPreview title={product.planName} items={[
+        { label: "Description", value: product.description }, { label: "Tenure", value: `${product.tenureMonths} months` },
+        { label: "Interest rate", value: formatRate(product.interestRate) }, { label: "Status", value: product.status },
+        { label: "Effective from", value: formatDate(product.effectiveFrom) }, { label: "Effective to", value: formatDate(product.effectiveTo) },
+        { label: "Created", value: formatDate(product.createdAt) }, { label: "Last updated", value: formatDate(product.updatedAt) },
+      ]} />{!history && isAdmin && <><button className="btn btn-secondary" onClick={() => startEdit(product)} type="button">Edit rate</button>
+        <button className="text-[var(--danger)] underline" onClick={() => { setPendingChange({ kind: "deactivate", product }); setNotice(null); }} type="button">Deactivate</button></>}
+      </div></td></tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={7}>No products found.</td></tr>}</tbody></table></div>;
   }
 
   return <div className="mt-8 space-y-8">

@@ -6,7 +6,17 @@ import {
   organizationIdSchema,
   updateAgentSchema,
 } from "@/lib/validation/organization";
-import { updateAgent } from "@/services/agent-service";
+import { getAgent, updateAgent } from "@/services/agent-service";
+
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }): Promise<Response> {
+  try {
+    const user = await requireUser(request);
+    requireRole(user, "ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER");
+    const id = organizationIdSchema.parse((await context.params).id);
+    return NextResponse.json({ data: await getAgent(id, branchScope(user).branchId) },
+      { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return errorResponse(error); }
+}
 
 export async function PATCH(
   request: NextRequest,

@@ -4,10 +4,58 @@ import { withTransaction, NotAuthorizedError, NotFoundError, BusinessRuleError, 
 import { setRlsContext } from '@/lib/db/rls-context';
 import type { AuthenticatedUser } from '@/lib/auth/rbac';
 import { fdOpeningSchema,fdKeySchema,fdListSchema } from '@/lib/validation/fixed-deposit';
+import { z } from 'zod';
 
 export interface FixedDepositRow {
   fdId:string; accountId:string; accountNumber:string; fdPlanId:string; productName:string;
   principalAmount:string; rate:string; startDate:string; maturityDate:string; nextInterestDate:string; status:string;
+}
+
+export interface FixedDepositDetail extends FixedDepositRow {
+  createdAt: string; updatedAt: string | null;
+  account: { status: string; currentBalance: string; planName: string; branchId: string; branchCode: string; branchName: string };
+  holders: { customerId: string; customerNumber: string; fullName: string; holderType: string }[];
+}
+
+/** Reads FD, linked account and permitted holders in one read-only, scoped repeatable-read transaction. */
+export async function getFixedDeposit(fdId: string, user: AuthenticatedUser): Promise<FixedDepositDetail> {
+  role(user, ['AGENT', 'BRANCH_MANAGER', 'CENTRAL_OPS', 'AUDITOR', 'CUSTOMER']);
+  if (!z.string().uuid().safeParse(fdId).success) throw new ValidationError('Fixed deposit ID must be a UUID.');
+  return withTransaction(async tx => {
+    await tx.query('SET TRANSACTION READ ONLY');
+    const caller = (await tx.query<{ role_name: string; branch_id: string | null }>(
+      `SELECT r.role_name, CASE WHEN r.role_name IN ('AGENT','BRANCH_MANAGER') THEN ag.branch_id END AS branch_id
+       FROM app_user u JOIN role r ON r.role_id = u.role_id LEFT JOIN agent ag ON ag.agent_id = u.user_id
+       LEFT JOIN branch b ON b.branch_id = ag.branch_id WHERE u.user_id = $1 AND u.status = 'ACTIVE' AND r.status = 'ACTIVE'
+       AND (r.role_name NOT IN ('AGENT','BRANCH_MANAGER') OR (ag.status = 'ACTIVE' AND b.status = 'ACTIVE'))`, [user.userId])).rows[0];
+    if (!caller || caller.role_name !== user.roleName || caller.branch_id !== user.branchId) throw new NotAuthorizedError();
+    await setRlsContext(tx, user);
+    const row = (await tx.query<FixedDepositRow & { created_at: Date; updated_at: Date | null; account_status: string;
+      current_balance: string; savings_plan_name: string; branch_id: string; branch_code: string; branch_name: string }>(
+      `SELECT ${columns}, fd.created_at, fd.updated_at, a.status AS account_status,
+        a.current_balance::text, sp.plan_name AS savings_plan_name, b.branch_id, b.branch_code, b.branch_name
+       ${joins} JOIN savings_plan sp ON sp.plan_id = a.plan_id JOIN branch b ON b.branch_id = a.branch_id
+       WHERE fd.fd_id = $1 AND ($2::uuid IS NULL OR a.branch_id = $2)
+       AND ($3::text <> 'AGENT' OR EXISTS (SELECT 1 FROM account_holder h JOIN customer_agent ca ON ca.customer_id = h.customer_id
+         JOIN customer c ON c.customer_id = h.customer_id WHERE h.account_id = a.account_id
+         AND c.branch_id = $2 AND ca.agent_id = $4 AND ca.is_active))
+       AND ($3::text <> 'CUSTOMER' OR EXISTS (SELECT 1 FROM account_holder h JOIN customer c ON c.customer_id = h.customer_id
+         WHERE h.account_id = a.account_id AND c.app_user_id = $4))`, [fdId, caller.branch_id, user.roleName, user.userId])).rows[0];
+    if (!row) throw new NotFoundError('Fixed deposit');
+    const holders = (await tx.query<FixedDepositDetail['holders'][number]>(
+      `SELECT c.customer_id AS "customerId", c.customer_number AS "customerNumber", c.full_name AS "fullName", h.holder_type AS "holderType"
+       FROM account_holder h JOIN customer c ON c.customer_id = h.customer_id WHERE h.account_id = $1
+       AND ($2::uuid IS NULL OR c.branch_id = $2)
+       AND ($3::text <> 'AGENT' OR EXISTS (SELECT 1 FROM customer_agent ca WHERE ca.customer_id = c.customer_id AND ca.agent_id = $4 AND ca.is_active))
+       AND ($3::text <> 'CUSTOMER' OR c.app_user_id = $4)
+       ORDER BY h.holder_type DESC, c.customer_number`, [row.accountId, caller.branch_id, user.roleName, user.userId])).rows;
+    return { fdId: row.fdId, accountId: row.accountId, accountNumber: row.accountNumber, fdPlanId: row.fdPlanId,
+      productName: row.productName, principalAmount: row.principalAmount, rate: row.rate, startDate: row.startDate,
+      maturityDate: row.maturityDate, nextInterestDate: row.nextInterestDate, status: row.status,
+      createdAt: row.created_at.toISOString(), updatedAt: row.updated_at?.toISOString() ?? null, holders,
+      account: { status: row.account_status, currentBalance: row.current_balance, planName: row.savings_plan_name,
+        branchId: row.branch_id, branchCode: row.branch_code, branchName: row.branch_name } };
+  }, { isolationLevel: 'REPEATABLE READ' });
 }
 const columns = `fd.fd_id AS "fdId",fd.account_id AS "accountId",a.account_number AS "accountNumber",
   fd.fd_plan_id AS "fdPlanId",p.plan_name AS "productName",fd.principal_amount AS "principalAmount",
