@@ -73,7 +73,12 @@ try {
     command(process.execPath,['node_modules/tsx/dist/cli.mjs','--conditions','react-server','tests/helpers/browser-fixture.mjs'],env);
     const webPort=await new Promise((accept,reject)=>{const server=createServer();server.on('error',reject);server.listen(0,'127.0.0.1',()=>{const n=server.address().port;server.close(()=>accept(n));});});
     const marker=resolve('test-results/preview-stop');if(existsSync(marker))rmSync(marker);
-    const web=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(webPort)],{env,windowsHide:true,stdio:'inherit'});
+    const productionPreview=process.argv.includes('--production-preview');
+    if(productionPreview&&!existsSync('.next/BUILD_ID'))throw new Error('Build the production app before starting the production preview.');
+    const webEnv={...env,NODE_ENV:productionPreview?'production':'development',APP_BASE_URL:`http://127.0.0.1:${webPort}`};
+    // The fixture needs owner access; the web process uses only the runtime role.
+    delete webEnv.DATABASE_MIGRATION_URL;
+    const web=spawn(process.execPath,['node_modules/next/dist/bin/next',productionPreview?'start':'dev','--hostname','127.0.0.1','--port',String(webPort)],{env:webEnv,windowsHide:true,stdio:'inherit'});
     writeFileSync('test-results/preview-url.json',JSON.stringify({url:`http://127.0.0.1:${webPort}`}));
     console.log('Disposable browser preview running; create test-results/preview-stop to stop it.');
     try{while(!existsSync(marker)&&web.exitCode===null)await new Promise(done=>setTimeout(done,500));}

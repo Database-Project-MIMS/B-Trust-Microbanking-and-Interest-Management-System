@@ -139,14 +139,14 @@ still needed for previously unattributed postings; no historical backfill is inf
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER
 - **Body** `{ fullName, nicPassportNo, dateOfBirth, gender, phone, address, email, branchId, agentId, documents[] }`
-- **Validation** NIC/passport format; `dateOfBirth` in the past; email format; `branchId` within the caller's scope
+- **Validation** NIC/passport format; `dateOfBirth` in the past; email format; optional `gender` accepts only `MALE`/`FEMALE` (or null/omitted); `branchId` within the caller's scope
 - **SQL / routine** one transaction: `INSERT customer` (M1's trigger inserts one sanitized audit) → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)`
 - **Transaction** all four, atomic (§4.3: "Customer, documents, assignment and audit event are inserted in one database transaction")
 - **Success** `201 { data: { customerId, customerNumber } }`
 - **Errors** `400` invalid JSON/strict fields; `401` invalid session; `403` role/branch/assignment/CSRF denied; `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`; safe `500` for unexpected failures
 - **Page** `/customers/new`
 
-| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; NIC/email masked for branch staff (FR-CUS-04); fixed sort-column allow-list |
+| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; assigned AGENT receives full NIC/email, BRANCH_MANAGER receives masked fields (ADR-0033, FR-CUS-04); fixed sort-column allow-list |
 | `GET /api/customers/{id}` | Profile with accounts and assignment history | as above; CUSTOMER for self only | RLS enforces self-access |
 
 Search query keys: `q`, `name`, `nicPassportNo`, `branchId`, `agentId`, `status`,
@@ -156,9 +156,11 @@ unknown/repeated keys and invalid identifiers return 400. Result: `{ data: { cus
 total, page, pageSize } }`. Missing and inaccessible profiles both return 404.
 
 Live screens: `/customers` has scoped named branch/agent filters, sorting, pagination,
-loading/error/empty states and profile links. `/customers/new` uses the session branch,
+loading/error/empty states and explicit View details links. `/customers/new` uses a Male/Female
+gender dropdown (optional), the session branch,
 active agent options and zero to twenty document references, then navigates to the created
-profile. `/customers/{id}` shows identity, all assignment history, safe document verification
+profile. `/customers/{id}` shows NIC/passport, email, gender, phone, address, birth date,
+status, all assignment history, safe document verification
 metadata and real account-holder links. Registration does not upload files, verify documents
 or provision customer logins. Page guards mirror route roles; server checks remain authoritative.
 
@@ -196,7 +198,9 @@ Search accepts q/name/NIC/branch/agent/status, fixed sortBy/sortDirection, page 
 pageSize (maximum 100). Controllers parse numeric query strings. SQL predicates
 restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/AUDITOR
 are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
-Staff NIC/email are masked; documents omit paths. Profiles include all assignment
+Assigned AGENT readers receive full NIC/email only after branch/current-assignment SQL
+checks; BRANCH_MANAGER readers retain masked NIC/email. Bankwide readers and the
+linked customer retain their existing full-field access (ADR-0033). Documents omit paths. Profiles include all assignment
 history. The merged M3 account_holder relation supplies account links (empty array when
 none exist), with account branch scope and string balances. The null fallback is retained
 for incomplete schemas. Reads use repeatable-read transactions; `setRlsContext` supplies
@@ -354,6 +358,19 @@ transactions. Application execution is revoked. ADR-0012 savings interest runs t
 
 ## Reports — framework M1, each report by its owner
 
+**Live audit corrections (2026-10-10, local branch):** `/reports` is the guarded
+catalogue for RPT-01–05, permitted to ADMIN, CENTRAL_OPS, BRANCH_MANAGER and AUDITOR.
+The dashboard and shared shell point Reports to this catalogue; every report includes
+All reports and RPT-01–05 crosslinks with the active report identified. Existing APIs
+and server role/branch restrictions remain authoritative. Open-ended report metadata
+shows All dates, or Any date for an omitted bound; supplied bounds remain inclusive.
+Staff navigation exposes savings plans, separate Deposits/Withdraw links, and account
+details show View statement after successful loading. Customer withdrawals remain
+reachable; customers do not get the staff plans/report links.
+
+**Menu ordering (2026-10-11):** Dashboard is first in the shared desktop/mobile
+menu, before Withdraw and Transfers for agents and branch managers.
+
 **RPT-01 live delivery (2026-10-08, ADR-0022):**
 `GET /api/reports/agent-transactions` and `/reports/agent-transactions` consume I-7.
 Allowed roles: BRANCH_MANAGER (current own branch), ADMIN, CENTRAL_OPS, AUDITOR.
@@ -468,7 +485,7 @@ ADMIN permissions are not inferred from a universal financial super-role.
 | `/agents` | `/api/agents` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | M2 |
 | `/agents/{id}/activity` | `GET /api/agents/{id}/activity` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER (own branch), AGENT (self) | M2 (live T02) |
 | `/customers`, `/customers/new`, `/customers/{id}` | `/api/customers` | AGENT, BRANCH_MANAGER | M2 |
-| `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; no nav link yet — shell is M1's) |
+| `/plans` | `GET /api/plans`, `PATCH /api/plans/{id}` (edit: ADMIN, CENTRAL_OPS) | all staff; read-only except ADMIN/CENTRAL_OPS | M3 (live, T06; shell/dashboard links added by local audit correction) |
 | `/accounts` (list/search), `/accounts/new` (wizard with review step), `/accounts/{id}` (detail, holders, mandate, add holder, fixed-deposit panel with an "Open a fixed deposit" link to `/fixed-deposits/new?accountId=…` for AGENT, BRANCH_MANAGER, CENTRAL_OPS) | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/holders`, `/api/customers` (picker) | list/detail: AGENT (assigned), BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER (detail, own); open: AGENT, BRANCH_MANAGER; add holder: BRANCH_MANAGER | M3 (live, T06) |
 | `/transactions/deposit` | `POST /api/transactions/deposits` | AGENT, BRANCH_MANAGER | M4 |
 | `/transactions/withdraw` | `POST /api/transactions/withdrawals` | AGENT, BRANCH_MANAGER | M4 |
@@ -485,6 +502,7 @@ deactivation. Deactivation preserves the record and its history.
 | `/fixed-deposits`, `/fixed-deposits/new` | `/api/fixed-deposits` | AGENT, BRANCH_MANAGER, CENTRAL_OPS | M5 |
 | `/interest-runs` | `/api/interest-runs` | CENTRAL_OPS, ADMIN | M5 |
 | `/reports/agent-transactions` | RPT-01 | manager+, auditor | M2 |
+| `/reports` | Catalogue and navigation for RPT-01–05 (no new API) | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | M1 framework contribution |
 | `/reports/account-summary` | RPT-02 (live, `GET /api/reports/account-summary`) | BRANCH_MANAGER (own branch), CENTRAL_OPS, AUDITOR, ADMIN | M3 |
 | `/reports/customer-activity` | RPT-05 | manager+, auditor | M4 |
 | `/reports/active-fds` | RPT-03 | manager+, auditor | M5 |

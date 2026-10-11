@@ -1,4 +1,89 @@
-# Current state — predeployment local completion
+# Current state — customer registration and details
+
+## PR #98 Vercel dependency correction — 2026-10-11
+
+PR #98 at `3e6a292` was published from a customer branch based on the older audit
+commit, before PR #97's build and menu fixes. Its Vercel check failed while hosted
+application/database CI passed. PR #97 at `26b315e` now has a successful Vercel check.
+The current branch is `feat/p02-m02-customer-details`: cherry-picked `dc66771` as
+`8e05feb` and `26b315e` as `cc4147c` without conflicts. Vercel install/build commands,
+compiler-independent config and Dashboard-first navigation are now included.
+Customer fields, gender validation, scoped access and documentation survive unchanged.
+Combined disposable verification passes: 3,418 tests /117 suites, zero failures,
+cancellations or skips, clean 70-migration rebuild/restore, typecheck, lint and
+production build. /review passes. No push, branch merge or deployment. Next: publish
+the corrected PR #98 branch and deploy its new head; repeating `3e6a292` keeps the old setup.
+
+## Customer follow-up verified — 2026-10-11
+
+User requested a new branch, Male/Female registration dropdown, customer email/NIC
+visibility for the agent and View details navigation, with a few local commits and
+no push/PR. The user clarified these are customer fields, not agent contact data.
+Branch: `feat/p02-m02-customer-details`, based on the prior verified local checkout.
+ADR-0033 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
+Full fields are returned only within the existing current-assignment/branch scope;
+manager and audit masking remain. Server validation checks optional MALE/FEMALE;
+no migration or financial rule change. Registry/contracts and M2 overview updated.
+All five overview tables reviewed; other member statuses retain their prior state.
+
+Verification: 3,417 tests /117 suites, zero failures/skips, clean 70-migration rebuild,
+typecheck/lint/production build. Production browser registration, list/detail navigation,
+full profile, empty results and mobile overflow checks pass; no browser errors/warnings.
+QA uses disposable local PostgreSQL only; browser signed out/closed, viewport restored,
+preview stopped. Task remains REVIEW pending user publication. Local commits authorized;
+push/PR/merge/deployment remain user actions. /remember save appends this continuation
+context while preserving earlier memory. No credential values are persisted.
+
+## Agent menu order — 2026-10-11
+
+User-requested follow-up on the same branch: Dashboard is first before Transfers
+in shared desktop/mobile navigation. Rendered six-role ordering, focused lint and
+typecheck pass; docs/05, UI registry and live-audit handoff are updated.
+
+## PR #97 Vercel build correction — 2026-10-11
+
+Historical correction branch: `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
+failed loading the TS config; its database/application CI passed at `5253f6d`.
+ADR-0032 introduces compiler-independent `next.config.mjs` and explicit locked
+Vercel build dependencies (`npm ci --include=dev`, `npm run build`). Dependency
+versions, database/financial behavior, CSP and stewardship remain unchanged.
+Docs/24 and [handoff](handoffs/p06-vercel-pr97-build.md) record recovery/review.
+Clean production/omit-dev install, build, typecheck/lint, 11 regression tests,
+Argon2 smoke and production sign-in/security-header/nonces checks pass locally.
+Host Node 24/npm 11; pinned Node 22/Vercel rerun pending publication. The temporary
+server is stopped. Local commit authority persists; no push/new PR/deployment.
+P06-M01-T04 remains IN_PROGRESS with the previous live acceptance limits.
+
+## Local fixes verified — 2026-10-10
+
+User requested a new branch and audit fixes, then explicitly authorized cross-owner
+edits. Branch: `feat/p06-m02-live-audit-fixes`; ADR-0031/handoff live-audit-fixes record
+the contribution without ownership transfer. Report catalogue/crosslinks, staff withdrawal
+and plan navigation, statement link, period labels and enforced nonce CSP are implemented.
+Root HTML is dynamic for fresh nonces; no schema, financial routine or permission change.
+Full disposable verification: 3,415 tests /117 suites, clean 70-migration rebuild,
+typecheck/lint/build. Production browser checks pass across all six human roles,
+desktop/mobile, report navigation/export, staff statement and denied report access.
+Four raw HTML probes prove matching fresh script nonces and no-store. Browser console
+has no warnings/errors. Preview signed out/closed/stopped; existing databases preserved.
+User subsequently authorized a local commit of these changes. Push, PR and deployment
+remain user actions. Next: publication/deployment, then live retest.
+P06-M01-T04 remains IN_PROGRESS; previous consequential final-action acceptance pending.
+Existing memory.md is preserved; this section/handoff hold the latest continuation state.
+
+## Live Vercel / Neon audit — 2026-10-10
+
+User authorized live deployment and frontend button testing after login/config and
+synthetic seed setup. Safe checks: 759/760 HTTP/API assertions pass (CSP absent),
+329 role/endpoint combinations, 51 page routes without detected render exceptions,
+26/26 direct Neon checks and browser control testing across banking/admin/reports.
+Reconciliation agrees for 10 accounts and 191 ledger entries. Navigation gaps:
+RPT-02–05, staff withdrawals, staff statement link and savings-plan catalogue.
+No application code/migrations/publication changed. All-row Manage/Edit and
+deactivation dialogs were exercised without final changes. Financial posting and
+privileged final buttons remain unverified; automatic review rejected non-dry-run
+interest replay. P06-M01-T04 and phase acceptance remain pending. Details/owner
+findings/evidence: `handoffs/p06-live-deployment-audit-2026-10-10.md`.
 
 ## Neon CI fresh-checkout correction — 2026-10-10
 

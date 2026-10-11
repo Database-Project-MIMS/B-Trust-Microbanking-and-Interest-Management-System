@@ -54,15 +54,45 @@ describe('P02-M02-T05: session-authenticated customer routes under mims_app', ()
     const search = await GET(request('GET', agentToken, undefined, `?q=${created.customerNumber}&page=1&pageSize=10`));
     assert.equal(search.status, 200); const listed = (await search.json()).data;
     assert.equal(listed.total, 1); assert.equal(listed.pageSize, 10);
-    assert.equal(listed.customers[0].nicPassportNo, `***${input.nicPassportNo.slice(-4)}`);
+    assert.equal(listed.customers[0].nicPassportNo, input.nicPassportNo);
+    assert.equal(listed.customers[0].email, input.email);
     const response = await profile(created.customerId); assert.equal(response.status, 200);
     const data = (await response.json()).data;
+    assert.equal(data.customer.nicPassportNo, input.nicPassportNo);
+    assert.equal(data.customer.email, input.email);
     assert.equal(data.assignmentHistory[0].agentId, fixture.agentId);
     assert.equal(data.documents.length, 2); assert.deepEqual(data.accounts, []);
     assert.ok(data.documents.every(doc => !('filePath' in doc) && doc.verifiedBy === null));
     const audit = await client.query('SELECT user_id,new_values FROM audit_log WHERE entity_id=$1', [created.customerId]);
     assert.equal(audit.rows.length, 1); assert.equal(audit.rows[0].user_id, fixture.agentId);
     assert.equal(audit.rows[0].new_values.nic_passport_no, `****${input.nicPassportNo.slice(-4)}`);
+  });
+  test('Male, Female and omitted gender register successfully; unsupported choices make no writes', async () => {
+    for (const gender of ['MALE', 'FEMALE', undefined]) {
+      const input = registrationInput(fixture, gender === undefined ? {} : { gender });
+      const created = await create(input);
+      const response = await profile(created.customerId);
+      assert.equal(response.status, 200);
+      assert.equal((await response.json()).data.customer.gender, gender ?? null);
+    }
+    for (const gender of ['OTHER', 'male', 'Female', '', 'invalid', 1]) {
+      await failsWithoutWrites(() => POST(request('POST', agentToken, registrationInput(fixture, { gender }))), 400);
+    }
+  });
+  test('reassignment removes the previous agent’s full-detail access and grants the current agent access', async () => {
+    const input = registrationInput(fixture);
+    const created = await create(input);
+    await client.query('UPDATE customer_agent SET is_active=false, end_date=CURRENT_DATE WHERE customer_id=$1', [created.customerId]);
+    await fixture.assignment({ customer_id: created.customerId, agent_id: fixture.secondAgentId });
+    const previous = await GET(request('GET', agentToken, undefined, `?q=${created.customerNumber}`));
+    assert.equal(previous.status, 200);
+    assert.equal((await previous.json()).data.total, 0);
+    await failsWithoutWrites(() => profile(created.customerId), 404);
+    const current = await profile(created.customerId, await session(fixture.secondAgentId));
+    assert.equal(current.status, 200);
+    const customer = (await current.json()).data.customer;
+    assert.equal(customer.nicPassportNo, input.nicPassportNo);
+    assert.equal(customer.email, input.email);
   });
   test('manager assigns another active local agent, whose customer is hidden from the first agent', async () => {
     const created = await create(registrationInput(fixture, { agentId: fixture.secondAgentId }), managerToken);

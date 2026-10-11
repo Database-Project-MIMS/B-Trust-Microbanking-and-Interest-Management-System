@@ -565,7 +565,10 @@ customer subtype. Migration `0220_p02_m02_customer.sql` implements it.
 Indexes: `ix_customer_branch` B-tree on branch_id and `ix_customer_full_name_trgm`
 GIN on full_name using gin_trgm_ops. Named constraints provide deterministic error
 mapping. SQL uniqueness is exact/case-sensitive; T04 registration normalizes identity
-to uppercase and email to lowercase, and read services mask identity for branch staff.
+to uppercase and email to lowercase. Read services mask NIC/email for BRANCH_MANAGER;
+assigned AGENT readers receive full fields within their existing branch/assignment
+scope (ADR-0033). Audit masking remains mandatory. Registration gender is restricted
+to MALE/FEMALE by server validation; existing nullable varchar storage is unchanged.
 Existing mixed-case rows are not rewritten by this task. Assignment/document FKs are
 implemented in 0221/0222; T04 inserts a minimal customer creation audit in its transaction.
 Holder FKs, generic audit triggers, RLS and runtime grants remain separately assigned.

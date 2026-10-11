@@ -32,8 +32,9 @@ export function CustomerProfile({ id, canSearch, canVerify = false }: { id: stri
     <div className="page-header"><div><p className="eyebrow">Customers</p><h1 className="page-title">Customer profile</h1></div>{canSearch && <Link className="btn btn-secondary" href="/customers">Back to search</Link>}</div>
     {error ? <div role="alert" className="card mt-6"><p>{error}</p><button className="btn btn-secondary" onClick={() => setAttempt(value => value + 1)}>Retry</button></div> : !profile ? <p role="status" className="mt-6">Loading customer…</p> : <>
       <section className="card mt-6"><h2>{profile.customer.fullName}</h2><dl>
-        {Object.entries({ "Customer number": profile.customer.customerNumber, Identity: profile.customer.nicPassportNo, Email: profile.customer.email,
-          "Date of birth": displayDate(profile.customer.dateOfBirth), Phone: profile.customer.phone ?? "—", Address: profile.customer.address ?? "—", Status: profile.customer.status }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+        {Object.entries({ "Customer number": profile.customer.customerNumber, "NIC / passport number": profile.customer.nicPassportNo, Email: profile.customer.email,
+          "Date of birth": displayDate(profile.customer.dateOfBirth), Gender: profile.customer.gender === "MALE" ? "Male" : profile.customer.gender === "FEMALE" ? "Female" : profile.customer.gender ?? "—",
+          Phone: profile.customer.phone ?? "—", Address: profile.customer.address ?? "—", Status: profile.customer.status }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
       </dl></section>
       <section className="card mt-6"><h2>Assignment history</h2><div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Agent</th><th>Assigned</th><th>Ended</th><th>Status</th></tr></thead><tbody>
         {profile.assignmentHistory.map(row => <tr key={row.assignmentId}><td>{row.agentName}</td><td>{displayDate(row.assignedDate)}</td><td>{displayDate(row.endDate)}</td><td>{row.isActive ? "Current" : "Previous"}</td></tr>)}

@@ -74,7 +74,8 @@ async function resolveScope(tx: Parameters<typeof setRlsContext>[0], actor: Cust
 }
 
 function mapCustomer(row: CustomerRow, scope: ActorScope): Customer {
-  const masked = WRITE_ROLES.includes(scope.roleName);
+  // AGENT rows have already passed current-assignment and branch predicates in SQL.
+  const masked = scope.roleName === "BRANCH_MANAGER";
   return { customerId: row.customer_id, customerNumber: row.customer_number, branchId: row.branch_id,
     fullName: row.full_name, nicPassportNo: masked ? `***${row.nic_passport_no.slice(-4)}` : row.nic_passport_no,
     dateOfBirth: row.date_of_birth, gender: row.gender, phone: row.phone, address: row.address,
