@@ -17,7 +17,7 @@ export function AccountFixedDeposits({ accountId, accountStatus, fixedDeposits, 
           <thead><tr><th scope="col">Product</th><th scope="col">Principal</th><th scope="col">Rate at opening</th><th scope="col">Opened</th>
             <th scope="col">Maturity</th><th scope="col">Next interest</th><th scope="col">Status</th></tr></thead>
           <tbody>{fixedDeposits.map(fd => <tr key={fd.fdId}>
-            <th scope="row" className="font-normal">{fd.planName}</th>
+            <th scope="row" className="font-normal"><Link href={`/fixed-deposits/${fd.fdId}`}>{fd.planName}</Link></th>
             <td className="amount whitespace-nowrap">{displayMoney(fd.principalAmount)}</td>
             <td className="amount">{displayRate(fd.interestRateAtOpening)}</td>
             <td className="whitespace-nowrap">{displayDate(fd.startDate)}</td>

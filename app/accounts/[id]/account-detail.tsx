@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import type { AccountDetail as Detail } from "@/services/account-service";
 import { accountRequest, csrfToken } from "../account-client";
 import { AccountFixedDeposits } from "./account-fixed-deposits";
-import { authoritySummary, displayDate, displayMoney, holderAuthority, transactionTypeLabel } from "../account-format";
+import { authoritySummary, displayDate, displayMoney, displayRate, holderAuthority, transactionTypeLabel } from "../account-format";
+import { AccountEdit } from "./account-edit";
 import type { HolderChoice } from "../new/account-opening-model";
 import { CustomerPicker } from "../new/customer-picker";
 
@@ -14,7 +15,7 @@ const NOTICES: Record<string, string> = {
   existing: "This account was already opened by an earlier submission. Nothing was changed.",
 };
 
-export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice }: { id: string; canAddHolder: boolean; canBrowse: boolean; canOpenFd: boolean; notice?: string }) {
+export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice, editing = false }: { id: string; canAddHolder: boolean; canBrowse: boolean; canOpenFd: boolean; notice?: string; editing?: boolean }) {
   const [account, setAccount] = useState<Detail | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -52,6 +53,7 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice }
 
   const header = <div className="page-header"><div><p className="eyebrow">Savings account</p><h1 className="page-title">{account?.accountNumber ?? "Account"}</h1></div>
     <div className="flex flex-wrap gap-2">
+      {account && canAddHolder && account.status !== "CLOSED" && !editing && <Link className="btn btn-secondary" href={`/accounts/${account.accountId}?edit=1`}>Edit</Link>}
       {account && <Link className="btn btn-secondary" href={`/accounts/${encodeURIComponent(account.accountId)}/statement`}>View statement</Link>}
       {canBrowse && <Link className="btn btn-secondary" href="/accounts">Back to accounts</Link>}
     </div></div>;
@@ -77,12 +79,19 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice }
         <p className="muted mt-4">The plan minimum of {displayMoney(account.minBalance)} stays in the account.</p></section>
       <section className="card"><h2>Plan</h2><dl>
         <div><dt>Plan</dt><dd>{account.planName}</dd></div><div><dt>Minimum balance</dt><dd className="amount">{displayMoney(account.minBalance)}</dd></div>
+        <div><dt>Current savings rate</dt><dd>{displayRate(account.interestRate)}</dd></div>
+        <div><dt>Branch</dt><dd>{account.branchCode} — {account.branchName}</dd></div>
+        <div><dt>Opened by</dt><dd>{account.openedByAgentName}</dd></div>
+        <div><dt>Created</dt><dd>{displayDate(account.createdAt)}</dd></div>
+        <div><dt>Last updated</dt><dd>{displayDate(account.updatedAt)}</dd></div>
         <div><dt>Opened</dt><dd>{displayDate(account.openedDate)}</dd></div><div><dt>Holders</dt><dd>{account.holderCount} of {account.maxHolders} allowed</dd></div></dl></section>
       <section className="card"><h2>Who can authorise withdrawals</h2>
         {authority.stateLabel && <span className="status-pill">{authority.stateLabel}</span>}
         <p className={authority.blocked ? "text-[var(--danger)]" : undefined}>{authority.text}</p>
         {account.mandate && <p className="muted">Effective from {displayDate(account.mandate.effectiveFrom)}{account.mandate.effectiveTo ? ` to ${displayDate(account.mandate.effectiveTo)}` : ""}.</p>}</section>
     </div>
+
+    {canAddHolder && editing && <AccountEdit account={account} onSaved={() => setAttempt(value => value + 1)} />}
 
     <section className="card mt-6"><h2>Holders</h2>
       <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Name</th><th>Customer number</th><th>Role</th><th>Authority</th><th>Joined</th></tr></thead><tbody>

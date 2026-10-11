@@ -1,4 +1,55 @@
-# Current state — customer registration and details
+# Current state — record filters and agent navigation
+
+## Follow-up locally verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 on feat/p06-m02-record-details-edit now includes branch
+text/district/status, agent text/branch/status, and FD account/visible-owner/product/
+status filters. Search/Clear preserves scoped SQL; FD searches reset pagination.
+Agent desktop/mobile order matches the user's eight tabs exactly. FD holder search
+adds explicit assignment/self scope alongside RLS to prevent hidden co-holder matches.
+No migration or financial writes; original owners retain stewardship.
+
+Verification: 3,640 distinct checks across security/API/DB and corrected E2E runs.
+Final 70-test UI suite, clean 70-migration rebuild/checksum/reseed/28-table restore,
+typecheck/lint/production build pass. Initial outdated renderer fixture was corrected;
+negative owner-scope finding fixed and retested. Production browser verifies Search/
+Clear, combined filters, scoped choices, exact desktop/mobile menu and no mobile
+page overflow. Console clean; viewport restored. User synthetic preview remains live.
+Review/imprint/remember and cross-owner receipt are in the handoff. REVIEW remains;
+no additional acceptance or phase gate. PR still waits for the user's #97/#98 merges.
+No push, PR creation, merge or deployment. Existing developer/hosted databases intact.
+[Current receipt](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
+# Current state — record details and permitted editing
+
+## Record management verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 is locally verified REVIEW on
+`feat/p06-m02-record-details-edit`, based on corrected PR #98 tree `9e41cd3`.
+User authorizes branch and a few local commits. View/Edit actions cover organization,
+customers and accounts; FD details show stored terms, account and visible owners.
+Savings-plan/FD-product details retain existing edit workflows. FD opening terms remain
+read-only by explicit user clarification. Customer contact edits preserve masking;
+manager account status/mandate edits lock and audit atomically. No migration.
+Agent DATE serialization is corrected for native inputs; customer branch/registration
+metadata is displayed. Original M1/M3/M5 stewardship retained.
+
+Verification: full 3,584 checks/120 suites, final 361 API checks/33 suites, no failures,
+cancellations or skips; clean 70-migration rebuild/restore, typecheck/lint/production
+build pass. Disposable production browser verifies branch/customer/agent saves,
+freeze confirmation/cancel/reactivation, role denials, FD related details, catalogue
+disclosures and mobile overflow. Console clean; signed out/closed, viewport restored,
+previews stopped. /review passes; /imprint registry and /remember continuation saved.
+All five overview tables reviewed; no unrelated acceptance changes.
+Tracker: 99 tasks, 86 DONE, 12 REVIEW, one IN_PROGRESS (live HTTPS).
+
+PR #97/#98 remain unmerged at session check. New PR waits for the user's merges;
+no push, merge or deployment. Next: incorporate actual merged integration target,
+verify the combined tree, then publish/review when authorized.
+[Full receipt and PR draft](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
 
 ## PR #98 Vercel dependency correction — 2026-10-11
 
@@ -641,3 +692,7 @@ P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 e
 identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
 `tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
 already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).
+
+Dashboard follow-up — 2026-10-11: removed the requested role-access caption beside
+Your workspaces; typecheck and targeted ESLint pass. /review and /imprint recorded
+in the record-management handoff/registry. Existing task acceptance remains REVIEW.

@@ -39,3 +39,16 @@ export const accountSearchSchema = z.object({
 export type OpenAccountInput = z.infer<typeof openAccountSchema>;
 export type AddHolderInput = z.infer<typeof addHolderSchema>;
 export type AccountSearchInput = z.infer<typeof accountSearchSchema>;
+
+const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}, "Choose a valid calendar date.");
+export const updateAccountSchema = z.object({
+  status: z.enum(["ACTIVE", "FROZEN"]).optional(),
+  mandate: z.object({
+    type: z.enum(["ANY_ONE", "ALL_HOLDERS"]), effectiveFrom: calendarDate,
+    effectiveTo: calendarDate.nullable(),
+  }).strict().refine(value => !value.effectiveTo || value.effectiveTo >= value.effectiveFrom,
+    "The mandate end date must not precede its start date.").optional(),
+}).strict().refine(value => Object.keys(value).length > 0, "At least one field is required.");

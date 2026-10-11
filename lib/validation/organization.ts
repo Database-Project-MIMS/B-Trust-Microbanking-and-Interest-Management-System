@@ -22,6 +22,16 @@ export const organizationListQuerySchema = z.object({
   status: recordStatusSchema.optional(),
 });
 
+export const branchListQuerySchema = organizationListQuerySchema.extend({
+  q: requiredText(150).optional(),
+  district: requiredText(100).optional(),
+}).strict();
+
+export const agentListQuerySchema = organizationListQuerySchema.extend({
+  q: requiredText(150).optional(),
+  branchId: z.string().uuid().optional(),
+}).strict();
+
 export const organizationIdSchema = z.string().uuid();
 
 export const createBranchSchema = z

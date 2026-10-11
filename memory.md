@@ -146,3 +146,44 @@ PR #97 preparation: customer ADR renumbered 0033, with all references updated;
 separate insertion points. Three-way Markdown checks against 26b315e pass without
 conflicts and preserve both branches' notes. No branch integration performed;
 incorporate merged main and rerun combined verification before publication.
+
+## Record details and editing — 2026-10-11
+
+/remember save appends current continuation context without overwriting previous memory.
+P06-M02-T04 is locally verified REVIEW on `feat/p06-m02-record-details-edit`, base
+`9e41cd3` (corrected PR #98, including PR #97 build/menu fixes). User authorizes
+a few local commits; new PR waits for their merges of #97 and #98. No push/merge/deploy.
+Full scoped View details and permitted Edit cover branches, agents, customers,
+accounts; FD details link account and visible owners. Catalogue details reuse existing
+edits. User explicitly keeps FD opening terms read-only. No migrations; stewardship
+unchanged. Receipt/PR draft: `.agent/handoffs/p06-record-details-edit.md`, ADR-0034.
+Agent native date fields require SQL DATE::text; do not serialize them as timestamps.
+Customer masked email is absent from manager forms and cannot be written by manager.
+Status/mandate edits lock and audit in one transaction; balances remain protected.
+Full 3,584 tests/120 suites and final 361 API tests/33 suites pass; rebuild/restore,
+typecheck/lint/build and production browser checks pass. Browser signed out/closed,
+viewport restored and disposable previews stopped; existing databases preserved.
+Review/imprint/state/tracker/overview updated. Tracker: 99 tasks, 86 DONE, 12 REVIEW,
+one IN_PROGRESS. Next: after #97/#98 merge, incorporate actual integration target
+and verify combined tree before authorized publication. General phase/live gates remain.
+
+## /remember save — record filters and agent navigation, 2026-10-11
+
+Continue feat/p06-m02-record-details-edit / P06-M02-T04 / ADR-0034. User follow-up
+adds branch/agent/FD filters and exact AGENT menu order. All requested changes are
+locally verified; original View/Edit and read-only FD terms are retained. Search/
+Clear applies drafts; FD page resets. Explicit holder branch/assignment/self scope
+prevents searched hidden co-holders from affecting results. No migration or financial
+writes. M1 navigation/security and M5 FD stewardship retained; contribution recorded.
+3,640 distinct tests verified across security/API/DB and corrected E2E runs; final
+70 UI tests, rebuild/restore, type/lint/build and production browser pass. Renderer
+fixture and owner-scope findings resolved. Review/imprint complete; see current-state
+and record-management handoff for receipt/screenshots. All five overview tables
+reviewed, task remains REVIEW. Synthetic localhost preview left running, normal
+viewport restored, console clean. No credentials saved. Local commits authorized;
+no push, PR, merge or deployment. Next: wait for user's #97/#98 merges and incorporate
+actual integration target before publication; do not assume they have merged.
+
+/remember save — 2026-10-11 dashboard follow-up: removed the requested role-access
+caption in app/dashboard/page.tsx. Typecheck/targeted lint pass; review/imprint and
+M1 contribution recorded. Same branch/publication dependency; no credentials saved.

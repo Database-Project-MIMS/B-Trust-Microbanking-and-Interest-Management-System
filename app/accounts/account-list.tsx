@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import type { AccountSearchResult } from "@/services/account-service";
 import { accountRequest } from "./account-client";
 import { displayDate, displayMoney } from "./account-format";
+import { RecordActions } from "@/components/mims/record-actions";
 
-export function AccountList({ canOpen, plans }: { canOpen: boolean; plans: { id: string; name: string }[] }) {
+export function AccountList({ canOpen, canEdit = false, plans }: { canOpen: boolean; canEdit?: boolean; plans: { id: string; name: string }[] }) {
   const [query, setQuery] = useState("page=1");
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<AccountSearchResult | null>(null);
@@ -49,13 +50,14 @@ export function AccountList({ canOpen, plans }: { canOpen: boolean; plans: { id:
     <section aria-busy={loading} aria-label="Account results" className="card mt-6">
       <p role="status">{loading ? "Loading accounts…" : result ? `${result.total} account${result.total === 1 ? "" : "s"} found` : "Search unavailable."}</p>
       {result && <>
-        <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Account</th><th>Primary holder</th><th>Plan</th><th>Opened</th><th className="amount">Balance</th><th>Status</th></tr></thead><tbody>
+        <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Account</th><th>Primary holder</th><th>Plan</th><th>Opened</th><th className="amount">Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody>
           {result.accounts.map(account => <tr key={account.accountId}>
             <td><Link href={`/accounts/${account.accountId}`}>{account.accountNumber}</Link></td>
             <td>{account.primaryHolderName ?? "—"}{account.holderCount > 1 ? ` + ${account.holderCount - 1} joint` : ""}</td>
             <td>{account.planName}</td><td>{displayDate(account.openedDate)}</td>
-            <td className="amount">{displayMoney(account.currentBalance)}</td><td><span className="status-pill">{account.status}</span></td></tr>)}
-          {!result.accounts.length && <tr><td colSpan={6}>No accounts match your search.</td></tr>}
+            <td className="amount">{displayMoney(account.currentBalance)}</td><td><span className="status-pill">{account.status}</span></td>
+            <td><RecordActions href={`/accounts/${account.accountId}`} name={account.accountNumber} canEdit={canEdit && account.status !== "CLOSED"} /></td></tr>)}
+          {!result.accounts.length && <tr><td colSpan={7}>No accounts match your search.</td></tr>}
         </tbody></table></div>
         <div className="flex items-center gap-4 mt-6"><button className="btn btn-secondary" disabled={result.page === 1} onClick={() => changePage(result.page - 1)}>Previous</button>
           <span>Page {result.page}</span><button className="btn btn-secondary" disabled={result.page * result.pageSize >= result.total} onClick={() => changePage(result.page + 1)}>Next</button></div>

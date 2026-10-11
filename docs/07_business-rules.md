@@ -143,6 +143,17 @@ the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
 
+**Record editing (2026-10-11, ADR-0034):** customer contact/name/gender changes
+revalidate the stored actor, enforce branch/current-assignment predicates, lock the
+customer and update with sanitized trigger audit in one transaction. Registration
+identity/birth/branch and financial ownership are excluded by strict server schemas;
+manager email masking prevents email edits by that role. Manager-only account
+status/mandate edits lock the own-branch account before deciding, derive signer counts
+from holders and commit mandate audit with the update. Closed accounts cannot reopen
+through PATCH; closure keeps the existing SQL guard. FD opening terms remain
+read-only, enforced by the unchanged runtime column grants. Detail reads do not post
+money; FD/co-holder scope uses SQL and RLS, never JavaScript filtering.
+
 P02-M02-T05 customer routes authenticate live sessions, enforce route roles and SQL
 branch/assignment/self scope, validate strict fields and verify CSRF for registration.
 The service rechecks stored actor state before setting transaction-local RLS context.
@@ -300,3 +311,15 @@ remains denied; staff continue through the invoker audited-attempt routine.
 The savings rate is the current mutable plan rate, snapshotted for the distribution.
 No effective-dated savings-rate history is invented. Ordinary closure settlement policy
 and live deployment acceptance remain recorded questions, not implicit rule exceptions.
+
+## Scoped record filtering — 2026-10-11 / ADR-0034
+
+Branch/agent/FD filtering is a read operation. API schemas bound text, validate
+status/UUID/page filters and reject unknown keys; services bind all filter values.
+Organization scope remains an independent SQL predicate. FD account/customer RLS
+applies before both count and row results; owner searches additionally enforce
+assignment/self scope explicitly. An
+unassigned or foreign holder cannot become visible through a search or result count.
+Existing transaction/FD immutability rules and management permissions are unchanged.
+Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
+existing runtime RLS; runtime-role API scope and injection regression tests.

@@ -7,6 +7,12 @@
 ---
 
 ## 🗺️ Work Order Summary
+**Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
+agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
+security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production
+browser pass. [Cross-owner receipt](../.agent/handoffs/p06-record-details-edit.md).
+All five summary tables reviewed; no new task acceptance or strikethrough changes.
+Existing stewardship and PR #97/#98 publication dependency remain unchanged.
 
 **PR #97 build correction (2026-10-11):** Next config and Vercel dependency install
 repaired under cross-member authority. [Receipt](../.agent/handoffs/p06-vercel-pr97-build.md).

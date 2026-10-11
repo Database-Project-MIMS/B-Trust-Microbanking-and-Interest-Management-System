@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { SavingsPlan } from "@/services/savings-plan-service";
 import { accountRequest, csrfToken } from "../accounts/account-client";
-import { displayMoney, displayRate, eligibilitySummary } from "../accounts/account-format";
+import { displayDate, displayMoney, displayRate, eligibilitySummary } from "../accounts/account-format";
+import { RecordPreview } from "@/components/mims/record-preview";
 import { trapTab } from "./dialog-focus";
 import { diffDraft, draftFromPlan, validateDraft, type DraftField, type EditDraft } from "./plan-edit-model";
 
@@ -69,7 +70,7 @@ export default function SavingsPlanClient({ initialPlans, canEdit }: SavingsPlan
   return <>
     <section className="card" aria-label="Savings plans">
       <div className="table-wrap"><table className="data-table">
-        <thead><tr><th>Plan</th><th className="amount">Interest rate</th><th className="amount">Minimum balance</th><th>Eligibility</th><th>Status</th>{canEdit && <th><span className="sr-only">Actions</span></th>}</tr></thead>
+        <thead><tr><th>Plan</th><th className="amount">Interest rate</th><th className="amount">Minimum balance</th><th>Eligibility</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           {initialPlans.map(plan => <tr key={plan.planId}>
             <td><strong>{plan.planName}</strong>{plan.description && <div className="muted">{plan.description}</div>}</td>
@@ -77,9 +78,15 @@ export default function SavingsPlanClient({ initialPlans, canEdit }: SavingsPlan
             <td className="amount">{displayMoney(plan.minBalance)}</td>
             <td>{eligibilitySummary(plan)}</td>
             <td><span className="status-pill">{plan.status}</span></td>
-            {canEdit && <td><button className="btn btn-secondary" type="button" aria-label={`Edit ${plan.planName}`} onClick={event => edit(plan, event.currentTarget)}>Edit</button></td>}
+            <td><div className="flex flex-wrap gap-2"><RecordPreview title={plan.planName} items={[
+              { label: "Description", value: plan.description }, { label: "Interest rate", value: displayRate(plan.interestRate) },
+              { label: "Minimum balance", value: displayMoney(plan.minBalance) }, { label: "Minimum age", value: plan.minAgeYears ?? "No lower limit" },
+              { label: "Maximum age", value: plan.maxAgeYears ?? "No upper limit" }, { label: "Minimum holders", value: plan.minHolders },
+              { label: "Maximum holders", value: plan.maxHolders }, { label: "All holders must be adults", value: plan.requiresAllAdult ? "Yes" : "No" },
+              { label: "Status", value: plan.status }, { label: "Created", value: displayDate(String(plan.createdAt)) },
+            ]} />{canEdit && <button className="btn btn-secondary" type="button" aria-label={`Edit ${plan.planName}`} onClick={event => edit(plan, event.currentTarget)}>Edit</button>}</div></td>
           </tr>)}
-          {!initialPlans.length && <tr><td colSpan={canEdit ? 6 : 5}>No savings plans are configured.</td></tr>}
+          {!initialPlans.length && <tr><td colSpan={6}>No savings plans are configured.</td></tr>}
         </tbody>
       </table></div>
     </section>

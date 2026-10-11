@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { RecordActions } from "@/components/mims/record-actions";
+import { RecordListFilters, type RecordFilters } from "@/components/mims/record-list-filters";
 
 type RecordStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+const defaultFilters: RecordFilters = { q: "", status: "ACTIVE", selection: "" };
 
 interface Branch {
   branchId: string;
@@ -92,7 +95,8 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
   const confirmationRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<Array<Branch | Agent>>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "ALL">("ACTIVE");
+  const [draftFilters, setDraftFilters] = useState(defaultFilters);
+  const [filters, setFilters] = useState(defaultFilters);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -109,16 +113,21 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
 
     async function load(): Promise<void> {
       setLoading(true);
       setError(null);
       try {
-        const statusQuery = statusFilter === "ACTIVE" ? "?status=ACTIVE" : "";
-        const requests: Promise<Response>[] = [fetch(`/api/${resource}${statusQuery}`)];
-        if (!isBranch && canManage) requests.push(fetch("/api/branches?status=ACTIVE"));
+        const query = new URLSearchParams();
+        if (filters.status !== "ALL") query.set("status", filters.status);
+        if (filters.q.trim()) query.set("q", filters.q.trim());
+        if (filters.selection) query.set(isBranch ? "district" : "branchId", filters.selection);
+        const requests = [fetch(`/api/${resource}?${query}`, { signal: controller.signal }),
+          fetch("/api/branches", { signal: controller.signal })];
 
         const responses = await Promise.all(requests);
+        if (!active) return;
         if (responses.some((response) => response.status === 401)) {
           router.replace(`/sign-in?next=/${resource}`);
           return;
@@ -139,7 +148,7 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
         if (branchesResponse) {
           if (!branchesResponse.ok) {
             const body = (await branchesResponse.json()) as ApiError;
-            throw new Error(body.error?.message ?? "Active branches could not be loaded.");
+            throw new Error(body.error?.message ?? "Branch filter choices could not be loaded.");
           }
           const body = (await branchesResponse.json()) as { data: Branch[] };
           if (active) {
@@ -147,9 +156,9 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
             setAgentDraft((current) => ({
               ...current,
               branchId:
-                current.branchId && body.data.some((branch) => branch.branchId === current.branchId)
+                current.branchId && body.data.some((branch) => branch.branchId === current.branchId && branch.status === "ACTIVE")
                   ? current.branchId
-                  : body.data[0]?.branchId ?? "",
+                  : body.data.find(branch => branch.status === "ACTIVE")?.branchId ?? "",
             }));
           }
         }
@@ -165,8 +174,14 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
     void load();
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [canManage, isBranch, refreshVersion, resource, router, statusFilter]);
+  }, [isBranch, refreshVersion, resource, router, filters]);
+
+  function clearFilters(): void {
+    setDraftFilters(defaultFilters);
+    setFilters({ ...defaultFilters });
+  }
 
   useEffect(() => {
     if (!pendingDeactivation) return;
@@ -221,7 +236,7 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
       formElement.reset();
       setShowCreateForm(false);
       setNotice(`Branch ${body.branchCode} was created.`);
-      setStatusFilter("ACTIVE");
+      clearFilters();
       setRefreshVersion((value) => value + 1);
     } catch (caught: unknown) {
       setError(caught instanceof Error ? caught.message : "The branch could not be created.");
@@ -246,10 +261,10 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
         const payload = (await response.json()) as ApiError;
         throw new Error(payload.error?.message ?? "The agent could not be created.");
       }
-      setAgentDraft({ ...emptyAgentDraft, branchId: branches[0]?.branchId ?? "" });
+      setAgentDraft({ ...emptyAgentDraft, branchId: branches.find(branch => branch.status === "ACTIVE")?.branchId ?? "" });
       setShowCreateForm(false);
       setNotice(`Agent ${agentDraft.employeeNo} was created.`);
-      setStatusFilter("ACTIVE");
+      clearFilters();
       setRefreshVersion((value) => value + 1);
     } catch (caught: unknown) {
       setError(caught instanceof Error ? caught.message : "The agent could not be created.");
@@ -300,19 +315,20 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
   const branchRows = rows as Branch[];
   const agentRows = rows as Agent[];
   const today = new Date().toISOString().slice(0, 10);
+  const activeBranches = branches.filter(branch => branch.status === "ACTIVE");
+  const filterOptions = isBranch
+    ? [...new Set(branches.map(branch => branch.district))].sort().map(district => ({ value: district, label: district }))
+    : branches.map(branch => ({ value: branch.branchId, label: `${branch.branchCode} — ${branch.branchName}` }));
 
   return (
     <div className="mt-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <label className="field max-w-xs" htmlFor={`${resource}-status-filter`}>
-          Status
-          <select className="input" id={`${resource}-status-filter`} onChange={(event) => setStatusFilter(event.target.value as "ACTIVE" | "ALL")} value={statusFilter}>
-            <option value="ACTIVE">Active only</option>
-            <option value="ALL">All records</option>
-          </select>
-        </label>
         {canManage ? <button className="btn btn-primary" onClick={() => { setShowCreateForm((visible) => !visible); setError(null); setNotice(null); }} type="button">{showCreateForm ? "Close form" : `Create ${isBranch ? "branch" : "agent"}`}</button> : null}
       </div>
+
+      <RecordListFilters resource={resource} searchLabel={isBranch ? "Branch code, name, address or phone" : "Employee number, name, username, email or phone"}
+        selectionLabel={isBranch ? "District" : "Branch"} options={filterOptions} statuses={["ACTIVE", "INACTIVE", "SUSPENDED"]}
+        value={draftFilters} onChange={setDraftFilters} onSearch={() => setFilters({ ...draftFilters, q: draftFilters.q.trim() })} onClear={clearFilters} />
 
       {notice ? <p aria-live="polite" className="rounded-md border border-[var(--credit)] p-3 text-sm text-[var(--credit)]">{notice}</p> : null}
       {error ? <p aria-live="assertive" className="rounded-md border border-[var(--danger)] p-3 text-sm text-[var(--danger)]">{error}</p> : null}
@@ -337,7 +353,7 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
           <section className="form-section" aria-labelledby="agent-access-heading">
             <h2 id="agent-access-heading">Access</h2>
             <div className="two-col">
-              <label className="field" htmlFor="agent-branch">Branch (required)<select className="input" disabled={roleName === "BRANCH_MANAGER"} id="agent-branch" onChange={(event) => updateAgentDraft("branchId", event.target.value)} required value={agentDraft.branchId}><option disabled value="">Select a branch</option>{branches.map((branch) => <option key={branch.branchId} value={branch.branchId}>{branch.branchCode} — {branch.branchName}</option>)}</select></label>
+              <label className="field" htmlFor="agent-branch">Branch (required)<select className="input" disabled={roleName === "BRANCH_MANAGER"} id="agent-branch" onChange={(event) => updateAgentDraft("branchId", event.target.value)} required value={agentDraft.branchId}><option disabled value="">Select a branch</option>{activeBranches.map((branch) => <option key={branch.branchId} value={branch.branchId}>{branch.branchCode} — {branch.branchName}</option>)}</select></label>
               <label className="field" htmlFor="agent-username">Username (required)<input autoComplete="off" className="input" id="agent-username" maxLength={100} minLength={3} onChange={(event) => updateAgentDraft("username", event.target.value)} pattern="[A-Za-z0-9._-]+" required value={agentDraft.username} /></label>
               <label className="field" htmlFor="agent-password">Temporary password (required)<input autoComplete="new-password" className="input" id="agent-password" maxLength={128} minLength={12} onChange={(event) => updateAgentDraft("password", event.target.value)} required type="password" value={agentDraft.password} /><small>Use at least 12 characters.</small></label>
             </div>
@@ -361,19 +377,34 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
             </div>
             <label className="field" htmlFor="agent-address">Address (required)<textarea className="input min-h-24" id="agent-address" maxLength={255} onChange={(event) => updateAgentDraft("address", event.target.value)} required value={agentDraft.address} /></label>
           </section>
-          <div className="flex justify-end gap-3"><button className="btn btn-secondary" disabled={saving} onClick={() => setShowCreateForm(false)} type="button">Cancel</button><button className="btn btn-primary" disabled={saving || branches.length === 0} type="submit">{saving ? "Creating…" : "Create agent"}</button></div>
+          <div className="flex justify-end gap-3"><button className="btn btn-secondary" disabled={saving} onClick={() => setShowCreateForm(false)} type="button">Cancel</button><button className="btn btn-primary" disabled={saving || activeBranches.length === 0} type="submit">{saving ? "Creating…" : "Create agent"}</button></div>
         </form>
       ) : null}
 
-      {loading ? <p className="text-sm text-[var(--text-muted)]">Loading {resource}…</p> : (
+      {loading ? <p className="text-sm text-[var(--text-muted)]" role="status">Loading {resource}…</p> : error ?
+        <button className="btn btn-secondary" onClick={() => setRefreshVersion(value => value + 1)} type="button">Retry loading {resource}</button> : (
+        <section className="space-y-3"><p role="status">{rows.length} {resource} found</p>
         <div className="overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)]">
           <table className="data-table min-w-[760px]">
-            <thead><tr>{isBranch ? <><th>Code</th><th>Branch</th><th>District</th><th>Phone</th></> : <><th>Employee no.</th><th>Agent</th><th>Branch</th><th>Phone</th></>}<th>Status</th>{canManage ? <th className="text-right">Actions</th> : null}</tr></thead>
+            <thead><tr>{isBranch ? <><th>Code</th><th>Branch</th><th>District</th><th>Phone</th></> : <><th>Employee no.</th><th>Agent</th><th>Branch</th><th>Phone</th></>}<th>Status</th><th>Actions</th></tr></thead>
             <tbody>
-              {isBranch ? branchRows.length ? branchRows.map((row) => <tr key={row.branchId}><td className="font-mono text-sm">{row.branchCode}</td><td className="font-medium">{row.branchName}</td><td>{row.district}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>{canManage ? <td className="text-right">{row.status === "ACTIVE" ? <button className="text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button> : <span className="text-[var(--text-muted)]">—</span>}</td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={canManage ? 6 : 5}>No branches match this status filter.</td></tr> : agentRows.length ? agentRows.map((row) => <tr key={row.agentId}><td className="font-mono text-sm">{row.employeeNo}</td><td><Link className="font-medium text-[var(--primary)] underline" href={`/agents/${row.agentId}/activity`} aria-label={`Daily activity for ${row.fullName}`}>{row.fullName}</Link><span className="block text-xs text-[var(--text-muted)]">{row.email}</span></td><td>{row.branchCode} — {row.branchName}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>{canManage ? <td className="text-right">{row.status === "ACTIVE" ? <button className="text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button> : <span className="text-[var(--text-muted)]">—</span>}</td> : null}</tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={canManage ? 6 : 5}>No agents match this status filter.</td></tr>}
+              {isBranch ? branchRows.length ? branchRows.map(row => <tr key={row.branchId}>
+                <td className="font-mono text-sm">{row.branchCode}</td><td className="font-medium"><Link href={`/branches/${row.branchId}`}>{row.branchName}</Link></td>
+                <td>{row.district}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>
+                <td><RecordActions href={`/branches/${row.branchId}`} name={row.branchName} canEdit={canManage} />
+                  {canManage && row.status === "ACTIVE" && <button className="mt-2 text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button>}</td>
+              </tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={6}>No branches match these filters.</td></tr> :
+                agentRows.length ? agentRows.map(row => <tr key={row.agentId}>
+                  <td className="font-mono text-sm">{row.employeeNo}</td><td><Link className="font-medium text-[var(--primary)] underline" href={`/agents/${row.agentId}`}>{row.fullName}</Link><span className="block text-xs text-[var(--text-muted)]">{row.email}</span></td>
+                  <td>{row.branchCode} — {row.branchName}</td><td>{row.phone}</td><td><span className={statusClass(row.status)}>{row.status}</span></td>
+                  <td><RecordActions href={`/agents/${row.agentId}`} name={row.fullName} canEdit={canManage} />
+                    <Link className="mt-2 block text-[var(--primary)] underline" href={`/agents/${row.agentId}/activity`} aria-label={`Daily activity for ${row.fullName}`}>Daily activity</Link>
+                    {canManage && row.status === "ACTIVE" && <button className="mt-2 text-[var(--danger)] underline" onClick={() => setPendingDeactivation(row)} type="button">Deactivate</button>}</td>
+                </tr>) : <tr><td className="py-8 text-center text-[var(--text-muted)]" colSpan={6}>No agents match these filters.</td></tr>}
             </tbody>
           </table>
         </div>
+        </section>
       )}
 
       {pendingDeactivation ? <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4" role="presentation"><div aria-describedby="deactivate-description" aria-labelledby="deactivate-title" aria-modal="true" className="card w-full max-w-md" ref={confirmationRef} role="dialog" tabIndex={-1}><h2 id="deactivate-title">Confirm deactivation</h2><p className="mt-3 text-sm text-[var(--text-muted)]" id="deactivate-description">Deactivate <strong>{isBranch ? (pendingDeactivation as Branch).branchName : (pendingDeactivation as Agent).fullName}</strong>? The record will remain in history and will not be deleted.</p><div className="mt-6 flex justify-end gap-3"><button className="btn btn-secondary" disabled={saving} onClick={() => setPendingDeactivation(null)} type="button">Cancel</button><button className="btn btn-primary" disabled={saving} onClick={confirmDeactivation} type="button">{saving ? "Deactivating…" : "Confirm deactivation"}</button></div></div></div> : null}

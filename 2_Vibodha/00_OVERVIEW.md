@@ -2,7 +2,7 @@
 
 **Name:** Herath H.M.V.L · **Index:** 240225J
 **Domain Slice:** Organisation & Customers
-**Total Story Points:** ~58 · **Total Tasks:** 19 across 6 phases, including the user-requested customer follow-up
+**Total Story Points:** ~58 plus scoped enhancements · **Total Tasks:** 20 across 6 phases, including customer and record-management follow-ups
 
 Full slice description and copy-paste session prompt: `../docs/member-prompts/member-2.md`
 Running session log (updated via `/remember save`): `../.agent/members/member-2.md`
@@ -10,6 +10,23 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 ---
 
 ## 🗺️ Work Order Summary
+**Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
+agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
+security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production
+browser pass. [Cross-owner receipt](../.agent/handoffs/p06-record-details-edit.md).
+All five summary tables reviewed; no new task acceptance or strikethrough changes.
+Existing stewardship and PR #97/#98 publication dependency remain unchanged.
+
+**Record management (2026-10-11):** P06-M02-T04 implements explicit View/Edit
+actions, full scoped record details, permitted customer/account changes and linked FD
+account/owner details. FD opening terms remain read-only. Original M1/M3/M5
+stewardship remains; [handoff](../.agent/handoffs/p06-record-details-edit.md).
+All five member work-order tables reviewed; existing acceptance statuses remain.
+Local commits authorized; new PR waits for the user's merges of #97 and #98.
+~~P06-M02-T04 — record details and permitted editing~~ is locally verified REVIEW:
+3,584 full checks/120 suites, final 361 API checks/33 suites, clean 70-migration
+rebuild/restore, typecheck/lint/build and disposable production browser checks pass.
+No other task newly reaches acceptance; their summary rows stay unchanged.
 
 **PR #98 build dependency (2026-10-11):** Current customer branch now includes
 PR #97's verified build/menu corrections via local cherry-picks.
