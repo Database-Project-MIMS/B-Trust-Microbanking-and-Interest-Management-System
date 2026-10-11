@@ -1,5 +1,20 @@
 # Memory — predeployment local completion
 
+## PR #97 Vercel build supplement — 2026-10-11
+
+Branch `feat/p06-m02-live-audit-fixes`; prior head `5253f6d`. The user reported
+missing TypeScript while loading next.config.ts. TS was already declared/locked;
+dev omission is the supported diagnosis, dashboard settings were not inspected.
+Use next.config.mjs and vercel.json with npm ci --include=dev / npm run build.
+ADR-0032, docs/24 and PR97 build handoff record decisions, cross-owner contribution
+and review. Existing ownership, dependency versions, CSP and finances are preserved.
+11 deployment/CSP tests, typecheck/lint, fresh production/omit-dev install and build,
+Argon2 and production sign-in/header/nonces smoke pass. Local host Windows/Node24,
+not the Node22/Vercel hosted environment. Server stopped; no live DB touched.
+Earlier local commit authority persists; no push, new PR or hosted deployment.
+Next: user publishes the correction to existing PR97, then redeploys that commit
+and verifies its Vercel log/live acceptance. Previous memory below is preserved.
+
 ## Neon CI correction — 2026-10-10
 
 User supplied PR #94/run 38033232178 log: 1,169 API/DB/e2e passes, one RPT-01

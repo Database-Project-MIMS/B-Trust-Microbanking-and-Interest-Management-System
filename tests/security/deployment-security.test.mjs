@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { checkDeploymentEnvironment } from '../../scripts/check-deployment-security.mjs';
-import nextConfig from '../../next.config.ts';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import nextConfig from '../../next.config.mjs';
 
 const valid = {
   NODE_ENV: 'production',
@@ -13,6 +18,54 @@ const valid = {
 };
 
 describe('P06-M01-T04 deployment environment', () => {
+  test('Next loads production, development and Docker config without TypeScript', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'mims-next-config-'));
+    const require = createRequire(import.meta.url);
+    const loader = require.resolve('next/dist/server/config');
+    // Use Next's real loader in a fresh process and deny compiler resolution,
+    // reproducing a runtime that has omitted development dependencies.
+    const script = `
+      const Module = require('node:module');
+      const resolve = Module._resolveFilename;
+      Module._resolveFilename = function (name, ...args) {
+        if (name === 'typescript' || name.startsWith('typescript/')) {
+          throw Object.assign(new Error('TypeScript is absent'), { code: 'MODULE_NOT_FOUND' });
+        }
+        return resolve.call(this, name, ...args);
+      };
+      (async () => {
+        const loadConfig = require(${JSON.stringify(loader)}).default;
+        const config = await loadConfig('phase-production-build', process.cwd());
+        console.log(JSON.stringify({
+          distDir: config.distDir, output: config.output,
+          external: config.serverExternalPackages, headers: await config.headers(),
+        }));
+      })().catch(error => { console.error(error); process.exitCode = 1; });
+    `;
+    try {
+      copyFileSync(new URL('../../next.config.mjs', import.meta.url), join(directory, 'next.config.mjs'));
+      for (const [mode, standalone, expectedDirectory] of [
+        ['production', '', '.next'], ['development', '', '.next-dev'], ['production', '1', '.next'],
+      ]) {
+        const result = spawnSync(process.execPath, ['-e', script], {
+          cwd: directory, encoding: 'utf8', timeout: 30_000,
+          env: { ...process.env, NODE_ENV: mode, MIMS_STANDALONE: standalone, NEXT_TELEMETRY_DISABLED: '1' },
+        });
+        assert.equal(result.status, 0, result.error?.message ?? result.stderr);
+        const config = JSON.parse(result.stdout.trim());
+        assert.equal(config.distDir, expectedDirectory);
+        assert.equal(config.output, standalone ? 'standalone' : undefined);
+        assert.deepEqual(config.external, ['pg', 'argon2']);
+        const headers = Object.fromEntries(config.headers[0].headers.map(({ key, value }) => [key, value]));
+        assert.equal(headers['X-Frame-Options'], 'DENY');
+        assert.equal(headers['Strict-Transport-Security'], mode === 'production' ? 'max-age=31536000' : undefined);
+      }
+    } finally {
+      assert.equal(dirname(resolve(directory)), resolve(tmpdir()));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   test('accepts a separate least-privilege runtime configuration', () => {
     assert.deepEqual(checkDeploymentEnvironment(valid), []);
   });

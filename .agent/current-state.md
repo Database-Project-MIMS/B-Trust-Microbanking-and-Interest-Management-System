@@ -1,5 +1,19 @@
 # Current state — live audit corrections
 
+## PR #97 Vercel build correction — 2026-10-11
+
+Current branch remains `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
+failed loading the TS config; its database/application CI passed at `5253f6d`.
+ADR-0032 introduces compiler-independent `next.config.mjs` and explicit locked
+Vercel build dependencies (`npm ci --include=dev`, `npm run build`). Dependency
+versions, database/financial behavior, CSP and stewardship remain unchanged.
+Docs/24 and [handoff](handoffs/p06-vercel-pr97-build.md) record recovery/review.
+Clean production/omit-dev install, build, typecheck/lint, 11 regression tests,
+Argon2 smoke and production sign-in/security-header/nonces checks pass locally.
+Host Node 24/npm 11; pinned Node 22/Vercel rerun pending publication. The temporary
+server is stopped. Local commit authority persists; no push/new PR/deployment.
+P06-M01-T04 remains IN_PROGRESS with the previous live acceptance limits.
+
 ## Local fixes verified — 2026-10-10
 
 User requested a new branch and audit fixes, then explicitly authorized cross-owner
