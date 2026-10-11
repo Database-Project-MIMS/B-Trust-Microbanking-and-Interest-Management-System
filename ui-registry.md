@@ -448,7 +448,7 @@ Report metadata explicitly labels absent date bounds rather than rendering a bar
 ## Customer registration and details imprint — 2026-10-11
 
 Files: `app/customers/new/customer-registration.tsx`, `app/customers/customer-list.tsx`,
-`app/customers/[id]/customer-profile.tsx`. Captured via /imprint for ADR-0032.
+`app/customers/[id]/customer-profile.tsx`. Captured via /imprint for ADR-0033.
 
 | Property | Existing pattern |
 | --- | --- |

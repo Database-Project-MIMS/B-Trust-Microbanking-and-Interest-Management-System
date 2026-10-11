@@ -6,7 +6,7 @@ User requested a new branch, Male/Female registration dropdown, customer email/N
 visibility for the agent and View details navigation, with a few local commits and
 no push/PR. The user clarified these are customer fields, not agent contact data.
 Branch: `feat/p02-m02-customer-details`, based on the prior verified local checkout.
-ADR-0032 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
+ADR-0033 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
 Full fields are returned only within the existing current-assignment/branch scope;
 manager and audit masking remain. Server validation checks optional MALE/FEMALE;
 no migration or financial rule change. Registry/contracts and M2 overview updated.

@@ -11,14 +11,6 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
-**Customer follow-up (2026-10-11):** ~~P02-M02-T06 — Male/Female dropdown,
-assigned-agent full customer NIC/email and explicit View details~~ is locally verified,
-REVIEW pending publication. [Handoff](../.agent/handoffs/p02-m02-customer-details.md).
-3,417 tests/117 suites, clean 70-migration rebuild/typecheck/lint/build and production
-browser registration/details/mobile checks pass. All five overview tables reviewed;
-no other tasks newly complete. Branch `feat/p02-m02-customer-details`; local commits
-authorized, no push/PR/deployment.
-
 **Neon CI correction (2026-10-10):** Fresh-checkout explain-output directory
 fixed for PR #94. [Receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
 No new task acceptance or strikethrough changes; prior overview review retained.
@@ -86,6 +78,14 @@ QA pass. /review and /imprint complete. General Phase 3 entry remains pending.
 | ~~08~~ | ~~[Customer↔FD Linkage & Branch Scope](08_P4_customer-fd-linkage.md)~~ | ~~P4~~ | ~~T01~~ DONE (PR #60); ~~T02~~ DONE (PR #62) | ~~FD listing and direct-read actor guard merged~~ | ~~5~~ |
 | ~~09~~ | ~~[RPT-01 Agent Transactions Report](09_P5_rpt01-report.md)~~ | ~~P5~~ | ~~T01~~ DONE (PR #67); ~~T02~~ DONE (PR #74) | ~~Scoped report API/page, SQL totals and snapshot CSV/audit merged; integration failures recorded~~ | ~~7~~ |
 | ~~10~~ | ~~[Final Testing, Seed Validation & Docs](10_P6_final-testing-docs.md)~~ | ~~P6~~ | ~~T01 DONE; T02 DONE (PR #90); T03 REVIEW (ADR-0026)~~ | ~~Seed/integrity merged; final docs and dependency repairs locally verified~~ | ~~~6~~ |
+
+**Customer follow-up (2026-10-11):** ~~P02-M02-T06 — Male/Female dropdown,
+assigned-agent full customer NIC/email and explicit View details~~ is locally verified,
+REVIEW pending publication. [Handoff](../.agent/handoffs/p02-m02-customer-details.md).
+3,417 tests/117 suites, clean 70-migration rebuild/typecheck/lint/build and production
+browser registration/details/mobile checks pass. All five overview tables reviewed;
+no other tasks newly complete. Branch `feat/p02-m02-customer-details`; local commits
+authorized, no push/PR/deployment.
 
 ---
 

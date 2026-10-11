@@ -1,4 +1,4 @@
-# ADR-0032 — Customer registration and assigned-agent details
+# ADR-0033 — Customer registration and assigned-agent details
 
 Date: 2026-10-11. Status: accepted for local implementation by the user's request.
 Task: P02-M02-T06, a scoped follow-up to completed P02-M02-T05.

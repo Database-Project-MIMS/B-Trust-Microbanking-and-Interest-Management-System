@@ -514,7 +514,7 @@ configuration and pinned-runtime verification are unavailable here. Production d
 audit is zero; seven build-tool glob/braces advisory entries have no compatible patched
 release in the registry checked on this date. Full detail/evidence is in docs/21.
 
-## Resolved customer masking clarification — 2026-10-11 / ADR-0032
+## Resolved customer masking clarification — 2026-10-11 / ADR-0033
 
 User explicitly clarified that agents must see the customer's full email and NIC/passport
 number. Earlier blanket branch-staff response masking in docs/04, docs/05 and docs/07

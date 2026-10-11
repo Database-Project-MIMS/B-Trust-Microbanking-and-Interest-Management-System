@@ -3,7 +3,7 @@
 **Customer follow-up — 2026-10-11:** P02-M02-T06 is locally verified on
 `feat/p02-m02-customer-details`: Male/Female registration selection, full customer
 NIC/email for the current assigned agent and View details navigation.
-See [ADR-0032](../.agent/decisions/ADR-0032-customer-details.md) and
+See [ADR-0033](../.agent/decisions/ADR-0033-customer-details.md) and
 [verification handoff](../.agent/handoffs/p02-m02-customer-details.md).
 Local commits authorized; no push/PR/deployment. Current tracker: 98 tasks,
 86 DONE, 11 REVIEW, one IN_PROGRESS. Earlier closeout notes below are historical.

@@ -146,7 +146,7 @@ still needed for previously unattributed postings; no historical backfill is inf
 - **Errors** `400` invalid JSON/strict fields; `401` invalid session; `403` role/branch/assignment/CSRF denied; `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`; safe `500` for unexpected failures
 - **Page** `/customers/new`
 
-| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; assigned AGENT receives full NIC/email, BRANCH_MANAGER receives masked fields (ADR-0032, FR-CUS-04); fixed sort-column allow-list |
+| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; assigned AGENT receives full NIC/email, BRANCH_MANAGER receives masked fields (ADR-0033, FR-CUS-04); fixed sort-column allow-list |
 | `GET /api/customers/{id}` | Profile with accounts and assignment history | as above; CUSTOMER for self only | RLS enforces self-access |
 
 Search query keys: `q`, `name`, `nicPassportNo`, `branchId`, `agentId`, `status`,
@@ -200,7 +200,7 @@ restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/A
 are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
 Assigned AGENT readers receive full NIC/email only after branch/current-assignment SQL
 checks; BRANCH_MANAGER readers retain masked NIC/email. Bankwide readers and the
-linked customer retain their existing full-field access (ADR-0032). Documents omit paths. Profiles include all assignment
+linked customer retain their existing full-field access (ADR-0033). Documents omit paths. Profiles include all assignment
 history. The merged M3 account_holder relation supplies account links (empty array when
 none exist), with account branch scope and string balances. The null fallback is retained
 for incomplete schemas. Reads use repeatable-read transactions; `setRlsContext` supplies

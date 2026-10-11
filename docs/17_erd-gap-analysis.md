@@ -885,7 +885,7 @@ minimum-bearing plan needs a separately approved final settlement flow. Do not w
 ordinary minimum rule or forfeit accrued interest silently. Lecturer acceptance of the
 accepted extensions, live HTTPS and target-runtime verification remain external gates.
 
-## Customer response policy reconciliation — 2026-10-11 / ADR-0032
+## Customer response policy reconciliation — 2026-10-11 / ADR-0033
 
 Earlier docs/04, docs/05 and docs/07 described masking NIC/email for all branch staff.
 The user explicitly authorized full customer fields for the currently assigned agent.

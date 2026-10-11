@@ -20,7 +20,7 @@ Duplicate normalized identity/email returns a safe 409. ADR-0014 numbering is re
 
 GET /api/customers accepts name/NIC/general query, branch, agent, status, allow-listed
 sort/direction and pagination. BRANCH_MANAGER receives masked NIC/email; AGENT reads
-full fields only for current assigned customers (ADR-0032, 2026-10-11).
+full fields only for current assigned customers (ADR-0033, 2026-10-11).
 CENTRAL_OPS/AUDITOR are bank-wide readers.
 GET /api/customers/{id} returns identity, all assignment history, safe document metadata
 and real account_holder links; CUSTOMER may read its optional-login-linked profile only.
