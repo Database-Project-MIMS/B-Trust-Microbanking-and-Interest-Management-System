@@ -26,6 +26,11 @@ const navigation = [
   { href: "/admin/health", label: "Health", roles: ["ADMIN", "CENTRAL_OPS"] },
 ];
 
+const agentNavigationOrder = [
+  "/dashboard", "/transactions/withdraw", "/transactions/deposit", "/transactions/transfer",
+  "/customers", "/accounts", "/plans", "/fixed-deposits",
+];
+
 function csrfToken(): string {
   const cookie = document.cookie.split("; ").find((value) => value.startsWith("mims_csrf="));
   return cookie?.split("=")[1] ?? "";
@@ -39,6 +44,9 @@ export function TopBar({ session }: TopBarProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [logoutError, setLogoutError] = useState(false);
   const visibleNavigation = navigation.filter((item) => item.roles.includes(session.roleName));
+  if (session.roleName === "AGENT") {
+    visibleNavigation.sort((left, right) => agentNavigationOrder.indexOf(left.href) - agentNavigationOrder.indexOf(right.href));
+  }
 
   async function signOut(): Promise<void> {
     setIsSigningOut(true);

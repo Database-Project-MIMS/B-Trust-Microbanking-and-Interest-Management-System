@@ -8,7 +8,8 @@ export async function GET(request:NextRequest):Promise<Response>{
   try{
     const user=await requireUser(request);
     requireRole(user,'AGENT','BRANCH_MANAGER','CENTRAL_OPS','AUDITOR','CUSTOMER');
-    return NextResponse.json({data:await listFixedDeposits(Object.fromEntries(request.nextUrl.searchParams),user)});
+    return NextResponse.json({data:await listFixedDeposits(Object.fromEntries(request.nextUrl.searchParams),user)},
+      {headers:{'Cache-Control':'private, no-store'}});
   }catch(error){return errorResponse(error);}
 }
 export async function POST(request:NextRequest):Promise<Response>{

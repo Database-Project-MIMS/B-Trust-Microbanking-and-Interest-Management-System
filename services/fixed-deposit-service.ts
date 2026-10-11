@@ -90,12 +90,22 @@ export async function listFixedDeposits(input:unknown,user:AuthenticatedUser) {
   role(user,['AGENT','BRANCH_MANAGER','CENTRAL_OPS','AUDITOR','CUSTOMER']);
   const filters=fdListSchema.parse(input);
   return withTransaction(async tx=>{
+    await tx.query('SET TRANSACTION READ ONLY');
     await setRlsContext(tx,user);
-    const values=[filters.accountId ?? null,filters.status ?? null];
-    const where='WHERE ($1::uuid IS NULL OR fd.account_id=$1) AND ($2::text IS NULL OR fd.status=$2)';
+    const values=[filters.accountId ?? null,filters.status ?? null,filters.fdPlanId ?? null,filters.q ?? null,
+      user.branchId,user.roleName,user.userId];
+    const where=`WHERE ($1::uuid IS NULL OR fd.account_id=$1) AND ($2::text IS NULL OR fd.status=$2)
+      AND ($3::uuid IS NULL OR fd.fd_plan_id=$3)
+      AND ($4::text IS NULL OR strpos(lower(a.account_number),lower($4)) > 0 OR EXISTS (
+        SELECT 1 FROM account_holder h JOIN customer c ON c.customer_id=h.customer_id
+        WHERE h.account_id=a.account_id AND strpos(lower(concat_ws(' ',c.full_name,c.customer_number)),lower($4)) > 0
+        AND ($5::uuid IS NULL OR c.branch_id=$5)
+        AND ($6::text <> 'AGENT' OR EXISTS (SELECT 1 FROM customer_agent ca
+          WHERE ca.customer_id=c.customer_id AND ca.agent_id=$7 AND ca.is_active))
+        AND ($6::text <> 'CUSTOMER' OR c.app_user_id=$7)))`;
     const total=(await tx.query(`SELECT count(*)::int AS n ${joins} ${where}`,values)).rows[0].n;
     const rows=(await tx.query<FixedDepositRow>(`SELECT ${columns} ${joins} ${where}
-      ORDER BY fd.start_date DESC,fd.fd_id LIMIT $3 OFFSET $4`,[...values,filters.pageSize,(filters.page-1)*filters.pageSize])).rows;
+      ORDER BY fd.start_date DESC,fd.fd_id LIMIT $8 OFFSET $9`,[...values,filters.pageSize,(filters.page-1)*filters.pageSize])).rows;
     return {rows,totalRows:total,page:filters.page,pageSize:filters.pageSize};
   },{isolationLevel:'REPEATABLE READ'});
 }

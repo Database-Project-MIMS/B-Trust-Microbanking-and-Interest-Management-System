@@ -62,6 +62,7 @@ export async function getBranch(branchId: string, scopeBranchId: string | null):
 export async function listBranches(
   scopeBranchId: string | null,
   status?: RecordStatus,
+  filters: { q?: string; district?: string } = {},
 ): Promise<Branch[]> {
   const rows = await query<BranchRow>(
     `SELECT branch_id, branch_code, branch_name, address, district, phone,
@@ -69,8 +70,10 @@ export async function listBranches(
        FROM branch
       WHERE ($1::uuid IS NULL OR branch_id = $1::uuid)
         AND ($2::text IS NULL OR status::text = $2::text)
+        AND ($3::text IS NULL OR strpos(lower(concat_ws(' ', branch_code, branch_name, address, phone)), lower($3)) > 0)
+        AND ($4::text IS NULL OR lower(district) = lower($4))
       ORDER BY branch_code`,
-    [scopeBranchId, status ?? null],
+    [scopeBranchId, status ?? null, filters.q ?? null, filters.district ?? null],
   );
 
   return rows.map(mapBranch);

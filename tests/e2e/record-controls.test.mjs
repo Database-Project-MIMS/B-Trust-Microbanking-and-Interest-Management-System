@@ -26,4 +26,19 @@ describe('P06-M02-T04: accessible record controls and reference details', () => 
     assert.match(output.plan, /View details for Joint/); assert.match(output.plan, /Maximum holders/); assert.match(output.plan, /All holders must be adults/);
     assert.doesNotMatch(output.plan, />Edit<\/button>/);
   });
+  test('list filters label native controls and separate applying drafts from clearing filters', () => {
+    assert.match(output.filters, /aria-label="Filter agents"/);
+    assert.match(output.filters, /type="search"/); assert.match(output.filters, /maxLength="150"/);
+    assert.match(output.filters, /value="ACTIVE" selected=""/);
+    assert.match(output.filters, /All branches/); assert.match(output.filters, /Permitted branch/);
+    assert.match(output.filters, /type="submit">Search agents/);
+    assert.match(output.filters, /type="button">Clear filters/);
+  });
+  test('agent menu follows the requested order without granting extra links or changing other roles', () => {
+    const links = role => [...output.navigation[role].match(/<nav[^>]*>(.*?)<\/nav>/)[1].matchAll(/href="([^"]+)"/g)].map(match => match[1]);
+    assert.deepEqual(links('AGENT'), ['/dashboard', '/transactions/withdraw', '/transactions/deposit', '/transactions/transfer',
+      '/customers', '/accounts', '/plans', '/fixed-deposits']);
+    assert.deepEqual(links('CUSTOMER'), ['/dashboard', '/my/accounts', '/transactions/withdraw', '/fixed-deposits']);
+    assert.ok(links('BRANCH_MANAGER').indexOf('/transactions/deposit') > links('BRANCH_MANAGER').indexOf('/accounts'));
+  });
 });
