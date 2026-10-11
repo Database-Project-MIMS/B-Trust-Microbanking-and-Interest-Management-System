@@ -166,3 +166,20 @@ viewport restored and disposable previews stopped; existing databases preserved.
 Review/imprint/state/tracker/overview updated. Tracker: 99 tasks, 86 DONE, 12 REVIEW,
 one IN_PROGRESS. Next: after #97/#98 merge, incorporate actual integration target
 and verify combined tree before authorized publication. General phase/live gates remain.
+
+## /remember save — record filters and agent navigation, 2026-10-11
+
+Continue feat/p06-m02-record-details-edit / P06-M02-T04 / ADR-0034. User follow-up
+adds branch/agent/FD filters and exact AGENT menu order. All requested changes are
+locally verified; original View/Edit and read-only FD terms are retained. Search/
+Clear applies drafts; FD page resets. Explicit holder branch/assignment/self scope
+prevents searched hidden co-holders from affecting results. No migration or financial
+writes. M1 navigation/security and M5 FD stewardship retained; contribution recorded.
+3,640 distinct tests verified across security/API/DB and corrected E2E runs; final
+70 UI tests, rebuild/restore, type/lint/build and production browser pass. Renderer
+fixture and owner-scope findings resolved. Review/imprint complete; see current-state
+and record-management handoff for receipt/screenshots. All five overview tables
+reviewed, task remains REVIEW. Synthetic localhost preview left running, normal
+viewport restored, console clean. No credentials saved. Local commits authorized;
+no push, PR, merge or deployment. Next: wait for user's #97/#98 merges and incorporate
+actual integration target before publication; do not assume they have merged.

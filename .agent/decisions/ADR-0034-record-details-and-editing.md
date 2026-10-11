@@ -33,3 +33,18 @@ This scoped task is assigned to M2 IN_PROGRESS; cross-owner contributions to M3/
 pages/services and M1's security contract are necessary for the explicit request.
 Original stewardship and general phase gates remain unchanged. Handoff records
 the affected owners. REVIEW follows local verification, pending publication/review.
+
+## User follow-up — filters and agent navigation
+
+The user adds filtering for branches, agents and fixed deposits, and specifies the
+agent menu order: Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
+Savings plans, Fixed deposits. Continue the same task/branch. Branch filters combine
+literal text search, district and status; agent filters combine literal search, permitted
+branch and status; FD filters combine account/visible-owner search, product and status.
+Search applies draft fields, Clear filters restores defaults, FD searches reset pagination.
+Filtering belongs in validated parameterized SQL with existing scope/RLS, including
+owner-name searches. Filter choices come from permitted branches and the existing product
+catalogue, including historical products. No migration or financial writes. Preserve the
+list response shape and existing service callers. M1 retains shared navigation/security
+ownership; the explicit request authorizes this contribution. Verify API negative/scoped
+cases, rendered filters and role-specific menu ordering, then production browser/review.

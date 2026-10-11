@@ -631,3 +631,30 @@ FD opening selection now searches/paginates instead of stopping at 100 accounts.
 Audit filters use `actorId` (not userId), explicit Colombo timestamps and bounded pages;
 unknown/repeated filters fail `400`. Protected pages authorize on the server as well as APIs.
 Reset tokens travel in a URL fragment and are removed from the address bar on capture.
+
+## Organization and fixed-deposit filters — 2026-10-11 / ADR-0034
+
+List responses retain their existing shapes and permissions; all three are private,
+no-store. Optional filters combine with AND and with the caller's existing SQL scope.
+
+| Endpoint | Additional filters | Search fields |
+|---|---|---|
+| `GET /api/branches` | `q` (1–150 chars), `district` (1–100 chars), existing `status` | Branch code/name/address/phone |
+| `GET /api/agents` | `q` (1–150 chars), `branchId` (UUID), existing `status` | Employee number/name/username/email/phone |
+| `GET /api/fixed-deposits` | `q` (1–150 chars), `fdPlanId` (UUID), existing account/status/page/pageSize | Account number and permitted holder name/customer number |
+
+Text searches are case-insensitive literal substrings: `%` and `_` have no wildcard
+meaning. District matches case-insensitively. Organization statuses remain ACTIVE,
+INACTIVE and SUSPENDED; FD statuses remain ACTIVE, MATURED and CLOSED. Invalid
+filters return 400. A valid foreign branch/product selection cannot widen scope.
+FD count and rows share the same repeatable-read snapshot and predicates; owner
+searches use an EXISTS subquery with customer RLS and explicit assignment/self scope, preventing hidden co-holder
+names from affecting matches or duplicating rows. No financial operation or migration.
+
+Native Search/Clear forms apply drafts explicitly. Organization defaults to ACTIVE;
+FD defaults to all statuses, and Search/Clear reset its page to 1. District/branch
+choices come from permitted branches, including inactive history; creation still
+allows active branches only. FD product choices include historical catalogue entries.
+Errors offer Retry and stale requests are cancelled. Agent navigation, on desktop
+and mobile, is Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
+Savings plans, Fixed deposits. Other role menus retain their ordering and permissions.

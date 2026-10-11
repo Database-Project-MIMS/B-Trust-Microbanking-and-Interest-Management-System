@@ -101,3 +101,68 @@ numbers: none; existing constraints, grants, RLS and audits reused. Backend: sco
 organization/FD GETs, validated customer/account PATCH and transactional audit.
 Frontend: explicit actions, full details, guarded forms and FD owner/account links.
 Tests/screenshots: final receipt below. Dependencies: merged #97/#98 and peer review.
+
+## Filter/navigation follow-up — 2026-10-11
+
+The user adds branch, agent and fixed-deposit filters and specifies the AGENT menu
+order. M2 owns this follow-up to P06-M02-T04; M1 retains TopBar/security stewardship,
+M5 retains FD listing/schema/service/page stewardship. Existing master-data and
+financial mutation interfaces remain unchanged. No migration or new dependencies.
+
+New shared RecordListFilters applies drafts through Search and restores defaults
+through Clear. Organization SQL combines q, status and district/branch with existing
+scope. FD SQL combines q, fdPlanId and existing filters, sharing predicates/count
+in a read-only repeatable-read transaction. Holder-name matching explicitly enforces
+branch, agent assignment and linked customer self scope alongside existing RLS.
+This closes the co-holder search-count exposure caught by the negative API test.
+Filter choices include permitted inactive branches and historical FD products;
+agent creation continues to select only active branches. FD Search/Clear resets page.
+
+Touched M1 paths: components/app-shell/top-bar.tsx, tests/helpers/security-routes.mjs,
+docs/19_implemented-api-matrix.md. Touched M5 paths: app/fixed-deposits/{page,fd-list}.tsx,
+app/api/fixed-deposits/route.ts, services/fixed-deposit-service.ts and
+lib/validation/fixed-deposit.ts. M2 interfaces remain backward compatible;
+list APIs preserve response shapes and optional existing service arguments.
+
+Focused rerun: 367 API tests/34 suites pass, zero failures/cancellations/skips.
+Rendered controls: 5 tests pass, including exact AGENT ordering and preserved
+CUSTOMER/BRANCH_MANAGER menus. Full receipt and browser evidence follow after QA.
+
+### Final filter/navigation verification and /review
+
+All 3,640 distinct checks are verified across runs: 2,440 security checks, 1,130
+API/DB checks and the corrected 70-test E2E suite. The initial combined run had
+four UI cancellations because the old FD renderer omitted the new products prop;
+its fixture was updated, the focused four tests passed, then all 70 E2E tests/14
+suites passed with no failures/cancellations/skips. Final disposable verification
+also passes the 70-migration rebuild/checksum/reseed/28-table restore, typecheck,
+ESLint and optimized production build. Logs (ignored): record-filters-verification.log,
+record-filters-api.log and record-filters-ui-build.log under test-results.
+
+Production browser: branch drafts apply on Search; unmatched district/text and
+Clear verified; agent identity/branch/status combinations and active-default Clear
+verified with only permitted branch choices; FD account/product/status intersection,
+owner search, empty products and all-status Clear verified. AGENT menu order is
+exact on desktop and mobile. Page scrollWidth equals clientWidth at the mobile
+breakpoint. Console has no errors/warnings; viewport restored. Fresh synthetic
+preview remains running for the user; no existing developer/hosted database changed.
+Screenshots (ignored): record-filters-branches.jpg, record-filters-agents.jpg,
+record-filters-agent-menu.jpg, record-filters-mobile-menu.jpg, record-filters-mobile.jpg.
+
+/review: all three layers PASS. Plan covers all requested filters/order; SQL remains
+parameterized and scoped in services, FD count/rows share a read-only snapshot,
+explicit holder scope prevents the discovered count exposure, native UI tokens and
+role gates are retained. Safe loading/error/retry/empty and stale-response guards
+are present. Both discovered verification findings were fixed and retested.
+/imprint captures filters and responsive menu in ui-registry.md; /remember saves
+continuation without credentials. P06-M02-T04 stays locally verified REVIEW pending
+peer review and user publication; no new general task or phase gate is accepted.
+All five member overview tables reviewed; their existing acceptance rows stay intact.
+
+PR draft now also includes scoped branch/agent/FD filters, explicit holder-name
+scope, Search/Clear and FD pagination reset, and the requested agent menu ordering.
+No migration numbers, schema changes or dependencies added. Still no push/PR/merge.
+
+Local implementation commit: d0c2d0a — scoped list filters and agent navigation order.
+Documentation/verification is saved in a separate follow-up commit. Publication
+still waits for the user; no push, PR, merge or deployment performed.

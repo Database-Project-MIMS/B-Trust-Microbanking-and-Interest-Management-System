@@ -1,3 +1,26 @@
+# Current state — record filters and agent navigation
+
+## Follow-up locally verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 on feat/p06-m02-record-details-edit now includes branch
+text/district/status, agent text/branch/status, and FD account/visible-owner/product/
+status filters. Search/Clear preserves scoped SQL; FD searches reset pagination.
+Agent desktop/mobile order matches the user's eight tabs exactly. FD holder search
+adds explicit assignment/self scope alongside RLS to prevent hidden co-holder matches.
+No migration or financial writes; original owners retain stewardship.
+
+Verification: 3,640 distinct checks across security/API/DB and corrected E2E runs.
+Final 70-test UI suite, clean 70-migration rebuild/checksum/reseed/28-table restore,
+typecheck/lint/production build pass. Initial outdated renderer fixture was corrected;
+negative owner-scope finding fixed and retested. Production browser verifies Search/
+Clear, combined filters, scoped choices, exact desktop/mobile menu and no mobile
+page overflow. Console clean; viewport restored. User synthetic preview remains live.
+Review/imprint/remember and cross-owner receipt are in the handoff. REVIEW remains;
+no additional acceptance or phase gate. PR still waits for the user's #97/#98 merges.
+No push, PR creation, merge or deployment. Existing developer/hosted databases intact.
+[Current receipt](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
 # Current state — record details and permitted editing
 
 ## Record management verified — 2026-10-11

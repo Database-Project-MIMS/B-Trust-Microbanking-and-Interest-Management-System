@@ -311,3 +311,15 @@ remains denied; staff continue through the invoker audited-attempt routine.
 The savings rate is the current mutable plan rate, snapshotted for the distribution.
 No effective-dated savings-rate history is invented. Ordinary closure settlement policy
 and live deployment acceptance remain recorded questions, not implicit rule exceptions.
+
+## Scoped record filtering — 2026-10-11 / ADR-0034
+
+Branch/agent/FD filtering is a read operation. API schemas bound text, validate
+status/UUID/page filters and reject unknown keys; services bind all filter values.
+Organization scope remains an independent SQL predicate. FD account/customer RLS
+applies before both count and row results; owner searches additionally enforce
+assignment/self scope explicitly. An
+unassigned or foreign holder cannot become visible through a search or result count.
+Existing transaction/FD immutability rules and management permissions are unchanged.
+Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
+existing runtime RLS; runtime-role API scope and injection regression tests.

@@ -484,3 +484,15 @@ account management and FD detail screens. ADR-0034 / P06-M02-T04.
 No new color, radius, typography or dependency. Server page/API permissions select
 editing rights; form visibility is supplemental. FD terms have no edit form. Nullable
 fields clear explicitly; masked customer email is absent from manager forms.
+
+## Record filter forms and agent navigation — 2026-10-11 /imprint
+
+`RecordListFilters` uses `card form-grid`, `two-col`, native labeled `field`/`input`
+search/select controls, wrapping `flex flex-wrap gap-3` actions and the existing
+primary Search / secondary Clear buttons. IDs are stable and contain no whitespace.
+Draft values apply on submit; Clear restores defaults; results use `role=status`,
+scoped empty rows, safe error/Retry and existing horizontally scrolling tables.
+Branch/district/product labels show readable names. Organization create forms retain
+active-only branch choices. FD pagination wraps on mobile and resets for new filters.
+No new colors, typography, radii or dependencies. The existing shared TopBar renders
+one role-filtered menu for desktop/mobile, applying the user's exact agent order.

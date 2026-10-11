@@ -10,6 +10,12 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 ---
 
 ## 🗺️ Work Order Summary
+**Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
+agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
+security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production
+browser pass. [Cross-owner receipt](../.agent/handoffs/p06-record-details-edit.md).
+All five summary tables reviewed; no new task acceptance or strikethrough changes.
+Existing stewardship and PR #97/#98 publication dependency remain unchanged.
 
 **Record management (2026-10-11):** P06-M02-T04 implements explicit View/Edit
 actions, full scoped record details, permitted customer/account changes and linked FD
