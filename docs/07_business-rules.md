@@ -33,7 +33,9 @@ nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
 app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
 ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
 ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
-atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
+atomic registration and scoped reads. Managers receive masked NIC/email; assigned
+agents receive complete fields under existing branch/assignment scope (ADR-0032).
+Runtime grants/RLS remain M1 work.
 Registration accepts metadata-only, initially unverified documents (zero to twenty);
 M3 enforces required verified documentation at account opening (`sp_open_savings_account`, `DOCUMENTS_NOT_VERIFIED`, migration 0243). The service uppercases
 identity and lowercases email before the database UNIQUE checks. Audit contains only
@@ -148,7 +150,10 @@ Migration 0223 extends parent scope to customer assignment/document SELECT/INSER
 it permits only unverified document inserts and self-agent assignment for AGENT.
 The customer trigger writes one sanitized audit in the registration transaction,
 including rollback when a later document/assignment insert fails (ADR-0015).
-NIC/email masking is performed in response shaping, before data reaches the browser.
+NIC/email response masking applies to BRANCH_MANAGER. AGENT receives complete fields
+only after current-assignment and branch checks in SQL (ADR-0032); audit masking is unchanged.
+The registration form offers Male/Female and the server accepts only MALE/FEMALE
+when optional gender is supplied. Historical database values are not rewritten.
 
 P02-M02-T03 implements document verification in services/customer-document-service.ts:
 active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,

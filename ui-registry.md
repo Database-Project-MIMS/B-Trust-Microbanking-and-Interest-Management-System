@@ -444,3 +444,21 @@ remain reachable on every report. Account statement/back links use `btn btn-seco
 inside a wrapping action group. No new colors, tokens, typography or component dependencies.
 The mobile primary menu anchors at `top-full` so it follows the actual header height.
 Report metadata explicitly labels absent date bounds rather than rendering a bare "to".
+
+## Customer registration and details imprint — 2026-10-11
+
+Files: `app/customers/new/customer-registration.tsx`, `app/customers/customer-list.tsx`,
+`app/customers/[id]/customer-profile.tsx`. Captured via /imprint for ADR-0032.
+
+| Property | Existing pattern |
+| --- | --- |
+| Form controls | Native select inside `field`, styled with `input`; readable Male/Female labels, MALE/FEMALE values and an optional empty prompt |
+| Panels / headings | `card mt-6`, `page-header`, `eyebrow`, `page-title`, `section-heading` |
+| Details action | `btn btn-secondary whitespace-nowrap` link, visible View details text with the customer name in its accessible label |
+| Results | `table-wrap mt-4`, `data-table`, `sr-only` caption and scoped row/column headers; full email and NIC/passport within authorized agent scope |
+| Profile | Existing definition list, explicit NIC/passport label and readable gender; missing optional data uses an em dash |
+| Feedback | Existing `role=status` loading, error/retry controls and empty table row spanning all six columns |
+
+No new color, radius, typography or dependency. Wide result tables stay inside the
+existing horizontal scroll container; profile and registration keep existing responsive
+layout. Details navigation uses the existing server-authorized customer profile.

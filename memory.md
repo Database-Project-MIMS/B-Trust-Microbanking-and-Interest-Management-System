@@ -1,5 +1,21 @@
 # Memory — predeployment local completion
 
+## Customer follow-up — 2026-10-11
+
+/remember save: appended continuation context; prior sessions preserved.
+User authorized branch `feat/p02-m02-customer-details` and a few local commits;
+no push/PR/merge/deployment. P02-M02-T06 is locally verified REVIEW (ADR-0032).
+Registration uses optional Male/Female select and server MALE/FEMALE validation.
+Assigned agents receive full customer NIC/email under existing branch/assignment
+SQL scope; manager and audit masking remain. Results have View details; the existing
+profile includes gender/contact data and linked account/FD panels. No migration.
+Verification passes 3,417 tests/117 suites, clean 70-migration rebuild, typecheck,
+lint/build and production browser registration/navigation/mobile/empty checks.
+Disposable browser signed out/closed, viewport restored, local preview stopped;
+existing databases preserved. Review/imprint/contracts/state/overview updated.
+Next: user-controlled publication/deployment, then live retest; no phase acceptance.
+Full evidence/ownership: `.agent/handoffs/p02-m02-customer-details.md`.
+
 ## Neon CI correction — 2026-10-10
 
 User supplied PR #94/run 38033232178 log: 1,169 API/DB/e2e passes, one RPT-01

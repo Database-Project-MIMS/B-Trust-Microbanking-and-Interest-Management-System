@@ -2,7 +2,7 @@
 
 **Name:** Herath H.M.V.L · **Index:** 240225J
 **Domain Slice:** Organisation & Customers
-**Total Story Points:** ~58 · **Total Tasks:** 18 across 6 phases
+**Total Story Points:** ~58 · **Total Tasks:** 19 across 6 phases, including the user-requested customer follow-up
 
 Full slice description and copy-paste session prompt: `../docs/member-prompts/member-2.md`
 Running session log (updated via `/remember save`): `../.agent/members/member-2.md`
@@ -10,6 +10,14 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 ---
 
 ## 🗺️ Work Order Summary
+
+**Customer follow-up (2026-10-11):** ~~P02-M02-T06 — Male/Female dropdown,
+assigned-agent full customer NIC/email and explicit View details~~ is locally verified,
+REVIEW pending publication. [Handoff](../.agent/handoffs/p02-m02-customer-details.md).
+3,417 tests/117 suites, clean 70-migration rebuild/typecheck/lint/build and production
+browser registration/details/mobile checks pass. All five overview tables reviewed;
+no other tasks newly complete. Branch `feat/p02-m02-customer-details`; local commits
+authorized, no push/PR/deployment.
 
 **Neon CI correction (2026-10-10):** Fresh-checkout explain-output directory
 fixed for PR #94. [Receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).

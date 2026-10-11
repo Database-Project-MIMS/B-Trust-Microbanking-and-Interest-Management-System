@@ -52,12 +52,12 @@ and merging remain user actions.
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
+| P2 | 17 | 0 | 0 | 0 | 0 | 1 | 16 |
 | P3 | 14 | 0 | 0 | 0 | 0 | 1 | 13 |
 | P4 | 14 | 0 | 0 | 0 | 0 | 3 | 11 |
 | P5 | 15 | 0 | 0 | 0 | 0 | 1 | 14 |
 | P6 | 13 | 0 | 0 | 1 | 0 | 5 | 7 |
-| **All** | **97** | **0** | **0** | **1** | **0** | **10** | **86** |
+| **All** | **98** | **0** | **0** | **1** | **0** | **11** | **86** |
 
 ---
 
@@ -185,7 +185,7 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 DONE; general entry pending)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 DONE, 1 REVIEW)
 
 **Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
 The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
@@ -224,6 +224,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
 | P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | DONE |
+| P02-M02-T06 | 2 | Male/Female registration dropdown; assigned-agent full customer NIC/email; explicit View details action (ADR-0032) | BE + FE + tests | P02-M02-T05; user-authorized follow-up 2026-10-11 | REVIEW (3,417 tests, clean 70-migration rebuild/typecheck/lint/build and production browser checks pass; local commits only, user publication pending) |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
 | P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) — `0242_p02_m03_joint_mandate.sql`, `tests/db/joint-mandate-trigger.test.mjs` 32/32 (incl. concurrency, UPDATE paths, `mims_app` under RLS); full isolated suite 397/397; `/review` findings resolved | DB | P02-M03-T02, ADR-0009 approved | DONE (merged into dev) |

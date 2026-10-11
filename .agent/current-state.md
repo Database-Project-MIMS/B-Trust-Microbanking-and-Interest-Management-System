@@ -1,4 +1,24 @@
-# Current state — live audit corrections
+# Current state — customer registration and details
+
+## Customer follow-up verified — 2026-10-11
+
+User requested a new branch, Male/Female registration dropdown, customer email/NIC
+visibility for the agent and View details navigation, with a few local commits and
+no push/PR. The user clarified these are customer fields, not agent contact data.
+Branch: `feat/p02-m02-customer-details`, based on the prior verified local checkout.
+ADR-0032 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
+Full fields are returned only within the existing current-assignment/branch scope;
+manager and audit masking remain. Server validation checks optional MALE/FEMALE;
+no migration or financial rule change. Registry/contracts and M2 overview updated.
+All five overview tables reviewed; other member statuses retain their prior state.
+
+Verification: 3,417 tests /117 suites, zero failures/skips, clean 70-migration rebuild,
+typecheck/lint/production build. Production browser registration, list/detail navigation,
+full profile, empty results and mobile overflow checks pass; no browser errors/warnings.
+QA uses disposable local PostgreSQL only; browser signed out/closed, viewport restored,
+preview stopped. Task remains REVIEW pending user publication. Local commits authorized;
+push/PR/merge/deployment remain user actions. /remember save appends this continuation
+context while preserving earlier memory. No credential values are persisted.
 
 ## Local fixes verified — 2026-10-10
 
