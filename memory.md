@@ -1,16 +1,5 @@
 # Memory — predeployment local completion
 
-## PR #98 build dependency recovery — 2026-10-11
-
-Current branch is customer-details, not live-audit-fixes. PR98 published `3e6a292`
-without PR97's build fix, so Vercel failed; PR97 `26b315e` now passes hosted Vercel/CI.
-Cherry-picked build/menu fixes as `8e05feb` / `cc4147c`, preserving all customer
-changes and documentation. Combined disposable verification passes: 3,418 tests,
-117 suites, clean 70-migration rebuild/restore, typecheck/lint/production build.
-Review passes; synthetic cluster removed and existing databases preserved. No push,
-branch merge, new PR or deployment. Publish the corrected PR98 branch after checks;
-retrying its old commit cannot pick up the fix. Receipts: docs/24 and customer handoff.
-
 ## Agent menu follow-up — 2026-10-11
 
 On the existing live-audit-fixes branch, Dashboard now leads shared desktop/mobile
@@ -187,3 +176,26 @@ actual integration target before publication; do not assume they have merged.
 /remember save — 2026-10-11 dashboard follow-up: removed the requested role-access
 caption in app/dashboard/page.tsx. Typecheck/targeted lint pass; review/imprint and
 M1 contribution recorded. Same branch/publication dependency; no credentials saved.
+
+## PR #98 build dependency recovery — 2026-10-11
+
+Current branch is customer-details, not live-audit-fixes. PR98 published `3e6a292`
+without PR97's build fix, so Vercel failed; PR97 `26b315e` now passes hosted Vercel/CI.
+Cherry-picked build/menu fixes as `8e05feb` / `cc4147c`, preserving all customer
+changes and documentation. Combined disposable verification passes: 3,418 tests,
+117 suites, clean 70-migration rebuild/restore, typecheck/lint/production build.
+Review passes; synthetic cluster removed and existing databases preserved. No push,
+branch merge, new PR or deployment. Publish the corrected PR98 branch after checks;
+retrying its old commit cannot pick up the fix. Receipts: docs/24 and customer handoff.
+
+## Dev-to-main conflict fix — 2026-10-12
+
+User switched to `feat/p06-m02-record-details-edit` and requested the prepared fix
+on this branch. Applied Markdown-only changes: docs/24 matches main; its PR #98
+supplement is preserved in the customer handoff; PR #98 memory moves to the end.
+Agent/branch filters are already merged in dev via PR #100 (`05a1a26`, commit
+`d0c2d0a`) and present here. No feature needs to be resent. Zero-conflict tree-only
+simulation, TypeScript and seven deployment tests pass. No commit/push/PR/merge or
+deployment; original owners, task statuses and phase gates retained. Next: user
+reviews/commits/publishes this branch to dev, then rechecks dev against main.
+Receipt: `.agent/handoffs/p06-dev-main-conflict-resolution.md`. Prior memory preserved.

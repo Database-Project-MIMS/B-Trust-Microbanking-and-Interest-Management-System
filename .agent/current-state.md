@@ -1,3 +1,18 @@
+# Current state — dev-to-main documentation fix
+
+## Local resolution — 2026-10-12
+
+User requests the fix on `feat/p06-m02-record-details-edit`, without PR creation
+or merge. Docs/24 matches main; its PR #98 supplement moves to the customer handoff,
+and the overlapping memory section moves to the end. All history is preserved.
+Source/history checks confirm agent/branch Search/Clear and filters are already
+in dev through PR #100 (`05a1a26`, including `d0c2d0a`); no missing feature changes.
+Tree-only simulation has zero conflicts; TypeScript and seven deployment checks
+pass. Changes are uncommitted; no push, PR, merge or deployment. Existing task
+statuses and phase gates remain. [Receipt](handoffs/p06-dev-main-conflict-resolution.md).
+
+Earlier session records below are historical and preserved.
+
 # Current state — record filters and agent navigation
 
 ## Follow-up locally verified — 2026-10-11
