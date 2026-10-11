@@ -1,5 +1,12 @@
 # Phase 06 — Integration, Testing & Deployment
 
+**Scoped record management — 2026-10-11:** the user authorizes P06-M02-T04,
+View/Edit actions across records, and a few local commits. FD opening terms remain
+read-only by explicit clarification. ADR-0034 records permitted mutable fields,
+scoped detail reads, transactional audit and cross-owner contributions. No migration
+or general phase acceptance. [Receipt](../../.agent/handoffs/p06-record-details-edit.md).
+Publication waits for the user's merges of PR #97 and #98.
+
 **Scoped live audit corrections — 2026-10-10:** the user authorized a new branch,
 fixes for the audit findings, and editing other members' files. ADR-0031 records the
 report/withdrawal/statement/plan navigation, period labels and nonce CSP corrections.
@@ -15,7 +22,7 @@ transfer, UI/deployment and acceptance scope. Live HTTPS stays pending by user i
 Earlier scoped-start sections below are historical; their publication states are superseded.
 
 
-**Status:** TODO · **Tasks:** 13 · **Effort:** 40 points · **Est.** ~1 week
+**Status:** TODO · **Tasks:** 14 (including scoped enhancement) · **Effort:** 40 points plus enhancement · **Est.** ~1 week
 
 **M2 T02 scoped start (2026-10-09):** Vibodha instructed implementation and
 explicitly confirmed the blueprint in

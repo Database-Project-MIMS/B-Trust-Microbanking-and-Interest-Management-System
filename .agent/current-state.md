@@ -1,4 +1,32 @@
-# Current state — customer registration and details
+# Current state — record details and permitted editing
+
+## Record management verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 is locally verified REVIEW on
+`feat/p06-m02-record-details-edit`, based on corrected PR #98 tree `9e41cd3`.
+User authorizes branch and a few local commits. View/Edit actions cover organization,
+customers and accounts; FD details show stored terms, account and visible owners.
+Savings-plan/FD-product details retain existing edit workflows. FD opening terms remain
+read-only by explicit user clarification. Customer contact edits preserve masking;
+manager account status/mandate edits lock and audit atomically. No migration.
+Agent DATE serialization is corrected for native inputs; customer branch/registration
+metadata is displayed. Original M1/M3/M5 stewardship retained.
+
+Verification: full 3,584 checks/120 suites, final 361 API checks/33 suites, no failures,
+cancellations or skips; clean 70-migration rebuild/restore, typecheck/lint/production
+build pass. Disposable production browser verifies branch/customer/agent saves,
+freeze confirmation/cancel/reactivation, role denials, FD related details, catalogue
+disclosures and mobile overflow. Console clean; signed out/closed, viewport restored,
+previews stopped. /review passes; /imprint registry and /remember continuation saved.
+All five overview tables reviewed; no unrelated acceptance changes.
+Tracker: 99 tasks, 86 DONE, 12 REVIEW, one IN_PROGRESS (live HTTPS).
+
+PR #97/#98 remain unmerged at session check. New PR waits for the user's merges;
+no push, merge or deployment. Next: incorporate actual merged integration target,
+verify the combined tree, then publish/review when authorized.
+[Full receipt and PR draft](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
 
 ## PR #98 Vercel dependency correction — 2026-10-11
 

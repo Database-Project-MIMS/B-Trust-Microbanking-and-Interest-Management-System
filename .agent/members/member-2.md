@@ -1,4 +1,14 @@
-# Current state — predeployment local completion
+# Current state — record management
+
+2026-10-11 · P06-M02-T04 locally verified REVIEW, ADR-0034.
+Branch `feat/p06-m02-record-details-edit`, base `9e41cd3`. User authorizes local commits;
+PR waits for #97/#98 merges. View/Edit controls, scoped full details, FD account/owners,
+permitted customer/account edits and catalogue disclosures implemented; FD terms read-only.
+3,584 full checks plus final 361 API checks, rebuild/restore/type/lint/build/browser pass.
+Cross-owner contributions retain stewardship. [Receipt](../handoffs/p06-record-details-edit.md).
+All five overview tables reviewed; no unrelated task acceptance changes.
+
+## Historical predeployment local completion
 
 2026-10-10 · `feat/p06-m02-final-documentation` · base dev `053f6f6`.
 User authorizes cross-member fixes, documentation and commit on this branch;

@@ -51,6 +51,45 @@ errors are listed below.
 
 ## Organisation — Member 2
 
+### Record details and editing — 2026-10-11 / ADR-0034
+
+Lists now expose explicit View details actions and permitted Edit actions. Branches
+and agents have guarded `/{resource}/{id}` detail pages; `?edit=1` opens a form on
+that page. All detail reads use private/no-store responses and retain route roles,
+SQL branch/assignment/self scope and existing RLS. Missing and inaccessible details
+use the same 404. UUID errors are 400. Customer/account/FD detail pages link related
+records; savings plans and FD products use native expandable View details controls.
+Customer profiles also show the named registration branch and registration date.
+
+| Method and path | Roles | Detail/edit behavior |
+| --- | --- | --- |
+| `GET /api/branches/{id}` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | Code, name, address, district, phone, status, created/updated dates; manager own branch |
+| `GET /api/agents/{id}` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | Ordinary agent registration/employment/contact/login name, named branch and dates; manager own branch; no password/session data; birth/hired DATE fields remain YYYY-MM-DD strings for editing |
+| `PATCH /api/customers/{id}` | AGENT assigned / BRANCH_MANAGER own branch | Nonempty strict subset `{fullName,gender,phone,address,email}`; optional fields support explicit null; gender MALE/FEMALE/null; manager cannot update masked email |
+| `PATCH /api/accounts/{id}` | BRANCH_MANAGER own branch | Nonempty `{status?:ACTIVE\|FROZEN,mandate?:{type:ANY_ONE\|ALL_HOLDERS,effectiveFrom,effectiveTo}}`; real ordered dates, nullable end date; signer count derives from locked account holders |
+| `GET /api/fixed-deposits/{id}` | AGENT assigned, BRANCH_MANAGER own branch, CENTRAL_OPS, AUDITOR, CUSTOMER own | Exact principal/opening-rate/date/status snapshots, timestamps, linked account number/status/balance/savings plan/branch, and visible holder names/numbers/roles |
+
+Customer identity, birth date, branch, assignment, status and ownership are outside
+the contact edit payload. Assigned agents may edit email; managers edit only the
+other permitted fields without copying masked values. Strict bodies reject financial,
+registration and unknown fields. Duplicate customer email returns 409. Lock, update
+and existing sanitized customer-trigger audit commit in one service transaction.
+
+Account balances, plan, number, branch and opening history cannot be edited. Closed
+accounts return 409 to PATCH. Existing mandate constraints enforce signer/date rules;
+status changes and explicit mandate before/after audit share one locked transaction.
+`CLOSED` is excluded from PATCH: the UI uses the existing confirmed close operation
+with its zero-balance/no-active-FD/no-positive-unpaid-interest guard. Inactive,
+suspended or frozen status edits require a UI review confirmation; every mutation
+requires server CSRF. Read-only roles get View actions only.
+
+FD opening terms remain read-only as explicitly confirmed by the user. No FD PATCH
+exists. Its detail page links to the account/customer pages, manager account editing,
+and CENTRAL_OPS interest console. Holder data is selected in SQL: agents see currently
+assigned holders, customers see themselves, managers/bankwide readers see permitted
+holders. No co-holder NIC/email/document data is returned. Existing runtime grants
+still prohibit changing FD principal, rate or linkage. No migration is added.
+
 `AGENT` and `BRANCH_MANAGER` users both have an `agent` branch-staff profile. The role
 controls permissions; `agent.branch_id` supplies branch scope. Agent-management endpoints
 below manage ordinary `AGENT` users only. A branch-manager login is created through the

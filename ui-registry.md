@@ -464,3 +464,23 @@ Files: `app/customers/new/customer-registration.tsx`, `app/customers/customer-li
 No new color, radius, typography or dependency. Wide result tables stay inside the
 existing horizontal scroll container; profile and registration keep existing responsive
 layout. Details navigation uses the existing server-authorized customer profile.
+
+## Record details and edit controls — 2026-10-11 /imprint
+
+Files: `components/mims/record-actions.tsx`, `record-details.tsx`,
+`record-edit-form.tsx`, `record-preview.tsx`; organization detail, customer/profile,
+account management and FD detail screens. ADR-0034 / P06-M02-T04.
+
+| Property | Existing pattern |
+| --- | --- |
+| List actions | `flex flex-wrap gap-2`, `btn btn-secondary`, descriptive record-specific accessible names; every permitted reader gets View details |
+| Detail surface | `page-header`, `eyebrow`, `page-title`, `card mt-6`, `detail-grid`; definition lists with wrapping values and linked readable names/numbers |
+| Edit form | `card form-grid mt-6`, native `fieldset`, `two-col`, labeled `field`/`input`, native select/date/tel/email/textarea; primary Save changes and secondary Cancel |
+| Feedback | `role=status` loading/success, `role=alert` safe errors and Retry; only changed fields are submitted; drafts survive failures |
+| Confirmation | Existing `confirmation-card`, explicit Confirm changes for inactive/suspended/frozen status and Confirm closure for closing an account |
+| Read-only catalogue details | Native `details`/`summary` styled with existing secondary button, definition list for stored reference data; keyboard-accessible without scripting |
+| Responsive/money | Wrapping action groups, scrolling `table-wrap`, `break-words` detail values; existing exact string money/rate formatters |
+
+No new color, radius, typography or dependency. Server page/API permissions select
+editing rights; form visibility is supplemental. FD terms have no edit form. Nullable
+fields clear explicitly; masked customer email is absent from manager forms.
