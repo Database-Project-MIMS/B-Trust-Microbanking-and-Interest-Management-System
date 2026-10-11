@@ -37,7 +37,7 @@ describe("P04-M03-T03: account fixed-deposit panel markup", () => {
 
   test("a table row shows the exact product, principal, snapshot rate, dates and status", () => {
     const out = html.row;
-    assert.match(out, /<th scope="row" class="font-normal">1 Year<\/th>/);
+    assert.match(out, new RegExp(`<th scope="row" class="font-normal"><a href="/fixed-deposits/${FD_ID}">1 Year</a></th>`));
     assert.match(out, /LKR 2,500\.50/);
     assert.match(out, />14\.00%</);
     assert.match(out, /08 Oct 2026/);
@@ -93,7 +93,10 @@ describe("P04-M03-T03: account fixed-deposit panel markup", () => {
     assert.match(out, /unavailable right now/);
   });
 
-  test("fixed-deposit and plan ids never reach the markup", () => {
-    for (const out of Object.values(html)) assert.ok(!out.includes(FD_ID) && !out.includes(PLAN_ID));
+  test("FD ids occur only in detail links; internal product ids remain hidden", () => {
+    for (const out of Object.values(html)) {
+      assert.ok(!out.includes(PLAN_ID));
+      assert.ok(!out.replaceAll(`/fixed-deposits/${FD_ID}`, '').includes(FD_ID));
+    }
   });
 });

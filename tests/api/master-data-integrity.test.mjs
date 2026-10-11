@@ -186,8 +186,8 @@ describe('P06-M02-T02: master-data retention and rollback through mims_app APIs'
     await failsUnchanged(() => patch(agentItem, fixture.agentId, { status: 'INACTIVE' }, 'admin', null), 403, 'FORBIDDEN');
     await failsUnchanged(() => patch(branchItem, fixture.branchId, { status: 'INACTIVE' }, 'admin', null), 403, 'FORBIDDEN');
   });
-  test('master-data controllers expose no physical DELETE handler or unimplemented customer PATCH', () => {
+  test('master-data controllers expose no physical DELETE handler; customer updates use the controlled PATCH', () => {
     for (const route of [branches, branchItem, agents, agentItem, customers, customerItem]) assert.equal(route.DELETE, undefined);
-    assert.equal(customerItem.PATCH, undefined);
+    assert.equal(typeof customerItem.PATCH, 'function');
   });
 });
