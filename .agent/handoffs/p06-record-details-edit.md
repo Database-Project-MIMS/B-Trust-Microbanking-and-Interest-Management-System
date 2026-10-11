@@ -166,3 +166,8 @@ No migration numbers, schema changes or dependencies added. Still no push/PR/mer
 Local implementation commit: d0c2d0a — scoped list filters and agent navigation order.
 Documentation/verification is saved in a separate follow-up commit. Publication
 still waits for the user; no push, PR, merge or deployment performed.
+
+Dashboard label follow-up (2026-10-11): user requests removal of the role-access
+caption beside Your workspaces. Removed its span in M1 app/dashboard/page.tsx;
+existing heading/layout and scoped links retain their behavior. /review passes;
+typecheck and targeted ESLint pass. No new test is needed for this text removal.

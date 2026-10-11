@@ -183,3 +183,7 @@ reviewed, task remains REVIEW. Synthetic localhost preview left running, normal
 viewport restored, console clean. No credentials saved. Local commits authorized;
 no push, PR, merge or deployment. Next: wait for user's #97/#98 merges and incorporate
 actual integration target before publication; do not assume they have merged.
+
+/remember save — 2026-10-11 dashboard follow-up: removed the requested role-access
+caption in app/dashboard/page.tsx. Typecheck/targeted lint pass; review/imprint and
+M1 contribution recorded. Same branch/publication dependency; no credentials saved.

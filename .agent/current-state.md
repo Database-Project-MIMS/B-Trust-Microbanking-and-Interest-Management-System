@@ -692,3 +692,7 @@ P05-M03-T02 DONE as an early start at the user's direction (no general Phase 5 e
 identical totals), `services/account-summary-report-service.ts`, and the real `/reports/account-summary` page on the shared report shell. No migration.
 `tests/api/rpt02-report.test.mjs` 16/16 and `tests/e2e/account-summary-report-screen.test.mjs` 7/7. Full isolated suite 888 tests / 860 pass / 28 fail: the failures that
 already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T01 + T02) is complete. [Handoff](handoffs/p05-m03-t02-rpt02-report.md).
+
+Dashboard follow-up — 2026-10-11: removed the requested role-access caption beside
+Your workspaces; typecheck and targeted ESLint pass. /review and /imprint recorded
+in the record-management handoff/registry. Existing task acceptance remains REVIEW.

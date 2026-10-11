@@ -496,3 +496,7 @@ Branch/district/product labels show readable names. Organization create forms re
 active-only branch choices. FD pagination wraps on mobile and resets for new filters.
 No new colors, typography, radii or dependencies. The existing shared TopBar renders
 one role-filtered menu for desktop/mobile, applying the user's exact agent order.
+
+Dashboard caption removal — 2026-10-11 /imprint: the user removes the small
+role-access caption beside Your workspaces. Existing section-heading and reveal
+container remain the pattern; no new styles or controls.
