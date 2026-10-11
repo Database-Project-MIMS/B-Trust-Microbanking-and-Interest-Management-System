@@ -11,6 +11,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 
 ## 🗺️ Work Order Summary
 
+**PR #98 build dependency (2026-10-11):** Current customer branch now includes
+PR #97's verified build/menu corrections via local cherry-picks.
+[Receipt](../.agent/handoffs/p02-m02-customer-details.md). Task acceptance remains REVIEW.
+
 **PR #97 build correction (2026-10-11):** Compiler-independent Next config and
 locked Vercel build dependencies verified locally. [Receipt](../.agent/handoffs/p06-vercel-pr97-build.md).
 No new task acceptance or strikethrough changes; hosted deployment remains pending.

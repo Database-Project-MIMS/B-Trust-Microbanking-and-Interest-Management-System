@@ -53,6 +53,19 @@ synthetic settings and no live database. Local host: Windows/Node 24.15.0/npm 11
 the new Node 22/Vercel deployment is still pending publication.
 Detailed [review receipt](../.agent/handoffs/p06-vercel-pr97-build.md).
 
+## Customer branch / PR #98 — 2026-10-11
+
+PR #97's `26b315e` deployment is now successful. PR #98's published `3e6a292`
+branched from the older audit source and lacked the build correction; its application
+CI passed but Vercel failed. The existing build and menu commits are now cherry-picked
+locally onto `feat/p02-m02-customer-details` as `8e05feb` and `cc4147c`.
+Publish these commits to PR #98 before retrying its deployment. Retrying `3e6a292`
+still uses the old TS configuration and dashboard commands.
+Combined local verification passes 3,418 tests /117 suites, clean rebuild/restore,
+typecheck, lint and production build. Private Vercel logs were not inspected;
+the new PR #98 hosted deployment remains pending publication.
+[Combined verification receipt](../.agent/handoffs/p02-m02-customer-details.md).
+
 ## References
 
 - [Vercel file-based build commands](https://vercel.com/docs/project-configuration/vercel-json#buildcommand)

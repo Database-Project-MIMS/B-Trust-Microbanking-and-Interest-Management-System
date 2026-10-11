@@ -1,5 +1,16 @@
 # Memory — predeployment local completion
 
+## PR #98 build dependency recovery — 2026-10-11
+
+Current branch is customer-details, not live-audit-fixes. PR98 published `3e6a292`
+without PR97's build fix, so Vercel failed; PR97 `26b315e` now passes hosted Vercel/CI.
+Cherry-picked build/menu fixes as `8e05feb` / `cc4147c`, preserving all customer
+changes and documentation. Combined disposable verification passes: 3,418 tests,
+117 suites, clean 70-migration rebuild/restore, typecheck/lint/production build.
+Review passes; synthetic cluster removed and existing databases preserved. No push,
+branch merge, new PR or deployment. Publish the corrected PR98 branch after checks;
+retrying its old commit cannot pick up the fix. Receipts: docs/24 and customer handoff.
+
 ## Agent menu follow-up — 2026-10-11
 
 On the existing live-audit-fixes branch, Dashboard now leads shared desktop/mobile

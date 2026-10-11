@@ -58,8 +58,8 @@ Publish through the user's normal process and retest the deployed app afterwards
 
 ## PR #97 integration preparation — 2026-10-11
 
-PR #97 targets main and currently ends at 26b315e. Merge it before publishing this
-customer follow-up. Its Vercel build decision retains ADR-0032; the customer
+At preparation, PR #97 targeted main at 26b315e; integration before publication
+was recommended. Its Vercel build decision retains ADR-0032; the customer
 decision and all references are renumbered ADR-0033. Customer memory/overview
 notes use separate insertion points so both branches preserve their session notes.
 The preparation changes Markdown only; no branch merge, push or PR is performed.
@@ -70,3 +70,34 @@ Read-only three-way checks against PR #97 head 26b315e pass for all 14 existing
 Markdown files changed by this customer branch. Both PR #97 session notes and the
 customer notes survive the merge; the added customer ADR no longer collides with
 PR #97's ADR number. Markdown whitespace checks pass. Recheck if PR #97 changes.
+
+## PR #98 deployment correction — 2026-10-11
+
+The user reported another Vercel failure and supplied the customer-commit screenshot.
+Read-only checks identify PR #98 at `3e6a292`: application/database CI succeeds,
+Vercel fails. PR #97 at `26b315e` now has both successful CI and Vercel checks.
+The customer branch still lacked `vercel.json` and retained `next.config.ts`:
+the published source did not include the already verified build correction.
+The latest private Vercel build log was not inspected; metadata/source inspection
+establish the missing dependency on PR #97's fixes.
+
+Applied PR #97's existing build commit `dc66771` locally as `8e05feb`, then menu
+commit `26b315e` as `cc4147c`. Both cherry-picks succeed without conflicts; no branch
+merge or remote mutation. Existing customer implementation and both ADR/session
+records are preserved. These files now give PR #98 its own locked build install
+and compiler-independent Next config. Shared/M1 stewardship remains unchanged.
+No new migration, financial behavior, permission change or dependency version.
+
+/recover: isolated missing branch dependency; targeted reuse of the verified fix.
+/review benchmark: preserve the customer feature while incorporating the existing
+deployment and menu corrections. Complete disposable combined verification passes:
+3,418 tests /117 suites (2,245 security and 1,173 API/DB/e2e), zero failures,
+cancellations or skips, clean 70-migration rebuild/checksums, backup/restore,
+typecheck, lint and Next 15.5.27 production build. Customer implementation diff
+against `3e6a292` is empty; existing customer behavior and permissions are preserved.
+All three review layers pass. The temporary cluster is cleaned up and existing
+databases are preserved. Host: Node 24.15.0/PostgreSQL 18.6 on Windows.
+Log: ignored `test-results/pr98-integration-verification.log`.
+Original customer browser evidence remains the targeted UI receipt; this follow-up
+does not rerun browser QA or inspect private hosted build logs. Publication and a
+new hosted Vercel retry on the corrected PR #98 head remain user actions.

@@ -1,5 +1,19 @@
 # Current state — customer registration and details
 
+## PR #98 Vercel dependency correction — 2026-10-11
+
+PR #98 at `3e6a292` was published from a customer branch based on the older audit
+commit, before PR #97's build and menu fixes. Its Vercel check failed while hosted
+application/database CI passed. PR #97 at `26b315e` now has a successful Vercel check.
+The current branch is `feat/p02-m02-customer-details`: cherry-picked `dc66771` as
+`8e05feb` and `26b315e` as `cc4147c` without conflicts. Vercel install/build commands,
+compiler-independent config and Dashboard-first navigation are now included.
+Customer fields, gender validation, scoped access and documentation survive unchanged.
+Combined disposable verification passes: 3,418 tests /117 suites, zero failures,
+cancellations or skips, clean 70-migration rebuild/restore, typecheck, lint and
+production build. /review passes. No push, branch merge or deployment. Next: publish
+the corrected PR #98 branch and deploy its new head; repeating `3e6a292` keeps the old setup.
+
 ## Customer follow-up verified — 2026-10-11
 
 User requested a new branch, Male/Female registration dropdown, customer email/NIC
@@ -28,7 +42,7 @@ typecheck pass; docs/05, UI registry and live-audit handoff are updated.
 
 ## PR #97 Vercel build correction — 2026-10-11
 
-Current branch remains `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
+Historical correction branch: `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
 failed loading the TS config; its database/application CI passed at `5253f6d`.
 ADR-0032 introduces compiler-independent `next.config.mjs` and explicit locked
 Vercel build dependencies (`npm ci --include=dev`, `npm run build`). Dependency
