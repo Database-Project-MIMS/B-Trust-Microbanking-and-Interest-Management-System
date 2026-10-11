@@ -115,7 +115,7 @@ pages reuse the existing authenticated shell; role-aware links supplement server
 ### App shell
 
 File: `components/app-shell/app-shell.tsx`, `components/app-shell/top-bar.tsx`
-Last updated: 27 Sep 2026
+Last updated: 11 Oct 2026 · navigation order captured with `/imprint`.
 
 | Property | Pattern |
 | --- | --- |
@@ -126,6 +126,8 @@ Last updated: 27 Sep 2026
 | Active navigation | `bg-[var(--primary)] text-white` |
 
 Role-aware links are for convenience only; the server still authorizes every request.
+Dashboard is the first menu item, including for agents, before Withdraw and Transfers.
+Desktop and mobile use the same ordered, role-filtered navigation list.
 
 ### Card, form field, and button
 
@@ -433,3 +435,14 @@ role navigation, scoped account choices and error states. Viewport restored afte
 MotionSurface now tests scoped target existence before GSAP animations, preserving reduced
 motion and cleanup without empty-target warnings on operational pages. Emerald tokens,
 card radii and existing controls remain the visual source of truth.
+
+## Live audit navigation imprint — 2026-10-10
+
+The report catalogue reuses dashboard `card app-card-link`, `eyebrow`, `page-header`,
+`page-title`, `page-description`, and the existing responsive 1/2/3-column grid.
+Shared report navigation uses `nav-link`/`nav-link-active`, a named nav landmark,
+`aria-current=page`, wrapping gaps and descriptive link titles. All reports and RPT-01–05
+remain reachable on every report. Account statement/back links use `btn btn-secondary`
+inside a wrapping action group. No new colors, tokens, typography or component dependencies.
+The mobile primary menu anchors at `top-full` so it follows the actual header height.
+Report metadata explicitly labels absent date bounds rather than rendering a bare "to".

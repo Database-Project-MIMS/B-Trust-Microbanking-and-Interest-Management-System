@@ -44,3 +44,4 @@ Date, status (proposed/accepted/superseded), the decision, why, what it rules ou
 | [ADR-0024](ADR-0024-seed-validation.md) | Strict seed acceptance, authorized seed completion and 0620 interest-reference repair | User-authorized scoped start/completion; M5/M4 ownership and general phase gates retained; numbered after dev's ledger-order ADR-0023 |
 
 | [ADR-0027](ADR-0027-predeployment-completion.md) | Whole-system/frontend audit, staff transfers, savings catch-up, automatic maturity, admin/reset and safe closure guard | User-authorized cross-member local delivery; review/publication and live deployment separate |
+| [ADR-0032](ADR-0032-vercel-build-dependencies.md) | Vercel locked build dependencies and compiler-independent Next configuration | Local PR #97 correction; publication/deployment separate |

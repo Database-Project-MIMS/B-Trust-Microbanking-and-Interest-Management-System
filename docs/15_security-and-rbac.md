@@ -239,3 +239,15 @@ locks user then token before password update/session revocation. No email sender
 Unknown SQL errors are mapped to generic client errors, never arbitrary raised text.
 All new state-changing routes enforce CSRF; public reset additionally requires its token.
 Production dependency audit is zero; unresolved build-tool and live HTTPS limits are docs/21.
+
+## CSP audit correction — ADR-0031 / 2026-10-10 (local)
+
+`middleware.ts` enforces a fresh nonce CSP and overwrites caller-supplied CSP/nonce
+headers before Next.js rendering. The root layout waits for `connection()` so all HTML,
+including sign-in, is dynamic and bootstrap scripts receive the response nonce. Production
+script-src omits unsafe-inline and unsafe-eval; strict-dynamic propagates trust to bundled
+chunks. Existing inline React/GSAP styles are allowed by style-src only. Same-origin
+connect/form/base directives, object-src none and frame-ancestors none apply alongside
+the existing security headers. Development alone allows eval/WebSockets for HMR.
+Static Next assets/image optimization/favicon bypass middleware. Changes await deployment;
+the 2026-10-10 live audit's missing-CSP observation remains historical evidence.

@@ -8,6 +8,10 @@
 
 ## 🗺️ Work Order Summary
 
+**PR #97 build correction (2026-10-11):** Next config and Vercel dependency install
+repaired under cross-member authority. [Receipt](../.agent/handoffs/p06-vercel-pr97-build.md).
+Local build/security smoke pass; T04 remains IN_PROGRESS pending hosted retest.
+
 **Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
 and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.
 Staff transfers, savings catch-up, automatic principal return, document verification,

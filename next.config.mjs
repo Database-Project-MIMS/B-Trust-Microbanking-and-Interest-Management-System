@@ -1,9 +1,9 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+// Keep config loading independent of the TypeScript build-time dependency.
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   // Docker runs the traced server; ordinary npm start retains its existing output.
-  ...(process.env.MIMS_STANDALONE === "1" ? { output: "standalone" as const } : {}),
+  ...(process.env.MIMS_STANDALONE === "1" ? { output: "standalone" } : {}),
   // Keep production verification from overwriting the running dev server's bundles.
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   // `pg` must never be bundled into a browser build. It is server-only.
