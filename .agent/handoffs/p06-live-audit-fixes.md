@@ -1,5 +1,14 @@
 # Live audit corrections — 2026-10-10
 
+## Agent menu follow-up — 2026-10-11
+
+The user requested Dashboard first, before Transfers, on the same branch. M1's
+shared TopBar navigation now starts with Dashboard on desktop/mobile. Original
+ownership and role permissions are retained. `/imprint` updates the existing shell
+entry; docs/05 records menu order. Rendered navigation checks for six human roles,
+focused lint and typecheck verify the change. `/review`: requested ordering and
+existing menu behavior are preserved. No new task acceptance or migration is needed.
+
 Branch: `feat/p06-m02-live-audit-fixes`. The user requested a branch and fixes for
 the live audit findings, and explicitly authorized editing other members' files.
 Original ownership remains unchanged. The user subsequently authorized a local commit

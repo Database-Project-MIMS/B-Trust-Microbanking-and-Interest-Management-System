@@ -20,6 +20,12 @@ preview stopped. Task remains REVIEW pending user publication. Local commits aut
 push/PR/merge/deployment remain user actions. /remember save appends this continuation
 context while preserving earlier memory. No credential values are persisted.
 
+## Agent menu order — 2026-10-11
+
+User-requested follow-up on the same branch: Dashboard is first before Transfers
+in shared desktop/mobile navigation. Rendered six-role ordering, focused lint and
+typecheck pass; docs/05, UI registry and live-audit handoff are updated.
+
 ## PR #97 Vercel build correction — 2026-10-11
 
 Current branch remains `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
