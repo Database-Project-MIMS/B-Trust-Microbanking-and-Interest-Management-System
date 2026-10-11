@@ -11,6 +11,9 @@ For automatic deployment of SQL migrations to Neon, see
 connection and security secrets empty; supply them only in ignored local files
 or the appropriate deployment environment.
 
+For the hosted Next.js application, see [Vercel build setup](24_vercel-build.md).
+Its build installation includes development dependencies from the lockfile.
+
 ## Prerequisites
 
 | Tool | Version | Check |

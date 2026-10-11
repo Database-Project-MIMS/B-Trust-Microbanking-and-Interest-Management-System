@@ -154,7 +154,7 @@ INTEREST_WORKER_TOKEN=generate-another-random-secret
 NODE_ENV=production
 ```
 
-#### Security Headers (in `next.config.ts`)
+#### Security Headers (in `next.config.mjs`)
 ```typescript
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
