@@ -30,7 +30,7 @@ export function CustomerRegistration({ branchId, agents }: { branchId: string; a
         <label className="field">NIC or passport *<input className="input" name="nicPassportNo" required minLength={5} maxLength={50} /></label>
         <label className="field">Date of birth *<input className="input" name="dateOfBirth" type="date" required /></label>
         <label className="field">Email *<input className="input" name="email" type="email" required maxLength={150} /></label>
-        <label className="field">Gender<input className="input" name="gender" maxLength={20} /></label>
+        <label className="field">Gender<select className="input" name="gender" defaultValue=""><option value="">Select gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option></select></label>
         <label className="field">Phone<input className="input" name="phone" type="tel" maxLength={20} /></label>
         <label className="field">Address<input className="input" name="address" maxLength={255} /></label>
         <label className="field">Assigned agent *<select className="input" name="agentId" required><option value="">Select agent</option>{agents.map(agent => <option key={agent.agentId} value={agent.agentId}>{agent.fullName}</option>)}</select></label>

@@ -1,5 +1,12 @@
 # Phase 02 — Customers, Savings Accounts & Joint Ownership
 
+**User-authorized follow-up — 2026-10-11:** P02-M02-T06 adds a Male/Female
+registration dropdown with server validation, full customer NIC/email for the current
+assigned agent and explicit View details navigation (ADR-0033). Locally verified REVIEW:
+3,417 tests/117 suites, clean rebuild/typecheck/lint/build and production browser QA.
+The current tracker has 17 Phase 2 tasks, 16 DONE and one REVIEW; historical phase
+snapshots below retain their dates. No phase approval or deployment is implied.
+
 **Status:** IN_PROGRESS — 10 DONE, 1 READY, 5 TODO · **Tasks:** 16 · **Effort:** 47 points
 
 Phase 2 entry was approved by Vibodha on 2026-10-05 in the

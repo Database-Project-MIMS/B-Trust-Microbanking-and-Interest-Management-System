@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { CustomerFixedDeposits } from "@/types/customer-fixed-deposit";
 import { customerRequest, displayDate, displayMoney } from "../customer-client";
 
@@ -37,7 +38,7 @@ export function CustomerFixedDepositsPanel({ customerId }: { customerId: string 
             <th scope="col">Rate at opening</th><th scope="col">Opened</th><th scope="col">Maturity</th>
             <th scope="col">Next interest</th><th scope="col">Status</th></tr></thead>
           <tbody>{result.fixedDeposits.map(fd => <tr key={fd.fdId}>
-            <th scope="row" className="font-normal">{fd.accountNumber}</th><td>{fd.planName}</td>
+            <th scope="row" className="font-normal"><Link href={`/accounts/${fd.accountId}`}>{fd.accountNumber}</Link></th><td><Link href={`/fixed-deposits/${fd.fdId}`}>{fd.planName}</Link></td>
             <td className="amount whitespace-nowrap">{displayMoney(fd.principalAmount)}</td>
             <td className="amount">{displaySnapshotRate(fd.interestRateAtOpening)}</td>
             <td className="whitespace-nowrap">{displayDate(fd.startDate)}</td>

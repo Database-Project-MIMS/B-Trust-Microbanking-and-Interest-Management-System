@@ -8,7 +8,7 @@ import type { AuthenticatedUser } from "@/lib/auth/rbac";
 import type { AccountFixedDeposit } from "@/types/account-fixed-deposit";
 import {
   accountIdSchema, accountSearchSchema, addHolderSchema, idempotencyKeySchema, openAccountSchema,
-  type OpenAccountInput,
+  type OpenAccountInput, updateAccountSchema,
 } from "@/lib/validation/account";
 import { AccountRuleError, throwAccountDatabaseError } from "@/services/account-errors";
 
@@ -31,6 +31,8 @@ export interface AccountSummary {
 }
 export interface AccountSearchResult { accounts: AccountSummary[]; total: number; page: number; pageSize: number }
 export interface AccountDetail extends AccountSummary {
+  branchCode: string; branchName: string; openedByAgentName: string;
+  interestRate: string; createdAt: string; updatedAt: string;
   minBalance: string; minHolders: number; maxHolders: number;
   /** Balance above the plan minimum, never negative; computed in SQL. */
   availableToWithdraw: string;
@@ -230,10 +232,14 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
   return withTransaction(async tx => {
     const scope = await resolveScope(tx, authenticated, DETAIL_ROLES);
     // A CUSTOMER sees only accounts they hold, an AGENT only accounts of assigned customers, staff only their branch.
-    const result = await tx.query<SummaryRow & { min_balance: string; min_holders: number; max_holders: number; available_to_withdraw: string }>(
+    const result = await tx.query<SummaryRow & { min_balance: string; min_holders: number; max_holders: number; available_to_withdraw: string;
+      branch_code: string; branch_name: string; opened_by_agent_name: string; interest_rate: string; created_at: Date; updated_at: Date }>(
       `SELECT ${SUMMARY_COLUMNS}, sp.min_balance::text AS min_balance, sp.min_holders, sp.max_holders,
-              GREATEST(a.current_balance - sp.min_balance, 0)::numeric(15,2)::text AS available_to_withdraw
+              GREATEST(a.current_balance - sp.min_balance, 0)::numeric(15,2)::text AS available_to_withdraw,
+              b.branch_code, b.branch_name, ag.full_name AS opened_by_agent_name,
+              sp.interest_rate::text, a.created_at, a.updated_at
          FROM account a JOIN savings_plan sp ON sp.plan_id = a.plan_id
+         JOIN branch b ON b.branch_id = a.branch_id JOIN agent ag ON ag.agent_id = a.opened_by_agent_id
         WHERE a.account_id = $1 AND ($2::uuid IS NULL OR a.branch_id = $2)
           AND ${assignedTo("$3", "$4")}
           AND ($3::text <> 'CUSTOMER' OR EXISTS (
@@ -280,6 +286,8 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
       logQueryError("account.fixedDeposits", 0, error);
     }
     return { ...mapSummary(account), minBalance: account.min_balance,
+      branchCode: account.branch_code, branchName: account.branch_name, openedByAgentName: account.opened_by_agent_name,
+      interestRate: account.interest_rate, createdAt: account.created_at.toISOString(), updatedAt: account.updated_at.toISOString(),
       minHolders: account.min_holders, maxHolders: account.max_holders,
       availableToWithdraw: account.available_to_withdraw,
       lastTransaction: latest ? { transactionType: latest.transaction_type, amount: latest.amount,
@@ -290,6 +298,44 @@ export async function getAccountDetail(accountId: string, actor: AccountActor): 
         effectiveFrom: row.effective_from, effectiveTo: row.effective_to, state: row.state } : null,
       fixedDeposits };
   }, { isolationLevel: "REPEATABLE READ" });
+}
+
+/** Updates status/mandate and audits together after locking the own-branch account in one transaction. */
+export async function updateAccount(accountId: string, input: unknown, actor: AccountActor): Promise<{ accountId: string }> {
+  const authenticated = validateActor(actor, CLOSE_ROLES);
+  if (!accountIdSchema.safeParse(accountId).success) throw new ValidationError("Account ID must be a UUID.");
+  const value = updateAccountSchema.parse(input);
+  return withTransaction(async tx => {
+    const scope = await resolveScope(tx, authenticated, CLOSE_ROLES);
+    const result = await tx.query<{ status: string; max_holders: number }>(
+      `SELECT a.status, sp.max_holders FROM account a JOIN savings_plan sp ON sp.plan_id = a.plan_id
+       WHERE a.account_id = $1 AND a.branch_id = $2 FOR UPDATE OF a`, [accountId, scope.branchId]);
+    const account = result.rows[0];
+    if (!account) throw new NotFoundError("Account");
+    if (account.status === "CLOSED") throw new AccountRuleError("ACCOUNT_CLOSED", "Closed accounts cannot be edited.", 409);
+    if (value.status && value.status !== account.status) {
+      await tx.query("UPDATE account SET status = $2 WHERE account_id = $1 AND branch_id = $3",
+        [accountId, value.status, scope.branchId]);
+    }
+    if (value.mandate) {
+      if (account.max_holders <= 1) throw new AccountRuleError("MANDATE_NOT_ALLOWED", "Only joint accounts have a mandate.", 409);
+      const old = (await tx.query<{ mandate_id: string; values: Record<string, unknown> }>(
+        `SELECT mandate_id, jsonb_build_object('mandate_type', mandate_type, 'required_signatories', required_signatories,
+          'effective_from', effective_from, 'effective_to', effective_to) AS values
+         FROM joint_mandate WHERE account_id = $1 FOR UPDATE`, [accountId])).rows[0];
+      if (!old) throw new AccountRuleError("MANDATE_REQUIRED", "This account has no mandate to update.", 409);
+      const count = (await tx.query<{ n: number }>("SELECT count(*)::int AS n FROM account_holder WHERE account_id = $1", [accountId])).rows[0]?.n ?? 0;
+      const next = { mandate_type: value.mandate.type, required_signatories: value.mandate.type === "ANY_ONE" ? 1 : count,
+        effective_from: value.mandate.effectiveFrom, effective_to: value.mandate.effectiveTo };
+      await tx.query(`UPDATE joint_mandate SET mandate_type = $2, required_signatories = $3,
+        effective_from = $4, effective_to = $5 WHERE account_id = $1`,
+        [accountId, next.mandate_type, next.required_signatories, next.effective_from, next.effective_to]);
+      await tx.query(`INSERT INTO audit_log (user_id, actor_type, entity_type, entity_id, action, old_values, new_values)
+        VALUES ($1, 'USER', 'joint_mandate', $2, 'UPDATE', $3::jsonb, $4::jsonb)`,
+        [scope.userId, old.mandate_id, JSON.stringify(old.values), JSON.stringify(next)]);
+    }
+    return { accountId };
+  });
 }
 
 /** Adds one JOINT holder through sp_add_account_holder in one transaction (audited by the holder trigger). */

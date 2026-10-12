@@ -10,6 +10,12 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 ---
 
 ## 🗺️ Work Order Summary
+**Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
+agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
+security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production
+browser pass. [Cross-owner receipt](../.agent/handoffs/p06-record-details-edit.md).
+All five summary tables reviewed; no new task acceptance or strikethrough changes.
+Existing stewardship and PR #97/#98 publication dependency remain unchanged.
 
 **Current summary reviewed 2026-10-10:** [task tracker](../docs/09_task-tracker.md)
 and [predeployment audit](../docs/21_predeployment-audit.md) supersede older snapshots.

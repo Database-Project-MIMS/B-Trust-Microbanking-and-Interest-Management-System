@@ -1,5 +1,22 @@
 # 00 — Documentation Index
 
+**Record management — 2026-10-11:** P06-M02-T04 is locally verified REVIEW on
+`feat/p06-m02-record-details-edit`: full scoped View details, permitted Edit forms,
+FD linked account/owners and catalogue details. FD opening terms remain read-only.
+[ADR-0034](../.agent/decisions/ADR-0034-record-details-and-editing.md) and
+[verification/owner handoff](../.agent/handoffs/p06-record-details-edit.md).
+3,584 full checks and final 361 API checks, rebuild/restore/type/lint/build/browser
+pass. Tracker: 99 tasks, 86 DONE, 12 REVIEW, one IN_PROGRESS. Local commits authorized;
+PR waits for the user's merges of #97/#98. Earlier counts below are historical.
+
+**Customer follow-up — 2026-10-11:** P02-M02-T06 is locally verified on
+`feat/p02-m02-customer-details`: Male/Female registration selection, full customer
+NIC/email for the current assigned agent and View details navigation.
+See [ADR-0033](../.agent/decisions/ADR-0033-customer-details.md) and
+[verification handoff](../.agent/handoffs/p02-m02-customer-details.md).
+Local commits authorized; no push/PR/deployment. Historical tracker: 98 tasks,
+86 DONE, 11 REVIEW, one IN_PROGRESS. Earlier closeout notes below are historical.
+
 **Current local closeout — 2026-10-10:** P06-M02-T01/T02 are merged through
 PR #88/#90. Vibodha authorized T03 and necessary cross-owner completion in
 [ADR-0026](../.agent/decisions/ADR-0026-final-local-closeout.md).

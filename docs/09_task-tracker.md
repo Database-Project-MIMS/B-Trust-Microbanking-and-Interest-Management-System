@@ -1,6 +1,6 @@
 # 09 — Task Tracker
 
-**Current authority (2026-10-10):** the task rows below describe merged or locally
+**Current authority (2026-10-11):** the task rows below describe merged or locally
 verified implementation. Earlier session notes are historical. ADR-0027 authorizes local
 T03/cross-owner completion and commits; publication remains the user's action.
 Live deployment, lecturer scope decisions and general phase approval remain pending.
@@ -48,16 +48,21 @@ and merging remain user actions.
 
 ## Status summary
 
+**Scoped enhancement (2026-10-11, ADR-0034):** P06-M02-T04 is locally verified REVIEW,
+assigned to M2 at the user's request: record View/Edit actions, full scoped details,
+permitted master-data/account editing and read-only FD terms. Required M3/M5/M1
+contributions retain original stewardship. New PR waits for #97/#98 merges.
+
 | Phase | Total | TODO | READY | IN_PROGRESS | BLOCKED | REVIEW | DONE |
 |---|---|---|---|---|---|---|---|
 | P0 | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
 | P1 | 19 | 0 | 0 | 0 | 0 | 0 | 19 |
-| P2 | 16 | 0 | 0 | 0 | 0 | 0 | 16 |
+| P2 | 17 | 0 | 0 | 0 | 0 | 1 | 16 |
 | P3 | 14 | 0 | 0 | 0 | 0 | 1 | 13 |
 | P4 | 14 | 0 | 0 | 0 | 0 | 3 | 11 |
 | P5 | 15 | 0 | 0 | 0 | 0 | 1 | 14 |
-| P6 | 13 | 0 | 0 | 1 | 0 | 5 | 7 |
-| **All** | **97** | **0** | **0** | **1** | **0** | **10** | **86** |
+| P6 | 14 | 0 | 0 | 1 | 0 | 6 | 7 |
+| **All** | **99** | **0** | **0** | **1** | **0** | **12** | **86** |
 
 ---
 
@@ -185,7 +190,7 @@ hardcoded in TypeScript.
 
 ---
 
-## Phase 2 — Customers, Accounts & Joint Ownership (16 DONE; general entry pending)
+## Phase 2 — Customers, Accounts & Joint Ownership (16 DONE, 1 REVIEW)
 
 **Gate:** OQ-05/G-20, G-06 and G-08 are resolved by ADR-0007, ADR-0008 and ADR-0009.
 The Phase 1 exit checkpoint and Phase 2 entry were approved by Vibodha on 2026-10-05.
@@ -224,6 +229,7 @@ task. M3-T03 (`0242` joint mandate) is DONE and merged into dev; M3-T04 (`0243` 
 | P02-M02-T03 | 2 | `customer_document` schema and verification | DB + BE | P02-M02-T01 | DONE |
 | P02-M02-T04 | 2 | Customer registration service — customer + document + assignment + audit in **one transaction** | BE | P02-M02-T02, P02-M02-T03 | DONE |
 | P02-M02-T05 | 2 | Customer API endpoints and registration/search/profile screen integration | BE + FE | P02-M02-T04; M1 scoped grants/RLS/audit integration | DONE |
+| P02-M02-T06 | 2 | Male/Female registration dropdown; assigned-agent full customer NIC/email; explicit View details action (ADR-0033) | BE + FE + tests | P02-M02-T05; user-authorized follow-up 2026-10-11 | REVIEW (3,418 combined tests, clean 70-migration rebuild/typecheck/lint/build and prior production browser checks pass; PR #98 build correction local, publication/hosted retest pending) |
 | P02-M03-T01 | 3 | `account` schema + `branch_id` (G-06) + non-negative balance check (G-18) | DB | P01-M03-T01, ADR-0008 approved | DONE |
 | P02-M03-T02 | 3 | `account_holder` + `holder_type` (2–4 adult count rule lands in T03 trigger) | DB | P02-M03-T01, P02-M02-T01 | DONE |
 | P02-M03-T03 | 3 | `joint_mandate` + `trg_validate_joint_mandate` (statement-level, transition tables) — `0242_p02_m03_joint_mandate.sql`, `tests/db/joint-mandate-trigger.test.mjs` 32/32 (incl. concurrency, UPDATE paths, `mims_app` under RLS); full isolated suite 397/397; `/review` findings resolved | DB | P02-M03-T02, ADR-0009 approved | DONE (merged into dev) |
@@ -359,6 +365,7 @@ Current evidence and implemented savings/transfer scope are in
 | P06-M02-T01 | 2 | Seed validation: all minimum counts met (AC-12) | Tests + seed completion | P03-M05-T01; scoped start/completion ADR-0024 | DONE (PR #88 merged; AC-12 and exact ledger/payout/reseed evidence) |
 | P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | DONE (PR #90 merged; a58112e/226c439; 100 DB and 16 API integrity cases) |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | REVIEW (ADR-0026: current catalogs/contracts/state reconciled; local commits only; full phase acceptance pending) |
+| P06-M02-T04 | 2 | Record details, permitted editing and scoped filters (ADR-0034) | BE + FE + tests + docs | Existing organization/customer/account/FD APIs; scoped user authorization | REVIEW (3,640 distinct checks across security/API/DB and corrected UI runs; production browser, rebuild/restore and type/lint/build pass; scoped filters and agent menu order; local commits, PR waits for #97/#98) |
 | P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | DONE (2026-10-09; 6 tests in `tests/db/rollback-idempotency-evidence.test.mjs`; mid-transaction fault triggers prove zero partial state on deposit, withdrawal, reversal; live HTTP POST idempotency replay tested) |

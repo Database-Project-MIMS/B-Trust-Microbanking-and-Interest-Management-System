@@ -4,7 +4,7 @@ import { z } from "zod";
 import { withTransaction } from "@/lib/db";
 import { BusinessRuleError, DatabaseError, NotAuthorizedError, NotFoundError,
   UniqueViolationError, ValidationError } from "@/lib/db/errors";
-import { customerSearchSchema, registerCustomerSchema } from "@/lib/validation/customer";
+import { customerSearchSchema, registerCustomerSchema, updateCustomerSchema } from "@/lib/validation/customer";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
 import { setRlsContext } from "@/lib/db/rls-context";
 import type { CustomerFixedDeposit, CustomerFixedDeposits } from "@/types/customer-fixed-deposit";
@@ -30,6 +30,7 @@ interface DocumentRow { doc_id: string; doc_type: string; uploaded_date: Date; v
 interface AccountRow { account_id: string; account_number: string; status: string; current_balance: string }
 export interface CustomerProfile {
   customer: Customer;
+  branch: { branchCode: string; branchName: string };
   assignmentHistory: { assignmentId: string; agentId: string; agentName: string; assignedDate: string; endDate: string | null; isActive: boolean }[];
   documents: { docId: string; docType: string; uploadedDate: Date; verifiedBy: string | null; verifiedDate: Date | null }[];
   accounts: { accountId: string; accountNumber: string; status: string; currentBalance: string }[] | null;
@@ -74,7 +75,8 @@ async function resolveScope(tx: Parameters<typeof setRlsContext>[0], actor: Cust
 }
 
 function mapCustomer(row: CustomerRow, scope: ActorScope): Customer {
-  const masked = WRITE_ROLES.includes(scope.roleName);
+  // AGENT rows have already passed current-assignment and branch predicates in SQL.
+  const masked = scope.roleName === "BRANCH_MANAGER";
   return { customerId: row.customer_id, customerNumber: row.customer_number, branchId: row.branch_id,
     fullName: row.full_name, nicPassportNo: masked ? `***${row.nic_passport_no.slice(-4)}` : row.nic_passport_no,
     dateOfBirth: row.date_of_birth, gender: row.gender, phone: row.phone, address: row.address,
@@ -130,6 +132,40 @@ function likePattern(value: string | undefined): string | null {
   return value === undefined ? null : `%${value.replace(/[\\%_]/g, "\\$&")}%`;
 }
 
+/** Updates permitted customer fields and trigger audit together in one locked, scoped transaction. */
+export async function updateCustomer(customerId: string, input: unknown, actor: CustomerActor): Promise<Customer> {
+  const authenticated = validateActor(actor, WRITE_ROLES);
+  if (!z.string().uuid().safeParse(customerId).success) throw new ValidationError("Customer ID must be a UUID.");
+  const value = updateCustomerSchema.parse(input);
+  // Managers see masked email; they cannot overwrite a field they are not permitted to read.
+  if (authenticated.roleName === "BRANCH_MANAGER" && value.email !== undefined) throw new NotAuthorizedError();
+  try {
+    return await withTransaction(async tx => {
+      const scope = await resolveScope(tx, authenticated, WRITE_ROLES);
+      const locked = await tx.query(`SELECT c.customer_id FROM customer c WHERE ${SCOPE_SQL}
+        AND c.customer_id = $4 FOR UPDATE OF c`, [scope.branchId, scope.roleName, scope.userId, customerId]);
+      if (!locked.rows[0]) throw new NotFoundError("Customer");
+      const updated = await tx.query<CustomerRow>(`UPDATE customer c SET
+        full_name = COALESCE($5, full_name),
+        gender = CASE WHEN $6 THEN $7 ELSE gender END,
+        phone = CASE WHEN $8 THEN $9 ELSE phone END,
+        address = CASE WHEN $10 THEN $11 ELSE address END,
+        email = COALESCE($12, email)
+        WHERE ${SCOPE_SQL} AND c.customer_id = $4 RETURNING ${CUSTOMER_COLUMNS}`,
+        [scope.branchId, scope.roleName, scope.userId, customerId, value.fullName ?? null,
+          value.gender !== undefined, value.gender ?? null, value.phone !== undefined, value.phone ?? null,
+          value.address !== undefined, value.address ?? null, value.email ?? null]);
+      if (!updated.rows[0]) throw new NotFoundError("Customer");
+      return mapCustomer(updated.rows[0], scope);
+    });
+  } catch (error) {
+    if (error instanceof UniqueViolationError && error.constraint === "uq_customer_email") {
+      throw new BusinessRuleError("DUPLICATE_EMAIL", "A customer with this email already exists.");
+    }
+    throw error;
+  }
+}
+
 /** Searches authorized customers with a consistent paginated snapshot in one repeatable-read transaction. */
 export async function searchCustomers(input: unknown, actor: CustomerActor): Promise<CustomerSearchResult> {
   const authenticated = validateActor(actor, SEARCH_ROLES);
@@ -167,8 +203,9 @@ export async function getCustomerProfile(customerId: string, actor: CustomerActo
   return withTransaction(async tx => {
     const scope = await resolveScope(tx, authenticated, PROFILE_ROLES);
     const params = [scope.branchId, scope.roleName, scope.userId, customerId];
-    const result = await tx.query<CustomerRow>(
-      `SELECT ${CUSTOMER_COLUMNS} FROM customer c WHERE ${SCOPE_SQL} AND c.customer_id = $4`, params,
+    const result = await tx.query<CustomerRow & { branch_code: string; branch_name: string }>(
+      `SELECT ${CUSTOMER_COLUMNS}, b.branch_code, b.branch_name FROM customer c
+       JOIN branch b ON b.branch_id = c.branch_id WHERE ${SCOPE_SQL} AND c.customer_id = $4`, params,
     );
     const customer = result.rows[0];
     // Uniform 404 conceals other customers' existence, including customer self requests.
@@ -196,7 +233,7 @@ export async function getCustomerProfile(customerId: string, actor: CustomerActo
       accounts = rows.rows.map(row => ({ accountId: row.account_id, accountNumber: row.account_number,
         status: row.status, currentBalance: row.current_balance }));
     }
-    return { customer: mapCustomer(customer, scope),
+    return { customer: mapCustomer(customer, scope), branch: { branchCode: customer.branch_code, branchName: customer.branch_name },
       assignmentHistory: history.rows.map(row => ({ assignmentId: row.cust_agent_id, agentId: row.agent_id,
         agentName: row.full_name, assignedDate: row.assigned_date, endDate: row.end_date, isActive: row.is_active })),
       documents: documents.rows.map(row => ({ docId: row.doc_id, docType: row.doc_type, uploadedDate: row.uploaded_date,

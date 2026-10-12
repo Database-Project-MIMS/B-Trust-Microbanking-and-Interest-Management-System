@@ -13,6 +13,12 @@ future session would otherwise silently re-litigate.
 Date, status (proposed/accepted/superseded), the decision, why, what it rules out.
 ```
 
+## Customer follow-up
+
+[ADR-0033: Customer registration and assigned-agent details](ADR-0033-customer-details.md)
+records the user-authorized P02-M02-T06 change; team review/publication is pending.
+ADR-0032 is reserved by PR #97 for the Vercel build correction.
+
 ## Index
 
 | ID       | Title                                                        | Status   |

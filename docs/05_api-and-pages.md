@@ -51,6 +51,45 @@ errors are listed below.
 
 ## Organisation — Member 2
 
+### Record details and editing — 2026-10-11 / ADR-0034
+
+Lists now expose explicit View details actions and permitted Edit actions. Branches
+and agents have guarded `/{resource}/{id}` detail pages; `?edit=1` opens a form on
+that page. All detail reads use private/no-store responses and retain route roles,
+SQL branch/assignment/self scope and existing RLS. Missing and inaccessible details
+use the same 404. UUID errors are 400. Customer/account/FD detail pages link related
+records; savings plans and FD products use native expandable View details controls.
+Customer profiles also show the named registration branch and registration date.
+
+| Method and path | Roles | Detail/edit behavior |
+| --- | --- | --- |
+| `GET /api/branches/{id}` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | Code, name, address, district, phone, status, created/updated dates; manager own branch |
+| `GET /api/agents/{id}` | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | Ordinary agent registration/employment/contact/login name, named branch and dates; manager own branch; no password/session data; birth/hired DATE fields remain YYYY-MM-DD strings for editing |
+| `PATCH /api/customers/{id}` | AGENT assigned / BRANCH_MANAGER own branch | Nonempty strict subset `{fullName,gender,phone,address,email}`; optional fields support explicit null; gender MALE/FEMALE/null; manager cannot update masked email |
+| `PATCH /api/accounts/{id}` | BRANCH_MANAGER own branch | Nonempty `{status?:ACTIVE\|FROZEN,mandate?:{type:ANY_ONE\|ALL_HOLDERS,effectiveFrom,effectiveTo}}`; real ordered dates, nullable end date; signer count derives from locked account holders |
+| `GET /api/fixed-deposits/{id}` | AGENT assigned, BRANCH_MANAGER own branch, CENTRAL_OPS, AUDITOR, CUSTOMER own | Exact principal/opening-rate/date/status snapshots, timestamps, linked account number/status/balance/savings plan/branch, and visible holder names/numbers/roles |
+
+Customer identity, birth date, branch, assignment, status and ownership are outside
+the contact edit payload. Assigned agents may edit email; managers edit only the
+other permitted fields without copying masked values. Strict bodies reject financial,
+registration and unknown fields. Duplicate customer email returns 409. Lock, update
+and existing sanitized customer-trigger audit commit in one service transaction.
+
+Account balances, plan, number, branch and opening history cannot be edited. Closed
+accounts return 409 to PATCH. Existing mandate constraints enforce signer/date rules;
+status changes and explicit mandate before/after audit share one locked transaction.
+`CLOSED` is excluded from PATCH: the UI uses the existing confirmed close operation
+with its zero-balance/no-active-FD/no-positive-unpaid-interest guard. Inactive,
+suspended or frozen status edits require a UI review confirmation; every mutation
+requires server CSRF. Read-only roles get View actions only.
+
+FD opening terms remain read-only as explicitly confirmed by the user. No FD PATCH
+exists. Its detail page links to the account/customer pages, manager account editing,
+and CENTRAL_OPS interest console. Holder data is selected in SQL: agents see currently
+assigned holders, customers see themselves, managers/bankwide readers see permitted
+holders. No co-holder NIC/email/document data is returned. Existing runtime grants
+still prohibit changing FD principal, rate or linkage. No migration is added.
+
 `AGENT` and `BRANCH_MANAGER` users both have an `agent` branch-staff profile. The role
 controls permissions; `agent.branch_id` supplies branch scope. Agent-management endpoints
 below manage ordinary `AGENT` users only. A branch-manager login is created through the
@@ -139,14 +178,14 @@ still needed for previously unattributed postings; no historical backfill is inf
 - **Purpose** Register a customer (FR-CUS-01…05).
 - **Roles** AGENT, BRANCH_MANAGER
 - **Body** `{ fullName, nicPassportNo, dateOfBirth, gender, phone, address, email, branchId, agentId, documents[] }`
-- **Validation** NIC/passport format; `dateOfBirth` in the past; email format; `branchId` within the caller's scope
+- **Validation** NIC/passport format; `dateOfBirth` in the past; email format; optional `gender` accepts only `MALE`/`FEMALE` (or null/omitted); `branchId` within the caller's scope
 - **SQL / routine** one transaction: `INSERT customer` (M1's trigger inserts one sanitized audit) → `INSERT customer_document` (each) → `INSERT customer_agent (is_active = true)`
 - **Transaction** all four, atomic (§4.3: "Customer, documents, assignment and audit event are inserted in one database transaction")
 - **Success** `201 { data: { customerId, customerNumber } }`
 - **Errors** `400` invalid JSON/strict fields; `401` invalid session; `403` role/branch/assignment/CSRF denied; `409 DUPLICATE_IDENTITY` (unique `nic_passport_no`), `409 DUPLICATE_EMAIL`; safe `500` for unexpected failures
 - **Page** `/customers/new`
 
-| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; NIC/email masked for branch staff (FR-CUS-04); fixed sort-column allow-list |
+| `GET /api/customers` | Search by name, NIC, branch, agent | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | Trigram index on `full_name`; assigned AGENT receives full NIC/email, BRANCH_MANAGER receives masked fields (ADR-0033, FR-CUS-04); fixed sort-column allow-list |
 | `GET /api/customers/{id}` | Profile with accounts and assignment history | as above; CUSTOMER for self only | RLS enforces self-access |
 
 Search query keys: `q`, `name`, `nicPassportNo`, `branchId`, `agentId`, `status`,
@@ -156,9 +195,11 @@ unknown/repeated keys and invalid identifiers return 400. Result: `{ data: { cus
 total, page, pageSize } }`. Missing and inaccessible profiles both return 404.
 
 Live screens: `/customers` has scoped named branch/agent filters, sorting, pagination,
-loading/error/empty states and profile links. `/customers/new` uses the session branch,
+loading/error/empty states and explicit View details links. `/customers/new` uses a Male/Female
+gender dropdown (optional), the session branch,
 active agent options and zero to twenty document references, then navigates to the created
-profile. `/customers/{id}` shows identity, all assignment history, safe document verification
+profile. `/customers/{id}` shows NIC/passport, email, gender, phone, address, birth date,
+status, all assignment history, safe document verification
 metadata and real account-holder links. Registration does not upload files, verify documents
 or provision customer logins. Page guards mirror route roles; server checks remain authoritative.
 
@@ -196,7 +237,9 @@ Search accepts q/name/NIC/branch/agent/status, fixed sortBy/sortDirection, page 
 pageSize (maximum 100). Controllers parse numeric query strings. SQL predicates
 restrict AGENT to assigned customers and managers to their branch; CENTRAL_OPS/AUDITOR
 are bank-wide. CUSTOMER reads only its optional-login-linked profile and cannot search.
-Staff NIC/email are masked; documents omit paths. Profiles include all assignment
+Assigned AGENT readers receive full NIC/email only after branch/current-assignment SQL
+checks; BRANCH_MANAGER readers retain masked NIC/email. Bankwide readers and the
+linked customer retain their existing full-field access (ADR-0033). Documents omit paths. Profiles include all assignment
 history. The merged M3 account_holder relation supplies account links (empty array when
 none exist), with account branch scope and string balances. The null fallback is retained
 for incomplete schemas. Reads use repeatable-read transactions; `setRlsContext` supplies
@@ -588,3 +631,30 @@ FD opening selection now searches/paginates instead of stopping at 100 accounts.
 Audit filters use `actorId` (not userId), explicit Colombo timestamps and bounded pages;
 unknown/repeated filters fail `400`. Protected pages authorize on the server as well as APIs.
 Reset tokens travel in a URL fragment and are removed from the address bar on capture.
+
+## Organization and fixed-deposit filters — 2026-10-11 / ADR-0034
+
+List responses retain their existing shapes and permissions; all three are private,
+no-store. Optional filters combine with AND and with the caller's existing SQL scope.
+
+| Endpoint | Additional filters | Search fields |
+|---|---|---|
+| `GET /api/branches` | `q` (1–150 chars), `district` (1–100 chars), existing `status` | Branch code/name/address/phone |
+| `GET /api/agents` | `q` (1–150 chars), `branchId` (UUID), existing `status` | Employee number/name/username/email/phone |
+| `GET /api/fixed-deposits` | `q` (1–150 chars), `fdPlanId` (UUID), existing account/status/page/pageSize | Account number and permitted holder name/customer number |
+
+Text searches are case-insensitive literal substrings: `%` and `_` have no wildcard
+meaning. District matches case-insensitively. Organization statuses remain ACTIVE,
+INACTIVE and SUSPENDED; FD statuses remain ACTIVE, MATURED and CLOSED. Invalid
+filters return 400. A valid foreign branch/product selection cannot widen scope.
+FD count and rows share the same repeatable-read snapshot and predicates; owner
+searches use an EXISTS subquery with customer RLS and explicit assignment/self scope, preventing hidden co-holder
+names from affecting matches or duplicating rows. No financial operation or migration.
+
+Native Search/Clear forms apply drafts explicitly. Organization defaults to ACTIVE;
+FD defaults to all statuses, and Search/Clear reset its page to 1. District/branch
+choices come from permitted branches, including inactive history; creation still
+allows active branches only. FD product choices include historical catalogue entries.
+Errors offer Retry and stale requests are cancelled. Agent navigation, on desktop
+and mobile, is Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
+Savings plans, Fixed deposits. Other role menus retain their ordering and permissions.

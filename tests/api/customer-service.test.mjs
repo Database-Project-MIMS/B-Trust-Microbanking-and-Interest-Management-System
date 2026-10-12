@@ -159,14 +159,14 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     assert.equal(profile.customer.fullName, fullName);
     assert.ok((await counts(client)).customers > 0);
   });
-  test('agent search shows only current assigned customers and masks identity/email', async () => {
+  test('agent search shows full identity/email only for current assigned customers', async () => {
     const visible = await create();
     await create({ agentId: fixture.secondAgentId }, manager());
     const result = await searchCustomers({ branchId: fixture.branchId }, actor(fixture));
     assert.equal(result.total, 1);
     assert.equal(result.customers[0].customerId, visible.customerId);
-    assert.equal(result.customers[0].nicPassportNo, `***${visible.input.nicPassportNo.slice(-4)}`);
-    assert.equal(result.customers[0].email, '***@***');
+    assert.equal(result.customers[0].nicPassportNo, visible.input.nicPassportNo);
+    assert.equal(result.customers[0].email, visible.input.email);
   });
   test('manager search includes own branch only and masks identity', async () => {
     const visible = await create();
@@ -176,6 +176,7 @@ describe('P02-M02-T04: customer registration and scoped read service contracts',
     assert.equal(result.total, 1);
     assert.equal(result.customers[0].customerId, visible.customerId);
     assert.equal(result.customers[0].nicPassportNo, `***${visible.input.nicPassportNo.slice(-4)}`);
+    assert.equal(result.customers[0].email, '***@***');
     await assert.rejects(() => searchCustomers({ branchId: fixture.otherBranchId }, manager()), { code: 'NOT_AUTHORIZED' });
   });
   test('bank-wide authorized roles can read full identity and filter branch/agent', async () => {

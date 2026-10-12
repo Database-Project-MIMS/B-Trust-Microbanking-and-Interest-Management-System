@@ -32,7 +32,7 @@ export default async function DashboardHome() {
         <div><p className="eyebrow">Your daily overview</p><h1 className="page-title">Welcome back, {session?.username}.</h1><p className="page-description">Everything you need to keep your operations moving.</p></div>
       </div>
       <div className="dashboard-hero" data-reveal><span className="light-eyebrow">B-Trust · Operations hub</span><h2>A clear view.<br />A confident next step.</h2><p>Bring your branch network, people, and product portfolio together. Select a workspace below to get started.</p></div>
-      <div className="flex items-center justify-between" data-reveal><h2 className="section-heading">Your workspaces</h2><span className="text-xs text-[var(--text-muted)]">Access tailored to your role</span></div>
+      <div className="flex items-center justify-between" data-reveal><h2 className="section-heading">Your workspaces</h2></div>
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visibleLinks.map((item, index) => <Link data-reveal className="card app-card-link" href={item.href} key={item.href}><span className="card-index" aria-hidden="true">{["⌘", "◎", "↗", "◒", "▤", "✓", "⌂", "◉", "◇", "◌"][index]}</span><h2>{item.title}</h2><p>{item.description}</p><span>Explore workspace ↗</span></Link>)}
       </div>

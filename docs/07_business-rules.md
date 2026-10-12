@@ -33,7 +33,9 @@ nic_passport_no and email are NOT NULL/UNIQUE; customer_id is independent and
 app_user_id is optional/unique (ADR-0007). Branch/login FKs restrict deletion;
 ck_customer_birth_date_past rejects today/future dates; ck_customer_status permits
 ACTIVE/INACTIVE. 0221/0222 implement assignment/document integrity; T04 implements
-atomic registration and scoped/masked reads. Runtime grants/RLS remain M1 work.
+atomic registration and scoped reads. Managers receive masked NIC/email; assigned
+agents receive complete fields under existing branch/assignment scope (ADR-0033).
+Runtime grants/RLS remain M1 work.
 Registration accepts metadata-only, initially unverified documents (zero to twenty);
 M3 enforces required verified documentation at account opening (`sp_open_savings_account`, `DOCUMENTS_NOT_VERIFIED`, migration 0243). The service uppercases
 identity and lowercases email before the database UNIQUE checks. Audit contains only
@@ -141,6 +143,17 @@ the whole run in one transaction would violate FR-INT-04.
 
 ## Security and access
 
+**Record editing (2026-10-11, ADR-0034):** customer contact/name/gender changes
+revalidate the stored actor, enforce branch/current-assignment predicates, lock the
+customer and update with sanitized trigger audit in one transaction. Registration
+identity/birth/branch and financial ownership are excluded by strict server schemas;
+manager email masking prevents email edits by that role. Manager-only account
+status/mandate edits lock the own-branch account before deciding, derive signer counts
+from holders and commit mandate audit with the update. Closed accounts cannot reopen
+through PATCH; closure keeps the existing SQL guard. FD opening terms remain
+read-only, enforced by the unchanged runtime column grants. Detail reads do not post
+money; FD/co-holder scope uses SQL and RLS, never JavaScript filtering.
+
 P02-M02-T05 customer routes authenticate live sessions, enforce route roles and SQL
 branch/assignment/self scope, validate strict fields and verify CSRF for registration.
 The service rechecks stored actor state before setting transaction-local RLS context.
@@ -148,7 +161,10 @@ Migration 0223 extends parent scope to customer assignment/document SELECT/INSER
 it permits only unverified document inserts and self-agent assignment for AGENT.
 The customer trigger writes one sanitized audit in the registration transaction,
 including rollback when a later document/assignment insert fails (ADR-0015).
-NIC/email masking is performed in response shaping, before data reaches the browser.
+NIC/email response masking applies to BRANCH_MANAGER. AGENT receives complete fields
+only after current-assignment and branch checks in SQL (ADR-0033); audit masking is unchanged.
+The registration form offers Male/Female and the server accepts only MALE/FEMALE
+when optional gender is supplied. Historical database values are not rewritten.
 
 P02-M02-T03 implements document verification in services/customer-document-service.ts:
 active AGENT/BRANCH_MANAGER only, active staff profile/branch and active customer,
@@ -295,3 +311,15 @@ remains denied; staff continue through the invoker audited-attempt routine.
 The savings rate is the current mutable plan rate, snapshotted for the distribution.
 No effective-dated savings-rate history is invented. Ordinary closure settlement policy
 and live deployment acceptance remain recorded questions, not implicit rule exceptions.
+
+## Scoped record filtering — 2026-10-11 / ADR-0034
+
+Branch/agent/FD filtering is a read operation. API schemas bound text, validate
+status/UUID/page filters and reject unknown keys; services bind all filter values.
+Organization scope remains an independent SQL predicate. FD account/customer RLS
+applies before both count and row results; owner searches additionally enforce
+assignment/self scope explicitly. An
+unassigned or foreign holder cannot become visible through a search or result count.
+Existing transaction/FD immutability rules and management permissions are unchanged.
+Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
+existing runtime RLS; runtime-role API scope and injection regression tests.

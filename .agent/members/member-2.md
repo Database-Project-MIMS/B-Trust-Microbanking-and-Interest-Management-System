@@ -1,4 +1,14 @@
-# Current state — predeployment local completion
+# Current state — record management
+
+2026-10-11 · P06-M02-T04 locally verified REVIEW, ADR-0034.
+Branch `feat/p06-m02-record-details-edit`, base `9e41cd3`. User authorizes local commits;
+PR waits for #97/#98 merges. View/Edit controls, scoped full details, FD account/owners,
+permitted customer/account edits and catalogue disclosures implemented; FD terms read-only.
+3,584 full checks plus final 361 API checks, rebuild/restore/type/lint/build/browser pass.
+Cross-owner contributions retain stewardship. [Receipt](../handoffs/p06-record-details-edit.md).
+All five overview tables reviewed; no unrelated task acceptance changes.
+
+## Historical predeployment local completion
 
 2026-10-10 · `feat/p06-m02-final-documentation` · base dev `053f6f6`.
 User authorizes cross-member fixes, documentation and commit on this branch;
@@ -238,3 +248,16 @@ gap. No file upload, reassignment or customer-login provisioning was added.
 User controls commit/push/PR/merge. No assistant publication. Historical Phase 2 entry
 approval persists; next M2 Phase 3 task awaits phase exit/entry approval and its gates.
 Current work is uncommitted. /review and /imprint documented; no secrets persisted.
+
+## Record management and filtering follow-up — 2026-10-11
+
+Current branch: feat/p06-m02-record-details-edit. P06-M02-T04 adds organization,
+customer/account details/editing and read-only FD terms, now extended with scoped
+branch/agent/FD filters and the exact agent menu order. ADR-0034 and the
+record-management handoff supersede the older branch/status snapshot above.
+Local commits are explicitly authorized; PR waits for the user's #97/#98 merges.
+No push, merge or deployment. Original M1/M3/M5 stewardship remains unchanged.
+
+Final filter/menu receipt: 3,640 distinct checks across security/API/DB and corrected
+UI runs; rebuild/restore, type/lint/build and production browser pass. P06-M02-T04
+remains locally verified REVIEW; current-state/handoff contain the final evidence.

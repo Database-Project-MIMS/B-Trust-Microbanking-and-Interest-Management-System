@@ -61,3 +61,19 @@ ADR-0027 and the user authorize required cross-member fixes on the current branc
 Original owners/stewards above retain ownership; this is a contribution, not a transfer.
 New capabilities and touched-owner paths are recorded in
 [handoff](handoffs/p06-m02-predeployment-completion.md). No PR/push/merge is authorized.
+
+## Record management contribution — 2026-10-11
+
+ADR-0034 records the user's explicit View/Edit enhancement and local commit authorization.
+M2 contributes required account/plan (M3), FD/product (M5) and route security inventory
+(M1) changes. Existing stewardship is retained; no ownership shifts or SQL changes.
+[Affected interfaces and verification](handoffs/p06-record-details-edit.md).
+PR creation waits for the user's merges of #97 and #98; no push/merge/deployment.
+
+### Filter/navigation follow-up contribution
+
+The user explicitly requests branch/agent/FD filters and the exact agent menu order.
+M2 contributes M1 `components/app-shell/top-bar.tsx` and security contract changes;
+M5 FD listing schema/service/page changes. Stewardship remains with existing owners.
+Services add parameterized read predicates only; no schema or ownership transfer.
+Details and review evidence remain in the record-management handoff.

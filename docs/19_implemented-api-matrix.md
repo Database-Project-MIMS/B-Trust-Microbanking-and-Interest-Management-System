@@ -14,16 +14,19 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | POST | /api/admin/users/{id}/reset | ADMIN | path.id |
 | POST | /api/auth/logout | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | cookie.mims_session |
 | GET | /api/health | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | query.probe |
-| GET | /api/branches | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | query.status |
+| GET | /api/branches | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | query.status, query.q, query.district |
 | POST | /api/branches | ADMIN | body.branchCode, body.branchName, body.address, body.district, body.phone |
+| GET | /api/branches/{id} | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | path.id |
 | PATCH | /api/branches/{id} | ADMIN | path.id, body.branchName, body.address, body.district, body.phone, body.status |
-| GET | /api/agents | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | query.status |
+| GET | /api/agents | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | query.status, query.q, query.branchId |
 | POST | /api/agents | ADMIN, BRANCH_MANAGER | body.branchId, body.employeeNo, body.nicPassportNo, body.fullName, body.dateOfBirth, body.gender, body.phone, body.address, body.email, body.hiredDate, body.username, body.password |
+| GET | /api/agents/{id} | ADMIN, CENTRAL_OPS, BRANCH_MANAGER | path.id |
 | PATCH | /api/agents/{id} | ADMIN, BRANCH_MANAGER | path.id, body.branchId, body.employeeNo, body.nicPassportNo, body.fullName, body.dateOfBirth, body.gender, body.phone, body.address, body.email, body.hiredDate, body.status |
 | GET | /api/agents/{id}/activity | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT | path.id, query.from, query.to |
 | GET | /api/customers | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | query.q, query.name, query.nicPassportNo, query.branchId, query.agentId, query.status, query.sortBy, query.sortDirection, query.page, query.pageSize |
 | POST | /api/customers | AGENT, BRANCH_MANAGER | body.fullName, body.nicPassportNo, body.dateOfBirth, body.gender, body.phone, body.address, body.email, body.branchId, body.agentId, body.documents.0.docType, body.documents.0.filePath |
 | GET | /api/customers/{id} | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | path.id |
+| PATCH | /api/customers/{id} | AGENT, BRANCH_MANAGER | path.id, body.fullName, body.gender, body.phone, body.address, body.email |
 | GET | /api/customers/{id}/fixed-deposits | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | path.id, query.probe |
 | POST | /api/customer-documents/{id}/verify | AGENT, BRANCH_MANAGER | path.id |
 | GET | /api/plans | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | query.probe |
@@ -31,6 +34,7 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | GET | /api/accounts | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR | query.q, query.status, query.planId, query.branchId, query.sortBy, query.sortDirection, query.page, query.pageSize |
 | POST | /api/accounts | AGENT, BRANCH_MANAGER | header.idempotency-key, body.planId, body.branchId, body.holders.0.customerId, body.holders.0.holderType, body.mandate.type, body.mandate.requiredSignatories, body.initialDeposit |
 | GET | /api/accounts/{id} | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | path.id |
+| PATCH | /api/accounts/{id} | BRANCH_MANAGER | path.id, body.status, body.mandate.type, body.mandate.effectiveFrom, body.mandate.effectiveTo |
 | POST | /api/accounts/{id}/holders | BRANCH_MANAGER | path.id, body.customerId |
 | POST | /api/accounts/{id}/close | BRANCH_MANAGER | path.id |
 | GET | /api/accounts/{id}/transactions | AGENT, BRANCH_MANAGER, AUDITOR, CUSTOMER | path.id, query.page, query.pageSize |
@@ -41,7 +45,8 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | POST | /api/transactions/{id}/reverse | BRANCH_MANAGER | path.id, header.idempotency-key, body.reason |
 | GET | /api/fd-products | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | query.probe |
 | PATCH | /api/fd-products/{id} | ADMIN | path.id, body.interestRate, body.status, body.description |
-| GET | /api/fixed-deposits | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | query.accountId, query.status, query.page, query.pageSize |
+| GET | /api/fixed-deposits | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | query.accountId, query.status, query.page, query.pageSize, query.q, query.fdPlanId |
+| GET | /api/fixed-deposits/{id} | AGENT, BRANCH_MANAGER, CENTRAL_OPS, AUDITOR, CUSTOMER | path.id |
 | POST | /api/fixed-deposits | AGENT, BRANCH_MANAGER, CENTRAL_OPS | header.idempotency-key, body.accountId, body.fdPlanId, body.principalAmount |
 | GET | /api/fixed-deposits/quote | AGENT, BRANCH_MANAGER, CENTRAL_OPS | query.accountId, query.fdPlanId, query.principalAmount |
 | GET | /api/interest-runs | ADMIN, CENTRAL_OPS, AUDITOR | query.probe |

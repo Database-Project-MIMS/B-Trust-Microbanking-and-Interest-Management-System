@@ -884,3 +884,13 @@ Remaining requirement conflict: zero-balance closure and withdrawal minimum mean
 minimum-bearing plan needs a separately approved final settlement flow. Do not weaken the
 ordinary minimum rule or forfeit accrued interest silently. Lecturer acceptance of the
 accepted extensions, live HTTPS and target-runtime verification remain external gates.
+
+## Customer response policy reconciliation — 2026-10-11 / ADR-0033
+
+Earlier docs/04, docs/05 and docs/07 described masking NIC/email for all branch staff.
+The user explicitly authorized full customer fields for the currently assigned agent.
+FR-CUS-04 requires masking from unauthorized readers, so existing current-assignment,
+branch SQL scope and RLS remain the access boundary. Manager response masking and
+audit masking remain unchanged. Current contracts have been reconciled; no ERD change.
+The registration dropdown and server MALE/FEMALE allow-list do not change the nullable
+varchar database column or rewrite historical gender values.

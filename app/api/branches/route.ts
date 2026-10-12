@@ -4,7 +4,7 @@ import { verifyCsrf } from "@/lib/auth/csrf";
 import { errorResponse } from "@/lib/http/error-response";
 import {
   createBranchSchema,
-  organizationListQuerySchema,
+  branchListQuerySchema,
 } from "@/lib/validation/organization";
 import { createBranch, listBranches } from "@/services/branch-service";
 
@@ -14,13 +14,11 @@ export async function GET(request: NextRequest): Promise<Response> {
     requireRole(user, "ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AUDITOR");
 
     const url = new URL(request.url);
-    const query = organizationListQuerySchema.parse({
-      status: url.searchParams.get("status") ?? undefined,
-    });
+    const query = branchListQuerySchema.parse(Object.fromEntries(url.searchParams));
     const scope = branchScope(user);
-    const branches = await listBranches(scope.branchId, query.status);
+    const branches = await listBranches(scope.branchId, query.status, query);
 
-    return NextResponse.json({ data: branches });
+    return NextResponse.json({ data: branches }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return errorResponse(error);
   }

@@ -12,7 +12,7 @@ const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
 
 export const registerCustomerSchema = z.object({
   fullName: text(150), nicPassportNo: identity, dateOfBirth: calendarDate,
-  gender: text(20).nullish(), phone: text(20).nullish(), address: text(255).nullish(),
+  gender: z.enum(["MALE", "FEMALE"]).nullish(), phone: text(20).nullish(), address: text(255).nullish(),
   email: z.string().trim().email().max(150).transform(value => value.toLowerCase()),
   branchId: uuid, agentId: uuid,
   documents: z.array(z.object({ docType: text(50), filePath: text(500) }).strict()).max(20),
@@ -29,3 +29,10 @@ export const customerSearchSchema = z.object({
 
 export type RegisterCustomerInput = z.infer<typeof registerCustomerSchema>;
 export type CustomerSearchInput = z.infer<typeof customerSearchSchema>;
+
+export const updateCustomerSchema = z.object({
+  fullName: text(150).optional(),
+  gender: z.enum(["MALE", "FEMALE"]).nullable().optional(),
+  phone: text(20).nullable().optional(), address: text(255).nullable().optional(),
+  email: z.string().trim().email().max(150).transform(value => value.toLowerCase()).optional(),
+}).strict().refine(value => Object.keys(value).length > 0, "At least one field is required.");
