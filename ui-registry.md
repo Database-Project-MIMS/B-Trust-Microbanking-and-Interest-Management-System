@@ -94,6 +94,65 @@ way that disagrees with the stored `NUMERIC(15,2)` value.
 
 ---
 
+## Customer registration and details imprint — 2026-10-11
+
+Files: `app/customers/new/customer-registration.tsx`, `app/customers/customer-list.tsx`,
+`app/customers/[id]/customer-profile.tsx`. Captured via /imprint for ADR-0033.
+
+| Property | Existing pattern |
+| --- | --- |
+| Form controls | Native select inside `field`, styled with `input`; readable Male/Female labels, MALE/FEMALE values and an optional empty prompt |
+| Panels / headings | `card mt-6`, `page-header`, `eyebrow`, `page-title`, `section-heading` |
+| Details action | `btn btn-secondary whitespace-nowrap` link, visible View details text with the customer name in its accessible label |
+| Results | `table-wrap mt-4`, `data-table`, `sr-only` caption and scoped row/column headers; full email and NIC/passport within authorized agent scope |
+| Profile | Existing definition list, explicit NIC/passport label and readable gender; missing optional data uses an em dash |
+| Feedback | Existing `role=status` loading, error/retry controls and empty table row spanning all six columns |
+
+No new color, radius, typography or dependency. Wide result tables stay inside the
+existing horizontal scroll container; profile and registration keep existing responsive
+layout. Details navigation uses the existing server-authorized customer profile.
+
+## Record details and edit controls — 2026-10-11 /imprint
+
+Files: `components/mims/record-actions.tsx`, `record-details.tsx`,
+`record-edit-form.tsx`, `record-preview.tsx`; organization detail, customer/profile,
+account management and FD detail screens. ADR-0034 / P06-M02-T04.
+
+| Property | Existing pattern |
+| --- | --- |
+| List actions | `flex flex-wrap gap-2`, `btn btn-secondary`, descriptive record-specific accessible names; every permitted reader gets View details |
+| Detail surface | `page-header`, `eyebrow`, `page-title`, `card mt-6`, `detail-grid`; definition lists with wrapping values and linked readable names/numbers |
+| Edit form | `card form-grid mt-6`, native `fieldset`, `two-col`, labeled `field`/`input`, native select/date/tel/email/textarea; primary Save changes and secondary Cancel |
+| Feedback | `role=status` loading/success, `role=alert` safe errors and Retry; only changed fields are submitted; drafts survive failures |
+| Confirmation | Existing `confirmation-card`, explicit Confirm changes for inactive/suspended/frozen status and Confirm closure for closing an account |
+| Read-only catalogue details | Native `details`/`summary` styled with existing secondary button, definition list for stored reference data; keyboard-accessible without scripting |
+| Responsive/money | Wrapping action groups, scrolling `table-wrap`, `break-words` detail values; existing exact string money/rate formatters |
+
+No new color, radius, typography or dependency. Server page/API permissions select
+editing rights; form visibility is supplemental. FD terms have no edit form. Nullable
+fields clear explicitly; masked customer email is absent from manager forms.
+
+## Record filter forms and agent navigation — 2026-10-11 /imprint
+
+`RecordListFilters` uses `card form-grid`, `two-col`, native labeled `field`/`input`
+search/select controls, wrapping `flex flex-wrap gap-3` actions and the existing
+primary Search / secondary Clear buttons. IDs are stable and contain no whitespace.
+Draft values apply on submit; Clear restores defaults; results use `role=status`,
+scoped empty rows, safe error/Retry and existing horizontally scrolling tables.
+Branch/district/product labels show readable names. Organization create forms retain
+active-only branch choices. FD pagination wraps on mobile and resets for new filters.
+No new colors, typography, radii or dependencies. The existing shared TopBar renders
+one role-filtered menu for desktop/mobile, applying the user's exact agent order.
+
+Dashboard caption removal — 2026-10-11 /imprint: the user removes the small
+role-access caption beside Your workspaces. Existing section-heading and reveal
+container remain the pattern; no new styles or controls.
+
+Account detail conflict follow-up — 2026-10-12 /imprint: retain the shared
+statement/back header; the permitted Edit link uses the existing btn btn-secondary
+token in a right-aligned action row with mt-4. Its role, closed-account and editing
+visibility gates remain unchanged. Record fields and AccountEdit remain intact.
+
 ## Components
 
 ### Database health and parameter controls
@@ -446,57 +505,3 @@ remain reachable on every report. Account statement/back links use `btn btn-seco
 inside a wrapping action group. No new colors, tokens, typography or component dependencies.
 The mobile primary menu anchors at `top-full` so it follows the actual header height.
 Report metadata explicitly labels absent date bounds rather than rendering a bare "to".
-
-## Customer registration and details imprint — 2026-10-11
-
-Files: `app/customers/new/customer-registration.tsx`, `app/customers/customer-list.tsx`,
-`app/customers/[id]/customer-profile.tsx`. Captured via /imprint for ADR-0033.
-
-| Property | Existing pattern |
-| --- | --- |
-| Form controls | Native select inside `field`, styled with `input`; readable Male/Female labels, MALE/FEMALE values and an optional empty prompt |
-| Panels / headings | `card mt-6`, `page-header`, `eyebrow`, `page-title`, `section-heading` |
-| Details action | `btn btn-secondary whitespace-nowrap` link, visible View details text with the customer name in its accessible label |
-| Results | `table-wrap mt-4`, `data-table`, `sr-only` caption and scoped row/column headers; full email and NIC/passport within authorized agent scope |
-| Profile | Existing definition list, explicit NIC/passport label and readable gender; missing optional data uses an em dash |
-| Feedback | Existing `role=status` loading, error/retry controls and empty table row spanning all six columns |
-
-No new color, radius, typography or dependency. Wide result tables stay inside the
-existing horizontal scroll container; profile and registration keep existing responsive
-layout. Details navigation uses the existing server-authorized customer profile.
-
-## Record details and edit controls — 2026-10-11 /imprint
-
-Files: `components/mims/record-actions.tsx`, `record-details.tsx`,
-`record-edit-form.tsx`, `record-preview.tsx`; organization detail, customer/profile,
-account management and FD detail screens. ADR-0034 / P06-M02-T04.
-
-| Property | Existing pattern |
-| --- | --- |
-| List actions | `flex flex-wrap gap-2`, `btn btn-secondary`, descriptive record-specific accessible names; every permitted reader gets View details |
-| Detail surface | `page-header`, `eyebrow`, `page-title`, `card mt-6`, `detail-grid`; definition lists with wrapping values and linked readable names/numbers |
-| Edit form | `card form-grid mt-6`, native `fieldset`, `two-col`, labeled `field`/`input`, native select/date/tel/email/textarea; primary Save changes and secondary Cancel |
-| Feedback | `role=status` loading/success, `role=alert` safe errors and Retry; only changed fields are submitted; drafts survive failures |
-| Confirmation | Existing `confirmation-card`, explicit Confirm changes for inactive/suspended/frozen status and Confirm closure for closing an account |
-| Read-only catalogue details | Native `details`/`summary` styled with existing secondary button, definition list for stored reference data; keyboard-accessible without scripting |
-| Responsive/money | Wrapping action groups, scrolling `table-wrap`, `break-words` detail values; existing exact string money/rate formatters |
-
-No new color, radius, typography or dependency. Server page/API permissions select
-editing rights; form visibility is supplemental. FD terms have no edit form. Nullable
-fields clear explicitly; masked customer email is absent from manager forms.
-
-## Record filter forms and agent navigation — 2026-10-11 /imprint
-
-`RecordListFilters` uses `card form-grid`, `two-col`, native labeled `field`/`input`
-search/select controls, wrapping `flex flex-wrap gap-3` actions and the existing
-primary Search / secondary Clear buttons. IDs are stable and contain no whitespace.
-Draft values apply on submit; Clear restores defaults; results use `role=status`,
-scoped empty rows, safe error/Retry and existing horizontally scrolling tables.
-Branch/district/product labels show readable names. Organization create forms retain
-active-only branch choices. FD pagination wraps on mobile and resets for new filters.
-No new colors, typography, radii or dependencies. The existing shared TopBar renders
-one role-filtered menu for desktop/mobile, applying the user's exact agent order.
-
-Dashboard caption removal — 2026-10-11 /imprint: the user removes the small
-role-access caption beside Your workspaces. Existing section-heading and reveal
-container remain the pattern; no new styles or controls.

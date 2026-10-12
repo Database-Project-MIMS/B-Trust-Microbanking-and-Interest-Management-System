@@ -53,7 +53,6 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice, 
 
   const header = <div className="page-header"><div><p className="eyebrow">Savings account</p><h1 className="page-title">{account?.accountNumber ?? "Account"}</h1></div>
     <div className="flex flex-wrap gap-2">
-      {account && canAddHolder && account.status !== "CLOSED" && !editing && <Link className="btn btn-secondary" href={`/accounts/${account.accountId}?edit=1`}>Edit</Link>}
       {account && <Link className="btn btn-secondary" href={`/accounts/${encodeURIComponent(account.accountId)}/statement`}>View statement</Link>}
       {canBrowse && <Link className="btn btn-secondary" href="/accounts">Back to accounts</Link>}
     </div></div>;
@@ -67,6 +66,9 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice, 
 
   return <>
     {header}
+    {canAddHolder && account.status !== "CLOSED" && !editing && <div className="flex justify-end mt-4">
+      <Link className="btn btn-secondary" href={`/accounts/${account.accountId}?edit=1`}>Edit</Link>
+    </div>}
     {notice && NOTICES[notice] && <p role="status" className="card mt-6">{NOTICES[notice]}</p>}
     {withdrawalsClosed && <p role="status" className="card mt-6">This account is {account.status.toLowerCase()}. Withdrawals are not allowed.</p>}
     <div className="detail-grid mt-6">

@@ -199,3 +199,17 @@ simulation, TypeScript and seven deployment tests pass. No commit/push/PR/merge 
 deployment; original owners, task statuses and phase gates retained. Next: user
 reviews/commits/publishes this branch to dev, then rechecks dev against main.
 Receipt: `.agent/handoffs/p06-dev-main-conflict-resolution.md`. Prior memory preserved.
+
+## PR #103 follow-up — 2026-10-12
+
+User committed the first fix as `cbbb6a8` and merged PR #102 into dev `773796b`.
+GitHub still reports four conflicts on dev-to-main PR #103. Root cause of the
+incorrect prior assurance: two merge bases, not one. `d218109` reproduces exactly
+the screenshot; `5253f6d` and default recursive Git previously hid these overlaps.
+Local follow-up moves the three documentation blocks and moves account Edit to a
+separate action row, preserving statement/back links, fields and permissions.
+Both ancestor comparisons now pass with the same final tree. No merge commit is
+needed for this content fix. Stewardship/task statuses unchanged. User must
+commit/push this existing feature branch and integrate through a PR into dev;
+assistant creates no PR or merge. Do not claim GitHub is fixed until it recalculates.
+Evidence/next steps: `.agent/handoffs/p06-dev-main-conflict-resolution.md`.

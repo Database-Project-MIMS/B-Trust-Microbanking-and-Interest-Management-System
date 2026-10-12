@@ -1,104 +1,4 @@
-# Current state — dev-to-main documentation fix
-
-## Local resolution — 2026-10-12
-
-User requests the fix on `feat/p06-m02-record-details-edit`, without PR creation
-or merge. Docs/24 matches main; its PR #98 supplement moves to the customer handoff,
-and the overlapping memory section moves to the end. All history is preserved.
-Source/history checks confirm agent/branch Search/Clear and filters are already
-in dev through PR #100 (`05a1a26`, including `d0c2d0a`); no missing feature changes.
-Tree-only simulation has zero conflicts; TypeScript and seven deployment checks
-pass. Changes are uncommitted; no push, PR, merge or deployment. Existing task
-statuses and phase gates remain. [Receipt](handoffs/p06-dev-main-conflict-resolution.md).
-
-Earlier session records below are historical and preserved.
-
-# Current state — record filters and agent navigation
-
-## Follow-up locally verified — 2026-10-11
-
-P06-M02-T04 / ADR-0034 on feat/p06-m02-record-details-edit now includes branch
-text/district/status, agent text/branch/status, and FD account/visible-owner/product/
-status filters. Search/Clear preserves scoped SQL; FD searches reset pagination.
-Agent desktop/mobile order matches the user's eight tabs exactly. FD holder search
-adds explicit assignment/self scope alongside RLS to prevent hidden co-holder matches.
-No migration or financial writes; original owners retain stewardship.
-
-Verification: 3,640 distinct checks across security/API/DB and corrected E2E runs.
-Final 70-test UI suite, clean 70-migration rebuild/checksum/reseed/28-table restore,
-typecheck/lint/production build pass. Initial outdated renderer fixture was corrected;
-negative owner-scope finding fixed and retested. Production browser verifies Search/
-Clear, combined filters, scoped choices, exact desktop/mobile menu and no mobile
-page overflow. Console clean; viewport restored. User synthetic preview remains live.
-Review/imprint/remember and cross-owner receipt are in the handoff. REVIEW remains;
-no additional acceptance or phase gate. PR still waits for the user's #97/#98 merges.
-No push, PR creation, merge or deployment. Existing developer/hosted databases intact.
-[Current receipt](handoffs/p06-record-details-edit.md).
-
-Earlier session records below are historical and preserved.
-# Current state — record details and permitted editing
-
-## Record management verified — 2026-10-11
-
-P06-M02-T04 / ADR-0034 is locally verified REVIEW on
-`feat/p06-m02-record-details-edit`, based on corrected PR #98 tree `9e41cd3`.
-User authorizes branch and a few local commits. View/Edit actions cover organization,
-customers and accounts; FD details show stored terms, account and visible owners.
-Savings-plan/FD-product details retain existing edit workflows. FD opening terms remain
-read-only by explicit user clarification. Customer contact edits preserve masking;
-manager account status/mandate edits lock and audit atomically. No migration.
-Agent DATE serialization is corrected for native inputs; customer branch/registration
-metadata is displayed. Original M1/M3/M5 stewardship retained.
-
-Verification: full 3,584 checks/120 suites, final 361 API checks/33 suites, no failures,
-cancellations or skips; clean 70-migration rebuild/restore, typecheck/lint/production
-build pass. Disposable production browser verifies branch/customer/agent saves,
-freeze confirmation/cancel/reactivation, role denials, FD related details, catalogue
-disclosures and mobile overflow. Console clean; signed out/closed, viewport restored,
-previews stopped. /review passes; /imprint registry and /remember continuation saved.
-All five overview tables reviewed; no unrelated acceptance changes.
-Tracker: 99 tasks, 86 DONE, 12 REVIEW, one IN_PROGRESS (live HTTPS).
-
-PR #97/#98 remain unmerged at session check. New PR waits for the user's merges;
-no push, merge or deployment. Next: incorporate actual merged integration target,
-verify the combined tree, then publish/review when authorized.
-[Full receipt and PR draft](handoffs/p06-record-details-edit.md).
-
-Earlier session records below are historical and preserved.
-
-## PR #98 Vercel dependency correction — 2026-10-11
-
-PR #98 at `3e6a292` was published from a customer branch based on the older audit
-commit, before PR #97's build and menu fixes. Its Vercel check failed while hosted
-application/database CI passed. PR #97 at `26b315e` now has a successful Vercel check.
-The current branch is `feat/p02-m02-customer-details`: cherry-picked `dc66771` as
-`8e05feb` and `26b315e` as `cc4147c` without conflicts. Vercel install/build commands,
-compiler-independent config and Dashboard-first navigation are now included.
-Customer fields, gender validation, scoped access and documentation survive unchanged.
-Combined disposable verification passes: 3,418 tests /117 suites, zero failures,
-cancellations or skips, clean 70-migration rebuild/restore, typecheck, lint and
-production build. /review passes. No push, branch merge or deployment. Next: publish
-the corrected PR #98 branch and deploy its new head; repeating `3e6a292` keeps the old setup.
-
-## Customer follow-up verified — 2026-10-11
-
-User requested a new branch, Male/Female registration dropdown, customer email/NIC
-visibility for the agent and View details navigation, with a few local commits and
-no push/PR. The user clarified these are customer fields, not agent contact data.
-Branch: `feat/p02-m02-customer-details`, based on the prior verified local checkout.
-ADR-0033 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
-Full fields are returned only within the existing current-assignment/branch scope;
-manager and audit masking remain. Server validation checks optional MALE/FEMALE;
-no migration or financial rule change. Registry/contracts and M2 overview updated.
-All five overview tables reviewed; other member statuses retain their prior state.
-
-Verification: 3,417 tests /117 suites, zero failures/skips, clean 70-migration rebuild,
-typecheck/lint/production build. Production browser registration, list/detail navigation,
-full profile, empty results and mobile overflow checks pass; no browser errors/warnings.
-QA uses disposable local PostgreSQL only; browser signed out/closed, viewport restored,
-preview stopped. Task remains REVIEW pending user publication. Local commits authorized;
-push/PR/merge/deployment remain user actions. /remember save appends this continuation
-context while preserving earlier memory. No credential values are persisted.
+# Current state — live audit corrections
 
 ## Agent menu order — 2026-10-11
 
@@ -108,7 +8,7 @@ typecheck pass; docs/05, UI registry and live-audit handoff are updated.
 
 ## PR #97 Vercel build correction — 2026-10-11
 
-Historical correction branch: `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
+Current branch remains `feat/p06-m02-live-audit-fixes`. PR #97's Vercel check
 failed loading the TS config; its database/application CI passed at `5253f6d`.
 ADR-0032 introduces compiler-independent `next.config.mjs` and explicit locked
 Vercel build dependencies (`npm ci --include=dev`, `npm run build`). Dependency
@@ -711,3 +611,120 @@ already occur on dev. `tsc --noEmit`, `eslint .`, `next build` clean. RPT-02 (T0
 Dashboard follow-up — 2026-10-11: removed the requested role-access caption beside
 Your workspaces; typecheck and targeted ESLint pass. /review and /imprint recorded
 in the record-management handoff/registry. Existing task acceptance remains REVIEW.
+
+## Archived record-management session updates
+
+# Current state — dev-to-main documentation fix
+
+## Local resolution — 2026-10-12
+
+User requests the fix on `feat/p06-m02-record-details-edit`, without PR creation
+or merge. Docs/24 matches main; its PR #98 supplement moves to the customer handoff,
+and the overlapping memory section moves to the end. All history is preserved.
+Source/history checks confirm agent/branch Search/Clear and filters are already
+in dev through PR #100 (`05a1a26`, including `d0c2d0a`); no missing feature changes.
+Tree-only simulation has zero conflicts; TypeScript and seven deployment checks
+pass. Changes are uncommitted; no push, PR, merge or deployment. Existing task
+statuses and phase gates remain. [Receipt](handoffs/p06-dev-main-conflict-resolution.md).
+
+Earlier session records below are historical and preserved.
+
+# Current state — record filters and agent navigation
+
+## Follow-up locally verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 on feat/p06-m02-record-details-edit now includes branch
+text/district/status, agent text/branch/status, and FD account/visible-owner/product/
+status filters. Search/Clear preserves scoped SQL; FD searches reset pagination.
+Agent desktop/mobile order matches the user's eight tabs exactly. FD holder search
+adds explicit assignment/self scope alongside RLS to prevent hidden co-holder matches.
+No migration or financial writes; original owners retain stewardship.
+
+Verification: 3,640 distinct checks across security/API/DB and corrected E2E runs.
+Final 70-test UI suite, clean 70-migration rebuild/checksum/reseed/28-table restore,
+typecheck/lint/production build pass. Initial outdated renderer fixture was corrected;
+negative owner-scope finding fixed and retested. Production browser verifies Search/
+Clear, combined filters, scoped choices, exact desktop/mobile menu and no mobile
+page overflow. Console clean; viewport restored. User synthetic preview remains live.
+Review/imprint/remember and cross-owner receipt are in the handoff. REVIEW remains;
+no additional acceptance or phase gate. PR still waits for the user's #97/#98 merges.
+No push, PR creation, merge or deployment. Existing developer/hosted databases intact.
+[Current receipt](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
+# Current state — record details and permitted editing
+
+## Record management verified — 2026-10-11
+
+P06-M02-T04 / ADR-0034 is locally verified REVIEW on
+`feat/p06-m02-record-details-edit`, based on corrected PR #98 tree `9e41cd3`.
+User authorizes branch and a few local commits. View/Edit actions cover organization,
+customers and accounts; FD details show stored terms, account and visible owners.
+Savings-plan/FD-product details retain existing edit workflows. FD opening terms remain
+read-only by explicit user clarification. Customer contact edits preserve masking;
+manager account status/mandate edits lock and audit atomically. No migration.
+Agent DATE serialization is corrected for native inputs; customer branch/registration
+metadata is displayed. Original M1/M3/M5 stewardship retained.
+
+Verification: full 3,584 checks/120 suites, final 361 API checks/33 suites, no failures,
+cancellations or skips; clean 70-migration rebuild/restore, typecheck/lint/production
+build pass. Disposable production browser verifies branch/customer/agent saves,
+freeze confirmation/cancel/reactivation, role denials, FD related details, catalogue
+disclosures and mobile overflow. Console clean; signed out/closed, viewport restored,
+previews stopped. /review passes; /imprint registry and /remember continuation saved.
+All five overview tables reviewed; no unrelated acceptance changes.
+Tracker: 99 tasks, 86 DONE, 12 REVIEW, one IN_PROGRESS (live HTTPS).
+
+PR #97/#98 remain unmerged at session check. New PR waits for the user's merges;
+no push, merge or deployment. Next: incorporate actual merged integration target,
+verify the combined tree, then publish/review when authorized.
+[Full receipt and PR draft](handoffs/p06-record-details-edit.md).
+
+Earlier session records below are historical and preserved.
+
+## PR #98 Vercel dependency correction — 2026-10-11
+
+PR #98 at `3e6a292` was published from a customer branch based on the older audit
+commit, before PR #97's build and menu fixes. Its Vercel check failed while hosted
+application/database CI passed. PR #97 at `26b315e` now has a successful Vercel check.
+The current branch is `feat/p02-m02-customer-details`: cherry-picked `dc66771` as
+`8e05feb` and `26b315e` as `cc4147c` without conflicts. Vercel install/build commands,
+compiler-independent config and Dashboard-first navigation are now included.
+Customer fields, gender validation, scoped access and documentation survive unchanged.
+Combined disposable verification passes: 3,418 tests /117 suites, zero failures,
+cancellations or skips, clean 70-migration rebuild/restore, typecheck, lint and
+production build. /review passes. No push, branch merge or deployment. Next: publish
+the corrected PR #98 branch and deploy its new head; repeating `3e6a292` keeps the old setup.
+
+## Customer follow-up verified — 2026-10-11
+
+User requested a new branch, Male/Female registration dropdown, customer email/NIC
+visibility for the agent and View details navigation, with a few local commits and
+no push/PR. The user clarified these are customer fields, not agent contact data.
+Branch: `feat/p02-m02-customer-details`, based on the prior verified local checkout.
+ADR-0033 and `handoffs/p02-m02-customer-details.md` document P02-M02-T06.
+Full fields are returned only within the existing current-assignment/branch scope;
+manager and audit masking remain. Server validation checks optional MALE/FEMALE;
+no migration or financial rule change. Registry/contracts and M2 overview updated.
+All five overview tables reviewed; other member statuses retain their prior state.
+
+Verification: 3,417 tests /117 suites, zero failures/skips, clean 70-migration rebuild,
+typecheck/lint/production build. Production browser registration, list/detail navigation,
+full profile, empty results and mobile overflow checks pass; no browser errors/warnings.
+QA uses disposable local PostgreSQL only; browser signed out/closed, viewport restored,
+preview stopped. Task remains REVIEW pending user publication. Local commits authorized;
+push/PR/merge/deployment remain user actions. /remember save appends this continuation
+context while preserving earlier memory. No credential values are persisted.
+
+## Current PR #103 correction — 2026-10-12
+
+PR #102 was merged by the user into dev at `773796b`; PR #103 targets main
+`88d06dd`. Earlier single-base conflict claims are superseded: there are two
+common ancestors (`5253f6d`, `d218109`). The second reproduces exactly GitHub's
+four current conflicts. This branch now relocates overlapping state/phase/UI
+notes and separates the account Edit link from the shared statement/back header,
+retaining record fields, editing gates, filters and financial behavior.
+Both explicit-base simulations pass with identical final trees. Changes remain
+uncommitted on `feat/p06-m02-record-details-edit`; no assistant push/PR/merge.
+User publication must go through a feature PR into dev, then recheck PR #103.
+Original ownership and task/phase statuses remain. [Current receipt](handoffs/p06-dev-main-conflict-resolution.md).
