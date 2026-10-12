@@ -1,5 +1,56 @@
 # Dev-to-main conflict resolution — 2026-10-12
 
+## PR #103 follow-up — current diagnosis
+
+The earlier single-base checks below are insufficient and their GitHub mergeability
+claim is superseded. PR #102 was merged by the user as `773796b`; PR #103 remains
+dev into main with the four conflicts shown in the screenshot.
+`git merge-base --all` returns BOTH `5253f6d` and `d218109`. Default recursive
+simulation combines their histories, while an explicit `d218109` comparison
+reproduces exactly GitHub's current-state, account-detail, Phase 6 and UI registry
+conflicts. Verify against every returned base, not just the first one.
+
+Authorized follow-up on the current branch: preserve main's shared statement/back
+header and place the manager Edit action below it, retaining editing gates and all
+record fields; relocate newer state, phase and UI notes away from main's shared
+insertion points. M3 account-detail, lead/shared registry and documentation changes
+are contributions under the user's conflict-fix request; stewardship is unchanged.
+No migration, API, permission, dependency or financial change. No assistant commit,
+push, PR creation or branch merge. This note precedes those cross-owner edits.
+
+## Follow-up implementation and verification
+
+The four displayed paths are now changed on `feat/p06-m02-record-details-edit`:
+state notes are retained at the end after the shared audit prefix, the Phase 6
+record-management paragraph moves to a supplement, and customer/record UI entries
+move before the registry's component catalogue. Main's changed insertion blocks
+remain intact. Account Edit is a separate loaded-account action row; the existing
+canAddHolder, non-CLOSED and !editing gates remain. Fields and AccountEdit survive.
+/imprint records existing secondary button/mt-4 tokens, with no new design token.
+
+Both returned merge bases now simulate without conflicts and yield the SAME
+result tree; feature-branch integration into current dev is also conflict-free.
+Exact API/SQL/dependency diffs are empty. 45 focused account/FD/record/deployment
+tests and targeted ESLint pass. Clean source TypeScript and production build pass.
+The production build compiles, regenerates valid route types and renders all 71
+static build entries with synthetic settings and no real database connection.
+Root typecheck
+initially sees obsolete generated password routes in .next from the other branch;
+the clean verification export avoids changing that cache or the existing preview.
+
+/review: plan alignment and integrity pass; no feature, documentation section or
+permission is discarded. Read-only source/history checks retain the merged agent/
+branch filters. This correction doesn't mark tasks DONE or approve phase gates.
+No schema rebuild is needed because no database/API rule changed. Ignored evidence:
+`scratch/dev-main-resolution/pr103-all-bases-verification.json` and follow-up patch.
+
+GitHub still reports conflicts on its PUBLISHED dev tip until the user commits,
+pushes the feature branch and integrates its follow-up PR into dev. Recheck actual
+PR #103 afterwards; do not promise an unpublished local tree changes GitHub state.
+No assistant commit, push, PR creation, actual merge or deployment is performed.
+
+Earlier evidence below is retained as a record of the first attempt.
+
 User authorizes applying the documentation fix to the current branch
 `feat/p06-m02-record-details-edit`; no PR creation or merge. Changes remain local
 and uncommitted. This is an M2 documentation/integration contribution; original
