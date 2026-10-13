@@ -7,6 +7,7 @@ import {withTransaction} from '../../lib/db/index.ts';
 import {setRlsContext} from '../../lib/db/rls-context.ts';
 import {recordInterestRunRequest} from '../../services/interest-request-service.ts';
 import {closeAccount} from '../../services/account-service.ts';
+import {withInterestRunLock} from '../../lib/db/interest-run-lock.ts';
 describe('Savings daily balances, FD catch-up and principal maturity under runtime role',()=>{
  let owner,f,restore,channel;
  before(async()=>{owner=await pool.connect();await requireDisposableDatabase(owner);f=await fdFixture(owner);channel=(await owner.query("SELECT channel_id FROM transaction_channel WHERE channel_name='SYSTEM'")).rows[0].channel_id;restore=useCustomerRuntime(pool);});
@@ -52,6 +53,32 @@ describe('Savings daily balances, FD catch-up and principal maturity under runti
  await assert.rejects(()=>recordInterestRunRequest({cycleDate:'2999-01-01'},{userId:f.centralId,actorType:'USER'}),{code:'VALIDATION_FAILED'});
  assert.equal((await owner.query('SELECT count(*)::int AS n FROM audit_log')).rows[0].n,before);
  await assert.rejects(()=>withTransaction(async c=>{await setRlsContext(c,{userId:f.agentId,roleName:'AGENT',branchId:f.branchId});await c.query("SELECT fn_return_fd_principal($1,'2002-07-03')",[f.activeId]);}));
+ });
+ test('an interrupted control resumes only unpaid FD periods without resetting committed totals',async()=>{
+ const a=await f.account([f.customerId]);
+ const fd=await f.deposit(a.account_id,'ACTIVE','100000','2008-01-01');
+ const run=(await owner.query("INSERT INTO interest_run(cycle_date,status,initiated_by) VALUES('2008-03-02','RUNNING',$1) RETURNING run_id",[f.centralId])).rows[0].run_id;
+ // Model a worker killed after its first distribution committed.
+ await tx(async c=>{
+ const amount=(await c.query('SELECT fn_calculate_fd_interest(100000,0.1375) AS amount')).rows[0].amount;
+ const posted=(await c.query("CALL sp_post_interest_credit($1,$2,$3,'2008-01-31',NULL,NULL,NULL)",[a.account_id,amount,fd])).rows[0];
+ await c.query("INSERT INTO interest_payout(fd_id,interest_run_id,transaction_id,cycle_date,payout_date,interest_amount) VALUES($1,$2,$3,'2008-01-31',CURRENT_DATE,$4)",[fd,run,posted.p_transaction_id,amount]);
+ await c.query("UPDATE fixed_deposit SET next_interest_date='2008-03-01' WHERE fd_id=$1",[fd]);
+ await c.query('UPDATE interest_run SET fd_count=1,total_interest=$2 WHERE run_id=$1',[run,amount]);
+ });
+ const result=await recordInterestRunRequest({cycleDate:'2008-03-02'},{userId:f.centralId,actorType:'USER'});
+ assert.equal(result.runId,run);assert.equal(result.status,'COMPLETED');
+ assert.equal((await owner.query('SELECT count(*)::int AS n FROM interest_payout WHERE fd_id=$1',[fd])).rows[0].n,2);
+ assert.equal((await owner.query('SELECT r.fd_count=(SELECT count(*) FROM interest_payout WHERE interest_run_id=r.run_id AND fd_id IS NOT NULL) AND r.total_interest=(SELECT sum(interest_amount) FROM interest_payout WHERE interest_run_id=r.run_id) AS valid FROM interest_run r WHERE run_id=$1',[run])).rows[0].valid,true);
+ });
+ test('overlapping cycles are denied before writes and the lock releases after failure',async()=>{
+ const before=(await owner.query('SELECT count(*)::int AS n FROM audit_log')).rows[0].n;
+ await withInterestRunLock(async()=>{
+ await assert.rejects(()=>recordInterestRunRequest({cycleDate:'2009-01-01'},{userId:f.centralId,actorType:'USER'}),{code:'RUN_IN_PROGRESS'});
+ });
+ assert.equal((await owner.query('SELECT count(*)::int AS n FROM audit_log')).rows[0].n,before);
+ await assert.rejects(()=>withInterestRunLock(async()=>{throw new Error('synthetic failure');}));
+ assert.equal(await withInterestRunLock(async()=>true),true);
  });
  test('a delayed savings run pays every unpaid funded day beyond thirty days',async()=>{
  const a=await f.account([f.customerId]);await owner.query("UPDATE account SET opened_date='2003-01-01',current_balance=36500 WHERE account_id=$1",[a.account_id]);

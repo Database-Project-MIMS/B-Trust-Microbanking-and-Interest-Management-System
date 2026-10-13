@@ -108,8 +108,14 @@ describe('G-26: complete FD and independently committed interest API under mims_
       assert.equal((await runs.POST(request('POST','/api/interest-runs',{cycleDate:'1902-01-31',dryRun:false},'central'))).status,500);
       assert.equal((await client.query('SELECT count(*)::int AS n FROM interest_payout WHERE fd_id=$1 AND cycle_date=$2',[fdId,'1902-01-31'])).rows[0].n,1);
       assert.equal(await balance(account.account_id),'124443.08');
-      assert.equal((await runs.POST(request('POST','/api/interest-runs',{cycleDate:'1902-01-31',dryRun:false},'central'))).status,409);
+      // Recovery retries finalization while the synthetic fault is still installed.
+      assert.equal((await runs.POST(request('POST','/api/interest-runs',{cycleDate:'1902-01-31',dryRun:false},'central'))).status,500);
+      assert.equal((await client.query('SELECT count(*)::int AS n FROM interest_payout WHERE fd_id=$1 AND cycle_date=$2',[fdId,'1902-01-31'])).rows[0].n,1);
     }finally{await client.query('DROP TRIGGER test_run_finalize_fault ON interest_run');await client.query('DROP FUNCTION public.test_run_finalize_fault()');}
+    const recovered=await success(await runs.POST(request('POST','/api/interest-runs',{cycleDate:'1902-01-31',dryRun:false},'central')),200);
+    assert.equal(recovered.status,'COMPLETED');
+    assert.equal(await balance(account.account_id),'124443.08');
+    assert.equal((await client.query('SELECT count(*)::int AS n FROM interest_payout WHERE fd_id=$1 AND cycle_date=$2',[fdId,'1902-01-31'])).rows[0].n,1);
   });
   test('dry run creates no run, payout or balance change; legacy owner-only entries cannot be called by runtime',async()=>{
     const original=await financialSnapshot(client);

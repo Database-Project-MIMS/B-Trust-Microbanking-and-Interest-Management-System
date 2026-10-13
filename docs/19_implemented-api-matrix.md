@@ -51,6 +51,7 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | GET | /api/fixed-deposits/quote | AGENT, BRANCH_MANAGER, CENTRAL_OPS | query.accountId, query.fdPlanId, query.principalAmount |
 | GET | /api/interest-runs | ADMIN, CENTRAL_OPS, AUDITOR | query.probe |
 | POST | /api/interest-runs | ADMIN, CENTRAL_OPS | body.cycleDate, body.dryRun, header.authorization |
+| GET | /api/cron/interest | CRON_SECRET bearer only; no session role | query.probe (rejected), header.authorization |
 | GET | /api/admin/users | ADMIN | query.q, query.roleName, query.page |
 | POST | /api/admin/users | ADMIN | body.username, body.password, body.roleName, body.customerId, body.profile.branchId |
 | PATCH | /api/admin/users/{id} | ADMIN | path.id, body.status, body.password, body.roleName |

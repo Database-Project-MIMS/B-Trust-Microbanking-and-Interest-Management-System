@@ -658,3 +658,13 @@ allows active branches only. FD product choices include historical catalogue ent
 Errors offer Retry and stale requests are cancelled. Agent navigation, on desktop
 and mobile, is Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
 Savings plans, Fixed deposits. Other role menus retain their ordering and permissions.
+
+## Automatic scheduler — Member 5 repair, 2026-10-13
+
+GET /api/cron/interest requires an exact Bearer CRON_SECRET header; session cookies
+provide no access. It accepts no query parameters, uses the Asia/Colombo current date,
+returns the interest result with triggeredBy/triggeredAt, and sets Cache-Control: no-store.
+Missing/invalid credentials return 401, query parameters 400, an overlapping active run 409.
+Manual runs retain POST /api/interest-runs role and CSRF checks. Interrupted RUNNING
+controls resume under a global database lock; completed runs replay their original result.
+See [automatic scheduling setup](25_vercel-interest-cron.md).
