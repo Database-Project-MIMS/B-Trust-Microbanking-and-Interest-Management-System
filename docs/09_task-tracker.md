@@ -429,3 +429,12 @@ reset/admin/document/reconciliation corrections are included in authorized P06-M
 cross-owner delivery (ADR-0027). Status totals: 97 tasks, 86 DONE, 10 REVIEW,
 1 IN_PROGRESS (live deployment). REVIEW preserves user publication/peer acceptance;
 no push, PR or merge was performed. Remaining product/external limits: docs/21.
+
+## Member 5 automatic interest review — 2026-10-13
+
+| Task | Owner | Scope | Status |
+|---|---|---|---|
+| P06-M05-T03 | M5 | User-authorized feat/vercel-interest-cron review, security/recovery fixes and isolated financial/API regressions | REVIEW (3,662 distinct checks; rebuild/restore/type/lint/build pass; hosted confirmation pending) |
+
+Details: [cron guide](25_vercel-interest-cron.md), [repair handoff](../.agent/handoffs/interest-cron-review.md).
+Existing phase and publication acceptance remains unchanged.

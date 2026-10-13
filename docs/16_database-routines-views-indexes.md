@@ -297,3 +297,11 @@ public-invoker savings calculation retains RLS. Transfer reversal takes both acc
 in deterministic order. FD maturity takes FD then account, matching interest processing.
 Lecture coverage: relational constraints/partial unique indexes, deferred multi-row triggers,
 parameterized SQL, set-based daily balances, exact NUMERIC, locks/ACID, RLS and rollups.
+
+## Automatic service concurrency (2026-10-13)
+
+lib/db/interest-run-lock.ts uses pg_try_advisory_xact_lock(3043,5) in a control-only
+transaction. This serialized service coordinator works with transaction pooling and
+releases on commit/rollback/disconnect. Distribution transactions use separate
+connections; their financial commits survive control/finalization failures. No stored
+routine, view, index or migration is altered by this addition.

@@ -323,3 +323,12 @@ unassigned or foreign holder cannot become visible through a search or result co
 Existing transaction/FD immutability rules and management permissions are unchanged.
 Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
 existing runtime RLS; runtime-role API scope and injection regression tests.
+
+## Automatic interest control — 2026-10-13
+
+The cron GET is secret-only. Manual financial writes require the existing POST role/CSRF
+checks. Services serialize all cycle dates with a transaction advisory lock; distributions
+still commit independently. A disconnected runner releases its control lock, allowing an
+interrupted RUNNING cycle to resume unpaid FD dates/savings cursors without repeating
+committed payouts or resetting totals. Completed same-date results replay unchanged.
+No financial formula, payout constraint, rate snapshot or migration was changed.
