@@ -2,7 +2,7 @@
 
 **Name:** Herath H.M.V.L · **Index:** 240225J
 **Domain Slice:** Organisation & Customers
-**Total Story Points:** ~58 plus scoped enhancements · **Total Tasks:** 20 across 6 phases, including customer and record-management follow-ups
+**Total Story Points:** ~58 plus scoped enhancements · **Total Tasks:** 21 across 6 phases, including customer, record-management and password follow-ups
 
 Full slice description and copy-paste session prompt: `../docs/member-prompts/member-2.md`
 Running session log (updated via `/remember save`): `../.agent/members/member-2.md`
@@ -10,6 +10,14 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 ---
 
 ## 🗺️ Work Order Summary
+**Password validation (2026-10-13):** ~~P06-M02-T05 — customer/agent password
+complexity~~ is locally verified REVIEW. At least 8 characters plus uppercase,
+lowercase, number and symbol; shared server/form validation covers provisioning,
+admin changes and resets. 3,687 checks/123 suites, clean rebuild/restore,
+typecheck/lint/build pass. [Cross-owner receipt](../.agent/handoffs/p06-password-validation.md).
+All five overview tables reviewed; other acceptance/phase statuses unchanged.
+No migration, ownership shift or publication; the user authorizes three local commits.
+
 **Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
 agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
 security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production

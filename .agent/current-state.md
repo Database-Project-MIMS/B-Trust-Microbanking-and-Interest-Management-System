@@ -1,3 +1,25 @@
+# Current state — password validation
+
+## Scoped enhancement verified — 2026-10-13
+
+P06-M02-T05 / ADR-0035 on `feat/p06-m02-record-details-edit`: the user requests
+customer/agent password complexity and clarifies **at least 8 characters**.
+Shared server/native form validation now requires 8–128 characters, uppercase,
+lowercase, number and symbol for agent creation, optional customer/admin login
+provisioning, admin password changes and reset consumption. Existing sign-in
+verification is unchanged. No migration, transaction or ownership shift.
+
+Full disposable verification: 3,687 checks/123 suites, zero failures/skips;
+70-migration rebuild/checksums, backup/restore, typecheck/lint/production build pass.
+/review and /imprint pass; original memory history is preserved with continuation.
+Generated stale change-password type files were moved to ignored .txt backups;
+no source workaround. Original databases preserved. REVIEW awaits user publication;
+the user subsequently authorizes three local commits (server, forms, docs).
+No push/PR/merge/deploy. All five overview tables reviewed.
+[Receipt](handoffs/p06-password-validation.md).
+
+Earlier records below are historical and preserved.
+
 # Current state — live audit corrections
 
 ## Agent menu order — 2026-10-11

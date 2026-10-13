@@ -1,3 +1,24 @@
+# Memory — password validation
+
+## Latest continuation — 2026-10-13
+
+User-requested customer/agent complexity, clarified minimum **8 characters**.
+P06-M02-T05 / ADR-0035 is locally verified REVIEW on the existing
+`feat/p06-m02-record-details-edit` checkout. Shared password schema/native field
+enforces 8–128 characters plus uppercase/lowercase/number/symbol on agent creation,
+admin login provisioning/password updates and reset consumption. Customer logins
+remain optional. Sign-in compatibility and hashing/SQL/transactions are preserved.
+M1/M2 stewardship retained; receipt: `.agent/handoffs/p06-password-validation.md`.
+
+3,687 checks/123 suites, clean 70-migration rebuild/restore, typecheck/lint/build
+pass; /review and /imprint completed. Existing DBs untouched, disposable runner cleaned
+up. Stale generated change-password types caused initial typecheck failures; backups
+are ignored .txt files under test-results/password-stale-types, current types pass.
+The user subsequently authorizes a few local commits; delivery is split into server,
+forms and documentation commits. No push/PR/merge/deploy. Next: user reviews/publishes
+these local changes.
+Previous memory below is preserved in full; no secrets recorded.
+
 # Memory — predeployment local completion
 
 ## Agent menu follow-up — 2026-10-11

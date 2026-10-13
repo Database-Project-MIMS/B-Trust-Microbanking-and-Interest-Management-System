@@ -29,6 +29,17 @@ errors are listed below.
 
 ## Authentication — Member 1
 
+**Password creation/change policy (2026-10-13, ADR-0035):** `POST /api/agents`,
+`POST /api/admin/users` (including optional customer logins),
+`PATCH /api/admin/users/{id}` when `password` is present, and `POST /api/auth/reset`
+require 8–128 characters and at least one uppercase letter, lowercase letter,
+number and symbol. Whitespace is not a symbol; passwords are preserved exactly.
+Invalid passwords return `400 VALIDATION_FAILED` with policy guidance, before
+hashing or changing stored state. Agent, user-management and reset forms share
+native constraints and accessible help. An omitted admin-update password keeps
+the existing hash. Sign-in verifies existing credentials without complexity checks.
+Customer registration remains independent of optional login provisioning.
+
 ### `POST /api/auth/login`
 - **Purpose** Authenticate and create a server-side session (FR-AUTH-01).
 - **Roles** public
