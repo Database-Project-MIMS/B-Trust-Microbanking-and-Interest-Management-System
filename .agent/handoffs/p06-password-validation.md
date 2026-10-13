@@ -166,3 +166,25 @@ readiness PASS on the pinned runtime. Initial cleanup/Node24 failures are record
 above and do not substitute for the final green run. Current continuation belongs
 here after the root state/memory/registry retirement; do not recreate those files.
 Task/phase acceptance remains REVIEW. Local commit authorized; no push/PR/merge/deploy.
+
+## User-initiated pull resolution — 2026-10-13
+
+The user reports conflicts from pulling the remote feature branch. The active
+merge has local HEAD `1a55aeb` and MERGE_HEAD `4a9064f`, exactly the original
+published password tip saved in the pre-rebase backup. The earlier rebases caused
+history divergence; the remote side has no new feature changes. Seven conflict
+paths are documentation only. All application, database, tests and configuration
+remain identical to the fully verified Node 22 tree.
+
+Resolve this existing user-initiated pull by retaining the latest verified handoff,
+index/tracker and relocated M2 overview, and keeping dev's current-state, memory
+and UI-registry deletions. Complete the user's pull with a local merge commit,
+preserving both the rebased history and the old published commits. This is limited
+to the already-started pull; no other branch merge, push, PR or deployment is made.
+Original local tip is saved at `refs/codex/backups/password-validation-before-pull-resolution`.
+The resulting history includes the remote tip, so a later ordinary push can fast-forward
+it without rewriting the remote history. Existing 3,689-check implementation verification
+remains applicable: all application/database/test/configuration content is unchanged.
+Source comparison, zero unresolved index entries, no conflict markers, whitespace
+checks and Node 22 typecheck pass. /review finds no dropped functionality or new
+ownership/schema/permission change. No push, PR or deployment is performed.
