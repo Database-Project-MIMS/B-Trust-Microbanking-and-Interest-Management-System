@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import type { AccountDetail as Detail } from "@/services/account-service";
 import { accountRequest, csrfToken } from "../account-client";
 import { AccountFixedDeposits } from "./account-fixed-deposits";
-import { authoritySummary, displayDate, displayMoney, displayRate, holderAuthority, transactionTypeLabel } from "../account-format";
+import { authorityRows, authoritySummary, displayDate, displayMoney, displayRate, holderAuthority, transactionTypeLabel } from "../account-format";
 import { AccountEdit } from "./account-edit";
 import type { HolderChoice } from "../new/account-opening-model";
 import { CustomerPicker } from "../new/customer-picker";
 
 const NOTICES: Record<string, string> = {
-  opened: "Account opened.",
+  opened: "Account opened",
   existing: "This account was already opened by an earlier submission. Nothing was changed.",
 };
 
@@ -78,19 +78,22 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice, 
           <div><dt>Last transaction</dt><dd>{account.lastTransaction
             ? `${transactionTypeLabel(account.lastTransaction.transactionType)} of ${displayMoney(account.lastTransaction.amount)} on ${displayDate(account.lastTransaction.transactionDate)} (${account.lastTransaction.referenceNumber})`
             : "No transactions yet"}</dd></div></dl>
-        <p className="muted mt-4">The plan minimum of {displayMoney(account.minBalance)} stays in the account.</p></section>
+        <p className="muted mt-4">The minimum balance of account {displayMoney(account.minBalance)}</p></section>
       <section className="card"><h2>Plan</h2><dl>
         <div><dt>Plan</dt><dd>{account.planName}</dd></div><div><dt>Minimum balance</dt><dd className="amount">{displayMoney(account.minBalance)}</dd></div>
         <div><dt>Current savings rate</dt><dd>{displayRate(account.interestRate)}</dd></div>
-        <div><dt>Branch</dt><dd>{account.branchCode} — {account.branchName}</dd></div>
+        <div><dt>Branch</dt><dd>{account.branchCode} - {account.branchName}</dd></div>
         <div><dt>Opened by</dt><dd>{account.openedByAgentName}</dd></div>
         <div><dt>Created</dt><dd>{displayDate(account.createdAt)}</dd></div>
         <div><dt>Last updated</dt><dd>{displayDate(account.updatedAt)}</dd></div>
         <div><dt>Opened</dt><dd>{displayDate(account.openedDate)}</dd></div><div><dt>Holders</dt><dd>{account.holderCount} of {account.maxHolders} allowed</dd></div></dl></section>
       <section className="card"><h2>Who can authorise withdrawals</h2>
-        {authority.stateLabel && <span className="status-pill">{authority.stateLabel}</span>}
-        <p className={authority.blocked ? "text-[var(--danger)]" : undefined}>{authority.text}</p>
-        {account.mandate && <p className="muted">Effective from {displayDate(account.mandate.effectiveFrom)}{account.mandate.effectiveTo ? ` to ${displayDate(account.mandate.effectiveTo)}` : ""}.</p>}</section>
+        <dl>
+          {authorityRows({ holderCount: account.holderCount, mandate: account.mandate }).map(row => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}
+          {account.mandate && <div><dt>Effective</dt><dd>{displayDate(account.mandate.effectiveFrom)}{account.mandate.effectiveTo ? ` – ${displayDate(account.mandate.effectiveTo)}` : " onwards"}</dd></div>}
+          <div><dt>Available to withdraw</dt><dd className="amount">{withdrawalsClosed ? "—" : displayMoney(account.availableToWithdraw)}</dd></div>
+        </dl>
+        {authority.blocked && <p role="alert" className="mt-4 text-[var(--danger)]">{authority.text}</p>}</section>
     </div>
 
     {canAddHolder && editing && <AccountEdit account={account} onSaved={() => setAttempt(value => value + 1)} />}
@@ -99,7 +102,7 @@ export function AccountDetail({ id, canAddHolder, canBrowse, canOpenFd, notice, 
       <div className="table-wrap mt-4"><table className="data-table"><thead><tr><th>Name</th><th>Customer number</th><th>Role</th><th>Authority</th><th>Joined</th></tr></thead><tbody>
         {account.holders.map(holder => <tr key={holder.accountHolderId}><td><Link href={`/customers/${holder.customerId}`}>{holder.fullName}</Link></td><td>{holder.customerNumber}</td>
           <td>{holder.holderType === "PRIMARY" ? "Primary" : "Joint"}</td><td>{holderAuthority(account.mandate, account.holderCount)}</td><td>{displayDate(holder.joinedDate)}</td></tr>)}
-        {!account.holders.length && <tr><td colSpan={5}>No holders are visible to you.</td></tr>}
+        {!account.holders.length && <tr><td colSpan={5}>No holders are visible to you</td></tr>}
       </tbody></table></div>
       {account.holders.length < account.holderCount && <p className="muted mt-4">You can see {account.holders.length} of {account.holderCount} holders.</p>}
     </section>

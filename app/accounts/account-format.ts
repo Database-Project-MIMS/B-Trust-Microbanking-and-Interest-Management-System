@@ -57,6 +57,27 @@ export function authoritySummary(input: {
   return { text: rule, blocked: false, stateLabel: "Effective" };
 }
 
+/** Label/value rows for the withdrawal-authority card; text only, built from the same inputs as authoritySummary. */
+export function authorityRows(input: {
+  holderCount: number;
+  mandate: { mandateType: string; requiredSignatories: number; state: MandateState } | null;
+}): { label: string; value: string }[] {
+  const { holderCount, mandate } = input;
+  if (!mandate) {
+    return holderCount > 1
+      ? [{ label: "Who signs", value: `${holderCount} holders` }, { label: "Mandate", value: "None on record" }, { label: "Withdrawals", value: "Blocked until a mandate exists" }]
+      : [{ label: "Who signs", value: "Sole holder" }, { label: "Mandate", value: "Not needed" }, { label: "Withdrawals", value: "Holder may withdraw alone" }];
+  }
+  const state = mandate.state === "NOT_YET_EFFECTIVE" ? "Not yet effective" : mandate.state === "EXPIRED" ? "Expired" : "Effective";
+  const anyOne = mandate.mandateType === "ANY_ONE";
+  return [
+    { label: "Who signs", value: `${holderCount} holders` },
+    { label: "Mandate type", value: anyOne ? "Any one holder" : mandate.mandateType === "ALL_HOLDERS" ? "All holders" : "Recorded" },
+    { label: "Signatures required", value: anyOne ? "1" : String(mandate.requiredSignatories) },
+    { label: "Mandate status", value: state },
+  ];
+}
+
 /** What a holder's signature is worth under the account's mandate. */
 export function holderAuthority(mandate: { mandateType: string } | null, holderCount: number): string {
   if (!mandate) return holderCount > 1 ? "No mandate" : "Can authorise alone";
@@ -72,17 +93,12 @@ export function transactionTypeLabel(type: string): string {
   return TRANSACTION_TYPES[type] ?? "Transaction";
 }
 
-/** Eligibility text for a plan row, built only from the plan's own data. */
-export function eligibilitySummary(plan: {
-  minAgeYears: number | null; maxAgeYears: number | null; minHolders: number; maxHolders: number; requiresAllAdult: boolean;
-}): string {
-  const age = plan.minAgeYears == null && plan.maxAgeYears == null ? "No age limit"
-    : plan.minAgeYears == null ? `Up to age ${plan.maxAgeYears}`
-    : plan.maxAgeYears == null ? `Age ${plan.minAgeYears}+`
-    : `Age ${plan.minAgeYears}–${plan.maxAgeYears}`;
-  const holders = plan.minHolders === 1 && plan.maxHolders === 1 ? null
-    : `${plan.minHolders}–${plan.maxHolders} holders`;
-  return [age, holders, plan.requiresAllAdult ? "all adult" : null].filter((part): part is string => part !== null).join(", ");
+/** Age eligibility text for a plan row, built only from the plan's own data. */
+export function eligibilitySummary(plan: { minAgeYears: number | null; maxAgeYears: number | null }): string {
+  if (plan.minAgeYears == null && plan.maxAgeYears == null) return "No age limit";
+  if (plan.minAgeYears == null) return `Up to age ${plan.maxAgeYears}`;
+  if (plan.maxAgeYears == null) return `Age ${plan.minAgeYears}+`;
+  return `Age ${plan.minAgeYears}–${plan.maxAgeYears}`;
 }
 
 /**

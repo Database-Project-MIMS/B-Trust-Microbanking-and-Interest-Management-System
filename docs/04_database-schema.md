@@ -224,7 +224,7 @@ Implemented by `0140_p01_m03_savings_plan.sql`.
 | `min_balance` | `money_amount` | 0 / 500 / 1000 / 1000 / 5000 |
 | `description` | varchar(255) | |
 | `status` | varchar(20) | `CHECK IN ('ACTIVE','INACTIVE')` |
-| `min_age_years` | int | NULL = no lower bound |
+| `min_age_years` | int | NULL = no lower bound (Joint: 18, set by `0640_p06_m03_joint_plan_min_age.sql`) |
 | `max_age_years` | int | NULL = no upper bound |
 | `min_holders` | int | default `1` |
 | `max_holders` | int | default `1` |
