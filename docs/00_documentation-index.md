@@ -1,5 +1,10 @@
 # 00 — Documentation Index
 
+**Password validation — 2026-10-13:** P06-M02-T05 / ADR-0035 is locally verified
+REVIEW: shared 8–128-character uppercase/lowercase/number/symbol policy on creation,
+admin changes and resets; existing sign-in compatible. 3,687 checks and
+rebuild/restore/typecheck/lint/build pass. [Receipt](../.agent/handoffs/p06-password-validation.md).
+
 **Record management — 2026-10-11:** P06-M02-T04 is locally verified REVIEW on
 `feat/p06-m02-record-details-edit`: full scoped View details, permitted Edit forms,
 FD linked account/owners and catalogue details. FD opening terms remain read-only.
