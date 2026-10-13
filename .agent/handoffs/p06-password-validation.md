@@ -82,4 +82,87 @@ acceptance remain unchanged. Dev's Node 22 engine, AccountSelector simplificatio
 pageSize correction, posting-performance fixture fix and relocated member docs
 are retained. No actual branch merge, remote write or deployment is performed.
 
-Combined-tree verification: pending. Earlier 3,687-check evidence above is historical.
+Combined-tree verification on dev `3b407d3`: **3,687 checks/123 suites** passed,
+with zero failures/cancellations/skips. Clean 70-migration rebuild/checksums,
+backup/restore, full typecheck/lint and production build pass. Log:
+`test-results/password-dev-verification.log` (ignored).
+
+Production-browser preview on that tree verified customer login creation, agent
+creation and reset guidance: minLength 8, maxLength 128, shared character-class
+pattern, new-password autocomplete and linked help. Empty required fields reject;
+an empty optional password-change field accepts. Synthetic administrator sign-in
+and sign-out work; browser console has no warnings/errors. No new password or
+profile change was submitted in the UI. Runtime password mutations/rejections
+were exercised by the disposable API suite. JSON/screenshots are ignored under
+`test-results/password-dev-*`. Browser closed; preview stopped. Existing DBs preserved.
+
+## Second dev update — 2026-10-13
+
+The user reports another dev update and explicitly authorizes necessary local commits,
+with no push or PR creation. Fetched dev is now
+`1489eb422abc3976cd8429f1a4e3c910753e7c30` (PR #109 / Member 3 corrections).
+It changes account/statement/plan presentation, adds 0640 Joint-plan minimum age 18
+and updates its tests/contracts. All upstream changes are retained verbatim.
+The three local password commits rebase onto this tip without conflicts; the first
+verified rebased tip is preserved at `refs/codex/backups/password-validation-dev-3b407d3`.
+Password source/tests remain byte-for-byte identical to the original verified delivery.
+No new password/schema/financial change is introduced by this contribution.
+
+Verification against this newer 71-migration baseline: in progress. The first
+70-migration evidence above must not substitute for this new verification.
+
+### Verification cleanup correction
+
+The first run on 1489eb4 passed all 2,440 security and 1,248 functional assertions,
+but two interest/report suites failed in after-hooks with SQLSTATE 42501 from
+temporary `DROP DATABASE ... FORCE`. The ops helper closes its client first; a
+short-lived privileged/background connection can still overlap the forced drop.
+PostgreSQL's [FORCE documentation](https://www.postgresql.org/docs/18/sql-dropdatabase.html)
+and [process-array implementation](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/storage/ipc/procarray.c)
+show that forced termination adds role checks, whereas ordinary DROP waits for
+connections and asks autovacuum workers to exit. Background-worker overlap is
+inferred from the teardown-only failures and dedicated fixture connections.
+
+/recover plan: close fixture connections and use ordinary DROP for generated test
+databases; do not grant superuser/pg_signal_backend or change financial assertions.
+Apply the correction to the ops helper and analogous backup/restore, deployment,
+Docker and migration test cleanup. Original M4/M5 stewardship remains; this is
+necessary test-harness integration at user direction. Add a database regression
+holding a temporary privileged connection until the drop starts, then closing it:
+owner cleanup must wait rather than trying to terminate it. Only disposable DBs.
+
+The new database regression reproduces the old FORCE SQLSTATE 42501 with a
+temporary privileged connection, observes ordinary owner DROP waiting, closes
+that connection and proves the database disappears. The owner stays non-superuser
+and non-BYPASSRLS. All 32 focused cleanup/interest/backup/deployment/Docker/migration
+checks pass (`test-results/password-cleanup-focused.log`, ignored).
+
+The next full Node 24 run passes the cleanup paths but a Windows audit-test process
+exits with 3221226505 before its assertions begin. There is no audit/application
+code change. A portable official Node 22.23.3 runtime is downloaded into ignored
+scratch and verified against nodejs.org's SHA-256 manifest. Global Node/dependencies
+remain unchanged. Final full verification now uses the project's pinned Node 22,
+PostgreSQL 18.6, and the same isolated runner without exclusions or skipped tests.
+
+Final latest-dev result: **3,689 tests/123 suites** pass (2,440 security and 1,249
+API/DB/UI), zero failures/cancellations/skips. Clean **71-migration** rebuild and
+checksum verification, reseed and 28-table exact backup/restore pass. Full TypeScript,
+ESLint and Next 15.5.27 production build pass on Node **22.23.3**. Marker:
+`LOCAL VERIFICATION: all checks passed.` Log: ignored
+`test-results/password-latest-dev-node22.log`. A final fetch still resolves dev to
+1489eb4; its full source/migration updates are retained.
+
+Latest production-browser reset-form check passes: min 8, max 128, required,
+new-password autocomplete and linked guidance. Its rendered pattern rejects a
+plain password and accepts the valid eight-character mixed sample. No credential
+is entered or changed in the UI. Console is clear. Screenshot/JSON: ignored
+`test-results/password-latest-dev-reset-form.jpg` / `password-latest-dev-browser.json`.
+Browser closed and disposable preview stopped; existing databases preserved.
+
+/review: plan alignment PASS; original password code is unchanged, required cleanup
+integration has a reproducing DB regression. System integrity PASS; no production
+SQL, privilege, financial rule or schema change in this contribution. Production
+readiness PASS on the pinned runtime. Initial cleanup/Node24 failures are recorded
+above and do not substitute for the final green run. Current continuation belongs
+here after the root state/memory/registry retirement; do not recreate those files.
+Task/phase acceptance remains REVIEW. Local commit authorized; no push/PR/merge/deploy.

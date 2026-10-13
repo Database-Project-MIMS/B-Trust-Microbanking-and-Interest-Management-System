@@ -78,7 +78,7 @@ test("Database deployment initializes runtime objects and preserves existing dat
     });
   } finally {
     await client?.end();
-    await parent.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    await parent.query(`DROP DATABASE IF EXISTS ${name}`);
     await parent.end();
   }
 });

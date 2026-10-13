@@ -13,8 +13,10 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 **Password validation (2026-10-13):** ~~P06-M02-T05 — customer/agent password
 complexity~~ is locally verified REVIEW. At least 8 characters plus uppercase,
 lowercase, number and symbol; shared server/form validation covers provisioning,
-admin changes and resets. 3,687 checks/123 suites, clean rebuild/restore,
-typecheck/lint/build pass. [Cross-owner receipt](../../.agent/handoffs/p06-password-validation.md).
+admin changes and resets. Latest dev `1489eb4`: 3,689 checks/123 suites on Node 22,
+clean 71-migration rebuild/restore, typecheck/lint/build and browser guidance pass.
+Temporary DB cleanup regression is included.
+[Cross-owner receipt](../../.agent/handoffs/p06-password-validation.md).
 All five overview tables reviewed; other acceptance/phase statuses unchanged.
 No migration, ownership shift or publication; the user authorizes three local commits.
 
