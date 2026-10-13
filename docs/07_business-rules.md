@@ -336,3 +336,12 @@ existing runtime RLS; runtime-role API scope and injection regression tests.
 | BR-N5 | Notification rows cannot be deleted or have their content edited | TRG, GRANT | `trg_notification_outbox_guard`, column-level `UPDATE` grant |
 | BR-N6 | Unstarted notifications do not consume delivery attempts when the worker budget expires | SRV | `dispatchPending` claims one row immediately before each send; regression test checks untouched pending rows |
 | BR-N7 | SMTP must use verified TLS, and rejected recipients cannot be recorded as sent | SRV | `smtpTransport` requires TLS on 465/587; `smtpMailer.send` checks accepted/rejected recipients |
+
+## Automatic interest control — 2026-10-13
+
+The cron GET is secret-only. Manual financial writes require the existing POST role/CSRF
+checks. Services serialize all cycle dates with a transaction advisory lock; distributions
+still commit independently. A disconnected runner releases its control lock, allowing an
+interrupted RUNNING cycle to resume unpaid FD dates/savings cursors without repeating
+committed payouts or resetting totals. Completed same-date results replay unchanged.
+No financial formula, payout constraint, rate snapshot or migration was changed.

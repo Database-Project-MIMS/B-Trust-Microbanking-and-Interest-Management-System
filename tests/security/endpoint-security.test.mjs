@@ -120,7 +120,7 @@ describe('P06-M01-T01/T02: actual endpoint injection and independent role matrix
     test(`${item.method} /api/${item.path} ${field}: ${value}`, async () => {
       const original = await fingerprint(true);
       const started = performance.now();
-      const response = await call(item,item.allowed[0],{ field,value });
+      const response = await call(item,item.allowed[0] ?? 'ADMIN',{ field,value });
       assert.ok(performance.now()-started < 5000,'Injection caused a pg_sleep delay.');
       assert.ok([200,201,204,400,401,403,404,409,422].includes(response.status),`Unsafe status ${response.status}: ${await response.clone().text()}`);
       await safe(response);

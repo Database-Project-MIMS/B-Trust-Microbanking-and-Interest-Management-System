@@ -54,6 +54,7 @@ export const routes = [
   route('fixed-deposits/quote','GET',['AGENT','BRANCH_MANAGER','CENTRAL_OPS'],['query.accountId','query.fdPlanId','query.principalAmount']),
   route('interest-runs','GET',['ADMIN','CENTRAL_OPS','AUDITOR'],['query.probe']),
   route('interest-runs','POST',['ADMIN','CENTRAL_OPS'],['body.cycleDate','body.dryRun','header.authorization']),
+  route('cron/interest','GET',[],['query.probe'],{},true),
   route('admin/users','GET',['ADMIN'],['query.q','query.roleName','query.page']),
   route('admin/users','POST',['ADMIN'],['body.username','body.password','body.roleName','body.customerId','body.profile.branchId']),
   route('admin/users/[id]','PATCH',['ADMIN'],['path.id','body.status','body.password','body.roleName']),

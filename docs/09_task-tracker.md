@@ -443,3 +443,12 @@ no push, PR or merge was performed. Remaining product/external limits: docs/21.
 
 Live delivery needs the user to set `SMTP_USER`, `SMTP_APP_PASSWORD`, `MAIL_FROM`, `CRON_SECRET`
 and `NOTIFICATIONS_ENABLED=true` in Vercel (Production), apply migration 0700 to Neon, and redeploy.
+
+## Member 5 automatic interest review — 2026-10-13
+
+| Task | Owner | Scope | Status |
+|---|---|---|---|
+| P06-M05-T03 | M5 | User-authorized feat/vercel-interest-cron review, security/recovery fixes and isolated financial/API regressions | REVIEW (3,662 distinct checks; rebuild/restore/type/lint/build pass; hosted confirmation pending) |
+
+Details: [cron guide](25_vercel-interest-cron.md), [repair handoff](../.agent/handoffs/interest-cron-review.md).
+Existing phase and publication acceptance remains unchanged.
