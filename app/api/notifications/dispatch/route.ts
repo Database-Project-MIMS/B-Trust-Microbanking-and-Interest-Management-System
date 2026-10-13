@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /** Vercel Cron presents `Authorization: Bearer $CRON_SECRET`; a manual caller may present NOTIFICATION_WORKER_TOKEN. */
 function authenticateSweeper(request: NextRequest): void {
-  const presented = request.headers.get("authorization")?.replace(/^Bearer /, "") ?? "";
+  const presented = request.headers.get("authorization")?.match(/^Bearer (\S+)$/i)?.[1] ?? "";
   const allowed = [process.env.CRON_SECRET, process.env.NOTIFICATION_WORKER_TOKEN].filter((v): v is string => Boolean(v));
   const ok = presented.length > 0 && allowed.some(secret => {
     const a = Buffer.from(presented), b = Buffer.from(secret);

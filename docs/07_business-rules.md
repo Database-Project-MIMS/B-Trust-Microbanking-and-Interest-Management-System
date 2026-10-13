@@ -334,3 +334,5 @@ existing runtime RLS; runtime-role API scope and injection regression tests.
 | BR-N3 | A notification failure never blocks or rolls back a financial operation | TRG, SRV | Enqueue swallows errors; sending happens after commit |
 | BR-N4 | E-mail content never includes balances or credentials; account numbers are masked | SRV | Payload built in triggers; `lib/email/templates.ts` |
 | BR-N5 | Notification rows cannot be deleted or have their content edited | TRG, GRANT | `trg_notification_outbox_guard`, column-level `UPDATE` grant |
+| BR-N6 | Unstarted notifications do not consume delivery attempts when the worker budget expires | SRV | `dispatchPending` claims one row immediately before each send; regression test checks untouched pending rows |
+| BR-N7 | SMTP must use verified TLS, and rejected recipients cannot be recorded as sent | SRV | `smtpTransport` requires TLS on 465/587; `smtpMailer.send` checks accepted/rejected recipients |

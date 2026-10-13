@@ -835,3 +835,22 @@ and exposes a scoped stored-actor verification capability instead of broader UPD
 privileges. 0637 prevents removal of the last active ADMIN login. 0638 invalidates reset
 controls on password, role or status changes. No plaintext passwords/tokens enter audit.
 New control tables each have a surrogate UUID PK and created timestamp.
+
+## Customer notification outbox — existing migration 0700
+
+`notification_outbox` contains a UUID `notification_id` primary key, bounded
+`event_type`/`event_key`, required customer FK and optional account FK (both cascade
+for transient queue cleanup), required `to_email`, minimal JSONB payload,
+`created_at` and mutable `updated_at`. Delivery columns are `status`, non-negative
+`attempts`, `next_attempt_at`, optional redacted `last_error`, and `sent_at`.
+
+Checks restrict supported events and PENDING/SENT/FAILED status; SENT is equivalent
+to having a non-null `sent_at`. `(event_key, customer_id)` is unique. The partial
+`ix_notification_outbox_due` indexes due PENDING work. The guard prevents content
+edits, direct deletion and terminal-status changes. Runtime grants allow SELECT
+and updates to delivery state only; SECURITY DEFINER triggers enqueue account,
+holder, transaction and FD events. No balances or credentials are stored.
+
+P07-M05-T01 verifies this existing schema unchanged. Sending occurs after commit;
+the repaired worker claims one row immediately before each send so rows it never
+starts do not consume attempts. No new migration is introduced by the repair.

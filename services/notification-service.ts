@@ -91,12 +91,12 @@ export async function dispatchPending(options: DispatchOptions = {}): Promise<Di
   const limit = Math.min(Math.max(Math.trunc(options.limit ?? DEFAULT_LIMIT), 1), MAX_LIMIT);
   const mailer = options.mailer ?? smtpMailer;
   const deadline = Date.now() + TIME_BUDGET_MS;
-  const rows = await claimDue(limit);
-  result.claimed = rows.length;
-
-  for (const row of rows) {
-    // Unprocessed rows keep their lease and are retried after it lapses.
-    if (Date.now() > deadline) break;
+  // Claim only the row we are about to send. A batch claim would consume attempts
+  // for rows left untouched when the time budget expires.
+  while (result.claimed < limit && Date.now() <= deadline) {
+    const [row] = await claimDue(1);
+    if (!row) break;
+    result.claimed += 1;
     try {
       const rendered = renderEmail({ eventType: row.eventType, payload: row.payload });
       await mailer.send({ to: row.toEmail, messageId: row.notificationId, ...rendered });

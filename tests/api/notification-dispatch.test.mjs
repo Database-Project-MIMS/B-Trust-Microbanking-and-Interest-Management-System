@@ -47,7 +47,9 @@ describe('P07-M00: notification dispatcher and sweep route', () => {
     const mail = sent.find(m => m.to === email);
     assert.ok(mail, 'the holder receives the e-mail');
     assert.match(mail.subject, /account has been opened/i);
-    assert.match(mail.text, /\*\*\*\*[A-Z0-9]{4}/);
+    const number = (await client.query('SELECT account_number FROM account WHERE account_id = $1', [accountId])).rows[0].account_number;
+    assert.ok(mail.text.includes(`Account: ****${number.slice(-4)}\n`));
+    assert.ok(!mail.text.includes(number), 'the full account number stays private');
     assert.equal(mail.messageId.length, 36);
     const row = (await client.query("SELECT status, sent_at FROM notification_outbox WHERE account_id = $1 AND event_type = 'ACCOUNT_OPENED'", [accountId])).rows[0];
     assert.equal(row.status, 'SENT');
@@ -81,6 +83,25 @@ describe('P07-M00: notification dispatcher and sweep route', () => {
     assert.equal(called, false);
   });
 
+  test('time budget expiry leaves unsent rows unclaimed without consuming attempts', async () => {
+    const firstKey = `TEST:${randomUUID()}`, secondKey = `TEST:${randomUUID()}`;
+    await enqueue(firstKey, '1.00');
+    await enqueue(secondKey, '2.00');
+    await client.query("UPDATE notification_outbox SET next_attempt_at = now() - interval '2 days' WHERE event_key = $1", [firstKey]);
+    await client.query("UPDATE notification_outbox SET next_attempt_at = now() - interval '1 day' WHERE event_key = $1", [secondKey]);
+    const originalNow = Date.now;
+    let clock = originalNow();
+    Date.now = () => clock;
+    try {
+      const result = await dispatchPending({ force: true, limit: 50, mailer: { send: async () => { clock += 9000; } } });
+      assert.equal(result.claimed, 1);
+      assert.equal(result.sent, 1);
+      const row = (await client.query('SELECT status, attempts FROM notification_outbox WHERE event_key = $1', [secondKey])).rows[0];
+      assert.equal(row.status, 'PENDING');
+      assert.equal(row.attempts, 0);
+    } finally { Date.now = originalNow; }
+  });
+
   test('concurrent dispatchers never send the same notice twice', async () => {
     const key = `TEST:${randomUUID()}`;
     await enqueue(key, '7.00');
@@ -101,6 +122,8 @@ describe('P07-M00: notification dispatcher and sweep route', () => {
     assert.equal((await call('GET')).status, 401);
     assert.equal((await call('GET', 'wrong')).status, 401);
     assert.equal((await call('POST', 'wrong')).status, 401);
+    assert.equal((await GET(new NextRequest('http://localhost/api/notifications/dispatch', {
+      headers: { authorization: 'cron-secret-for-test' } }))).status, 401);
     const ok = await call('GET', 'cron-secret-for-test');
     assert.equal(ok.status, 200);
     assert.equal((await ok.json()).data.enabled, false);
