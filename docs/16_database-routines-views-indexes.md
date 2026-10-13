@@ -316,3 +316,11 @@ The runtime role `mims_app` has `SELECT` and a column-level `UPDATE` (delivery s
 amounts and references only, never balances. The triggers only record the event; sending is done by
 `services/notification-service.ts`, which claims rows with `FOR UPDATE SKIP LOCKED` and a lease in
 `next_attempt_at`, sends outside any transaction, then marks the row.
+
+## Automatic service concurrency (2026-10-13)
+
+lib/db/interest-run-lock.ts uses pg_try_advisory_xact_lock(3043,5) in a control-only
+transaction. This serialized service coordinator works with transaction pooling and
+releases on commit/rollback/disconnect. Distribution transactions use separate
+connections; their financial commits survive control/finalization failures. No stored
+routine, view, index or migration is altered by this addition.

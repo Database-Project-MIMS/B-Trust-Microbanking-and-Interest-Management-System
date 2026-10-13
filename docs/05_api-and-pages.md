@@ -694,3 +694,13 @@ For an explicit synthetic test without draining the outbox, run
 `node --env-file=.env.local node_modules/tsx/dist/cli.mjs --conditions react-server scripts/test-email.ts recipient@example.com`.
 It verifies SMTP authentication, sends one test message, and prints only a safe
 result. Secrets belong in ignored environment files or deployment settings.
+
+## Automatic scheduler — Member 5 repair, 2026-10-13
+
+GET /api/cron/interest requires an exact Bearer CRON_SECRET header; session cookies
+provide no access. It accepts no query parameters, uses the Asia/Colombo current date,
+returns the interest result with triggeredBy/triggeredAt, and sets Cache-Control: no-store.
+Missing/invalid credentials return 401, query parameters 400, an overlapping active run 409.
+Manual runs retain POST /api/interest-runs role and CSRF checks. Interrupted RUNNING
+controls resume under a global database lock; completed runs replay their original result.
+See [automatic scheduling setup](25_vercel-interest-cron.md).

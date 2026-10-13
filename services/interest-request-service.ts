@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { withTransaction, NotAuthorizedError, BusinessRuleError, ValidationError } from '@/lib/db';
 import { setRlsContext } from '@/lib/db/rls-context';
 import { writeAuditEvent } from '@/services/audit-service';
+import { withInterestRunLock } from '@/lib/db/interest-run-lock';
 
 const requestSchema = z.object({cycleDate:z.string().date(),dryRun:z.boolean().default(false)}).strict();
 type RunActor = {userId:string|null;actorType:'USER'|'SYSTEM'};
@@ -34,6 +35,10 @@ async function readRun(id:string,ctx:Context){
 /** Commits the run control separately, then ledger/payout/date/audit in one transaction per FD. */
 export async function recordInterestRunRequest(input:unknown,actor:RunActor):Promise<InterestRunResult>{
   const body=requestSchema.parse(input),ctx=await context(actor);
+  return withInterestRunLock(() => processInterestRun(body, actor, ctx));
+}
+
+async function processInterestRun(body:z.infer<typeof requestSchema>,actor:RunActor,ctx:Context):Promise<InterestRunResult>{
   const start=await withTransaction(async tx=>{
     await setRlsContext(tx,ctx);
     const today=(await tx.query("SELECT (clock_timestamp() AT TIME ZONE 'Asia/Colombo')::date::text AS today")).rows[0].today;
@@ -53,17 +58,20 @@ export async function recordInterestRunRequest(input:unknown,actor:RunActor):Pro
     }
     const created=(await tx.query(`INSERT INTO interest_run(cycle_date,status,initiated_by)
       VALUES($1,'RUNNING',$2) ON CONFLICT(cycle_date) DO NOTHING RETURNING run_id`,[body.cycleDate,actor.userId])).rows[0];
+    let runId: string = created?.run_id;
     if(!created){
       const existing=(await tx.query<InterestRunResult>(`SELECT ${runColumns} FROM interest_run WHERE cycle_date=$1`,[body.cycleDate])).rows[0];
-      if(!existing || existing.status!=='COMPLETED')throw new BusinessRuleError('RUN_IN_PROGRESS','This cycle requires operator review before another attempt.');
-      return {preview:{...existing,replayed:true}};
+      if(existing?.status==='COMPLETED')return {preview:{...existing,replayed:true}};
+      if(!existing || existing.status!=='RUNNING' || !existing.runId)throw new BusinessRuleError('RUN_IN_PROGRESS','This cycle requires operator review before another attempt.');
+      // The global lock proves no live runner owns this control. Resume committed cursors.
+      runId=existing.runId;
     }
     const due=(await tx.query<{fd_id:string}>(`SELECT fd_id FROM fixed_deposit
       WHERE status='ACTIVE' AND next_interest_date <= $1::date AND next_interest_date <= maturity_date ORDER BY fd_id`,[body.cycleDate])).rows;
     const savings=(await tx.query<{account_id:string}>(`SELECT account_id FROM account WHERE status='ACTIVE'
       AND opened_date<$1::date AND (savings_interest_through IS NULL OR savings_interest_through<$1::date) ORDER BY account_id`,[body.cycleDate])).rows;
     const maturity=(await tx.query<{fd_id:string}>(`SELECT fd_id FROM fixed_deposit WHERE status='ACTIVE' AND maturity_date<=$1::date ORDER BY fd_id`,[body.cycleDate])).rows;
-    return {runId:created.run_id as string,due,savings,maturity};
+    return {runId,due,savings,maturity};
   });
   if(start.preview)return start.preview;
   const runId=start.runId;

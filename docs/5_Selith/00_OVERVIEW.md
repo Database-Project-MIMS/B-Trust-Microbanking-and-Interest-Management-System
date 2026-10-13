@@ -165,3 +165,12 @@ interest = round(principal × interest_rate_at_opening × 30 / 365, 2)
 6. **Migration numbers 0180–0199 (P1), 0280–0299 (P2), etc.** — never collide with others
 7. **Never edit a merged migration** — write a new one
 8. **Don't modify files owned by another member** — write a handoff instead
+
+**Automatic cron follow-up (2026-10-13):** User-authorized P06-M05-T03 reviews the
+feat/vercel-interest-cron scheduler and repairs authentication, bank-date consistency,
+overlap control and interrupted-cycle recovery. Local verification is in progress;
+[setup and regression coverage](../25_vercel-interest-cron.md). All five overview summaries
+were reviewed; existing task acceptance/strikethroughs stay unchanged.
+
+**Cron repair verification:** 3,662 distinct checks, rebuild/restore/type/lint/build pass;
+P06-M05-T03 REVIEW. Local implementation complete; hosted scheduler confirmation pending.
