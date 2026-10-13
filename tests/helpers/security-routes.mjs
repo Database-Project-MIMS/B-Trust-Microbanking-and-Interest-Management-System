@@ -4,8 +4,9 @@ const staffRead = ['AGENT','BRANCH_MANAGER','CENTRAL_OPS','AUDITOR'];
 const detailRead = [...staffRead,'CUSTOMER'];
 const reports = ['ADMIN','CENTRAL_OPS','BRANCH_MANAGER','AUDITOR'];
 const ledger = ['AGENT','BRANCH_MANAGER','AUDITOR','CUSTOMER'];
-function route(path, method, allowed, fields = [], body = {}) {
-  return { path, method, allowed, fields, body };
+function route(path, method, allowed, fields = [], body = {}, machine = false) {
+  // machine: authenticated by a bearer secret, never by a session, so every session role gets 401.
+  return { path, method, allowed, fields, body, machine };
 }
 export const routes = [
   route('auth/login','POST',roles,['body.username','body.password','header.x-forwarded-for','header.user-agent']),
@@ -14,6 +15,8 @@ export const routes = [
   route('admin/users/[id]/reset','POST',['ADMIN'],['path.id']),
   route('auth/logout','POST',roles,['cookie.mims_session']),
   route('health','GET',roles,['query.probe']),
+  route('notifications/dispatch','GET',[],[],{},true),
+  route('notifications/dispatch','POST',[],[],{},true),
   route('branches','GET',['ADMIN','CENTRAL_OPS','BRANCH_MANAGER','AUDITOR'],['query.status','query.q','query.district']),
   route('branches','POST',['ADMIN'],['body.branchCode','body.branchName','body.address','body.district','body.phone']),
   route('branches/[id]','GET',['ADMIN','CENTRAL_OPS','BRANCH_MANAGER','AUDITOR'],['path.id']),

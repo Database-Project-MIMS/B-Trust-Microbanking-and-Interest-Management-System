@@ -669,3 +669,15 @@ allows active branches only. FD product choices include historical catalogue ent
 Errors offer Retry and stale requests are cancelled. Agent navigation, on desktop
 and mobile, is Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
 Savings plans, Fixed deposits. Other role menus retain their ordering and permissions.
+
+## Customer e-mail notifications — 2026-10-13 / ADR-0035
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `GET` / `POST /api/notifications/dispatch` | `Authorization: Bearer <CRON_SECRET or NOTIFICATION_WORKER_TOKEN>` (no session) | Retry sweep: sends up to 25 due outbox rows. Vercel Cron issues `GET`. `200 { data: { enabled, claimed, sent, retried, failed } }`, `401` without a valid secret. |
+
+Money and account routes (deposits, withdrawals, transfers, reversals, account open/update/close,
+add holder, fixed-deposit open, interest runs) call `kickNotificationDispatch()` after their
+transaction commits. It uses `after()` to send up to 10 pending notices once the response has been
+returned. It never changes a response, status code or error, and is a no-op when
+`NOTIFICATIONS_ENABLED` is not `true`. Replayed idempotent requests do not kick.

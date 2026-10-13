@@ -430,3 +430,15 @@ reset/admin/document/reconciliation corrections are included in authorized P06-M
 cross-owner delivery (ADR-0027). Status totals: 97 tasks, 86 DONE, 10 REVIEW,
 1 IN_PROGRESS (live deployment). REVIEW preserves user publication/peer acceptance;
 no push, PR or merge was performed. Remaining product/external limits: docs/21.
+
+## Phase 7 addendum — customer e-mail notifications (2026-10-13, ADR-0035)
+
+| Task | Description | Status |
+|---|---|---|
+| P07-M00-T01 | Migration 0700: `notification_outbox`, enqueue function, transaction/holder/status/FD triggers, guard and grants | DONE |
+| P07-M00-T02 | Mailer (Gmail SMTP via nodemailer), templates, dispatcher service with leasing and backoff | DONE |
+| P07-M00-T03 | `/api/notifications/dispatch` sweep, `kickNotificationDispatch()` on committing routes, Vercel cron | DONE |
+| P07-M00-T04 | DB and API tests, security-matrix entry, docs 05/07/16, ADR-0035, handoff | DONE |
+
+Live delivery needs the user to set `SMTP_USER`, `SMTP_APP_PASSWORD`, `MAIL_FROM`, `CRON_SECRET`
+and `NOTIFICATIONS_ENABLED=true` in Vercel (Production), apply migration 0700 to Neon, and redeploy.
