@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest,NextResponse } from 'next/server';
 import { requireUser,requireRole } from '@/lib/auth/rbac';
 import { verifyCsrf } from '@/lib/auth/csrf';
@@ -18,6 +19,7 @@ export async function POST(request:NextRequest):Promise<Response>{
     requireRole(user,'AGENT','BRANCH_MANAGER','CENTRAL_OPS');
     verifyCsrf(request);
     const result=await openFixedDeposit(await request.json(),user,request.headers.get('idempotency-key'));
+    if(!result.replayed)kickNotificationDispatch();
     return NextResponse.json({data:result.data},{status:result.replayed?200:201});
   }catch(error){return errorResponse(error);}
 }

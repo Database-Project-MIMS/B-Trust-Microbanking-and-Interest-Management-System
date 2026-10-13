@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { branchScope, requireRole, requireUser } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     catch { throw new ValidationError("Request body must be valid JSON."); }
     const { data, replayed } = await openAccount(body, { ...user, ...branchScope(user) }, key.data);
     // 201 for a new account; 200 with the original result for a replayed Idempotency-Key.
+    if (!replayed) kickNotificationDispatch();
     return NextResponse.json({ data }, { status: replayed ? 200 : 201 });
   } catch (error) { return errorResponse(error); }
 }

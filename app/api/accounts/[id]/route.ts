@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { branchScope, requireRole, requireUser } from "@/lib/auth/rbac";
 import { errorResponse } from "@/lib/http/error-response";
@@ -19,7 +20,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     const user = await requireUser(request);
     requireRole(user, "BRANCH_MANAGER");
     verifyCsrf(request);
-    return NextResponse.json({ data: await updateAccount((await context.params).id, await request.json(),
-      { ...user, ...branchScope(user) }) }, { headers: { "Cache-Control": "private, no-store" } });
+    const data = await updateAccount((await context.params).id, await request.json(), { ...user, ...branchScope(user) });
+    kickNotificationDispatch();
+    return NextResponse.json({ data }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return errorResponse(error); }
 }

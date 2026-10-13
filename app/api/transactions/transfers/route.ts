@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import {NextRequest,NextResponse} from 'next/server';
 import {requireUser,requireRole,branchScope} from '@/lib/auth/rbac';
 import {verifyCsrf} from '@/lib/auth/csrf';
@@ -10,6 +11,7 @@ export async function POST(request:NextRequest){
     const key=requireIdempotencyKey(request);if(key instanceof NextResponse)return key;
     let body:unknown;try{body=await request.json();}catch{return NextResponse.json({error:{code:'VALIDATION_FAILED',message:'Invalid JSON body.'}},{status:400});}
     const result=await postTransfer(body,{...user,...branchScope(user)},key);
+    if(!result.replayed)kickNotificationDispatch();
     return NextResponse.json({data:result.data},{status:result.replayed?200:201});
   }catch(error){return errorResponse(error);}
 }
