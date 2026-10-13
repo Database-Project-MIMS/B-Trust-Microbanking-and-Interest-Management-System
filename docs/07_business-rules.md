@@ -324,3 +324,13 @@ unassigned or foreign holder cannot become visible through a search or result co
 Existing transaction/FD immutability rules and management permissions are unchanged.
 Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
 existing runtime RLS; runtime-role API scope and injection regression tests.
+
+## Customer notifications — ADR-0035
+
+| ID | Rule | Enforcement | Mechanism |
+|---|---|---|---|
+| BR-N1 | Every posted ledger row, account opening, holder addition, account status change and FD opening produces one e-mail record per ACTIVE holder in the same transaction | TRG | `trg_notify_*` → `fn_enqueue_notification` |
+| BR-N2 | A rolled-back or replayed operation produces no extra e-mail | TRG, CON | Trigger fires only on a real insert; `uq_notification_event_customer` |
+| BR-N3 | A notification failure never blocks or rolls back a financial operation | TRG, SRV | Enqueue swallows errors; sending happens after commit |
+| BR-N4 | E-mail content never includes balances or credentials; account numbers are masked | SRV | Payload built in triggers; `lib/email/templates.ts` |
+| BR-N5 | Notification rows cannot be deleted or have their content edited | TRG, GRANT | `trg_notification_outbox_guard`, column-level `UPDATE` grant |

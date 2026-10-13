@@ -29,7 +29,7 @@ test("Database deployment initializes runtime objects and preserves existing dat
       const result = run();
       assert.equal(result.status, 0, result.stdout + result.stderr);
       assert.match(result.stdout, /Database deployment complete/);
-      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 71);
+      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 72);
       assert.equal((await client.query("SELECT count(*)::int AS n FROM app_user")).rows[0].n, 0);
       assert.equal((await client.query("SELECT count(*)::int AS n FROM transaction")).rows[0].n, 0);
       assert.equal((await client.query("SELECT to_regprocedure('public.fn_fd_control_actor_is_current()') IS NOT NULL AS present")).rows[0].present, true);
@@ -68,7 +68,7 @@ test("Database deployment initializes runtime objects and preserves existing dat
         writeFileSync(join(fixture, "indexes", "01_failure.sql"), "SELECT 1/0;");
         await assert.rejects(deployDatabase(env, fixture), { code: "22012" });
         assert.equal((await client.query("SELECT to_regprocedure('public.deploy_rollback_fixture()') AS object")).rows[0].object, null);
-        assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 71);
+        assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 72);
       } finally {
         const absolute = resolve(fixture);
         assert.ok(absolute.startsWith(resolve(tmpdir()) + sep)
