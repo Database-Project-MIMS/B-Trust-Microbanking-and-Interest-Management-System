@@ -5,6 +5,7 @@ import { setRlsContext } from "@/lib/db/rls-context";
 import { AGENT_ACTIVITY_ROLES, agentActivityRangeSchema } from "@/lib/validation/agent-activity";
 import type { AgentActivity, AgentActivityRange, AgentActivityType } from "@/types/agent-activity";
 import { hashPassword } from "@/lib/auth/password";
+import { passwordSchema } from "@/lib/validation/password";
 import { query, withTransaction, type Executor } from "@/lib/db";
 import {
   DomainError,
@@ -284,7 +285,7 @@ export async function createAgent(
   scopeBranchId: string | null,
 ): Promise<Agent> {
   const targetBranchId = resolveTargetBranch(input.branchId, scopeBranchId);
-  const passwordHash = await hashPassword(input.password);
+  const passwordHash = await hashPassword(passwordSchema.parse(input.password));
 
   try {
     return await withTransaction(async (tx) => {

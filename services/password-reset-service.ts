@@ -4,8 +4,9 @@ import {z} from 'zod';
 import {withTransaction,ValidationError,NotAuthorizedError,NotFoundError} from '@/lib/db';
 import {setRlsContext} from '@/lib/db/rls-context';
 import {hashPassword} from '@/lib/auth/password';
+import {passwordSchema} from '@/lib/validation/password';
 import type {AuthenticatedUser} from '@/lib/auth/rbac';
-const schema=z.object({token:z.string().regex(/^[0-9a-f]{64}$/),password:z.string().min(12).max(128)}).strict();
+const schema=z.object({token:z.string().regex(/^[0-9a-f]{64}$/),password:passwordSchema}).strict();
 const digest=(token:string)=>createHash('sha256').update(token).digest('hex');
 /** One transaction invalidates prior reset tokens and issues a bounded, hashed reset control. */
 export async function issuePasswordReset(id:string,actor:AuthenticatedUser){
