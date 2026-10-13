@@ -111,7 +111,7 @@ describe('P06-M01-T01/T02: actual endpoint injection and independent role matrix
     const response = await call(item,role);
     if (permitted) assert.ok([200,201,204,400,404,409,422].includes(response.status),`Allowed role hit ${response.status}: ${await response.clone().text()}`);
     else {
-      assert.equal(response.status,403,await response.clone().text());
+      assert.equal(response.status,item.machine?401:403,await response.clone().text());
       assert.deepEqual(await fingerprint(),original,'Denied request altered business rows or audit.');
     }
     await safe(response);

@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { authenticateInterestWorker } from '@/lib/auth/worker-auth';
 import { requireUser, requireRole } from '@/lib/auth/rbac';
 import { verifyCsrf } from '@/lib/auth/csrf';
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       actor = { userId: null, actorType: 'SYSTEM' };
     }
     const result = await recordInterestRunRequest(await request.json(), actor);
+    kickNotificationDispatch();
     return Response.json({ data: result });
   } catch (error) {
     return errorResponse(error);

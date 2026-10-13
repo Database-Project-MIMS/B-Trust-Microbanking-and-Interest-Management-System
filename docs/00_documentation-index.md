@@ -1,5 +1,11 @@
 # 00 — Documentation Index
 
+**Member 5 Gmail verification — 2026-10-13:** P07-M05-T01 repairs the existing
+email branch; Gmail authentication and user-confirmed receipt pass (Spam placement).
+419 API tests, security/DB/UI coverage, 72-migration rebuild/typecheck/lint/build
+pass. Local commit authorized; hosted notifications remain separate.
+[Verification receipt](../.agent/handoffs/p07-m05-gmail-verification.md).
+
 **Password validation — 2026-10-13:** P06-M02-T05 / ADR-0035 is locally verified
 REVIEW: shared 8–128-character uppercase/lowercase/number/symbol policy on creation,
 admin changes and resets; existing sign-in compatible. Rebased onto latest dev

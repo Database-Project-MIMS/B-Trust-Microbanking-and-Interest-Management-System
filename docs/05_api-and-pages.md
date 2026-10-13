@@ -669,3 +669,28 @@ allows active branches only. FD product choices include historical catalogue ent
 Errors offer Retry and stale requests are cancelled. Agent navigation, on desktop
 and mobile, is Dashboard, Withdraw, Deposits, Transfers, Customers, Accounts,
 Savings plans, Fixed deposits. Other role menus retain their ordering and permissions.
+
+## Customer e-mail notifications — 2026-10-13 / ADR-0035
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `GET` / `POST /api/notifications/dispatch` | `Authorization: Bearer <CRON_SECRET or NOTIFICATION_WORKER_TOKEN>` (no session) | Retry sweep: sends up to 25 due outbox rows. Vercel Cron issues `GET`. `200 { data: { enabled, claimed, sent, retried, failed } }`, `401` without a valid secret. |
+
+Money and account routes (deposits, withdrawals, transfers, reversals, account open/update/close,
+add holder, fixed-deposit open, interest runs) call `kickNotificationDispatch()` after their
+transaction commits. It uses `after()` to send up to 10 pending notices once the response has been
+returned. It never changes a response, status code or error, and is a no-op when
+`NOTIFICATIONS_ENABLED` is not `true`. Replayed idempotent requests do not kick.
+
+**Gmail verification and repairs — 2026-10-13 / P07-M05-T01:** the worker claims
+one row immediately before sending, up to its limit and eight-second scheduling
+budget. Unstarted rows retain their attempts and due time. The budget controls
+starting work; an in-flight SMTP call still uses the transport timeouts. The sweep
+requires an actual Bearer authorization scheme. Gmail app-password display spaces
+are removed; a blank `MAIL_FROM` falls back to `SMTP_USER`. Port 465 uses implicit
+TLS and port 587 requires STARTTLS, with certificate validation enabled.
+
+For an explicit synthetic test without draining the outbox, run
+`node --env-file=.env.local node_modules/tsx/dist/cli.mjs --conditions react-server scripts/test-email.ts recipient@example.com`.
+It verifies SMTP authentication, sends one test message, and prints only a safe
+result. Secrets belong in ignored environment files or deployment settings.

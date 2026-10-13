@@ -297,3 +297,22 @@ public-invoker savings calculation retains RLS. Transfer reversal takes both acc
 in deterministic order. FD maturity takes FD then account, matching interest processing.
 Lecture coverage: relational constraints/partial unique indexes, deferred multi-row triggers,
 parameterized SQL, set-based daily balances, exact NUMERIC, locks/ACID, RLS and rollups.
+
+## Customer notification outbox — 0700 / ADR-0035
+
+| Object | Kind | Purpose |
+|---|---|---|
+| `notification_outbox` | table | One row per recipient e-mail; `UNIQUE (event_key, customer_id)` makes enqueueing idempotent. Statuses `PENDING`/`SENT`/`FAILED`. |
+| `ix_notification_outbox_due` | partial index | `(next_attempt_at) WHERE status = 'PENDING'`: the dispatcher scans only unfinished work. |
+| `fn_enqueue_notification(...)` | function (SECURITY DEFINER) | Inserts one row per ACTIVE holder (or one named customer). Catches every error and raises a WARNING, so a notification problem can never roll back money movement. |
+| `trg_notify_transaction` | AFTER INSERT on `transaction` | Deposits, withdrawals, transfers in/out, interest credits, reversals, FD maturity. Skips the FD-opening principal debit. |
+| `trg_notify_account_holder` | AFTER INSERT on `account_holder` | `ACCOUNT_OPENED` when the holder is created in the account's own transaction, otherwise `ACCOUNT_HOLDER_ADDED` (new holder only). |
+| `trg_notify_account_status` | AFTER UPDATE OF status on `account` | `ACCOUNT_STATUS_CHANGED` (freeze, reactivate, close). |
+| `trg_notify_fixed_deposit` | AFTER INSERT on `fixed_deposit` | `FD_OPENED`. |
+| `trg_notification_outbox_guard` | BEFORE UPDATE/DELETE | Rejects deletes and any edit of content columns; finished rows cannot change status. |
+
+The runtime role `mims_app` has `SELECT` and a column-level `UPDATE` (delivery state only). It has no
+`INSERT` or `DELETE`, so it cannot forge or erase notices. Payloads carry a masked account number,
+amounts and references only, never balances. The triggers only record the event; sending is done by
+`services/notification-service.ts`, which claims rows with `FOR UPDATE SKIP LOCKED` and a lease in
+`next_attempt_at`, sends outside any transaction, then marks the row.

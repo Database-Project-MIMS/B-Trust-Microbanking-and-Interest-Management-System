@@ -7,6 +7,12 @@
 ---
 
 ## 🗺️ Work Order Summary
+**Gmail follow-up — 2026-10-13:** ~~P07-M05-T01 SMTP verification and repairs~~
+is locally verified REVIEW: received synthetic mail (Spam), queue-budget/TLS/sender
+fixes, patched Nodemailer, 419 API tests plus 2,454 security and 848 DB/UI checks,
+72-migration rebuild/typecheck/lint/build pass. The user authorized a local commit;
+hosted configuration/deployment remains separate. [Receipt](../../.agent/handoffs/p07-m05-gmail-verification.md).
+
 **Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
 agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
 security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production

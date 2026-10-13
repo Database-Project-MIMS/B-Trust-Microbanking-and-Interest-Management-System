@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, branchScope } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
@@ -24,6 +25,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
   try {
     const scope = branchScope(user);
     const result = await postWithdrawal(body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId }, idempotencyKey);
+    if (!result.replayed) kickNotificationDispatch();
     return NextResponse.json({ data: result.data }, { status: result.replayed ? 200 : 201 });
   } catch (err) {
     if (err instanceof DomainError) {
