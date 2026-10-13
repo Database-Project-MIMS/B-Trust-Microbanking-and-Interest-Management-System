@@ -11,7 +11,7 @@ export function AccountSelector({value,onChange,disabled=false,initialAccounts,i
   useEffect(()=>{
     if(initialAccounts)return;
     const controller=new AbortController(); setLoading(true); setError('');
-    accountRequest<{accounts:AccountChoice[];total:number}>('/api/accounts?'+new URLSearchParams({status:'ACTIVE',pageSize:'200'}),{signal:controller.signal})
+    accountRequest<{accounts:AccountChoice[];total:number}>('/api/accounts?'+new URLSearchParams({status:'ACTIVE',pageSize:'100'}),{signal:controller.signal})
       .then(response=>{if(controller.signal.aborted)return;if(response.ok&&response.data){setRows(response.data.accounts);}else setError(response.error?.message ?? 'Unable to load accounts.');})
       .catch(()=>{}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
