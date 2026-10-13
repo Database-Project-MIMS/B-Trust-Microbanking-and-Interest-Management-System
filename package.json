@@ -4,7 +4,7 @@
   "private": true,
   "description": "Microbanking and Interest Management System (MIMS) \u2014 B-Trust Microfinance Bank. CS3043 Group 32.",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "imports": {
     "@/*": [

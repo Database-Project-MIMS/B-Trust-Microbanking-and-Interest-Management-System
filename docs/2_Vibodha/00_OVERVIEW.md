@@ -36,6 +36,10 @@ PR #97's verified build/menu corrections via local cherry-picks.
 locked Vercel build dependencies verified locally. [Receipt](../.agent/handoffs/p06-vercel-pr97-build.md).
 No new task acceptance or strikethrough changes; hosted deployment remains pending.
 
+**PR #97 build correction (2026-10-11):** Compiler-independent Next config and
+locked Vercel build dependencies verified locally. [Receipt](../.agent/handoffs/p06-vercel-pr97-build.md).
+No new task acceptance or strikethrough changes; hosted deployment remains pending.
+
 **Neon CI correction (2026-10-10):** Fresh-checkout explain-output directory
 fixed for PR #94. [Receipt](../.agent/handoffs/p06-neon-ci-results-directory.md).
 No new task acceptance or strikethrough changes; prior overview review retained.
