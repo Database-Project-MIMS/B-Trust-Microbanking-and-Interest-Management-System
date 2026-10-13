@@ -4,8 +4,22 @@ A lightweight professional banking admin UI. The UI exists so a QA tester can ex
 demonstrate the database. Dense, legible, low-decoration. **Do not over-engineer the
 frontend at the expense of the database.**
 
-Design tokens are authoritative in **`../ui-registry.md`** — read it before building
-anything, and run `/imprint` after.
+Current design tokens live in `app/globals.css`. Read these rules before building
+UI and record `/imprint` guidance here; the former root `ui-registry.md` was retired
+by the project cleanup.
+
+## New password field — 2026-10-13 /imprint
+
+File: `components/mims/new-password-input.tsx`. Used by agent creation,
+Users and access (including optional customer logins), and reset-password.
+
+Reuses `field` labels, `input` styling and native `small` help with existing muted
+text/spacing. Guidance is linked with a unique `aria-describedby`; existing
+descriptions are preserved. Native min/max/pattern and tooltip share the server
+policy: 8–128 characters plus uppercase/lowercase/number/symbol. Optional password
+changes permit an empty field, which the form omits. Required creation/reset fields
+remain required. Use `new-password` autocomplete; sign-in retains `current-password`.
+No new colors, radius, typography, shadow or dependency.
 
 ---
 

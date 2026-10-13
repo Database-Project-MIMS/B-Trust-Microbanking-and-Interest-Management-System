@@ -5,6 +5,10 @@
   "buildCommand": "npm run build",
   "crons": [
     {
+      "path": "/api/notifications/dispatch",
+      "schedule": "0 2 * * *"
+    },
+    {
       "path": "/api/cron/interest",
       "schedule": "30 18 * * *"
     }

@@ -366,6 +366,7 @@ Current evidence and implemented savings/transfer scope are in
 | P06-M02-T02 | 2 | Master-data integrity tests | Tests | Phase 2; scoped start ADR-0025 | DONE (PR #90 merged; a58112e/226c439; 100 DB and 16 API integrity cases) |
 | P06-M02-T03 | 2 | Final documentation pass; no doc contradicts another | Docs | all | REVIEW (ADR-0026: current catalogs/contracts/state reconciled; local commits only; full phase acceptance pending) |
 | P06-M02-T04 | 2 | Record details, permitted editing and scoped filters (ADR-0034) | BE + FE + tests + docs | Existing organization/customer/account/FD APIs; scoped user authorization | REVIEW (3,640 distinct checks across security/API/DB and corrected UI runs; production browser, rebuild/restore and type/lint/build pass; scoped filters and agent menu order; local commits, PR waits for #97/#98) |
+| P06-M02-T05 | 2 | Customer/agent password validation shared across provisioning, changes and reset (ADR-0035) | BE + FE + tests + docs | Existing login/agent/admin/reset flows; user-requested scoped enhancement | REVIEW (2026-10-13 latest dev 1489eb4: 3,689 checks/123 suites on Node 22; clean 71-migration rebuild/restore/typecheck/lint/build and browser guidance pass; temporary DB cleanup regression; no publication) |
 | P06-M03-T01 | 3 | Concurrency tests: parallel withdrawals cannot overspend (AC-06) | Tests | P03-M04-T03 | DONE (2026-10-09; 8 tests in `tests/db/concurrent-withdrawals.test.mjs`; fails without `FOR UPDATE` in `sp_post_withdrawal`) |
 | P06-M03-T02 | 3 | Constraint test suite: every `CHECK`, `UNIQUE` and FK | Tests | Phase 4 | DONE (2026-10-09; 29 tests in `tests/db/constraint-suite-plans-accounts.test.mjs` with a completeness guard) |
 | P06-M04-T01 | 4 | Rollback and idempotency tests; partial-failure evidence | Tests | P03-M04-T05 | DONE (2026-10-09; 6 tests in `tests/db/rollback-idempotency-evidence.test.mjs`; mid-transaction fault triggers prove zero partial state on deposit, withdrawal, reversal; live HTTP POST idempotency replay tested) |
@@ -429,6 +430,19 @@ reset/admin/document/reconciliation corrections are included in authorized P06-M
 cross-owner delivery (ADR-0027). Status totals: 97 tasks, 86 DONE, 10 REVIEW,
 1 IN_PROGRESS (live deployment). REVIEW preserves user publication/peer acceptance;
 no push, PR or merge was performed. Remaining product/external limits: docs/21.
+
+## Phase 7 addendum — customer e-mail notifications (2026-10-13, ADR-0035)
+
+| Task | Description | Status |
+|---|---|---|
+| P07-M00-T01 | Migration 0700: `notification_outbox`, enqueue function, transaction/holder/status/FD triggers, guard and grants | DONE |
+| P07-M00-T02 | Mailer (Gmail SMTP via nodemailer), templates, dispatcher service with leasing and backoff | DONE |
+| P07-M00-T03 | `/api/notifications/dispatch` sweep, `kickNotificationDispatch()` on committing routes, Vercel cron | DONE |
+| P07-M00-T04 | DB and API tests, security-matrix entry, docs 05/07/16, ADR-0035, handoff | DONE |
+| P07-M05-T01 | User-requested Gmail credential/delivery verification and email-service repairs; depends on existing P07-M00 implementation | REVIEW (2026-10-13: Gmail authentication and received synthetic test; 2,454 security + 848 DB/UI checks and corrected 419 API tests pass; 72-migration rebuild/typecheck/lint/build pass; user-authorized local commit, hosted configuration/deployment separate) |
+
+Live delivery needs the user to set `SMTP_USER`, `SMTP_APP_PASSWORD`, `MAIL_FROM`, `CRON_SECRET`
+and `NOTIFICATIONS_ENABLED=true` in Vercel (Production), apply migration 0700 to Neon, and redeploy.
 
 ## Member 5 automatic interest review — 2026-10-13
 

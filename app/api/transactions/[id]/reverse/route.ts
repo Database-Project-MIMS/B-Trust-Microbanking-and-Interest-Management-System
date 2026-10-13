@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, branchScope, withAuth } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
@@ -41,6 +42,7 @@ export const POST = withAuth(async (request: NextRequest, user) => {
   try {
     // Note: passing body which contains reason.
     const result = await reverseTransaction(transactionId, body, { userId: user.userId, roleName: user.roleName, branchId: scope.branchId }, idempotencyKey);
+    kickNotificationDispatch();
     return NextResponse.json({ data: result.data }, { status: 201 });
   } catch (err) {
     if (err instanceof DomainError) {

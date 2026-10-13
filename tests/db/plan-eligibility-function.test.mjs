@@ -100,6 +100,18 @@ describe("P01-M03-T02: fn_check_plan_eligibility", () => {
         assert.equal(await checkEligibility(planIds["Joint"], dob, 5), false, "5 holders should be rejected");
     });
 
+    // Joint requires adult holders: the plan's own minimum age is 18 with no upper bound
+    test("6b. Joint rejects an under-18 primary and accepts any adult", async () => {
+        const dobs = (await client.query(
+            `SELECT (CURRENT_DATE - INTERVAL '17 years')::date::text AS minor,
+                    (CURRENT_DATE - INTERVAL '18 years')::date::text AS just_adult,
+                    (CURRENT_DATE - INTERVAL '90 years')::date::text AS elderly`,
+        )).rows[0];
+        assert.equal(await checkEligibility(planIds["Joint"], dobs.minor, 2), false, "17-year-old primary rejected");
+        assert.equal(await checkEligibility(planIds["Joint"], dobs.just_adult, 2), true, "18-year-old primary accepted");
+        assert.equal(await checkEligibility(planIds["Joint"], dobs.elderly, 2), true, "no upper age bound");
+    });
+
     // AC-7: nonexistent plan_id returns false, never an error
     test("7. Nonexistent plan_id returns false", async () => {
         const res = await client.query(

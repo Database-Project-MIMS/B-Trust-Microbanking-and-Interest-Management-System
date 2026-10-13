@@ -92,7 +92,7 @@ test("P01-M04-T03: rebuild, ledger integrity and atomic migration runner", async
     });
   } finally {
     await client?.end();
-    await parent.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    await parent.query(`DROP DATABASE IF EXISTS ${name}`);
     await parent.end();
     const absolute = resolve(fixture);
     assert.ok(absolute.startsWith(resolve(tmpdir()) + sep) && absolute.split(/[\\/]/).pop().startsWith("mims-migrations-"));

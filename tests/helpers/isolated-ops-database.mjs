@@ -19,6 +19,7 @@ export async function isolatedOpsDatabase(prefix){
       env:{...process.env,DATABASE_MIGRATION_URL:owner.href,DATABASE_URL:app.href},timeout:30000});
     assert.equal(result.status,0,'Separate fixture rebuild failed.');
     client=createMigrationClient(owner.href);await client.connect();
-    return {client,async close(){try{await client.end();await admin.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);}finally{await admin.end();}}};
-  }catch(error){await client?.end();await admin.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);await admin.end();throw error;}
+    // Ordinary DROP waits for closing connections/autovacuum without FORCE's signal-role checks.
+    return {client,async close(){try{await client.end();await admin.query(`DROP DATABASE IF EXISTS ${name}`);}finally{await admin.end();}}};
+  }catch(error){try{await client?.end();await admin.query(`DROP DATABASE IF EXISTS ${name}`);}finally{await admin.end();}throw error;}
 }

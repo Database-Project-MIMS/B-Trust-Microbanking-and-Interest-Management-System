@@ -82,7 +82,7 @@ test('P06-M05-T02: real pg_dump/pg_restore retains every table, money, policy an
     console.log(`BACKUP/RESTORE: ${Object.keys(original.data).length} tables match; exact money, constraints, RLS and sequences match.`);
   } finally {
     await source?.end();await target?.end();
-    for(const name of [sourceName,targetName]) await parent.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    for(const name of [sourceName,targetName]) await parent.query(`DROP DATABASE IF EXISTS ${name}`);
     await parent.end();
     const absolute=resolve(workspace);
     assert.ok(absolute.startsWith(resolve(tmpdir())+sep)&&absolute.split(/[\\/]/).pop().startsWith('mims-backup-'));

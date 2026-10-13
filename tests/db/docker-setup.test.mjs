@@ -26,7 +26,7 @@ test("Docker setup initializes and preserves an existing database", async (t) =>
       const result = run();
       assert.equal(result.status, 0, result.stdout + result.stderr);
       assert.match(result.stdout, /Docker database setup complete/);
-      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 70);
+      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 72);
       assert.equal((await client.query("SELECT count(*)::int AS n FROM fixed_deposit")).rows[0].n, 12);
     });
     await t.test("rerun preserves modified user data and every financial row", async () => {
@@ -51,7 +51,7 @@ test("Docker setup initializes and preserves an existing database", async (t) =>
     });
   } finally {
     await client?.end();
-    await parent.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    await parent.query(`DROP DATABASE IF EXISTS ${name}`);
     await parent.end();
   }
 });

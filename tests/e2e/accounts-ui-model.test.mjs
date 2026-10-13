@@ -12,7 +12,7 @@ import {
 const adult = { planId: "p-adult", planName: "Adult", interestRate: "0.1000", minBalance: "1000.00", description: null,
   minAgeYears: 18, maxAgeYears: 59, minHolders: 1, maxHolders: 1, requiresAllAdult: true };
 const joint = { planId: "p-joint", planName: "Joint", interestRate: "0.0700", minBalance: "5000.00", description: null,
-  minAgeYears: null, maxAgeYears: null, minHolders: 2, maxHolders: 4, requiresAllAdult: true };
+  minAgeYears: 18, maxAgeYears: null, minHolders: 2, maxHolders: 4, requiresAllAdult: true };
 const person = (n) => ({ customerId: `c-${n}`, customerNumber: `CUS-${n}`, fullName: `Person ${n}`, dateOfBirth: "1990-01-01" });
 
 describe("P02-M03-T06: account display helpers", () => {
@@ -44,8 +44,8 @@ describe("P02-M03-T06: account display helpers", () => {
     assert.match(mandateSummary(null), /Individual account/);
     assert.equal(mandateSummary({ mandateType: "ANY_ONE", requiredSignatories: 1 }), "Any one holder may authorise a withdrawal.");
     assert.equal(mandateSummary({ mandateType: "ALL_HOLDERS", requiredSignatories: 3 }), "All 3 holders must authorise a withdrawal.");
-    assert.equal(eligibilitySummary(adult), "Age 18–59, all adult");
-    assert.equal(eligibilitySummary(joint), "No age limit, 2–4 holders, all adult");
+    assert.equal(eligibilitySummary(adult), "Age 18–59");
+    assert.equal(eligibilitySummary(joint), "Age 18+");
     assert.equal(eligibilitySummary({ ...adult, minAgeYears: null, maxAgeYears: 12, requiresAllAdult: false }), "Up to age 12");
   });
 });

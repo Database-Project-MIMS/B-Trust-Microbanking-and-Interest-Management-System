@@ -1,5 +1,18 @@
 # 00 — Documentation Index
 
+**Member 5 Gmail verification — 2026-10-13:** P07-M05-T01 repairs the existing
+email branch; Gmail authentication and user-confirmed receipt pass (Spam placement).
+419 API tests, security/DB/UI coverage, 72-migration rebuild/typecheck/lint/build
+pass. Local commit authorized; hosted notifications remain separate.
+[Verification receipt](../.agent/handoffs/p07-m05-gmail-verification.md).
+
+**Password validation — 2026-10-13:** P06-M02-T05 / ADR-0035 is locally verified
+REVIEW: shared 8–128-character uppercase/lowercase/number/symbol policy on creation,
+admin changes and resets; existing sign-in compatible. Rebased onto latest dev
+`1489eb4`; 3,689 checks, 71-migration rebuild/restore/typecheck/lint/build pass on
+Node 22, and production-browser guidance passes. Temporary DB cleanup regression
+is included. [Receipt](../.agent/handoffs/p06-password-validation.md).
+
 **Record management — 2026-10-11:** P06-M02-T04 is locally verified REVIEW on
 `feat/p06-m02-record-details-edit`: full scoped View details, permitted Edit forms,
 FD linked account/owners and catalogue details. FD opening terms remain read-only.

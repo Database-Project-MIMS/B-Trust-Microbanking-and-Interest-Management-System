@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordSchema } from "./password";
 
 const recordStatusSchema = z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]);
 
@@ -76,7 +77,7 @@ export const createAgentSchema = agentProfileSchema
       .min(3)
       .max(100)
       .regex(/^[A-Za-z0-9._-]+$/, "Username contains unsupported characters."),
-    password: z.string().min(12).max(128),
+    password: passwordSchema,
   })
   .strict();
 

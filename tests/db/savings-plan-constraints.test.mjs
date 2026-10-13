@@ -67,7 +67,7 @@ describe("P01-M03-T01: savings_plan schema constraints", () => {
 
         assert.equal(Number(byName["Joint"].interest_rate), 0.07);
         assert.equal(Number(byName["Joint"].min_balance), 5000);
-        assert.equal(byName["Joint"].min_age_years, null);
+        assert.equal(byName["Joint"].min_age_years, 18);
         assert.equal(byName["Joint"].max_age_years, null);
         assert.equal(byName["Joint"].min_holders, 2);
         assert.equal(byName["Joint"].max_holders, 4);

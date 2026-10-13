@@ -50,7 +50,7 @@ See schema Part B.4 and ADR-0014 for the implemented definition.
 | BR-04 | Teen — 11%, LKR 500 minimum | CON | `savings_plan`: `0.1100`, `500.00` |
 | BR-05 | Adult (18+) — 10%, LKR 1,000 minimum | CON | `savings_plan`: `0.1000`, `1000.00` |
 | BR-06 | Senior (60+) — 13%, LKR 1,000 minimum | CON | `savings_plan`: `0.1300`, `1000.00` |
-| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`; holder count 2–4 and all-holders-18+ enforced by `trg_validate_joint_mandate` (Phase 2, P02-M03-T03) — `fn_check_plan_eligibility` only checks the primary applicant, since its signature carries one `date_of_birth`, not one per holder |
+| BR-07 | Joint — 7%, LKR 5,000 minimum, multiple authorised adult holders (minimum age 18, no upper bound; reason: a holder needs legal capacity to sign a withdrawal mandate) | CON, FN, TRG | `savings_plan`: `0.0700`, `5000.00`, `min_age_years = 18` (0640); holder count 2–4 and all-holders-18+ enforced by `trg_validate_joint_mandate` (Phase 2, P02-M03-T03) — `fn_check_plan_eligibility` only checks the primary applicant, since its signature carries one `date_of_birth`, not one per holder |
 | BR-E1 | Plan age eligibility is checked from date of birth at account opening | UI, SRV, FN | `fn_check_plan_eligibility(plan_id, dob, holder_count)` reads `min_age_years`/`max_age_years` from `savings_plan` (G-13) — **data, not hardcoded names**. Checks the primary applicant only; see BR-07 for the joint-holder-age rule |
 
 Rates are stored as fractions (`0.1200`), so interest is one exact multiplication with no
@@ -183,6 +183,7 @@ remain separate work. 0222's CHECK also rejects half-verification from direct SQ
 | BR-S2 | Branch-scoped users never receive rows from other branches | SRV, CON | `AGENT` and `BRANCH_MANAGER` scope comes from `agent.branch_id`; a missing profile is denied; scope is applied **in the SQL `WHERE` clause**; Row Level Security on `customer`, `account`, `transaction` is the backstop (NFR-SEC-07, REP-COM-02) |
 | BR-S3 | Customers see only accounts they hold | SRV, CON | Join through `account_holder`; enforced by RLS (FR-TXN-05) |
 | BR-S4 | Passwords are stored only as salted adaptive hashes | SRV | argon2id; no endpoint ever returns `password_hash` |
+| BR-S8 | New or changed passwords require 8–128 characters, an uppercase letter, lowercase letter, number and symbol; whitespace is not a symbol | SRV, UI | Shared `lib/validation/password.ts` schema before hashing on agent creation, admin provisioning/changes and reset consumption; `NewPasswordInput` provides matching native validation/help. No trimming; existing sign-in credentials remain valid (ADR-0035) |
 | BR-S5 | All SQL input values are parameterized | SRV | `$1, $2, …` only; dynamic identifiers via `allowListed()` (NFR-SEC-02) |
 | BR-S6 | Security-sensitive and financial actions produce audit events | TRG, SRV | Sanitized `fn_audit_master_changes()` triggers cover master data; explicit audit writes remain inside financial transactions (FR-AUD-01) |
 | BR-S7 | Records referenced by ledger entries are never physically deleted | CON | `ON DELETE RESTRICT` on every FK into financial history (FR-ORG-05, DB-CON-02) |
@@ -323,6 +324,18 @@ unassigned or foreign holder cannot become visible through a search or result co
 Existing transaction/FD immutability rules and management permissions are unchanged.
 Enforcement: organization list schemas/services; fdListSchema/listFixedDeposits,
 existing runtime RLS; runtime-role API scope and injection regression tests.
+
+## Customer notifications — ADR-0035
+
+| ID | Rule | Enforcement | Mechanism |
+|---|---|---|---|
+| BR-N1 | Every posted ledger row, account opening, holder addition, account status change and FD opening produces one e-mail record per ACTIVE holder in the same transaction | TRG | `trg_notify_*` → `fn_enqueue_notification` |
+| BR-N2 | A rolled-back or replayed operation produces no extra e-mail | TRG, CON | Trigger fires only on a real insert; `uq_notification_event_customer` |
+| BR-N3 | A notification failure never blocks or rolls back a financial operation | TRG, SRV | Enqueue swallows errors; sending happens after commit |
+| BR-N4 | E-mail content never includes balances or credentials; account numbers are masked | SRV | Payload built in triggers; `lib/email/templates.ts` |
+| BR-N5 | Notification rows cannot be deleted or have their content edited | TRG, GRANT | `trg_notification_outbox_guard`, column-level `UPDATE` grant |
+| BR-N6 | Unstarted notifications do not consume delivery attempts when the worker budget expires | SRV | `dispatchPending` claims one row immediately before each send; regression test checks untouched pending rows |
+| BR-N7 | SMTP must use verified TLS, and rejected recipients cannot be recorded as sent | SRV | `smtpTransport` requires TLS on 465/587; `smtpMailer.send` checks accepted/rejected recipients |
 
 ## Automatic interest control — 2026-10-13
 

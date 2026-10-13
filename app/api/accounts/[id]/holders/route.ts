@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { branchScope, requireRole, requireUser } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     try { body = await request.json(); }
     catch { throw new ValidationError("Request body must be valid JSON."); }
     const data = await addAccountHolder(id, body, { ...user, ...branchScope(user) });
+    kickNotificationDispatch();
     return NextResponse.json({ data }, { status: 201 });
   } catch (error) { return errorResponse(error); }
 }

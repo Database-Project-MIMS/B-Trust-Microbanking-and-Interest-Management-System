@@ -99,7 +99,7 @@ test('P06-M04-T02: Posting Performance Under Load (NFR-PERF-02, NFR-PERF-04)', a
       `, [
         branchId,
         `PERF-C-${suffix}`,
-        `90${Date.now().toString().slice(-7)}V`,
+        `NIC-${suffix}`,
         `Perf Customer ${suffix}`,
         `perf.${suffix}@test.invalid`
       ]);

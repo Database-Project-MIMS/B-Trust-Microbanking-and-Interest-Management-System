@@ -8,7 +8,6 @@ export function AccountFixedDeposits({ accountId, accountStatus, fixedDeposits, 
 }) {
   const panel = fixedDepositPanel({ accountStatus, fixedDeposits, canOpenFd });
   return <section className="card mt-6 min-w-0" aria-labelledby="account-fd-heading"><h2 id="account-fd-heading">Fixed deposits</h2>
-    <p className="muted">Rates are fixed when each deposit is opened. An account can hold one active fixed deposit at a time.</p>
     {panel.closureNote && <p role="status" className="mt-4">{panel.closureNote}</p>}
     {fixedDeposits === null ? <p role="status" className="mt-4">Fixed deposits could not be loaded. The rest of this account is shown.</p>
       : !fixedDeposits.length ? <p role="status" className="mt-4">No fixed deposits on this account.</p>

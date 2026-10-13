@@ -3,6 +3,7 @@
 import {useEffect,useState} from 'react';
 
 import {accountRequest,csrfToken} from '@/app/accounts/account-client';
+import {NewPasswordInput} from '@/components/mims/new-password-input';
 
 type Row={userId:string;username:string;roleName:string;status:string;branchName:string|null};
 
@@ -39,7 +40,7 @@ export function UserScreen({rolesOnly=false}:{rolesOnly?:boolean}){
 
  {!editing&&<label className="field">Username (required)<input className="input" name="username" required minLength={3} maxLength={100} pattern="[A-Za-z0-9._-]+" autoComplete="off"/></label>}
 
- <label className="field">{editing?'New password (optional)':'Password (required)'}<input className="input" name="password" type="password" required={!editing} minLength={12} maxLength={128} autoComplete="new-password"/><small>Use at least 12 characters.</small></label>
+ <label className="field">{editing?'New password (optional)':'Password (required)'}<NewPasswordInput name="password" required={!editing}/></label>
 
  <label className="field">Role<select className="input" name="roleName" value={editing?editing.roleName:role} disabled={!!editing&&!['ADMIN','CENTRAL_OPS','AUDITOR'].includes(editing.roleName)} onChange={e=>editing?setEditing({...editing,roleName:e.target.value}):setRole(e.target.value)}>{(editing&&['ADMIN','CENTRAL_OPS','AUDITOR'].includes(editing.roleName)?roles.slice(0,3):roles).map(r=><option key={r}>{r}</option>)}</select></label>
 

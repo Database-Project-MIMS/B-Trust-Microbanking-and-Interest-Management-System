@@ -2,6 +2,13 @@
 
 **Owner:** Member 1. Security is a boundary, and one person owning it keeps it coherent.
 
+New or changed passwords share the ADR-0035 server policy: 8–128 characters,
+ASCII uppercase/lowercase letters, a digit and at least one symbol (neither a
+Unicode letter/number nor whitespace). Enforced before hashing for agent creation,
+admin login provisioning/password changes and reset consumption; forms provide
+matching native constraints. Existing sign-in credentials are verified unchanged.
+SQL receives only Argon2id hashes; no plaintext-password migration is needed.
+
 The governing idea: **the server authorizes every request, and the database enforces scope
 even if the server has a bug.** Hiding a button is not access control (FR-AUTH-02).
 

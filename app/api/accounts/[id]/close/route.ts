@@ -1,3 +1,4 @@
+import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
 import { branchScope, requireRole, requireUser } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     verifyCsrf(request);
     const { id } = await context.params;
     const data = await closeAccount(id, { ...user, ...branchScope(user) });
+    kickNotificationDispatch();
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) { return errorResponse(error); }
 }
