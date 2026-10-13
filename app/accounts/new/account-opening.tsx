@@ -59,7 +59,6 @@ export function AccountOpening({ plans, branchId }: { plans: PlanOption[]; branc
         <div><dt>Initial deposit</dt><dd className="amount">{state.deposit.trim() ? displayMoney(state.deposit.trim()) : "None"}</dd></div>
         <div><dt>Opening balance</dt><dd className="amount">{displayMoney(state.deposit.trim() || "0")}</dd></div>
       </dl>
-      <p className="muted">The server checks eligibility, documents and limits when you confirm. Nothing is saved until then.</p>
       {error && <p role="alert" className="text-[var(--danger)] mt-4">{error.message}</p>}
       <div className="flex gap-3 mt-6">
         <button className="btn btn-secondary" type="button" disabled={saving} onClick={() => setStep("edit")}>Edit application</button>
@@ -67,17 +66,17 @@ export function AccountOpening({ plans, branchId }: { plans: PlanOption[]; branc
       </div>
     </section> : <form className="card form-grid mt-6" onSubmit={event => { event.preventDefault(); if (!problems.length) { setError(null); setStep("review"); } }}>
       <fieldset className="form-section" disabled={saving}><legend className="section-heading">Savings plan</legend>
-        <label className="field">Plan *<select className="input" required value={state.planId} onChange={event => setState(current => selectPlan(current, plans.find(candidate => candidate.planId === event.target.value)))}>
+        <label className="field">Plan<select className="input" required value={state.planId} onChange={event => setState(current => selectPlan(current, plans.find(candidate => candidate.planId === event.target.value)))}>
           <option value="">Select a plan</option>
           {plans.map(candidate => <option key={candidate.planId} value={candidate.planId}>{candidate.planName} · {displayRate(candidate.interestRate)} · minimum {displayMoney(candidate.minBalance)}</option>)}
         </select></label>
-        {plan && <p className="muted">{plan.description ? `${plan.description}. ` : ""}Eligibility: {eligibilitySummary(plan)}. The server confirms eligibility when you submit.</p>}
+        {plan && <p className="muted">{plan.description ? `${plan.description} ` : ""}</p>}
         {fieldError("plan")}
       </fieldset>
 
       <fieldset className="form-section" disabled={saving}><legend className="section-heading">Holders</legend>
-        {!plan ? <p className="muted">Choose a plan to add holders.</p> : <>
-          <p className="muted">{plan.maxHolders === 1 ? "This plan has one holder." : `Add ${plan.minHolders} to ${plan.maxHolders} adult holders. The first holder is the primary applicant.`} Required fields are marked *.</p>
+        {!plan ? <p className="muted">Choose a plan to add holders</p> : <>
+          <p className="muted">{plan.maxHolders === 1 ? "This plan has one holder." : `Add ${plan.minHolders} to ${plan.maxHolders} adult holders. The first holder is the primary applicant`}</p>
           <div className="table-wrap" aria-label="Selected holders"><table className="data-table"><thead><tr><th>Role</th><th>Name</th><th>Customer number</th><th>Date of birth</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>
             {state.holders.map((holder, index) => <tr key={holder.customerId}>
               <td>{holderRole(index) === "PRIMARY" ? "Primary" : "Joint"}</td><td>{holder.fullName}</td><td>{holder.customerNumber}</td><td>{displayDate(holder.dateOfBirth)}</td>
@@ -85,7 +84,7 @@ export function AccountOpening({ plans, branchId }: { plans: PlanOption[]; branc
                 {index > 0 && <button className="btn btn-secondary" type="button" onClick={() => setState(current => makePrimary(current, holder.customerId))}>Make primary</button>}
                 <button className="btn btn-secondary" type="button" aria-label={`Remove ${holder.fullName}`} onClick={() => setState(current => removeHolder(current, holder.customerId))}>Remove</button>
               </td></tr>)}
-            {!state.holders.length && <tr><td colSpan={5}>No holders added yet.</td></tr>}
+            {!state.holders.length && <tr><td colSpan={5}>No holders added yet</td></tr>}
           </tbody></table></div>
           {state.holders.length < plan.maxHolders && <CustomerPicker label={state.holders.length ? "Add another holder" : "Find the holder"} actionLabel="Add" excludeIds={state.holders.map(holder => holder.customerId)}
             onPick={holder => { const next = addHolder(state, plan, holder); setPickMessage(next.error ?? ""); setState(next.state); }} />}
@@ -95,15 +94,15 @@ export function AccountOpening({ plans, branchId }: { plans: PlanOption[]; branc
       </fieldset>
 
       {allowsMandate(plan) && <fieldset className="form-section" disabled={saving}><legend className="section-heading">Operating mandate</legend>
-        <label className="field">Who may authorise a withdrawal? *<select className="input" required value={state.mandateType} onChange={event => setState(current => ({ ...current, mandateType: event.target.value as MandateType }))}>
+        <label className="field">Who may authorise a withdrawal?<select className="input" required value={state.mandateType} onChange={event => setState(current => ({ ...current, mandateType: event.target.value as MandateType }))}>
           <option value="">Select a mandate</option><option value="ANY_ONE">Any one holder</option><option value="ALL_HOLDERS">All holders together</option></select></label>
         {fieldError("mandate")}
       </fieldset>}
 
       <fieldset className="form-section" disabled={saving}><legend className="section-heading">Initial deposit</legend>
-        <label className="field">Amount (LKR), optional<input className="input" inputMode="decimal" autoComplete="off" value={state.deposit} placeholder="0.00"
+        <label className="field">Amount (LKR)<input className="input" inputMode="decimal" autoComplete="off" value={state.deposit} placeholder="0.00"
           onChange={event => setState(current => ({ ...current, deposit: event.target.value }))} aria-describedby="deposit-help" />
-          <small id="deposit-help">{plan ? `Must be at least ${displayMoney(plan.minBalance)} if entered. ` : ""}Deposits are only accepted during business hours.</small></label>
+          <small id="deposit-help">{plan ? `Must be at least ${displayMoney(plan.minBalance)} ` : ""}</small></label>
         {fieldError("deposit")}
       </fieldset>
 
