@@ -51,7 +51,7 @@ test("Docker setup initializes and preserves an existing database", async (t) =>
     });
   } finally {
     await client?.end();
-    await parent.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    await parent.query(`DROP DATABASE IF EXISTS ${name}`);
     await parent.end();
   }
 });

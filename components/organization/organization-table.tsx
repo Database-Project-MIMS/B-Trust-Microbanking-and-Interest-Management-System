@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RecordActions } from "@/components/mims/record-actions";
+import { NewPasswordInput } from "@/components/mims/new-password-input";
 import { RecordListFilters, type RecordFilters } from "@/components/mims/record-list-filters";
 
 type RecordStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
@@ -355,7 +356,7 @@ export function OrganizationTable({ resource, roleName }: OrganizationTableProps
             <div className="two-col">
               <label className="field" htmlFor="agent-branch">Branch (required)<select className="input" disabled={roleName === "BRANCH_MANAGER"} id="agent-branch" onChange={(event) => updateAgentDraft("branchId", event.target.value)} required value={agentDraft.branchId}><option disabled value="">Select a branch</option>{activeBranches.map((branch) => <option key={branch.branchId} value={branch.branchId}>{branch.branchCode} — {branch.branchName}</option>)}</select></label>
               <label className="field" htmlFor="agent-username">Username (required)<input autoComplete="off" className="input" id="agent-username" maxLength={100} minLength={3} onChange={(event) => updateAgentDraft("username", event.target.value)} pattern="[A-Za-z0-9._-]+" required value={agentDraft.username} /></label>
-              <label className="field" htmlFor="agent-password">Temporary password (required)<input autoComplete="new-password" className="input" id="agent-password" maxLength={128} minLength={12} onChange={(event) => updateAgentDraft("password", event.target.value)} required type="password" value={agentDraft.password} /><small>Use at least 12 characters.</small></label>
+              <label className="field" htmlFor="agent-password">Temporary password (required)<NewPasswordInput id="agent-password" onChange={(event) => updateAgentDraft("password", event.target.value)} required value={agentDraft.password} /></label>
             </div>
           </section>
           <section className="form-section" aria-labelledby="agent-identity-heading">

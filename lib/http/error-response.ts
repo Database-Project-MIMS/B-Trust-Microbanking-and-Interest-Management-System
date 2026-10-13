@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { DomainError } from "@/lib/db/errors";
+import { PASSWORD_REQUIREMENTS } from "@/lib/validation/password-policy";
 
 /** Converts known route errors to the project's safe JSON error envelope. */
 export function errorResponse(error: unknown): Response {
@@ -13,7 +14,9 @@ export function errorResponse(error: unknown): Response {
       {
         error: {
           code: "VALIDATION_FAILED",
-          message: "The request contains invalid or missing fields.",
+          message: error.issues.some((issue) => issue.path[0] === "password")
+            ? PASSWORD_REQUIREMENTS
+            : "The request contains invalid or missing fields.",
         },
       },
       { status: 400 },

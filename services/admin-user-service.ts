@@ -4,12 +4,13 @@ import {withTransaction,NotAuthorizedError,NotFoundError,BusinessRuleError,Valid
 import {setRlsContext} from '@/lib/db/rls-context';
 import {hashPassword} from '@/lib/auth/password';
 import {createAgentSchema} from '@/lib/validation/organization';
+import {passwordSchema} from '@/lib/validation/password';
 import type {AuthenticatedUser} from '@/lib/auth/rbac';
 const names=['ADMIN','CENTRAL_OPS','AUDITOR','AGENT','BRANCH_MANAGER','CUSTOMER'] as const;
 const profile=createAgentSchema.omit({username:true,password:true});
-const create=z.object({username:z.string().trim().min(3).max(100).regex(/^[A-Za-z0-9._-]+$/),password:z.string().min(12).max(128),roleName:z.enum(names),profile:profile.optional(),customerId:z.string().uuid().optional()}).strict()
+const create=z.object({username:z.string().trim().min(3).max(100).regex(/^[A-Za-z0-9._-]+$/),password:passwordSchema,roleName:z.enum(names),profile:profile.optional(),customerId:z.string().uuid().optional()}).strict()
  .refine(v=>(['AGENT','BRANCH_MANAGER'].includes(v.roleName)?!!v.profile?.branchId:!v.profile)&&(v.roleName==='CUSTOMER'?!!v.customerId:!v.customerId));
-const update=z.object({roleName:z.enum(['ADMIN','CENTRAL_OPS','AUDITOR']).optional(),status:z.enum(['ACTIVE','INACTIVE','SUSPENDED']).optional(),password:z.string().min(12).max(128).optional()}).strict().refine(v=>Object.keys(v).length>0);
+const update=z.object({roleName:z.enum(['ADMIN','CENTRAL_OPS','AUDITOR']).optional(),status:z.enum(['ACTIVE','INACTIVE','SUSPENDED']).optional(),password:passwordSchema.optional()}).strict().refine(v=>Object.keys(v).length>0);
 const list=z.object({q:z.string().trim().max(100).default(''),roleName:z.enum(names).optional(),page:z.coerce.number().int().min(1).max(100000).default(1)}).strict();
 const columns=`u.user_id AS "userId",u.username,r.role_name AS "roleName",u.status,a.branch_id AS "branchId",b.branch_name AS "branchName"`;
 async function authorize(tx:import('@/lib/db/pool').PoolClient,actor:AuthenticatedUser){
