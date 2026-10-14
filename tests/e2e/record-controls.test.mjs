@@ -38,7 +38,7 @@ describe('P06-M02-T04: accessible record controls and reference details', () => 
     const links = role => [...output.navigation[role].match(/<nav[^>]*>(.*?)<\/nav>/)[1].matchAll(/href="([^"]+)"/g)].map(match => match[1]);
     assert.deepEqual(links('AGENT'), ['/dashboard', '/transactions/withdraw', '/transactions/deposit', '/transactions/transfer',
       '/customers', '/accounts', '/plans', '/fixed-deposits']);
-    assert.deepEqual(links('CUSTOMER'), ['/dashboard', '/my/accounts', '/transactions/withdraw', '/fixed-deposits']);
+    assert.deepEqual(links('CUSTOMER'), ['/dashboard', '/my/accounts', '/transactions/transfer', '/fixed-deposits']);
     assert.ok(links('BRANCH_MANAGER').indexOf('/transactions/deposit') > links('BRANCH_MANAGER').indexOf('/accounts'));
   });
 });

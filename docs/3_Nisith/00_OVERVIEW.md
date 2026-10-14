@@ -10,6 +10,11 @@ Running session log (updated via `/remember save`): `../.agent/members/member-3.
 ---
 
 ## 🗺️ Work Order Summary
+
+**2026-10-14 review:** ADR-0036 adds P06-M04-T03 customer transfers and Cash/Cheque
+posting methods. All summary tables reviewed; existing task acceptance remains.
+Local verification/publication status is in .agent/handoffs/p06-m04-customer-transfer-method.md.
+
 **Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
 agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
 security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production

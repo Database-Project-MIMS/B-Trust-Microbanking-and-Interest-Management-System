@@ -37,18 +37,14 @@ describe('G-28: real withdrawal API identity, signer evidence and committed reje
     return new NextRequest('http://localhost/api/transactions/withdrawals',{method:'POST',
       headers:{cookie:`mims_session=${fixture.tokens[role]}; mims_csrf=${csrf}`,'x-csrf-token':csrfValue,
         'content-type':'application/json','idempotency-key':key},
-      body:JSON.stringify({accountId:fixture.ownAccount.account_id,amount:'100.00',channelId:channel,...extra})});
+      body:JSON.stringify({accountId:fixture.ownAccount.account_id,amount:'100.00',method:'CASH',...extra})});
   }
   async function success(req,status=201){
     const response=await POST(req);assert.equal(response.status,status,await response.clone().text());return (await response.json()).data;
   }
-  test('customer uses linked customer UUID, gets exact balance and replays without another effect',async()=>{
-    assert.notEqual(fixture.customerId,fixture.customerLoginId);
-    const key='WDR-'+randomUUID();const data=await success(request('customer',{},key));
-    assert.equal(data.balanceAfter,'123356.78');assert.match(data.transactionId,/^[a-f0-9-]{36}$/);
+  test('customers cannot withdraw even from their own accounts',async()=>{
     const snapshot=await financialSnapshot(client);
-    assert.deepEqual(await success(request('customer',{},key),200),data);
-    assert.equal((await POST(request('customer',{amount:'101.00'},key))).status,409);
+    assert.equal((await POST(request('customer'))).status,403);
     assert.deepEqual(await financialSnapshot(client),snapshot);
   });
   test('agent single-holder attestation and manager ALL_HOLDERS array both post',async()=>{
@@ -71,12 +67,12 @@ describe('G-28: real withdrawal API identity, signer evidence and committed reje
   });
   test('known financial rejection commits one audit with no balance or ledger change',async()=>{
     await client.query('UPDATE account SET current_balance=1 WHERE account_id=$1',[fixture.ownAccount.account_id]);
-    const snapshot=await financialSnapshot(client);const response=await POST(request());
+    const snapshot=await financialSnapshot(client);const response=await POST(request('manager',{signerCustomerIds:[fixture.customerId]}));
     assert.equal(response.status,409);assert.equal((await response.json()).error.code,'INSUFFICIENT_FUNDS');
     const after=await financialSnapshot(client);assert.equal(after.audit,snapshot.audit+1);
     assert.deepEqual({...after,audit:snapshot.audit},snapshot);
     const audit=(await client.query("SELECT new_values->>'reason' AS reason,user_id FROM audit_log WHERE entity_id=$1 AND action='WITHDRAWAL_REJECTED'",[fixture.ownAccount.account_id])).rows;
-    assert.deepEqual(audit,[{reason:'INSUFFICIENT_FUNDS',user_id:fixture.customerLoginId}]);
+    assert.deepEqual(audit,[{reason:'INSUFFICIENT_FUNDS',user_id:fixture.managerId}]);
   });
   test('foreign or incomplete signer evidence rejects mandate and preserves one rejection audit per attempt',async()=>{
     const snapshot=await financialSnapshot(client);
@@ -109,7 +105,7 @@ describe('G-28: real withdrawal API identity, signer evidence and committed reje
       BEGIN IF NEW.action='WITHDRAWAL' THEN
       RAISE EXCEPTION 'Synthetic unexpected audit failure' USING ERRCODE='XX000'; END IF; RETURN NEW; END $$`);
     await client.query('CREATE TRIGGER test_withdrawal_audit_fault BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION test_withdrawal_audit_fault()');
-    try{assert.equal((await POST(request())).status,500);assert.deepEqual(await financialSnapshot(client),snapshot);}
+    try{assert.equal((await POST(request('manager',{signerCustomerIds:[fixture.customerId]}))).status,500);assert.deepEqual(await financialSnapshot(client),snapshot);}
     finally{await client.query('DROP TRIGGER test_withdrawal_audit_fault ON audit_log');await client.query('DROP FUNCTION test_withdrawal_audit_fault()');}
   });
 });

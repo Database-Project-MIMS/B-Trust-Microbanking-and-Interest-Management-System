@@ -6,14 +6,14 @@ const amount = z.string().regex(/^\d{1,13}\.\d{2}$/, "Enter an amount with exact
 export const depositSchema = z.object({
   accountId: z.string().uuid("Invalid account ID format"),
   amount,
-  channelId: z.string().uuid("Invalid channel ID format"),
+  method: z.enum(["CASH", "CHEQUE"]),
   narration: z.string().max(255).optional(),
 }).strict();
 
 export const withdrawalSchema = z.object({
   accountId: z.string().uuid("Invalid account ID format"),
   amount,
-  channelId: z.string().uuid("Invalid channel ID format"),
+  method: z.enum(["CASH", "CHEQUE"]),
   onBehalfOfCustomerId: z.string().uuid("Invalid customer ID format").optional(),
   signerCustomerIds: z.array(z.string().uuid()).min(1).max(4).optional(),
   narration: z.string().max(255).optional(),
@@ -29,3 +29,10 @@ export const transferSchema = z.object({
   sourceAccountId: z.string().uuid(), destinationAccountId: z.string().uuid(), amount,
   signerCustomerIds: z.array(z.string().uuid()).min(1).max(4), narration:z.string().max(255).optional(),
 }).strict().refine(value=>value.sourceAccountId!==value.destinationAccountId, {message:'Choose different accounts.'});
+
+export const customerTransferSchema = z.object({
+  sourceAccountId: z.string().uuid(),
+  destinationAccountNumber: z.string().trim().min(1).max(50),
+  amount,
+  narration: z.string().max(255).optional(),
+}).strict();

@@ -10,6 +10,11 @@ Running session log (updated via `/remember save`): `../.agent/members/member-2.
 ---
 
 ## 🗺️ Work Order Summary
+
+**2026-10-14 review:** ADR-0036 adds P06-M04-T03 customer transfers and Cash/Cheque
+posting methods. All summary tables reviewed; existing task acceptance remains.
+Local verification/publication status is in .agent/handoffs/p06-m04-customer-transfer-method.md.
+
 **Password validation (2026-10-13):** ~~P06-M02-T05 — customer/agent password
 complexity~~ is locally verified REVIEW. At least 8 characters plus uppercase,
 lowercase, number and symbol; shared server/form validation covers provisioning,

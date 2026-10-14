@@ -313,7 +313,7 @@ T05 route/runtime/screen integration and security handoff:
 - **Purpose** Post a deposit and return an immutable reference and updated balance.
 - **Roles** AGENT, BRANCH_MANAGER
 - **Headers** `Idempotency-Key` (**required**)
-- **Body** `{ accountId, amount, channelId, narration? }`
+- **Body** `{ accountId, amount, method: "CASH" | "CHEQUE", narration? }`
 - **Validation** `amount > 0`, exactly 2 decimals; account active; within business hours
 - **SQL routine** `CALL sp_post_deposit($1..$n)` — locks the account, inserts the ledger row, updates the balance and `balance_after`, writes audit
 - **Transaction** one; rollback leaves no partial effect (FR-DEP-05)
@@ -323,11 +323,11 @@ T05 route/runtime/screen integration and security handoff:
 
 ### `POST /api/transactions/withdrawals`
 - **Purpose** Post a validated withdrawal (FR-WD-01…05).
-- **Roles** AGENT, BRANCH_MANAGER; CUSTOMER if an authorised holder
+- **Roles** AGENT, BRANCH_MANAGER; CUSTOMER denied
 - **Headers** `Idempotency-Key` (**required**)
-- **Body** `{ accountId, amount, channelId, onBehalfOfCustomerId?, signerCustomerIds?, narration? }`
-- **Validation** strict body, UUIDs and decimal string; at most four signer IDs. Staff provide either `onBehalfOfCustomerId` or `signerCustomerIds` (not both). CUSTOMER resolves its active linked profile and can attest only its own customer UUID. Database checks account holders/mandate, active account, business calendar/hours and single/daily limits. Staff signer IDs represent collected physical attestations; the posting/transfer UI explicitly records the checked holders.
-- **SQL routine** Staff use `CALL sp_try_post_withdrawal(...)` (0363); CUSTOMER uses the guarded `sp_try_customer_withdrawal` wrapper (0627), with trusted signer IDs as `uuid[]`; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
+- **Body** `{ accountId, amount, method: "CASH" | "CHEQUE", onBehalfOfCustomerId?, signerCustomerIds?, narration? }`
+- **Validation** strict body, UUIDs and decimal string; at most four signer IDs. Staff provide either `onBehalfOfCustomerId` or `signerCustomerIds` (not both). Database checks account holders/mandate, active account, business calendar/hours and single/daily limits. Staff signer IDs represent collected physical attestations; the posting/transfer UI explicitly records the checked holders.
+- **SQL routine** Staff use `CALL sp_try_post_withdrawal(...)` with trusted signer IDs as `uuid[]`; 0660 revokes the legacy customer wrapper and denies CUSTOMER in the core; its core `sp_post_withdrawal` takes `FOR UPDATE`, then re-validates status, calendar/hours, mandate, configured Colombo-day limits and post-withdrawal minimum **inside** the transaction. The legacy single-customer overload is retained.
 - **Success** `201` first posting, `200` successful replay: `{ data: { transactionId, referenceNumber, amount, balanceAfter, postedAt } }`
 - **Errors** `409 INSUFFICIENT_FUNDS` · `409 BELOW_MINIMUM_BALANCE` · `409 MANDATE_NOT_SATISFIED` · `409 LIMIT_EXCEEDED` · `409 ACCOUNT_NOT_ACTIVE`
 - **Note** A known financial rejection returns `p_rejection_code` and writes one audit event with **no ledger row** (FR-WD-05). Commit the audit-only result through withTransaction, then map the allow-listed error outside the transaction. An exception inside that transaction would roll back its audit too. Unexpected errors roll back every effect. The API/CSRF/service/signer-evidence path is implemented; transaction pages still using WorkflowScreen await real wiring.
@@ -612,7 +612,7 @@ This section supersedes older prototype and FD-only status notes.
 | Endpoint | Roles and scope | Contract |
 |---|---|---|
 | `POST /api/customer-documents/{id}/verify` | AGENT assigned customer / BRANCH_MANAGER own branch | UUID path, CSRF, empty body; stored actor locks and sets paired verifier/date; `200` stable verification replay |
-| `POST /api/transactions/transfers` | AGENT / BRANCH_MANAGER within own branch | CSRF and Idempotency-Key; strict `{sourceAccountId,destinationAccountId,amount,signerCustomerIds,narration?}`; exact positive cents; `201` pair or `200` payload-identical replay |
+| `POST /api/transactions/transfers` | AGENT / BRANCH_MANAGER within own branch; CUSTOMER uses the separate contract below | CSRF and Idempotency-Key; strict `{sourceAccountId,destinationAccountId,amount,signerCustomerIds,narration?}`; exact positive cents; `201` pair or `200` payload-identical replay |
 | `GET /api/admin/users` | ADMIN | Strict `q?`, `roleName?`, `page?`; repeated keys rejected; 25-row snapshot and role definitions; no password hashes |
 | `POST /api/admin/users` | ADMIN | `{username,password,roleName,profile?,customerId?}`; staff requires branch profile, customer requires active unlinked customer; Argon2id and profile creation atomic |
 | `PATCH /api/admin/users/{id}` | ADMIN | Strict status/password and bankwide role changes; profile roles cannot be changed implicitly; no self-demotion/deactivation or disabling assigned agents; revoke sessions |
@@ -620,7 +620,7 @@ This section supersedes older prototype and FD-only status notes.
 | `GET /api/auth/reset` | Public | Initializes CSRF cookie with no-store response |
 | `POST /api/auth/reset` | Token capability + CSRF | Strict token/password; expired, superseded or used token rejected; password update, consume and session revocation atomic |
 
-Transfer receipts contain transferGroupId, debitTransactionId, creditTransactionId,
+Staff transfer receipts contain transferGroupId, debitTransactionId, creditTransactionId,
 sourceBalance and destinationBalance. Manager reversal of either leg compensates both;
 normal single-posting reversals remain supported. System interest, FD funding and maturity
 postings expose `canReverse: false` and are denied by SQL if directly attempted.
@@ -635,8 +635,8 @@ Real pages: `/transactions/deposit`, `/transactions/withdraw`, `/transactions/tr
 `/transactions/{id}`, `/accounts/{id}/statement`, `/my/accounts`, `/admin/users`,
 `/admin/roles`, `/admin/audit`, `/reset-password`. Financial forms use searchable account
 selection, holder authorization, review, stable retry keys, errors and real receipts.
-Customer list/withdrawal choices contain owned accounts only; transfer is never offered
-to customers. Legacy `/dashboard/transactions` and `/dashboard/fixed-deposits` redirect
+Customer transfer source choices contain owned active accounts only; recipient account
+numbers are entered directly. Customers cannot access the withdrawal page/API. Legacy `/dashboard/transactions` and `/dashboard/fixed-deposits` redirect
 into real role-appropriate workflows. `/reconciliation` uses bankwide guarded SQL results.
 FD opening selection now searches/paginates instead of stopping at 100 accounts.
 Audit filters use `actorId` (not userId), explicit Colombo timestamps and bounded pages;
@@ -704,3 +704,26 @@ Missing/invalid credentials return 401, query parameters 400, an overlapping act
 Manual runs retain POST /api/interest-runs role and CSRF checks. Interrupted RUNNING
 controls resume under a global database lock; completed runs replay their original result.
 See [automatic scheduling setup](25_vercel-interest-cron.md).
+
+## Customer transfers and staff methods — 2026-10-14 / ADR-0036
+
+POST /api/transactions/transfers accepts CUSTOMER with strict
+{sourceAccountId,destinationAccountNumber,amount,narration?}. Source UUID must be
+owned; recipient account number must identify another customer's account (including
+other branches). No customer-supplied signer or identity fields. Both accounts must
+be ACTIVE, the sole stored customer signer must satisfy the mandate, and the existing
+business hours, shared single/daily debit limits and plan minimum apply.
+CSRF and Idempotency-Key are required. Response 201, or 200 for an identical replay:
+{data:{transferGroupId,debitTransactionId,sourceBalance}}. Recipient balance and credit
+receipt identifiers are private. Bad payload/key=400; role/ownership/CSRF=403;
+unavailable recipient=404; status/mandate/funds/minimum/limit/reused key=409.
+
+/transactions/transfer uses owned-source selection and recipient account-number entry
+for CUSTOMER. Staff keep their existing authorized account-picker/signer workflow.
+Dashboard/navigation/legacy transaction redirect offer customers Transfers.
+/transactions/withdraw and its API are AGENT/BRANCH_MANAGER only.
+
+Deposit and withdrawal forms label Method, with Cash/Cheque choices. API method values
+are CASH/CHEQUE; channelId and BRANCH_COUNTER/ONLINE are rejected by strict validation.
+The chosen method is persisted through its existing reference FK and is bound to
+idempotent replay. Inactive methods return 409 METHOD_UNAVAILABLE.

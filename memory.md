@@ -1,5 +1,24 @@
 # Memory — dev/main conflict resolution
 
+## Latest session — 2026-10-14 customer transfer/method implementation
+
+Git follow-up: fixed feature branch tracking of origin/main and updated the base
+to `6a79dcb` (PR #117). All 47 implementation files were restored and content-hash
+verified; no conflicts/staging/feature commits/push remain. This unpublished branch
+has no upstream. User next commits changes and publishes the feature branch.
+
+Branch `feat/p06-m04-customer-transfer-method`, from latest main `56886a3`.
+Customer withdrawal is denied across UI/API/service/SQL; transfers debit only owned
+accounts and credit other customers, including other branches. Recipient balances
+remain private. Staff posting forms/APIs use Cash/Cheque methods. Migration 0660
+preserves historical channel FKs. Apply it to the intended database before running
+the updated app; this session migrated only disposable test databases.
+All 3,770 checks/129 suites, 73-migration rebuild/29-table restore, type/lint/build,
+and production browser checks pass on Node 22. P06-M04-T03 is REVIEW.
+No commits/push/merge/PR/deployment. Next session: read the latest handoff at
+.agent/handoffs/p06-m04-customer-transfer-method.md; preserve user publication control.
+Earlier memories below are historical; their commit permissions do not apply now.
+
 Last updated: 2026-10-13 (Asia/Colombo).
 
 PR #113: merge main d79e92b into dev e4e270f, resolve nine conflicting files,

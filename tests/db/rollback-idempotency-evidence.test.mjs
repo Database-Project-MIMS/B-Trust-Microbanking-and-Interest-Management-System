@@ -338,7 +338,7 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
       const depositPayload = {
         accountId,
         amount: '350.00',
-        channelId,
+        method: 'CASH',
         narration: 'HTTP Idempotency Test',
       };
 
@@ -393,7 +393,7 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
       const req1 = new NextRequest('http://localhost:3000/api/transactions/deposits', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ accountId, amount: '200.00', channelId, narration: 'Original' }),
+        body: JSON.stringify({ accountId, amount: '200.00', method: 'CASH', narration: 'Original' }),
       });
       const res1 = await depositRoutePost(req1);
       assert.equal(res1.status, 201);
@@ -402,7 +402,7 @@ test('P06-M04-T01: Rollback & Idempotency Evidence (Adversarial Fault Injection)
       const req2 = new NextRequest('http://localhost:3000/api/transactions/deposits', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ accountId, amount: '999.00', channelId, narration: 'Tampered Amount' }),
+        body: JSON.stringify({ accountId, amount: '999.00', method: 'CASH', narration: 'Tampered Amount' }),
       });
       const res2 = await depositRoutePost(req2);
       // The tampered amount must never credit the account

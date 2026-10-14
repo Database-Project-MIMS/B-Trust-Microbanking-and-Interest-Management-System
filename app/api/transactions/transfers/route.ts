@@ -7,7 +7,7 @@ import {errorResponse} from '@/lib/http/error-response';
 import {postTransfer} from '@/services/transaction-service';
 export async function POST(request:NextRequest){
   try{
-    const user=await requireUser(request);requireRole(user,'AGENT','BRANCH_MANAGER');verifyCsrf(request);
+    const user=await requireUser(request);requireRole(user,'AGENT','BRANCH_MANAGER','CUSTOMER');verifyCsrf(request);
     const key=requireIdempotencyKey(request);if(key instanceof NextResponse)return key;
     let body:unknown;try{body=await request.json();}catch{return NextResponse.json({error:{code:'VALIDATION_FAILED',message:'Invalid JSON body.'}},{status:400});}
     const result=await postTransfer(body,{...user,...branchScope(user)},key);
