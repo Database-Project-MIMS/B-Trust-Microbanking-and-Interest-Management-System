@@ -1,12 +1,13 @@
 import { kickNotificationDispatch } from "@/lib/email/kick";
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, branchScope } from "@/lib/auth/rbac";
+import { withAuth, branchScope, requireRole } from "@/lib/auth/rbac";
 import { verifyCsrf } from "@/lib/auth/csrf";
 import { requireIdempotencyKey } from "@/lib/api/idempotency";
 import { postWithdrawal } from "@/services/transaction-service";
 import { DomainError } from "@/lib/db/errors";
 
 export const POST = withAuth(async (request: NextRequest, user) => {
+  requireRole(user, "AGENT", "BRANCH_MANAGER");
   verifyCsrf(request);
 
   const idempotencyKey = requireIdempotencyKey(request);

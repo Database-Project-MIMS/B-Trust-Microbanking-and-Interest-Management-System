@@ -7,6 +7,11 @@
 ---
 
 ## 🗺️ Work Order Summary
+
+**2026-10-14 review:** ADR-0036 adds P06-M04-T03 customer transfers and Cash/Cheque
+posting methods. All summary tables reviewed; existing task acceptance remains.
+Local verification/publication status is in .agent/handoffs/p06-m04-customer-transfer-method.md.
+
 **Gmail follow-up — 2026-10-13:** ~~P07-M05-T01 SMTP verification and repairs~~
 is locally verified REVIEW: received synthetic mail (Spam), queue-budget/TLS/sender
 fixes, patched Nodemailer, 419 API tests plus 2,454 security and 848 DB/UI checks,

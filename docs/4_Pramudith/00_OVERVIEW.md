@@ -2,7 +2,7 @@
 
 **Name:** Jayawardhana P.S.P · **Index:** 240298H
 **Domain Slice:** Transactions & Ledger Integrity
-**Total Story Points:** ~62 · **Total Tasks:** 17 across 6 phases
+**Total Story Points:** ~62 original · **Total Tasks:** 17 original + 1 user-requested enhancement
 
 Full slice description and copy-paste session prompt: `../docs/member-prompts/member-4.md`
 Running session log (updated via `/remember save`): `../.agent/members/member-4.md`
@@ -14,6 +14,11 @@ transaction), and **idempotency as a database constraint**, not an in-memory cac
 ---
 
 ## 🗺️ Work Order Summary
+
+**2026-10-14 review:** ADR-0036 adds P06-M04-T03 customer transfers and Cash/Cheque
+posting methods. All summary tables reviewed; existing task acceptance remains.
+Local verification/publication status is in .agent/handoffs/p06-m04-customer-transfer-method.md.
+
 **Record filter/menu follow-up (2026-10-11):** P06-M02-T04 adds scoped branch,
 agent and FD filters plus the exact agent menu order. 3,640 distinct checks across
 security/API/DB and corrected UI runs, rebuild/restore, type/lint/build and production
@@ -42,6 +47,7 @@ Closeout is merged into dev; the user retains all publication control.
 
 | # | File | Phase | Task IDs | What You Build | Points |
 |---|---|---|---|---|---|
+| ~~18~~ | ~~[Customer transfers and methods](../../.agent/handoffs/p06-m04-customer-transfer-method.md)~~ | ~~P6~~ | ~~P06-M04-T03~~ | ~~Owned-source customer transfers; customer withdrawal denial; Cash/Cheque methods; 3,770 checks and browser QA (REVIEW, uncommitted)~~ | — |
 | ~~01~~ | ~~[Harden lib/db](01_P1-T01_lib-db-hardening.md)~~ | ~~P1~~ | ~~T01~~ | ~~Retry, SQLSTATE mapping, redacted logging — **publishes I-2**~~ | ~~about 5~~ |
 | ~~02~~ | ~~[Transaction Channel Schema](02_P1-T02_transaction-channel-schema.md)~~ | ~~P1~~ | ~~T02~~ | ~~`transaction_channel` + seed (`BRANCH_COUNTER`, `ONLINE`, `SYSTEM`)~~ | ~~about 2~~ |
 | ~~03~~ | ~~[Migration Runner Tests & Health Endpoint](03_P1-T03-T04_migration-runner-health-page.md)~~ | ~~P1~~ | ~~T03–T04~~ | ~~Rebuild proof, edited-migration rejection, `/admin/health` API~~ | ~~about 5~~ |

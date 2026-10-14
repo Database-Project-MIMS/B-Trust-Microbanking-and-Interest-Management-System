@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -26,7 +27,7 @@ test("Docker setup initializes and preserves an existing database", async (t) =>
       const result = run();
       assert.equal(result.status, 0, result.stdout + result.stderr);
       assert.match(result.stdout, /Docker database setup complete/);
-      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, 72);
+      assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migration")).rows[0].n, readdirSync("database/migrations").filter(file=>file.endsWith(".sql")).length);
       assert.equal((await client.query("SELECT count(*)::int AS n FROM fixed_deposit")).rows[0].n, 12);
     });
     await t.test("rerun preserves modified user data and every financial row", async () => {

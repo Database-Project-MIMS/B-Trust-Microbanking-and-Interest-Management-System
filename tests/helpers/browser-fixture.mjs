@@ -10,5 +10,5 @@ try{
  await client.query("UPDATE system_parameter SET param_value='00:00' WHERE param_key='BUSINESS_HOUR_START'");
  await client.query("UPDATE system_parameter SET param_value='23:59:59' WHERE param_key='BUSINESS_HOUR_END'");
  const a=await f.account([f.customerId]);
- writeFileSync('test-results/preview-fixture.json',JSON.stringify({accountId:a.account_id,accountNumber:a.account_number,customerId:f.customerId,branchId:f.branchId}));
+ writeFileSync('test-results/preview-fixture.json',JSON.stringify({accountId:a.account_id,accountNumber:a.account_number,customerId:f.customerId,branchId:f.branchId,recipientAccountNumber:f.otherAccount.account_number}));
 }finally{client.release();await pool.end();}

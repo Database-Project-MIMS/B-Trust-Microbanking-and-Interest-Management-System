@@ -3,7 +3,7 @@ import { withTransaction } from "@/lib/db";
 import { NotAuthorizedError, NotFoundError, ValidationError } from "@/lib/db/errors";
 import { setRlsContext } from "@/lib/db/rls-context";
 import type { AuthenticatedUser } from "@/lib/auth/rbac";
-import { depositSchema, withdrawalSchema, reversalSchema, transferSchema } from "@/lib/validation/transaction";
+import { depositSchema, withdrawalSchema, reversalSchema, transferSchema, customerTransferSchema } from "@/lib/validation/transaction";
 import { throwTransactionDatabaseError, withdrawalRejectionError } from "./transaction-errors";
 import { z } from "zod";
 
@@ -14,17 +14,19 @@ function validateId(value: string): void {
 
 export type TransactionActor = Pick<AuthenticatedUser, "userId" | "roleName" | "branchId">;
 
-/** One scoped read transaction supplies posting channels and a customer's owned active accounts. */
+/** One scoped read transaction supplies staff posting methods or a customer's owned active accounts. */
 export async function getPostingChoices(actor: TransactionActor) {
   validateActor(actor, ['AGENT','BRANCH_MANAGER','CUSTOMER']);
   return withTransaction(async tx => {
     await setRlsContext(tx, actor);
-    const channels=(await tx.query<{channelId:string;channelName:string}>(`SELECT channel_id AS "channelId",channel_name AS "channelName"
-      FROM transaction_channel WHERE status='ACTIVE' AND channel_name<>'SYSTEM' ORDER BY channel_name`)).rows;
+    const methods=(await tx.query<{method:'CASH'|'CHEQUE';label:string}>(
+      `SELECT channel_name AS method, CASE channel_name WHEN 'CASH' THEN 'Cash' ELSE 'Cheque' END AS label
+       FROM transaction_channel WHERE status='ACTIVE' AND channel_name IN ('CASH','CHEQUE') ORDER BY channel_name`)).rows;
     const ownAccounts=actor.roleName==='CUSTOMER' ? (await tx.query<{accountId:string;accountNumber:string;currentBalance:string}>(
-      `SELECT account_id AS "accountId",account_number AS "accountNumber",current_balance AS "currentBalance"
-       FROM account WHERE status='ACTIVE' ORDER BY account_number`)).rows : undefined;
-    return {channels,ownAccounts};
+      `SELECT a.account_id AS "accountId",a.account_number AS "accountNumber",a.current_balance AS "currentBalance"
+       FROM account a WHERE a.status='ACTIVE' AND EXISTS(SELECT 1 FROM account_holder h JOIN customer c USING(customer_id)
+       WHERE h.account_id=a.account_id AND c.app_user_id=$1 AND c.status='ACTIVE') ORDER BY a.account_number`,[actor.userId])).rows : undefined;
+    return {methods,ownAccounts};
   });
 }
 
@@ -51,9 +53,13 @@ export async function postDeposit(
       const existing = await tx.query(`SELECT transaction_id FROM transaction WHERE idempotency_key = $1`, [idempotencyKey]);
       const replayed = (existing.rowCount ?? 0) > 0;
 
+      const channel = (await tx.query<{channel_id:string}>("SELECT fn_transaction_method_channel($1) AS channel_id",[value.method])).rows[0];
+      if (!channel) throw new Error("Posting method unavailable.");
+      const channelId = channel.channel_id;
+
       const res = await tx.query(
         `CALL sp_post_deposit($1, $2, $3, $4, $5, $6, NULL, NULL, NULL, NULL)`,
-        [value.accountId, value.amount, value.channelId, actor.userId, idempotencyKey, value.narration ?? null]
+        [value.accountId, value.amount, channelId, actor.userId, idempotencyKey, value.narration ?? null]
       );
       const out = res.rows[0];
 
@@ -79,7 +85,7 @@ export async function postWithdrawal(
   actor: TransactionActor,
   idempotencyKey: string
 ) {
-  validateActor(actor, ["AGENT", "BRANCH_MANAGER", "CUSTOMER"]);
+  validateActor(actor, ["AGENT", "BRANCH_MANAGER"]);
   const parsed = withdrawalSchema.safeParse(input);
   if (!parsed.success) throw new ValidationError("Invalid withdrawal payload.");
   const value = parsed.data;
@@ -87,25 +93,18 @@ export async function postWithdrawal(
   const result = await withTransaction(async (tx) => {
     await setRlsContext(tx, { userId: actor.userId, branchId: actor.branchId, roleName: actor.roleName });
     try {
-      let signers = value.signerCustomerIds ?? (value.onBehalfOfCustomerId ? [value.onBehalfOfCustomerId] : []);
-      if (actor.roleName === "CUSTOMER") {
-        const profile = (await tx.query<{ customer_id: string }>(
-          "SELECT customer_id FROM customer WHERE app_user_id=$1 AND status='ACTIVE'", [actor.userId]
-        )).rows[0];
-        if (!profile || signers.some(id => id !== profile.customer_id)) throw new NotAuthorizedError();
-        signers = [profile.customer_id];
-      } else if (signers.length === 0) {
-        throw new ValidationError("Customer signer evidence is required.");
-      }
+      const signers = value.signerCustomerIds ?? (value.onBehalfOfCustomerId ? [value.onBehalfOfCustomerId] : []);
+      if (signers.length === 0) throw new ValidationError("Customer signer evidence is required.");
+      const channel = (await tx.query<{channel_id:string}>("SELECT fn_transaction_method_channel($1) AS channel_id",[value.method])).rows[0];
+      if (!channel) throw new Error("Posting method unavailable.");
+      const channelId = channel.channel_id;
       await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('withdrawal:'||$1,0))",[idempotencyKey]);
       const existing = await tx.query("SELECT transaction_id FROM transaction WHERE idempotency_key=$1", [idempotencyKey]);
       const res = await tx.query<{
         p_transaction_id: string; p_reference_number: string; p_balance_after: string;
         p_posted_at: Date; p_rejection_code: string | null;
-      }>(actor.roleName === "CUSTOMER"
-        ? "CALL sp_try_customer_withdrawal($1,$2,$3,$4,$5::uuid[],$6,$7,NULL,NULL,NULL,NULL,NULL)"
-        : "CALL sp_try_post_withdrawal($1,$2,$3,$4,$5::uuid[],$6,$7,NULL,NULL,NULL,NULL,NULL)",
-        [value.accountId, value.amount, value.channelId, actor.userId, signers, idempotencyKey, value.narration ?? null]);
+      }>("CALL sp_try_post_withdrawal($1,$2,$3,$4,$5::uuid[],$6,$7,NULL,NULL,NULL,NULL,NULL)",
+        [value.accountId, value.amount, channelId, actor.userId, signers, idempotencyKey, value.narration ?? null]);
       const out = res.rows[0];
       if (!out) throw new Error("Withdrawal receipt unavailable.");
       return {
@@ -228,7 +227,8 @@ export async function getTransaction(transactionId: string, actor: TransactionAc
 
 /** One transaction locks both accounts and owns both transfer legs, balances and audit. */
 export async function postTransfer(input:unknown,actor:TransactionActor,idempotencyKey:string) {
-  validateActor(actor,['AGENT','BRANCH_MANAGER']);
+  validateActor(actor,['AGENT','BRANCH_MANAGER','CUSTOMER']);
+  if (actor.roleName === 'CUSTOMER') return postCustomerTransfer(input,actor,idempotencyKey);
   const parsed=transferSchema.safeParse(input);
   if(!parsed.success)throw new ValidationError('Invalid transfer payload.');
   const v=parsed.data;
@@ -241,6 +241,25 @@ export async function postTransfer(input:unknown,actor:TransactionActor,idempote
         credit_id AS "creditTransactionId",source_balance AS "sourceBalance",destination_balance AS "destinationBalance"
         FROM fn_post_staff_transfer($1,$2,$3,$4,$5::uuid[],$6,$7)`,
         [v.sourceAccountId,v.destinationAccountId,v.amount,actor.userId,v.signerCustomerIds,idempotencyKey,v.narration??null]);
+      return {replayed:!!existing.rowCount,data:result.rows[0]};
+    }catch(error){throwTransactionDatabaseError(error);}
+  });
+}
+
+/** One transaction posts a customer-owned debit and other-customer credit, exposing only the source receipt. */
+async function postCustomerTransfer(input:unknown,actor:TransactionActor,idempotencyKey:string) {
+  const parsed=customerTransferSchema.safeParse(input);
+  if(!parsed.success)throw new ValidationError('Invalid transfer payload.');
+  const v=parsed.data;
+  return withTransaction(async tx=>{
+    await setRlsContext(tx,actor);
+    try {
+      await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('transfer:'||$1,0))",[idempotencyKey]);
+      const existing=await tx.query('SELECT transaction_id FROM transaction WHERE idempotency_key=$1',[idempotencyKey]);
+      const result=await tx.query<{transferGroupId:string;debitTransactionId:string;sourceBalance:string}>(
+        `SELECT transfer_group_id AS "transferGroupId",debit_id AS "debitTransactionId",source_balance AS "sourceBalance"
+         FROM fn_post_customer_transfer($1,$2,$3,$4,$5,$6)`,
+        [v.sourceAccountId,v.destinationAccountNumber,v.amount,actor.userId,idempotencyKey,v.narration??null]);
       return {replayed:!!existing.rowCount,data:result.rows[0]};
     }catch(error){throwTransactionDatabaseError(error);}
   });

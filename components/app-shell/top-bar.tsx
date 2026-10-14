@@ -12,8 +12,8 @@ interface TopBarProps {
 const navigation = [
   { href: "/dashboard", label: "Dashboard", roles: ["ADMIN", "CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR", "CUSTOMER"] },
   {href:'/my/accounts',label:'My accounts',roles:['CUSTOMER']},
-  {href:'/transactions/withdraw',label:'Withdraw',roles:['CUSTOMER','AGENT','BRANCH_MANAGER']},
-  {href:'/transactions/transfer',label:'Transfers',roles:['AGENT','BRANCH_MANAGER']},
+  {href:'/transactions/withdraw',label:'Withdraw',roles:['AGENT','BRANCH_MANAGER']},
+  {href:'/transactions/transfer',label:'Transfers',roles:['CUSTOMER','AGENT','BRANCH_MANAGER']},
   { href: "/customers", label: "Customers", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/accounts", label: "Accounts", roles: ["CENTRAL_OPS", "BRANCH_MANAGER", "AGENT", "AUDITOR"] },
   { href: "/transactions/deposit", label: "Deposits", roles: ["BRANCH_MANAGER", "AGENT"] },

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { query } from '../../lib/db/index.ts';
 
 test('Transaction Channel Schema Constraints', async (t) => {
-    await t.test('1. Exactly the three seeded channels exist', async () => {
+    await t.test('1. Legacy channels and Cash/Cheque methods coexist', async () => {
         const rows = await query('SELECT channel_name FROM transaction_channel ORDER BY channel_name');
         const names = rows.map(r => r.channel_name);
-        assert.deepEqual(names, ['BRANCH_COUNTER', 'ONLINE', 'SYSTEM']);
+        assert.deepEqual(names, ['BRANCH_COUNTER', 'CASH', 'CHEQUE', 'ONLINE', 'SYSTEM']);
     });
 
     await t.test('2. Duplicate channel_name is rejected (23505)', async () => {

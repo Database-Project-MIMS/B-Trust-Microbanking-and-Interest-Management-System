@@ -19,6 +19,9 @@ const DEPOSIT_RULES: Record<string, { code: string; message: string; status: num
 };
 
 const WITHDRAWAL_REVERSAL_CODES: Record<string, { message: string; status: number }> = {
+  INVALID_METHOD: {message:"Choose Cash or Cheque.",status:400},
+  METHOD_UNAVAILABLE: {message:"The selected method is unavailable.",status:409},
+  RECIPIENT_UNAVAILABLE: {message:"The recipient account is unavailable.",status:404},
   TRANSFER_NOT_AUTHORIZED: { message: "You are not authorized to transfer between these accounts.", status: 403 },
   FD_FUNDING_NOT_REVERSIBLE: {message:"Fixed-deposit funding must be corrected through its deposit lifecycle.",status:409},
   CANNOT_REVERSE_A_REVERSAL: {message:"Compensating entries cannot be reversed.",status:409},

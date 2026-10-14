@@ -124,3 +124,17 @@ icon **in addition to** colour. Errors are announced via `aria-live`.
 No dashboards with animated charts, no dark mode, no design-system dependency, no
 client-side state management library, no icon library beyond `lucide-react` if needed. Time
 spent here is time not spent on the database.
+
+## Customer transfer and Method forms — 2026-10-14 /imprint
+
+Files: app/transactions/transfer/customer-transfer-screen.tsx and
+app/transactions/posting-screen.tsx. Reuse page-header/page-title/page-description,
+card, confirmation-card, field/input, amount and btn-primary/btn-secondary tokens;
+space-y-4 fields and space-y-6 page sections. No new visual tokens.
+
+Customer source is a native select of owned active accounts; recipient is a required
+account-number input, with no account search or recipient details. Review names source,
+recipient and exact formatted amount. Posting disables controls, retains the retry key,
+shows a source-only receipt and catches network failures. Empty source lists show an
+explicit message. Staff methods use labeled Cash/Cheque options and show the method
+in confirmation. Customer menus/dashboard show Transfers and exclude Withdraw.

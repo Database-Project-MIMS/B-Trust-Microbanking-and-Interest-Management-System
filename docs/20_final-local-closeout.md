@@ -19,7 +19,9 @@ receipts and statements. Customer accounts, staff transfers, document verificati
 users/roles and audit screens are live. The FD picker is searchable and paginated.
 Role navigation and legacy transaction/FD URLs lead to the implemented workflows.
 
-User-confirmed policy: staff-only transfers; automatic FD maturity principal return.
+Historical 2026-10-10 policy was staff-only transfers. ADR-0036 (2026-10-14)
+adds owned-source customer transfers to other customers and removes customer
+withdrawal. Automatic FD maturity principal return remains implemented.
 Savings accrues for funded days while open and preserves unpaid days on delayed runs.
 Closure keeps the zero-balance SRS baseline and prevents discarding earned interest;
 the final funded-account settlement policy still needs an explicit product decision.

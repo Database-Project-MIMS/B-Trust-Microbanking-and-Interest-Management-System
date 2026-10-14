@@ -2,7 +2,7 @@
 
 Generated from the clean isolated rebuild; no customer rows or secrets are included.
 
-28 public tables; 70 immutable migration entries. Historical ERD and proposals are distinguished in [docs/04](04_database-schema.md).
+29 public tables; 73 immutable migration entries. Historical ERD and proposals are distinguished in [docs/04](04_database-schema.md).
 
 ## account
 
@@ -599,6 +599,48 @@ Owner: mims_owner. RLS: disabled.
 | login_attempt_success_not_null | NOT NULL success |
 | login_attempt_username_attempted_not_null | NOT NULL username_attempted |
 
+## notification_outbox
+
+Owner: mims_owner. RLS: disabled.
+
+| Column | PostgreSQL type | Not null | Default |
+| --- | --- | --- | --- |
+| notification_id | uuid | yes | gen_random_uuid() |
+| event_type | character varying(40) | yes | — |
+| event_key | character varying(120) | yes | — |
+| customer_id | uuid | yes | — |
+| account_id | uuid | no | — |
+| to_email | character varying(150) | yes | — |
+| payload | jsonb | yes | '{}'::jsonb |
+| status | character varying(20) | yes | 'PENDING'::character varying |
+| attempts | integer | yes | 0 |
+| next_attempt_at | timestamp with time zone | yes | now() |
+| last_error | character varying(200) | no | — |
+| sent_at | timestamp with time zone | no | — |
+| created_at | timestamp with time zone | yes | now() |
+| updated_at | timestamp with time zone | no | — |
+
+| Constraint | Definition |
+| --- | --- |
+| ck_notification_attempts | CHECK ((attempts >= 0)) |
+| ck_notification_event_type | CHECK (((event_type)::text = ANY ((ARRAY['ACCOUNT_OPENED'::character varying, 'ACCOUNT_HOLDER_ADDED'::character varying, 'ACCOUNT_STATUS_CHANGED'::character varying, 'FD_OPENED'::character varying, 'TXN_DEPOSIT'::character varying, 'TXN_WITHDRAWAL'::character varying, 'TXN_TRANSFER_IN'::character varying, 'TXN_TRANSFER_OUT'::character varying, 'TXN_INTEREST_CREDIT'::character varying, 'TXN_REVERSAL'::character varying, 'TXN_FD_MATURITY'::character varying])::text[]))) |
+| ck_notification_sent_state | CHECK ((((status)::text = 'SENT'::text) = (sent_at IS NOT NULL))) |
+| ck_notification_status | CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'SENT'::character varying, 'FAILED'::character varying])::text[]))) |
+| notification_outbox_account_id_fkey | FOREIGN KEY (account_id) REFERENCES account(account_id) ON DELETE CASCADE |
+| notification_outbox_attempts_not_null | NOT NULL attempts |
+| notification_outbox_created_at_not_null | NOT NULL created_at |
+| notification_outbox_customer_id_fkey | FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE |
+| notification_outbox_customer_id_not_null | NOT NULL customer_id |
+| notification_outbox_event_key_not_null | NOT NULL event_key |
+| notification_outbox_event_type_not_null | NOT NULL event_type |
+| notification_outbox_next_attempt_at_not_null | NOT NULL next_attempt_at |
+| notification_outbox_notification_id_not_null | NOT NULL notification_id |
+| notification_outbox_payload_not_null | NOT NULL payload |
+| notification_outbox_pkey | PRIMARY KEY (notification_id) |
+| notification_outbox_status_not_null | NOT NULL status |
+| notification_outbox_to_email_not_null | NOT NULL to_email |
+| uq_notification_event_customer | UNIQUE (event_key, customer_id) |
+
 ## password_reset_token
 
 Owner: mims_owner. RLS: enabled.
@@ -881,6 +923,7 @@ Owner: mims_owner. RLS: disabled.
 | fn_check_withdrawal_single_limit | p_amount numeric | function | INVOKER |
 | fn_consume_password_reset | p_token_hash character varying, p_password_hash text | function | DEFINER |
 | fn_customer_fd_actor_is_current |  | function | INVOKER |
+| fn_enqueue_notification | p_event_type character varying, p_event_key character varying, p_account_id uuid, p_payload jsonb, p_customer_id uuid | function | DEFINER |
 | fn_fd_control_actor_is_current |  | function | INVOKER |
 | fn_fd_funding_verdict | p_account_id uuid, p_principal numeric | function | INVOKER |
 | fn_get_parameter | p_key character varying | function | INVOKER |
@@ -895,6 +938,7 @@ Owner: mims_owner. RLS: disabled.
 | fn_next_transaction_reference |  | function | INVOKER |
 | fn_password_reset_valid | p_token_hash character varying | function | DEFINER |
 | fn_payout_account |  | function | DEFINER |
+| fn_post_customer_transfer | p_source uuid, p_destination_number character varying, p_amount numeric, p_actor uuid, p_key character varying, p_narration character varying | function | DEFINER |
 | fn_post_savings_interest | p_account uuid, p_run uuid, p_cycle date | function | DEFINER |
 | fn_post_staff_transfer | p_source uuid, p_destination uuid, p_amount numeric, p_actor uuid, p_signers uuid[], p_key character varying, p_narration character varying | function | DEFINER |
 | fn_preserve_active_administrator |  | function | DEFINER |
@@ -913,6 +957,7 @@ Owner: mims_owner. RLS: disabled.
 | fn_rpt01_rows | p_from date, p_to date, p_branch uuid, p_agent uuid | function | DEFINER |
 | fn_rpt01_scope | p_branch uuid | function | INVOKER |
 | fn_savings_interest | p_account uuid, p_start date, p_end date, p_rate numeric | function | INVOKER |
+| fn_transaction_method_channel | p_method text | function | INVOKER |
 | fn_trg_account_holder_inserted |  | function | DEFINER |
 | fn_trg_account_holder_updated |  | function | DEFINER |
 | fn_validate_agent_active_branch |  | function | INVOKER |
@@ -970,6 +1015,11 @@ Owner: mims_owner. RLS: disabled.
 | strict_word_similarity_dist_op | text, text | function | INVOKER |
 | strict_word_similarity_op | text, text | function | INVOKER |
 | trg_fn_financial_transaction_immutable |  | function | INVOKER |
+| trg_fn_notification_outbox_guard |  | function | INVOKER |
+| trg_fn_notify_account_holder |  | function | DEFINER |
+| trg_fn_notify_account_status |  | function | DEFINER |
+| trg_fn_notify_fixed_deposit |  | function | DEFINER |
+| trg_fn_notify_transaction |  | function | DEFINER |
 | word_similarity | text, text | function | INVOKER |
 | word_similarity_commutator_op | text, text | function | INVOKER |
 | word_similarity_dist_commutator_op | text, text | function | INVOKER |
@@ -1055,6 +1105,9 @@ Owner: mims_owner. RLS: disabled.
 | joint_mandate | uq_joint_mandate_account | CREATE UNIQUE INDEX uq_joint_mandate_account ON public.joint_mandate USING btree (account_id) |
 | login_attempt | ix_login_attempt_user_time | CREATE INDEX ix_login_attempt_user_time ON public.login_attempt USING btree (username_attempted, attempted_at DESC) |
 | login_attempt | login_attempt_pkey | CREATE UNIQUE INDEX login_attempt_pkey ON public.login_attempt USING btree (attempt_id) |
+| notification_outbox | ix_notification_outbox_due | CREATE INDEX ix_notification_outbox_due ON public.notification_outbox USING btree (next_attempt_at) WHERE ((status)::text = 'PENDING'::text) |
+| notification_outbox | notification_outbox_pkey | CREATE UNIQUE INDEX notification_outbox_pkey ON public.notification_outbox USING btree (notification_id) |
+| notification_outbox | uq_notification_event_customer | CREATE UNIQUE INDEX uq_notification_event_customer ON public.notification_outbox USING btree (event_key, customer_id) |
 | password_reset_token | ix_password_reset_user | CREATE INDEX ix_password_reset_user ON public.password_reset_token USING btree (user_id) |
 | password_reset_token | password_reset_token_pkey | CREATE UNIQUE INDEX password_reset_token_pkey ON public.password_reset_token USING btree (reset_id) |
 | password_reset_token | password_reset_token_token_hash_key | CREATE UNIQUE INDEX password_reset_token_token_hash_key ON public.password_reset_token USING btree (token_hash) |
@@ -1126,7 +1179,9 @@ Owner: mims_owner. RLS: disabled.
 | account | trg_account_prevent_branch_change | UPDATE | BEFORE | EXECUTE FUNCTION fn_prevent_account_branch_change() |
 | account | trg_account_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | account | trg_audit_account | INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
+| account | trg_notify_account_status | UPDATE | AFTER | EXECUTE FUNCTION trg_fn_notify_account_status() |
 | account_holder | trg_audit_account_holder | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
+| account_holder | trg_notify_account_holder | INSERT | AFTER | EXECUTE FUNCTION trg_fn_notify_account_holder() |
 | account_holder | trg_validate_joint_mandate | INSERT | AFTER | EXECUTE FUNCTION fn_trg_account_holder_inserted() |
 | account_holder | trg_validate_joint_mandate_update | UPDATE | AFTER | EXECUTE FUNCTION fn_trg_account_holder_updated() |
 | agent | trg_agent_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
@@ -1143,13 +1198,16 @@ Owner: mims_owner. RLS: disabled.
 | customer | trg_customer_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | customer_agent | trg_customer_agent_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | customer_document | trg_customer_document_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
+| fixed_deposit | trg_notify_fixed_deposit | INSERT | AFTER | EXECUTE FUNCTION trg_fn_notify_fixed_deposit() |
 | interest_payout | trg_payout_account | INSERT | BEFORE | EXECUTE FUNCTION fn_payout_account() |
 | joint_mandate | trg_joint_mandate_fit | INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_validate_joint_mandate_fit() |
 | joint_mandate | trg_joint_mandate_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
+| notification_outbox | trg_notification_outbox_guard | DELETE, UPDATE | BEFORE | EXECUTE FUNCTION trg_fn_notification_outbox_guard() |
 | role | trg_audit_role | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | savings_plan | trg_savings_plan_set_updated_at | UPDATE | BEFORE | EXECUTE FUNCTION set_updated_at() |
 | system_parameter | trg_audit_system_parameter | DELETE, INSERT, UPDATE | AFTER | EXECUTE FUNCTION fn_audit_master_changes() |
 | transaction | trg_financial_transaction_immutable | DELETE, UPDATE | BEFORE | EXECUTE FUNCTION trg_fn_financial_transaction_immutable() |
+| transaction | trg_notify_transaction | INSERT | AFTER | EXECUTE FUNCTION trg_fn_notify_transaction() |
 | transaction | trg_transfer_pair | INSERT | AFTER | EXECUTE FUNCTION fn_validate_transfer_pair() |
 | transaction_reversal | trg_transfer_reversal_pair | INSERT | AFTER | EXECUTE FUNCTION fn_validate_transfer_reversal() |
 
@@ -1225,3 +1283,6 @@ Owner: mims_owner. RLS: disabled.
 - 0637_p06_m02_last_admin_guard.sql
 - 0638_p06_m02_password_reset.sql
 - 0639_p06_m02_interest_closure_guard.sql
+- 0640_p06_m03_joint_plan_min_age.sql
+- 0660_p06_m04_customer_transfers_methods.sql
+- 0700_p07_m00_notification_outbox.sql
