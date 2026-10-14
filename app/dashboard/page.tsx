@@ -4,7 +4,7 @@ import { SESSION_COOKIE_NAME, validateSession } from "@/lib/auth/session";
 
 const quickLinks = [
   {href:'/my/accounts',title:'My savings accounts',description:'View your accounts, balances and statements.',roles:['CUSTOMER']},
-  {href:'/transactions/withdraw',title:'Withdraw savings',description:'Withdraw from your own eligible savings accounts.',roles:['CUSTOMER']},
+  {href:'/transactions/transfer',title:'Transfer money',description:'Send money from your savings account to another customer’s account.',roles:['CUSTOMER']},
   {href:'/transactions/withdraw',title:'Withdrawals',description:'Review and post withdrawals from eligible accounts in your branch.',roles:['AGENT','BRANCH_MANAGER']},
   {href:'/transactions/transfer',title:'Transfers',description:'Transfer funds between authorized accounts in your branch.',roles:['AGENT','BRANCH_MANAGER']},
   {href:'/admin/users',title:'Users and roles',description:'Manage access and staff identities.',roles:['ADMIN']},

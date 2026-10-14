@@ -26,7 +26,7 @@ describe('Predeployment: real runtime deposit, document and statement contracts'
   function request(path,body,role='agent',key=randomUUID(),token=csrf){return new NextRequest('http://localhost'+path,{method:body===undefined?'GET':'POST',
     headers:{cookie:`mims_session=${fixture.tokens[role]}; mims_csrf=${csrf}`,'x-csrf-token':token,'content-type':'application/json','idempotency-key':key},
     ...(body===undefined?{}:{body:JSON.stringify(body)})});}
-  const payload=()=>({accountId:account.account_id,channelId:channel,amount:'1.23',narration:'predeployment deposit'});
+  const payload=()=>({accountId:account.account_id,method:'CASH',amount:'1.23',narration:'predeployment deposit'});
   test('altered amount, narration, account and actor cannot reuse a deposit receipt',async()=>{
     const key=randomUUID();const first=await deposit(request('/api/transactions/deposits',payload(),'agent',key));assert.equal(first.status,201,await first.clone().text());
     const result=(await first.json()).data;
@@ -72,7 +72,7 @@ describe('Predeployment: real runtime deposit, document and statement contracts'
     const receipt=(await first.json()).data;
     const retry=await transfer(request('/api/transactions/transfers',body,'manager',key));assert.equal(retry.status,200);assert.deepEqual((await retry.json()).data,receipt);
     assert.equal((await transfer(request('/api/transactions/transfers',{...body,amount:'23.45'},'manager',key))).status,409);
-    assert.equal((await transfer(request('/api/transactions/transfers',body,'customer'))).status,403);
+    assert.equal((await transfer(request('/api/transactions/transfers',body,'customer'))).status,400); // Customer schema rejects asserted signers/recipient UUIDs.
     assert.equal((await transfer(request('/api/transactions/transfers',{...body,destinationAccountId:fixture.otherAccount.account_id},'manager'))).status,403);
     const pair=(await owner.query("SELECT count(*)::int AS n,sum(CASE WHEN transaction_type='TRANSFER_OUT' THEN -amount ELSE amount END)::text AS net FROM transaction WHERE transfer_group_id=$1",[receipt.transferGroupId])).rows[0];assert.deepEqual(pair,{n:2,net:'0.00'});
     const reversalKey=randomUUID(),path=`/api/transactions/${receipt.debitTransactionId}/reverse`,ctx={params:Promise.resolve({id:receipt.debitTransactionId})};
@@ -81,7 +81,7 @@ describe('Predeployment: real runtime deposit, document and statement contracts'
     assert.equal((await owner.query('SELECT current_balance::text AS b FROM account WHERE account_id=$1',[src.account_id])).rows[0].b,'123456.78');
     const limit=(await owner.query("SELECT param_value FROM system_parameter WHERE param_key='WITHDRAWAL_DAILY_LIMIT'")).rows[0].param_value;
     try {await owner.query("UPDATE system_parameter SET param_value='15.00' WHERE param_key='WITHDRAWAL_DAILY_LIMIT'");
-      assert.equal((await withdraw(request('/api/transactions/withdrawals',{accountId:src.account_id,channelId:channel,amount:'3.00',signerCustomerIds:[fixture.customerId]},'manager'))).status,409);
+      assert.equal((await withdraw(request('/api/transactions/withdrawals',{accountId:src.account_id,method:'CASH',amount:'3.00',signerCustomerIds:[fixture.customerId]},'manager'))).status,409);
     }finally{await owner.query("UPDATE system_parameter SET param_value=$1 WHERE param_key='WITHDRAWAL_DAILY_LIMIT'",[limit]);}
   });
   test('browser Host origin is accepted even if Next normalizes the internal request URL; foreign origins fail',async()=>{

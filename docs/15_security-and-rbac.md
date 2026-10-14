@@ -28,7 +28,7 @@ determines which operations the authenticated user may perform.
 | `BRANCH_MANAGER` | Own branch | Branch agents, approve exceptions, joint mandates, **reversals**, branch reports |
 | `AGENT` | Own branch, assigned customers | Register customers, open accounts, post deposits and withdrawals |
 | `AUDITOR` | Bank-wide, **read-only** | Reports, ledger history, audit search |
-| `CUSTOMER` | Own accounts only, when optional login is provisioned | View own linked accounts/balances/transactions; controlled own-holder withdrawal with self signer only (docs/05, 0627). No direct account UPDATE |
+| `CUSTOMER` | Own accounts only, when optional login is provisioned | View own linked accounts/balances/transactions; transfers from owned accounts to other customers, with stored self signer only (docs/05, 0660). Customer withdrawal is denied. No direct account UPDATE |
 | `SYSTEM` | Internal controlled worker | Posting identity; QA uses existing roles with synthetic data |
 
 ## Permission matrix

@@ -324,3 +324,20 @@ transaction. This serialized service coordinator works with transaction pooling 
 releases on commit/rollback/disconnect. Distribution transactions use separate
 connections; their financial commits survive control/finalization failures. No stored
 routine, view, index or migration is altered by this addition.
+
+## 0660 — Customer transfer and posting methods (ADR-0036)
+
+fn_post_customer_transfer(uuid,varchar,numeric,uuid,varchar,varchar) is a pinned-path,
+execute-only SECURITY DEFINER function for stored CUSTOMER identities. The service
+owns the explicit transaction; UUID-ordered account locks protect both balances,
+SQL validates self ownership/other recipient/mandate/hours/minimum/shared debit limits,
+and the existing deferred transfer-pair trigger protects equal opposite legs. Source-only
+return columns prevent private recipient-balance disclosure. The legacy customer
+withdrawal wrapper grant is revoked; sp_post_withdrawal rejects CUSTOMER.
+
+fn_transaction_method_channel(text) is an invoker reference resolver restricted to
+active CASH/CHEQUE rows; APIs pass strict enum values, then existing audited posting
+routines persist the FK. Historical channels/routines remain for internal compatibility.
+Lecture concepts: referential integrity, least privilege, transactions, locks, constraints,
+parameter binding and exact NUMERIC arithmetic. No new index is needed: account_number
+and account-holder lookup keys already support the new predicates.

@@ -285,20 +285,17 @@ this existing requirement. The API requires CSRF and Idempotency-Key; the compen
 ledger stores the key. Same actor/key/original/reason replays the original control/result;
 altered reuse or another key for an already reversed original conflicts with no effect.
 
-### Controlled customer withdrawal — 0627 / G-28
+### Customer transfer replaces withdrawal — 0660 / ADR-0036
 
-`sp_try_customer_withdrawal` is a pinned-path SECURITY DEFINER wrapper, executable
-only by mims_app/owner. Stored active CUSTOMER role/profile and matching transaction
-context, exactly self signer and owned account are required. The existing 0363 core
-locks and revalidates ownership/mandate/status/limits and posts exact SQL money. Known
-rejection audits commit before safe HTTP mapping. Direct CUSTOMER account UPDATE
-remains denied; staff continue through the invoker audited-attempt routine.
+The former 0627 customer withdrawal capability is revoked. CUSTOMER is denied
+in the withdrawal route/service/core. Customer money movement uses the narrow
+fn_post_customer_transfer capability; direct customer account UPDATE remains denied.
 
 ## Predeployment enforcement — 2026-10-10 (ADR-0027)
 
 | Rule | Enforcement point |
 |---|---|
-| Staff-only transfer; current branch, assigned agent source, active accounts, holder mandate | `fn_post_staff_transfer`, stored actor/context check and locked account decisions; route role/CSRF/schema |
+| Staff transfer; current branch, assigned agent source, active accounts, holder mandate | `fn_post_staff_transfer`, stored actor/context check and locked account decisions; route role/CSRF/schema |
 | Equal two-leg transfer; no partial balance or audit effect | Deferred `trg_transfer_pair`, group/type unique index, service-owned transaction and deterministic account locks |
 | Transfer-out and cash withdrawals share single/daily debit limits and preserve minimum | 0631 transfer function and 0634 withdrawal core; Colombo business date and database parameters |
 | Transfer reversal compensates both legs; destination must repay; no system/funding reversal | 0636 `fn_reverse_transfer`, paired reversal constraint and controlled reversal core |
@@ -345,3 +342,17 @@ still commit independently. A disconnected runner releases its control lock, all
 interrupted RUNNING cycle to resume unpaid FD dates/savings cursors without repeating
 committed payouts or resetting totals. Completed same-date results replay unchanged.
 No financial formula, payout constraint, rate snapshot or migration was changed.
+
+## Customer transfer and method enforcement — 2026-10-14
+
+| Rule | Enforcement point |
+|---|---|
+| Customer may debit only an owned active source and credit only a non-owned active account | 0660 fn_post_customer_transfer: active stored actor/profile, locked account decisions and explicit holder predicates; strict customer service schema |
+| Customer cannot assert another holder's authorization | Sole signer derived from authenticated linked customer in SQL; fn_check_withdrawal_mandate preserves ANY_ONE/ALL_HOLDERS |
+| Both transfer legs, balances and audit succeed or roll back together | Service withTransaction, deterministic account locks, existing deferred equal-pair constraint and immutable ledger |
+| Transfers preserve business hours, minimum and shared debit limits | Database calendar, parameters, plan-minimum and Colombo-day WITHDRAWAL/TRANSFER_OUT totals |
+| Customer withdrawal and recipient private reads remain denied | Route/service/core role checks, wrapper grant revoked; unchanged account/ledger RLS; source-only receipt |
+| Staff posting method is CASH or CHEQUE and part of replay identity | Strict Zod enum; 0660 SQL reference resolver and existing channel-bound deposit/withdrawal replay |
+
+Cheque postings use the existing immediate ledger workflow; no cheque-clearing or
+pending-settlement lifecycle is introduced by this method selection.

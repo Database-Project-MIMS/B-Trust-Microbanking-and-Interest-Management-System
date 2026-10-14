@@ -1,5 +1,11 @@
 # 09 — Task Tracker
 
+## User-requested customer transaction enhancement — 2026-10-14
+
+| ID | Owner | Scope | Status |
+|---|---|---|---|
+| P06-M04-T03 | M4 with necessary M1/M3 contributions | Customer-owned source transfers to other holders' accounts; deny customer withdrawal; Cash/Cheque posting methods; ADR-0036 | REVIEW (3,770 checks/129 suites; 73-migration rebuild/restore/type/lint/build and production browser pass; uncommitted, no push) |
+
 **Current authority (2026-10-11):** the task rows below describe merged or locally
 verified implementation. Earlier session notes are historical. ADR-0027 authorizes local
 T03/cross-owner completion and commits; publication remains the user's action.

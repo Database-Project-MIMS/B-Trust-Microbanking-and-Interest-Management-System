@@ -10,7 +10,7 @@ relationships are preserved; accepted ADR-0010/0012 and the user's maturity deci
 authorize these additions. The implemented catalog is regenerated after verification.
 
 **Baseline:** original `group_32_ERD2` (16 entities), retained as historical design.
-The current clean rebuild has **26 public tables and 58 migration entries**.
+The current 2026-10-14 clean rebuild has **29 public tables and 73 migration entries**.
 [Implemented database catalog](18_implemented-database-catalog.md) lists exact columns,
 nullability, defaults, constraints, routines, policies, triggers, indexes and migrations.
 It is the physical implementation reference; the original ERD is a design reference.
@@ -854,3 +854,17 @@ holder, transaction and FD events. No balances or credentials are stored.
 P07-M05-T01 verifies this existing schema unchanged. Sending occurs after commit;
 the repaired worker claims one row immediately before each send so rows it never
 starts do not consume attempts. No new migration is introduced by the repair.
+
+## Customer transfers and posting methods — 2026-10-14 / ADR-0036
+
+Migration 0660 adds CASH and CHEQUE reference rows to transaction_channel. Deposit/
+withdrawal API fields are method=CASH|CHEQUE, resolved by fn_transaction_method_channel.
+Historical channel_id FKs and BRANCH_COUNTER/ONLINE/SYSTEM routing are preserved.
+The physical relation name remains for compatibility; user-facing terminology is Method.
+
+fn_post_customer_transfer uses the existing transfer_group_id pair constraint,
+immutable ledger and UUID-ordered account locks. It requires the stored active CUSTOMER
+and linked customer, an owned source and a non-owned recipient account number.
+Customer results include transfer_group_id, debit_id and source_balance only.
+No RLS SELECT/UPDATE privileges are widened. The customer withdrawal wrapper grant
+is revoked and the replaced withdrawal core denies CUSTOMER.

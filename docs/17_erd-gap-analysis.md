@@ -1,5 +1,11 @@
 # 17 — ERD Gap Analysis
 
+**2026-10-14 / ADR-0036:** User approves customer transfers replacing self-service
+withdrawals and Cash/Cheque posting methods. Add CASH/CHEQUE reference rows to the
+existing transaction_channel relation; preserve historical FK values and SYSTEM/
+ONLINE routing. Transfer pairing/ownership uses the existing ledger structure.
+No new financial table or widened customer RLS is required.
+
 **Current disposition (2026-10-09):** G-01 is implemented in 0480/ADR-0011;
 G-03 has FD/cycle uniqueness in 0482; G-05 reference uniqueness is in 0360 but transfers
 remain unimplemented. G-10 is in 0221. G-12/ADR-0012 accepts savings interest; current

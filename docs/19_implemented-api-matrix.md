@@ -14,6 +14,8 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | POST | /api/admin/users/{id}/reset | ADMIN | path.id |
 | POST | /api/auth/logout | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | cookie.mims_session |
 | GET | /api/health | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | query.probe |
+| GET | /api/notifications/dispatch |  |  |
+| POST | /api/notifications/dispatch |  |  |
 | GET | /api/branches | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | query.status, query.q, query.district |
 | POST | /api/branches | ADMIN | body.branchCode, body.branchName, body.address, body.district, body.phone |
 | GET | /api/branches/{id} | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AUDITOR | path.id |
@@ -39,9 +41,9 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | POST | /api/accounts/{id}/close | BRANCH_MANAGER | path.id |
 | GET | /api/accounts/{id}/transactions | AGENT, BRANCH_MANAGER, AUDITOR, CUSTOMER | path.id, query.page, query.pageSize |
 | GET | /api/transactions/{id} | AGENT, BRANCH_MANAGER, AUDITOR, CUSTOMER | path.id |
-| POST | /api/transactions/deposits | AGENT, BRANCH_MANAGER | header.idempotency-key, body.accountId, body.amount, body.channelId, body.narration |
-| POST | /api/transactions/transfers | AGENT, BRANCH_MANAGER | header.idempotency-key, body.sourceAccountId, body.destinationAccountId, body.amount, body.signerCustomerIds.0, body.narration |
-| POST | /api/transactions/withdrawals | AGENT, BRANCH_MANAGER, CUSTOMER | header.idempotency-key, body.accountId, body.amount, body.channelId, body.narration, body.onBehalfOfCustomerId, body.signerCustomerIds, body.signerCustomerIds.0 |
+| POST | /api/transactions/deposits | AGENT, BRANCH_MANAGER | header.idempotency-key, body.accountId, body.amount, body.method, body.narration |
+| POST | /api/transactions/transfers | AGENT, BRANCH_MANAGER, CUSTOMER | header.idempotency-key, body.sourceAccountId, body.destinationAccountId, body.destinationAccountNumber, body.amount, body.signerCustomerIds.0, body.narration |
+| POST | /api/transactions/withdrawals | AGENT, BRANCH_MANAGER | header.idempotency-key, body.accountId, body.amount, body.method, body.narration, body.onBehalfOfCustomerId, body.signerCustomerIds, body.signerCustomerIds.0 |
 | POST | /api/transactions/{id}/reverse | BRANCH_MANAGER | path.id, header.idempotency-key, body.reason |
 | GET | /api/fd-products | ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM | query.probe |
 | PATCH | /api/fd-products/{id} | ADMIN | path.id, body.interestRate, body.status, body.description |
@@ -51,7 +53,7 @@ Roles: ADMIN, CENTRAL_OPS, BRANCH_MANAGER, AGENT, AUDITOR, CUSTOMER, SYSTEM. SYS
 | GET | /api/fixed-deposits/quote | AGENT, BRANCH_MANAGER, CENTRAL_OPS | query.accountId, query.fdPlanId, query.principalAmount |
 | GET | /api/interest-runs | ADMIN, CENTRAL_OPS, AUDITOR | query.probe |
 | POST | /api/interest-runs | ADMIN, CENTRAL_OPS | body.cycleDate, body.dryRun, header.authorization |
-| GET | /api/cron/interest | CRON_SECRET bearer only; no session role | query.probe (rejected), header.authorization |
+| GET | /api/cron/interest |  | query.probe |
 | GET | /api/admin/users | ADMIN | query.q, query.roleName, query.page |
 | POST | /api/admin/users | ADMIN | body.username, body.password, body.roleName, body.customerId, body.profile.branchId |
 | PATCH | /api/admin/users/{id} | ADMIN | path.id, body.status, body.password, body.roleName |
